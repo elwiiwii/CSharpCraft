@@ -138,7 +138,7 @@ namespace CSharpCraft
             }
         }
 
-        public void circfill(int x, int y, double r, int c)
+        public void circfill(double x, double y, double r, int c)
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
@@ -223,7 +223,7 @@ namespace CSharpCraft
             batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[c], rectThickness);
         }
 
-        public void spr(int spriteNumber, int x, int y)
+        public void spr(int spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
         {
             var spriteWidth = 8;
             var spriteHeight = 8;
@@ -250,9 +250,9 @@ namespace CSharpCraft
             texture.GetData(allColors);
 
             // Draw each pixel of the sprite
-            for (int i = 0; i < spriteHeight; i++)
+            for (int i = 0; i < spriteHeight * h; i++)
             {
-                for (int j = 0; j < spriteWidth; j++)
+                for (int j = 0; j < spriteWidth * w; j++)
                 {
                     // Get the color of the pixel
                     Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
@@ -261,7 +261,7 @@ namespace CSharpCraft
                     if (color.A != 0 && color != colors[0]) // Add this condition
                     {
                         // Calculate the position and size
-                        Vector2 position = new Vector2((x + j) * cellWidth, (y + i) * cellHeight);
+                        Vector2 position = new Vector2(((int)(x) + (flip_x ? -j : j)) * cellWidth, ((int)(y) + (flip_y ? -i : i)) * cellHeight);
                         Vector2 size = new Vector2(cellWidth, cellHeight);
 
                         // Draw the pixel

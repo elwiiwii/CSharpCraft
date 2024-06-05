@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Microsoft.Xna.Framework.Input;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
@@ -25,13 +29,18 @@ namespace CSharpCraft
         private Texture2D pixel;
         private Texture2D SpriteSheet1;
         private Pico8Functions pico8Functions;
-        private int MoveSpriteX = 0;
-        private int MoveSpriteY = 0;
         private double time = 0;
         private GraphicsDeviceManager graphics;
         private double frameRate = 0.0;
         private int frameCounter = 0;
         private TimeSpan elapsedTime = TimeSpan.Zero;
+
+        public double plx;
+        public double ply;
+        public double prot;
+        public double lrot;
+        public double panim;
+        public double banim;
 
 #nullable disable
 
@@ -50,10 +59,24 @@ namespace CSharpCraft
             this.IsFixedTimeStep = true;
 
             // Set the target elapsed time to 1/30th of a second (30 frames per second)
-            this.TargetElapsedTime = TimeSpan.FromSeconds(1.0/ 30.0);
+            this.TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 30.0);
 
             // Decouple the frame rate from the monitor's refresh rate
             graphics.SynchronizeWithVerticalRetrace = true;
+        }
+
+        protected override void Initialize()
+        {
+            base.Initialize();
+
+            UpdateViewport();
+
+            plx = 64.0;
+            ply = 64.0;
+            prot = 0.0;
+            lrot = 0.0;
+            panim = 0.0;
+            banim = 0.0;
         }
 
         public void spr8(int spriteNumber, int x, int y)
@@ -79,16 +102,124 @@ namespace CSharpCraft
             }
         }
 
+        public double lerp(double a, double b, double alpha)
+        {
+            return a * (1.0 - alpha) + b * alpha;
+        }
+
+        public double getlen(double x, double y)
+        {
+            return Math.Sqrt(x * x + y * y + 0.001);
+        }
+
+        public double getinvlen(double x, double y)
+        {
+            return 1 / getlen(x, y);
+        }
+
+        public double getrot(double dx, double dy)
+        {
+            return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
+        }
+
+        public (int, int) mirror(double rot)
+        {
+            if (rot < 0.125)
+            {
+                return (0, 1);
+            }
+            else if (rot < 0.325)
+            {
+            }
+            else if (rot < 0.625)
+            {
+                return (1, 0);
+            }
+            else if (rot < 0.825)
+            {
+                return (1, 1);
+            }
+            else
+            {
+                return (0, 1);
+            }
+            return (0, 0);
+        }
+
+        public (double, double) reflectcol(double dx, double dy, double dp)
+        {
+            dx = -dx * dp;
+            dy = -dy * dp;
+
+            return (dx, dy);
+        }
+
+        public double uprot(double grot, double rot)
+        {
+            if (Math.Abs(rot - grot) > 0.5)
+            {
+                if (rot > grot)
+                {
+                    grot += 1;
+                }
+                else
+                {
+                    grot -= 1;
+                }
+            }
+            return (lerp(rot, grot, 0.4) % 1 + 1) % 1;
+        }
+
+        public void dplayer(double x, double y, double rot, double anim, double subanim)
+        {
+            var cr = Math.Cos(rot);
+            var sr = Math.Sin(rot);
+            var cv = -sr;
+            var sv = cr;
+
+            x = (int)x;
+            y = (int)(y - 4);
+
+            var lan = Math.Sin(anim * 2) * 1.5;
+
+            pico8Functions.circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
+            pico8Functions.circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
+
+            var blade = (rot + 0.25) % 1;
+
+            if (subanim > 0)
+            {
+                blade = blade - 0.3 + subanim * 0.04;
+            }
+
+            var bcr = Math.Cos(blade);
+            var bsr = Math.Sin(blade);
+
+            var mx = mirror(blade);
+            var my = mirror(blade);
+
+            var weap = 75;
+
+            pico8Functions.spr(weap, x + bcr * 4 - cr * lan - (mx.Item2 * 8) + 1, y + bsr * 4 - sr * lan + (my.Item2 * 8) - 7, 1, 1, mx.Item1 == 1, my.Item2 == 1);
+
+            pico8Functions.circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
+            pico8Functions.circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
+
+            var mx2 = mirror((rot + 0.75) % 1);
+            var my2 = mirror((rot + 0.75) % 1);
+
+            pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + (mx2.Item1 * 8) + 1, y + sv * 4 + sr * lan + (my2.Item2 * 8) - 7, 1, 1, mx2.Item1 == 0, my2.Item2 == 1);
+
+            pico8Functions.circfill(x + cr, y + sr - 2, 4, 2);
+            pico8Functions.circfill(x + cr, y + sr, 4, 2);
+            pico8Functions.circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
+            pico8Functions.circfill(x - cr, y - sr - 3, 3, 4);
+
+        }
+
         public void printc(string t, int x, int y, int c)
         {
             pico8Functions.print(t, x - (t.Length * 2), y, c);
-        }
-
-        protected override void Initialize()
-        {
-            base.Initialize();
-
-            UpdateViewport();
         }
 
         protected override void Update(GameTime gameTime)
@@ -105,22 +236,46 @@ namespace CSharpCraft
 
             KeyboardState state = Keyboard.GetState();
 
-            if (state.IsKeyDown(Keys.W))
-            {
-                MoveSpriteY -= 1;
-            }
-            if (state.IsKeyDown(Keys.S))
-            {
-                MoveSpriteY += 1;
-            }
+            var dx = 0.0;
+            var dy = 0.0;
+
             if (state.IsKeyDown(Keys.A))
             {
-                MoveSpriteX -= 1;
+                dx -= 1;
             }
             if (state.IsKeyDown(Keys.D))
             {
-                MoveSpriteX += 1;
+                dx += 1;
             }
+            if (state.IsKeyDown(Keys.W))
+            {
+                dy -= 1;
+            }
+            if (state.IsKeyDown(Keys.S))
+            {
+                dy += 1;
+            }
+
+            var dl = getinvlen(dx, dy);
+
+            dx *= dl;
+            dy *= dl;
+
+            if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
+            {
+                lrot = getrot(dx, dy);
+                panim += 1.0 / 33.0;
+            }
+            else
+            {
+                panim = 0;
+            }
+
+            (dx, dy) = reflectcol(dx, dy, 0);
+
+            plx += dx;
+            ply += dy;
+            prot = uprot(lrot, prot);
 
             time += 0.1;
 
@@ -153,12 +308,18 @@ namespace CSharpCraft
 
             //pico8Functions.spr(90, 1, 1);
 
+            pico8Functions.rectfill(0, 0, 128, 128, 7);
+
+            /*
             pico8Functions.rectfill(0, 0, 128, 46, 12);
             pico8Functions.rectfill(0, 46, 128, 128, 1);
             spr8(16, 32, 14);
             printc("by nusan", 64, 80, 6);
             printc("2016", 64, 90, 6);
             printc("press button 1", 64, 112, (int)(6 + time % 2));
+            */
+
+            dplayer(plx, ply, prot, panim, banim);
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)
