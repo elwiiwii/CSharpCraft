@@ -107,23 +107,23 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            for (int i = (int)(x - r); i <= x + r; i++)
+            for (int i = ((int)x - (int)r); i <= (int)x + (int)r; i++)
             {
-                for (int j = (int)(y - r); j <= y + r; j++)
+                for (int j = ((int)y - (int)r); j <= (int)y + (int)r; j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < x) ? 0.36D : -0.36D;
-                    double offsetY = (j < y) ? 0.36D : -0.36D;
+                    double offsetX = (i < (int)x) ? 0.36D : -0.36D;
+                    double offsetY = (j < (int)y) ? 0.36D : -0.36D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
-                    bool isCurrentInCircle = Math.Pow(gridCenterX - x, 2) + Math.Pow(gridCenterY - y, 2) <= r * r;
+                    bool isCurrentInCircle = Math.Pow(gridCenterX - (int)x, 2) + Math.Pow(gridCenterY - (int)y, 2) <= (int)r * (int)r;
 
                     // Check all four adjacent grid spaces
-                    bool isRightOutsideCircle = Math.Pow((i + 1 + offsetX) - x, 2) + Math.Pow((j + offsetY) - y, 2) > r * r;
-                    bool isLeftOutsideCircle = Math.Pow((i - 1 + offsetX) - x, 2) + Math.Pow((j + offsetY) - y, 2) > r * r;
-                    bool isUpOutsideCircle = Math.Pow((i + offsetX) - x, 2) + Math.Pow((j + 1 + offsetY) - y, 2) > r * r;
-                    bool isDownOutsideCircle = Math.Pow((i + offsetX) - x, 2) + Math.Pow((j - 1 + offsetY) - y, 2) > r * r;
+                    bool isRightOutsideCircle = Math.Pow((i + 1 + offsetX) - (int)x, 2) + Math.Pow((j + offsetY) - (int)y, 2) > (int)r * (int)r;
+                    bool isLeftOutsideCircle = Math.Pow((i - 1 + offsetX) - (int)x, 2) + Math.Pow((j + offsetY) - (int)y, 2) > (int)r * (int)r;
+                    bool isUpOutsideCircle = Math.Pow((i + offsetX) - (int)x, 2) + Math.Pow((j + 1 + offsetY) - (int)y, 2) > (int)r * (int)r;
+                    bool isDownOutsideCircle = Math.Pow((i + offsetX) - (int)x, 2) + Math.Pow((j - 1 + offsetY) - (int)y, 2) > (int)r * (int)r;
 
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
@@ -150,17 +150,17 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            for (int i = (int)(x - r); i <= x + r; i++)
+            for (int i = ((int)x - (int)r); i <= (int)x + (int)r; i++)
             {
-                for (int j = (int)(y - r); j <= y + r; j++)
+                for (int j = ((int)y - (int)r); j <= (int)y + (int)r; j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < x) ? 0.36D : -0.36D;
-                    double offsetY = (j < y) ? 0.36D : -0.36D;
+                    double offsetX = (i < (int)x) ? 0.36D : -0.36D;
+                    double offsetY = (j < (int)y) ? 0.36D : -0.36D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
-                    if (Math.Pow(gridCenterX - x, 2) + Math.Pow(gridCenterY - y, 2) <= r * r)
+                    if (Math.Pow(gridCenterX - (int)x, 2) + Math.Pow(gridCenterY - (int)y, 2) <= (int)r * (int)r)
                     {
                         // Calculate the position and size
                         Vector2 position = new Vector2(i * cellWidth, j * cellHeight);
@@ -261,7 +261,7 @@ namespace CSharpCraft
                     if (color.A != 0 && color != colors[0]) // Add this condition
                     {
                         // Calculate the position and size
-                        Vector2 position = new Vector2(((int)(x) + (flip_x ? -j : j)) * cellWidth, ((int)(y) + (flip_y ? -i : i)) * cellHeight);
+                        Vector2 position = new Vector2(((int)x + (flip_x ? -j : j)) * cellWidth, ((int)y + (flip_y ? -i : i)) * cellHeight);
                         Vector2 size = new Vector2(cellWidth, cellHeight);
 
                         // Draw the pixel
