@@ -173,8 +173,8 @@ namespace CSharpCraft
             var cv = -sr;
             var sv = cr;
 
-            x = (int)x;
-            y = (int)(y - 4);
+            x = Math.Floor(x);
+            y = Math.Floor(y - 4);
 
             var lan = Math.Sin(anim * 2) * 1.5;
 
@@ -191,20 +191,24 @@ namespace CSharpCraft
             var bcr = Math.Cos(blade);
             var bsr = Math.Sin(blade);
 
-            var mx = mirror(blade);
-            var my = mirror(blade);
+            //var mx = mirror(blade);
+            //var my = mirror(blade);
+
+            (int mx, int my) = mirror(blade);
 
             var weap = 75;
 
-            pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx.Item1 * 8 + 1, y + bsr * 4 - sr * lan + my.Item1 * 8 - 7, 1, 1, mx.Item2 == 1, my.Item2 == 1);
+            pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
 
             pico8Functions.circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
             pico8Functions.circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-            var mx2 = mirror((rot + 0.75) % 1);
-            var my2 = mirror((rot + 0.75) % 1);
+            //var mx2 = mirror((rot + 0.75) % 1);
+            //var my2 = mirror((rot + 0.75) % 1);
 
-            pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2.Item1 * 8 + 1, y + sv * 4 + sr * lan + my2.Item1 * 8 - 7, 1, 1, mx2.Item2 == 0, my2.Item2 == 1);
+            (int mx2, int my2) = mirror((rot + 0.75) % 1);
+
+            pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
 
             pico8Functions.circfill(x + cr, y + sr - 2, 4, 2);
             pico8Functions.circfill(x + cr, y + sr, 4, 2);
@@ -235,22 +239,10 @@ namespace CSharpCraft
             var dx = 0.0;
             var dy = 0.0;
 
-            if (state.IsKeyDown(Keys.A))
-            {
-                dx -= 1;
-            }
-            if (state.IsKeyDown(Keys.D))
-            {
-                dx += 1;
-            }
-            if (state.IsKeyDown(Keys.W))
-            {
-                dy -= 1;
-            }
-            if (state.IsKeyDown(Keys.S))
-            {
-                dy += 1;
-            }
+            if (state.IsKeyDown(Keys.A)) dx -= 1;
+            if (state.IsKeyDown(Keys.D)) dx += 1;
+            if (state.IsKeyDown(Keys.W)) dy -= 1;
+            if (state.IsKeyDown(Keys.S)) dy += 1;
 
             var dl = getinvlen(dx, dy);
 
@@ -267,14 +259,19 @@ namespace CSharpCraft
                 panim = 0;
             }
 
-            dx *= 2;
-            dy *= 2;
+            var s = 1.0;
 
-            dx = reflectcol(dx, dy, -1).Item1;
-            dy = reflectcol(dx, dy, -1).Item2;
+            dx *= s;
+            dy *= s;
+
+            //dx = reflectcol(dx, dy, -1).Item1;
+            //dy = reflectcol(dx, dy, -1).Item2;
+
+            (dx, dy) = reflectcol(dx, dy, 0);
 
             plx += dx;
             ply += dy;
+
             prot = uprot(lrot, prot);
 
             time += 0.1;
