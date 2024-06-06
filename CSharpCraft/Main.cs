@@ -252,7 +252,7 @@ namespace CSharpCraft
             if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
             {
                 lrot = getrot(dx, dy);
-                panim += 1.0 / 5.5;
+                panim += 1.0 / 33.0;
             }
             else
             {
