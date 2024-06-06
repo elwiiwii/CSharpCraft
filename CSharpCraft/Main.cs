@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Graphics.PackedVector;
 using Microsoft.Xna.Framework.Input;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
@@ -130,6 +126,7 @@ namespace CSharpCraft
             }
             else if (rot < 0.325)
             {
+                return (0, 0);
             }
             else if (rot < 0.625)
             {
@@ -143,7 +140,6 @@ namespace CSharpCraft
             {
                 return (0, 1);
             }
-            return (0, 0);
         }
 
         public (double, double) reflectcol(double dx, double dy, double dp)
@@ -200,7 +196,7 @@ namespace CSharpCraft
 
             var weap = 75;
 
-            pico8Functions.spr(weap, x + bcr * 4 - cr * lan - (mx.Item2 * 8) + 1, y + bsr * 4 - sr * lan + (my.Item2 * 8) - 7, 1, 1, mx.Item1 == 1, my.Item2 == 1);
+            pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx.Item1 * 8 + 1, y + bsr * 4 - sr * lan + my.Item1 * 8 - 7, 1, 1, mx.Item2 == 1, my.Item2 == 1);
 
             pico8Functions.circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
             pico8Functions.circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
@@ -208,7 +204,7 @@ namespace CSharpCraft
             var mx2 = mirror((rot + 0.75) % 1);
             var my2 = mirror((rot + 0.75) % 1);
 
-            pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + (mx2.Item1 * 8) + 1, y + sv * 4 + sr * lan + (my2.Item2 * 8) - 7, 1, 1, mx2.Item1 == 0, my2.Item2 == 1);
+            pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2.Item1 * 8 + 1, y + sv * 4 + sr * lan + my2.Item1 * 8 - 7, 1, 1, mx2.Item2 == 0, my2.Item2 == 1);
 
             pico8Functions.circfill(x + cr, y + sr - 2, 4, 2);
             pico8Functions.circfill(x + cr, y + sr, 4, 2);
@@ -271,7 +267,11 @@ namespace CSharpCraft
                 panim = 0;
             }
 
-            (dx, dy) = reflectcol(dx, dy, 0);
+            dx *= 2;
+            dy *= 2;
+
+            dx = reflectcol(dx, dy, -1).Item1;
+            dy = reflectcol(dx, dy, -1).Item2;
 
             plx += dx;
             ply += dy;
