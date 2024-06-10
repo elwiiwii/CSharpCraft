@@ -117,7 +117,7 @@ namespace CSharpCraft
         {
             return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
         }
-
+        
         public (int, int) mirror(double rot)
         {
             if (rot < 0.125)
