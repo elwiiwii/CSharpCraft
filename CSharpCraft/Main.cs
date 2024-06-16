@@ -33,7 +33,7 @@ namespace CSharpCraft
 
         public double plx;
         public double ply;
-        public double prot;
+        public double prot = 0;
         public double lrot;
         public double panim;
         public double banim;
@@ -168,6 +168,8 @@ namespace CSharpCraft
 
         public void dplayer(double x, double y, double rot, double anim, double subanim)
         {
+            rot = -rot * 2 * Math.PI;
+
             var cr = Math.Cos(rot);
             var sr = Math.Sin(rot);
             var cv = -sr;
@@ -198,7 +200,7 @@ namespace CSharpCraft
 
             var weap = 75;
 
-            pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
+            //pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
 
             pico8Functions.circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
             pico8Functions.circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
@@ -208,7 +210,7 @@ namespace CSharpCraft
 
             (int mx2, int my2) = mirror((rot + 0.75) % 1);
 
-            pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
+            //pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
 
             pico8Functions.circfill(x + cr, y + sr - 2, 4, 2);
             pico8Functions.circfill(x + cr, y + sr, 4, 2);
@@ -236,15 +238,15 @@ namespace CSharpCraft
 
             KeyboardState state = Keyboard.GetState();
 
-            var dx = 0.0;
-            var dy = 0.0;
+            double dx = 0.0;
+            double dy = 0.0;
 
-            if (state.IsKeyDown(Keys.A)) dx -= 1;
-            if (state.IsKeyDown(Keys.D)) dx += 1;
-            if (state.IsKeyDown(Keys.W)) dy -= 1;
-            if (state.IsKeyDown(Keys.S)) dy += 1;
+            if (state.IsKeyDown(Keys.A)) dx -= 1.0;
+            if (state.IsKeyDown(Keys.D)) dx += 1.0;
+            if (state.IsKeyDown(Keys.W)) dy -= 1.0;
+            if (state.IsKeyDown(Keys.S)) dy += 1.0;
 
-            var dl = getinvlen(dx, dy);
+            double dl = getinvlen(dx, dy);
 
             dx *= dl;
             dy *= dl;
@@ -252,7 +254,7 @@ namespace CSharpCraft
             if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
             {
                 lrot = getrot(dx, dy);
-                panim += 1.0 / 33.0;
+                panim += 1.0 / 5;
             }
             else
             {
@@ -316,7 +318,19 @@ namespace CSharpCraft
             printc("press button 1", 64, 112, (int)(6 + time % 2));
             */
 
+            
+            dplayer(44, 44, 0.375, panim, banim);
+            dplayer(64, 44, 0.25, panim, banim);
+            dplayer(84, 44, 0.125, panim, banim);
+
+            dplayer(44, 64, 0.5, panim, banim);
             dplayer(plx, ply, prot, panim, banim);
+            dplayer(84, 64, 0, panim, banim);
+
+            dplayer(44, 84, 0.875, panim, banim);
+            dplayer(64, 84, 0.75, panim, banim);
+            dplayer(84, 84, 0.625, panim, banim);
+
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)

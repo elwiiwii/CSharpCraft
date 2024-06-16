@@ -150,17 +150,17 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            for (int i = ((int)Math.Round(x) - (int)Math.Round(r)); i <= (int)Math.Round(x) + (int)Math.Round(r); i++)
+            for (int i = ((int)Math.Floor(x) - (int)Math.Floor(r)); i <= (int)Math.Floor(x) + (int)Math.Floor(r); i++)
             {
-                for (int j = ((int)Math.Round(y) - (int)Math.Round(r)); j <= (int)Math.Round(y) + (int)Math.Round(r); j++)
+                for (int j = ((int)Math.Floor(y) - (int)Math.Floor(r)); j <= (int)Math.Floor(y) + (int)Math.Floor(r); j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < (int)Math.Round(x)) ? 0.36D : -0.36D;
-                    double offsetY = (j < (int)Math.Round(y)) ? 0.36D : -0.36D;
+                    double offsetX = (i < (int)Math.Floor(x)) ? 0.25D : -0.25D;
+                    double offsetY = (j < (int)Math.Floor(y)) ? 0.25D : -0.25D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
-                    if (Math.Pow(gridCenterX - (int)Math.Round(x), 2) + Math.Pow(gridCenterY - (int)Math.Round(y), 2) <= (int)Math.Round(r) * (int)Math.Round(r))
+                    if (Math.Pow(gridCenterX - (int)Math.Floor(x), 2) + Math.Pow(gridCenterY - (int)Math.Floor(y), 2) <= (int)Math.Floor(r) * (int)Math.Floor(r))
                     {
                         // Calculate the position and size
                         Vector2 position = new Vector2(i * cellWidth, j * cellHeight);
