@@ -212,10 +212,10 @@ namespace CSharpCraft
 
             //pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
 
-            pico8Functions.circfill(x + cr, y + sr - 2, 4, 2);
-            pico8Functions.circfill(x + cr, y + sr, 4, 2);
+            pico8Functions.circfill(x + cr + 0.001, y + sr - 2 + 0.001, 4, 2);
+            pico8Functions.circfill(x + cr + 0.001, y + sr + 0.001, 4, 2);
             pico8Functions.circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
-            pico8Functions.circfill(x - cr, y - sr - 3, 3, 4);
+            pico8Functions.circfill(x - cr + 0.001, y - sr - 3, 3, 4);
 
         }
 
@@ -254,7 +254,7 @@ namespace CSharpCraft
             if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
             {
                 lrot = getrot(dx, dy);
-                panim += 1.0 / 5;
+                panim += 1.0 / 5.5;
             }
             else
             {
@@ -327,9 +327,9 @@ namespace CSharpCraft
             dplayer(plx, ply, prot, panim, banim);
             dplayer(84, 64, 0, panim, banim);
 
-            dplayer(44, 84, 0.875, panim, banim);
+            dplayer(44, 84, 0.625, panim, banim);
             dplayer(64, 84, 0.75, panim, banim);
-            dplayer(84, 84, 0.625, panim, banim);
+            dplayer(84, 84, 0.875, panim, banim);
 
 
             // Draw the grid

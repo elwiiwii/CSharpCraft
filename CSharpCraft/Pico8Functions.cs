@@ -155,8 +155,8 @@ namespace CSharpCraft
                 for (int j = ((int)Math.Floor(y) - (int)Math.Floor(r)); j <= (int)Math.Floor(y) + (int)Math.Floor(r); j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < (int)Math.Floor(x)) ? 0.25D : -0.25D;
-                    double offsetY = (j < (int)Math.Floor(y)) ? 0.25D : -0.25D;
+                    double offsetX = (i < (int)Math.Floor(x)) ? 0.35D : -0.35D;
+                    double offsetY = (j < (int)Math.Floor(y)) ? 0.35D : -0.35D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
