@@ -99,6 +99,10 @@ namespace CSharpCraft
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
+            int rFlr = (int)Math.Floor(r);
+
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
             int viewportHeight = graphicsDevice.Viewport.Height;
@@ -107,23 +111,23 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            for (int i = ((int)Math.Round(x) - (int)Math.Round(r)); i <= (int)Math.Round(x) + (int)Math.Round(r); i++)
+            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
             {
-                for (int j = ((int)Math.Round(y) - (int)Math.Round(r)); j <= (int)Math.Round(y) + (int)Math.Round(r); j++)
+                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < (int)Math.Round(x)) ? 0.36D : -0.36D;
-                    double offsetY = (j < (int)Math.Round(y)) ? 0.36D : -0.36D;
+                    double offsetX = (i < xFlr) ? 0.35D : -0.35D;
+                    double offsetY = (j < yFlr) ? 0.35D : -0.35D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
-                    bool isCurrentInCircle = Math.Pow(gridCenterX - (int)Math.Round(x), 2) + Math.Pow(gridCenterY - (int)Math.Round(y), 2) <= (int)Math.Round(r) * (int)Math.Round(r);
+                    bool isCurrentInCircle = Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr;
 
                     // Check all four adjacent grid spaces
-                    bool isRightOutsideCircle = Math.Pow((i + 1 + offsetX) - (int)Math.Round(x), 2) + Math.Pow((j + offsetY) - (int)Math.Round(y), 2) > (int)Math.Round(r) * (int)Math.Round(r);
-                    bool isLeftOutsideCircle = Math.Pow((i - 1 + offsetX) - (int)Math.Round(x), 2) + Math.Pow((j + offsetY) - (int)Math.Round(y), 2) > (int)Math.Round(r) * (int)Math.Round(r);
-                    bool isUpOutsideCircle = Math.Pow((i + offsetX) - (int)Math.Round(x), 2) + Math.Pow((j + 1 + offsetY) - (int)Math.Round(y), 2) > (int)Math.Round(r) * (int)Math.Round(r);
-                    bool isDownOutsideCircle = Math.Pow((i + offsetX) - (int)Math.Round(x), 2) + Math.Pow((j - 1 + offsetY) - (int)Math.Round(y), 2) > (int)Math.Round(r) * (int)Math.Round(r);
+                    bool isRightOutsideCircle = Math.Pow(i + 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isLeftOutsideCircle = Math.Pow(i - 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isUpOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j + 1 + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isDownOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j - 1 + offsetY - yFlr, 2) > rFlr * rFlr;
 
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
@@ -142,6 +146,10 @@ namespace CSharpCraft
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
+            int rFlr = (int)Math.Floor(r);
+
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
             int viewportHeight = graphicsDevice.Viewport.Height;
@@ -150,17 +158,17 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            for (int i = ((int)Math.Floor(x) - (int)Math.Floor(r)); i <= (int)Math.Floor(x) + (int)Math.Floor(r); i++)
+            for (int i = (xFlr - rFlr); i <= xFlr + rFlr; i++)
             {
-                for (int j = ((int)Math.Floor(y) - (int)Math.Floor(r)); j <= (int)Math.Floor(y) + (int)Math.Floor(r); j++)
+                for (int j = (yFlr - rFlr); j <= yFlr + rFlr; j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < (int)Math.Floor(x)) ? 0.35D : -0.35D;
-                    double offsetY = (j < (int)Math.Floor(y)) ? 0.35D : -0.35D;
+                    double offsetX = (i < xFlr) ? 0.35D : -0.35D;
+                    double offsetY = (j < yFlr) ? 0.35D : -0.35D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
-                    if (Math.Pow(gridCenterX - (int)Math.Floor(x), 2) + Math.Pow(gridCenterY - (int)Math.Floor(y), 2) <= (int)Math.Floor(r) * (int)Math.Floor(r))
+                    if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                     {
                         // Calculate the position and size
                         Vector2 position = new Vector2(i * cellWidth, j * cellHeight);
@@ -234,8 +242,8 @@ namespace CSharpCraft
                 spriteTextures[spriteNumber] = texture;
             }
 
-            int spriteX = (spriteNumber % 16) * spriteWidth;
-            int spriteY = (spriteNumber / 16) * spriteHeight;
+            int spriteX = spriteNumber % 16 * spriteWidth;
+            int spriteY = spriteNumber / 16 * spriteHeight;
 
             // Get the size of the viewport
             int viewportWidth = batch.GraphicsDevice.Viewport.Width;
