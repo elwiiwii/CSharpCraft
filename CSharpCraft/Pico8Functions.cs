@@ -181,6 +181,15 @@ namespace CSharpCraft
             }
         }
 
+        public void mset(double celx, double cely, double snum = 0)
+        {
+            int xFlr = (int)Math.Floor(celx);
+            int yFlr = (int)Math.Floor(cely);
+            int sFlr = (int)Math.Floor(snum);
+
+
+        }
+
         public void print(string str, int x, int y, int c)
         {
             int charWidth = 4;

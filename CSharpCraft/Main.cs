@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +39,21 @@ namespace CSharpCraft
         public double lrot;
         public double panim;
         public double banim;
+
+        public bool levelunder;
+        public int levelsx;
+        public int levelsy;
+        public int levelx;
+        public int levely;
+        public int holex;
+        public int holey;
+        public double clx;
+        public double cly;
+        public double cmx;
+        public double cmy;
+
+        double[][] level = [];
+        int[] typecount = [];
 
 #nullable disable
 
@@ -217,6 +234,174 @@ namespace CSharpCraft
             pico8Functions.circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
             pico8Functions.circfill(x - cr + 0.001, y - sr - 3, 3, 4);
 
+        }
+
+        public double[][] noise(int sx, int sy, double startscale, double scalemod, int featstep)
+        {
+            double[][] n = new double[sx + 1][];
+
+            for (int i = 0; i <= sx; i++)
+            {
+                n[i] = new double[sy + 1];
+                for (int j = 0; j <= sy; j++)
+                {
+                    n[i][j] = 0.5;
+                }
+            }
+
+            var step = sx;
+            var scale = startscale;
+
+            while (step > 1)
+            {
+                var cscal = scale;
+                if (step == featstep) { cscal = 1; }
+
+                for (int i = 0; i < sx; i += step)
+                {
+                    for (int j = 0; j < sy; j += step)
+                    {
+                        var c1 = n[i][j];
+                        var c2 = n[i + step][j];
+                        var c3 = n[i][j + step];
+                        n[i + step / 2][j] = (c1 + c2) * 0.5 + (new Random().NextDouble() - 0.5) * cscal;
+                        n[i][j + step / 2] = (c1 + c3) * 0.5 + (new Random().NextDouble() - 0.5) * cscal;
+                    }
+                }
+
+                for (int i = 0; i < sx; i += step)
+                {
+                    for (int j = 0; j < sy; j += step)
+                    {
+                        var c1 = n[i][j];
+                        var c2 = n[i + step][j];
+                        var c3 = n[i][j + step];
+                        var c4 = n[i + step][j + step];
+                        n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * 0.25 + (new Random().NextDouble() - 0.5) * cscal;
+                    }
+                }
+
+                step /= 2;
+                scale *= scalemod;
+            }
+
+            return n;
+        }
+
+        public double[][] createmapstep(int sx, int sy, double a, double b, double c, double d, double e)
+        {
+            var cur = noise(sx, sy, 0.9, 0.2, sx);
+            var cur2 = noise(sx, sy, 0.9, 0.4, 8);
+            var cur3 = noise(sx, sy, 0.9, 0.3, 8);
+            var cur4 = noise(sx, sy, 0.8, 1.1, 4);
+
+            for (int i = 0; i < 11; i++)
+            {
+                typecount[i] = 0;
+            }
+
+            for (int i = 0; i < sx; i++)
+            {
+                for (int j = 0; j < sy; j++)
+                {
+                    var v = Math.Abs(cur[i][j] - cur2[i][j]);
+                    var v2 = Math.Abs(cur[i][j] - cur3[i][j]);
+                    var v3 = Math.Abs(cur[i][j] - cur4[i][j]);
+                    var dist = Math.Max(Math.Abs(i / sx - 0.5) * 2, Math.Abs(j / sy - 0.5) * 2);
+                    dist = dist * dist * dist * dist;
+                    var coast = v * 4 - dist * 4;
+
+                    var id = a;
+                    if (coast > 0.3) { id = b; } // sand
+                    if (coast > 0.6) { id = c; } // grass
+                    if (coast > 0.3 && v2 > 0.5) { id = d; } // stone
+                    if (id == c && v3 > 0.5) { id = e; } // tree
+
+                    typecount[(int)id] += 1;
+
+                    cur[i][j] = id;
+                }
+            }
+
+            return cur;
+        }
+
+        public void createmap()
+        {
+            var needmap = true;
+
+            while (needmap)
+            {
+                needmap = false;
+
+                if (levelunder)
+                {
+                    level = createmapstep(levelsx, levelsy, 3, 8, 1, 9, 10);
+
+                    if (typecount[8] < 30) { needmap = true; }
+                    if (typecount[9] < 20) { needmap = true; }
+                    if (typecount[10] < 15) { needmap = true; }
+                }
+                else
+                {
+                    level = createmapstep(levelsx, levelsy, 0, 1, 2, 3, 4);
+
+                    if (typecount[3] < 30) { needmap = true; }
+                    if (typecount[4] < 30) { needmap = true; }
+                }
+
+                if (!needmap)
+                {
+                    plx = -1;
+                    ply = -1;
+
+                    for (int i = 0; i < 500; i++)
+                    {
+                        var depx = (int)Math.Floor(levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
+                        var depy = (int)Math.Floor(levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
+                        var c = level[depx][depy];
+
+                        if (c == 1 || c == 2)
+                        {
+                            plx = depx * 16 + 8;
+                            ply = depy * 16 + 8;
+                            break;
+                        }
+                    }
+
+                    if (plx < 0) 
+                    {
+                        needmap = true; 
+                    }
+                }
+            }
+
+            for (int i = 0; i < levelsx; i++)
+            {
+                for (int j = 0; j < levelsy; j++)
+                {
+                    pico8Functions.mset(i + levelx, j + levely, level[i][j]);
+                }
+            }
+
+            holex = levelsx / 2 + levelx;
+            holey = levelsy / 2 + levely;
+
+            for (int i = -1; i < 1; i++)
+            {
+                for (int j = -1; j < 1; j++)
+                {
+                    pico8Functions.mset(holex + i, holey + j, levelunder ? 1 : 3);
+                }
+            }
+
+            pico8Functions.mset(holex, holey, 11);
+
+            clx = plx;
+            cly = ply;
+
+            cmx = plx;
+            cmy = ply;
         }
 
         public void printc(string t, int x, int y, int c)
