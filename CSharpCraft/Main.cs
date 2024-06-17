@@ -503,7 +503,7 @@ namespace CSharpCraft
             printc("press button 1", 64, 112, (int)(6 + time % 2));
             */
 
-            
+            /*
             dplayer(44, 44, 0.375, panim, banim);
             dplayer(64, 44, 0.25, panim, banim);
             dplayer(84, 44, 0.125, panim, banim);
@@ -515,7 +515,34 @@ namespace CSharpCraft
             dplayer(44, 84, 0.625, panim, banim);
             dplayer(64, 84, 0.75, panim, banim);
             dplayer(84, 84, 0.875, panim, banim);
+            */
 
+            if (false)
+            {
+                pico8Functions.rectfill(31, 31, 64, 64, 8);
+                pico8Functions.rectfill(32, 32, 63, 63, 7);
+                for (int i = 0; i < 31; i++)
+                {
+                    for (int j = 0; j < 31; j++)
+                    {
+                        var c = pico8Functions.mget(i + 64, j);
+                        pico8Functions.pset(i + 32, j + 32, c);
+                    }
+                }
+            }
+            else
+            {
+                pico8Functions.rectfill(31, 31, 96, 96, 8);
+                pico8Functions.rectfill(32, 32, 95, 95, 7);
+                for (int i = 0; i < 63; i++)
+                {
+                    for (int j = 0; j < 63; j++)
+                    {
+                        var c = pico8Functions.mget(i, j);
+                        pico8Functions.pset(i + 32, j + 32, c);
+                    }
+                }
+            }
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)

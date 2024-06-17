@@ -14,6 +14,7 @@ namespace CSharpCraft
         private readonly GraphicsDevice graphicsDevice;
         private Texture2D pixel;
         private Dictionary<int, Texture2D> spriteTextures = new Dictionary<int, Texture2D>();
+        private int[] mapstuff = new int[128*64];
 
         // Add a constructor that takes a SpriteBatch as a parameter
         public Pico8Functions(Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice)
@@ -181,6 +182,40 @@ namespace CSharpCraft
             }
         }
 
+        public int mget(double celx, double cely)
+        {
+            int xFlr = (int)Math.Floor(celx);
+            int yFlr = (int)Math.Floor(cely);
+
+            string MapData = new string(MapFile.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+
+            char c = MapData[xFlr + (yFlr * 128)];
+
+            int IntC = 0;
+
+            if (c >= 48 && c <= 57)
+            {
+                IntC = c - '0';
+            }
+            else if (c >= 97 && c <= 102)
+            {
+                IntC = 10 + c - 'a';
+            }
+
+            return IntC;
+
+        }
+
+        public int mget_dad(double celx, double cely)
+        {
+            int xFlr = (int)Math.Floor(celx);
+            int yFlr = (int)Math.Floor(cely);
+
+            int mval = mapstuff[xFlr + (yFlr * 128)];
+
+            return mval;
+        }
+
         public void mset(double celx, double cely, double snum = 0)
         {
             int xFlr = (int)Math.Floor(celx);
@@ -221,6 +256,28 @@ namespace CSharpCraft
                     }
                 }
             }
+        }
+
+        public void pset(double x, double y, double c)
+        {
+            int xFlr = (int)Math.Floor(x);
+            float yFlr = (float)(Math.Floor(y) - 0.5);
+            int cFlr = (int)Math.Floor(c);
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            // Calculate the position and size of the line
+            Vector2 position = new Vector2(xFlr * cellWidth, yFlr * cellHeight);
+            Vector2 size = new Vector2(cellWidth, cellHeight);
+
+            // Draw the line
+            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
         public void rectfill(int x1, int y1, int x2, int y2, int c)
@@ -296,7 +353,6 @@ namespace CSharpCraft
             }
             spriteTextures.Clear();
         }
-
 
     }
 }
