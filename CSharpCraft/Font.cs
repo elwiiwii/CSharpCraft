@@ -10,7 +10,7 @@ namespace CSharpCraft
 {
     public static class Font
     {
-        private static int[,] a = new int[,]
+        private static readonly int[,] a = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -19,7 +19,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] b = new int[,]
+        private static readonly int[,] b = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -28,7 +28,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] c = new int[,]
+        private static readonly int[,] c = new int[,]
         {
             { 0, 1, 1 },
             { 1, 0, 0 },
@@ -37,7 +37,7 @@ namespace CSharpCraft
             { 0, 1, 1 }
         };
 
-        private static int[,] d = new int[,]
+        private static readonly int[,] d = new int[,]
         {
             { 1, 1, 0 },
             { 1, 0, 1 },
@@ -46,7 +46,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] e = new int[,]
+        private static readonly int[,] e = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 0 },
@@ -55,7 +55,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] f = new int[,]
+        private static readonly int[,] f = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 0 },
@@ -64,7 +64,7 @@ namespace CSharpCraft
             { 1, 0, 0 }
         };
 
-        private static int[,] g = new int[,]
+        private static readonly int[,] g = new int[,]
         {
             { 0, 1, 1 },
             { 1, 0, 0 },
@@ -73,7 +73,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] h = new int[,]
+        private static readonly int[,] h = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -82,7 +82,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] i = new int[,]
+        private static readonly int[,] i = new int[,]
         {
             { 1, 1, 1 },
             { 0, 1, 0 },
@@ -91,7 +91,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] j = new int[,]
+        private static readonly int[,] j = new int[,]
         {
             { 1, 1, 1 },
             { 0, 1, 0 },
@@ -100,7 +100,7 @@ namespace CSharpCraft
             { 1, 1, 0 }
         };
 
-        private static int[,] k = new int[,]
+        private static readonly int[,] k = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -109,7 +109,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] l = new int[,]
+        private static readonly int[,] l = new int[,]
         {
             { 1, 0, 0 },
             { 1, 0, 0 },
@@ -118,7 +118,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] m = new int[,]
+        private static readonly int[,] m = new int[,]
         {
             { 1, 1, 1 },
             { 1, 1, 1 },
@@ -127,7 +127,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] n = new int[,]
+        private static readonly int[,] n = new int[,]
         {
             { 1, 1, 0 },
             { 1, 0, 1 },
@@ -136,7 +136,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] o = new int[,]
+        private static readonly int[,] o = new int[,]
         {
             { 0, 1, 1 },
             { 1, 0, 1 },
@@ -145,7 +145,7 @@ namespace CSharpCraft
             { 1, 1, 0 }
         };
 
-        private static int[,] p = new int[,]
+        private static readonly int[,] p = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -154,7 +154,7 @@ namespace CSharpCraft
             { 1, 0, 0 }
         };
 
-        private static int[,] q = new int[,]
+        private static readonly int[,] q = new int[,]
         {
             { 0, 1, 0 },
             { 1, 0, 1 },
@@ -163,7 +163,7 @@ namespace CSharpCraft
             { 0, 1, 1 }
         };
 
-        private static int[,] r = new int[,]
+        private static readonly int[,] r = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -172,7 +172,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] s = new int[,]
+        private static readonly int[,] s = new int[,]
         {
             { 0, 1, 1 },
             { 1, 0, 0 },
@@ -181,7 +181,7 @@ namespace CSharpCraft
             { 1, 1, 0 }
         };
 
-        private static int[,] t = new int[,]
+        private static readonly int[,] t = new int[,]
         {
             { 1, 1, 1 },
             { 0, 1, 0 },
@@ -190,7 +190,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] u = new int[,]
+        private static readonly int[,] u = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -199,7 +199,7 @@ namespace CSharpCraft
             { 0, 1, 1 }
         };
 
-        private static int[,] v = new int[,]
+        private static readonly int[,] v = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -208,7 +208,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] w = new int[,]
+        private static readonly int[,] w = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -217,7 +217,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] x = new int[,]
+        private static readonly int[,] x = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -226,7 +226,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] y = new int[,]
+        private static readonly int[,] y = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -235,7 +235,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] z = new int[,]
+        private static readonly int[,] z = new int[,]
         {
             { 1, 1, 1 },
             { 0, 0, 1 },
@@ -244,7 +244,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] zero = new int[,]
+        private static readonly int[,] zero = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -253,7 +253,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] one = new int[,]
+        private static readonly int[,] one = new int[,]
         {
             { 1, 1, 0 },
             { 0, 1, 0 },
@@ -262,7 +262,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] two = new int[,]
+        private static readonly int[,] two = new int[,]
         {
             { 1, 1, 1 },
             { 0, 0, 1 },
@@ -271,7 +271,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] three = new int[,]
+        private static readonly int[,] three = new int[,]
         {
             { 1, 1, 1 },
             { 0, 0, 1 },
@@ -280,7 +280,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] four = new int[,]
+        private static readonly int[,] four = new int[,]
         {
             { 1, 0, 1 },
             { 1, 0, 1 },
@@ -289,7 +289,7 @@ namespace CSharpCraft
             { 0, 0, 1 }
         };
 
-        private static int[,] five = new int[,]
+        private static readonly int[,] five = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 0 },
@@ -298,7 +298,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] six = new int[,]
+        private static readonly int[,] six = new int[,]
         {
             { 1, 0, 0 },
             { 1, 0, 0 },
@@ -307,7 +307,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] seven = new int[,]
+        private static readonly int[,] seven = new int[,]
         {
             { 1, 1, 1 },
             { 0, 0, 1 },
@@ -316,7 +316,7 @@ namespace CSharpCraft
             { 0, 0, 1 }
         };
 
-        private static int[,] eight = new int[,]
+        private static readonly int[,] eight = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -325,7 +325,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] nine = new int[,]
+        private static readonly int[,] nine = new int[,]
         {
             { 1, 1, 1 },
             { 1, 0, 1 },
@@ -334,7 +334,7 @@ namespace CSharpCraft
             { 0, 0, 1 }
         };
 
-        private static int[,] tilda = new int[,]
+        private static readonly int[,] tilda = new int[,]
         {
             { 0, 0, 0 },
             { 0, 0, 1 },
@@ -343,7 +343,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        private static int[,] exclamation = new int[,]
+        private static readonly int[,] exclamation = new int[,]
         {
             { 0, 1, 0 },
             { 0, 1, 0 },
@@ -352,7 +352,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] at = new int[,]
+        private static readonly int[,] at = new int[,]
         {
             { 0, 1, 0 },
             { 1, 0, 1 },
@@ -361,7 +361,7 @@ namespace CSharpCraft
             { 0, 1, 1 }
         };
 
-        private static int[,] hash = new int[,]
+        private static readonly int[,] hash = new int[,]
         {
             { 1, 0, 1 },
             { 1, 1, 1 },
@@ -370,7 +370,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] dollar = new int[,]
+        private static readonly int[,] dollar = new int[,]
         {
             { 1, 1, 1 },
             { 1, 1, 0 },
@@ -379,7 +379,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] percent = new int[,]
+        private static readonly int[,] percent = new int[,]
         {
             { 1, 0, 1 },
             { 0, 0, 1 },
@@ -388,7 +388,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] power = new int[,]
+        private static readonly int[,] power = new int[,]
         {
             { 0, 1, 0 },
             { 1, 0, 1 },
@@ -397,7 +397,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        private static int[,] ampersand = new int[,]
+        private static readonly int[,] ampersand = new int[,]
         {
             { 1, 1, 0 },
             { 1, 1, 0 },
@@ -406,7 +406,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] asterisk = new int[,]
+        private static readonly int[,] asterisk = new int[,]
         {
             { 1, 0, 1 },
             { 0, 1, 0 },
@@ -415,7 +415,7 @@ namespace CSharpCraft
             { 1, 0, 1 }
         };
 
-        private static int[,] openBracket = new int[,]
+        private static readonly int[,] openBracket = new int[,]
         {
             { 0, 1, 0 },
             { 1, 0, 0 },
@@ -424,7 +424,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] closeBracket = new int[,]
+        private static readonly int[,] closeBracket = new int[,]
         {
             { 0, 1, 0 },
             { 0, 0, 1 },
@@ -433,7 +433,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] underscore = new int[,]
+        private static readonly int[,] underscore = new int[,]
         {
             { 0, 0, 0 },
             { 0, 0, 0 },
@@ -442,7 +442,7 @@ namespace CSharpCraft
             { 1, 1, 1 }
         };
 
-        private static int[,] plus = new int[,]
+        private static readonly int[,] plus = new int[,]
         {
             { 0, 0, 0 },
             { 0, 1, 0 },
@@ -451,7 +451,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        private static int[,] minus = new int[,]
+        private static readonly int[,] minus = new int[,]
         {
             { 0, 0, 0 },
             { 0, 0, 0 },
@@ -460,7 +460,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        private static int[,] equals = new int[,]
+        private static readonly int[,] equals = new int[,]
         {
             { 0, 0, 0 },
             { 1, 1, 1 },
@@ -469,7 +469,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        private static int[,] question = new int[,]
+        private static readonly int[,] question = new int[,]
         {
             { 1, 1, 1 },
             { 0, 0, 1 },
@@ -478,7 +478,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] colon = new int[,]
+        private static readonly int[,] colon = new int[,]
         {
             { 0, 0, 0 },
             { 0, 1, 0 },
@@ -487,7 +487,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        private static int[,] period = new int[,]
+        private static readonly int[,] period = new int[,]
         {
             { 0, 0, 0 },
             { 0, 0, 0 },
@@ -496,7 +496,7 @@ namespace CSharpCraft
             { 0, 1, 0 }
         };
 
-        private static int[,] space = new int[,]
+        private static readonly int[,] space = new int[,]
         {
             { 0, 0, 0 },
             { 0, 0, 0 },
@@ -505,7 +505,7 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
-        public static Dictionary<char, int[,]> chars = new Dictionary<char, int[,]>
+        public static readonly Dictionary<char, int[,]> chars = new()
         {
             { 'a', a },
             { 'b', b },

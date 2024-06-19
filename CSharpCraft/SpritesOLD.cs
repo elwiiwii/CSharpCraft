@@ -10,7 +10,7 @@ namespace CSharpCraft
 {
     public static class SpritesOLD
     {
-        private static int[,] zero = new int[,]
+        private static readonly int[,] zero = new int[,]
         {
             { -1, -1, -1, -1, -1, -1, -1, -1 },
             { -1, -1, -1, -1, -1, -1, -1, -1 },
@@ -22,7 +22,7 @@ namespace CSharpCraft
             { -1, -1, -1, -1, -1, -1, -1, -1 }
         };
 
-        private static int[,] one = new int[,]
+        private static readonly int[,] one = new int[,]
         {
             { -1, -1,  0,  0,  0,  0, -1, -1 },
             { -1,  0, 10, 10, 10, 10,  0, -1 },
@@ -34,7 +34,7 @@ namespace CSharpCraft
             { -1, -1,  0,  0,  0,  0, -1, -1 }
         };
 
-        public static Dictionary<char, int[,]> sprites = new Dictionary<char, int[,]>
+        public static readonly Dictionary<char, int[,]> sprites = new()
         {
             { '0', zero },
             { '1', one },

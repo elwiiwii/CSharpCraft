@@ -10,7 +10,7 @@ namespace CSharpCraft
 {
     public static class SpriteSheets
     {
-        public static string SpriteSheet1 = @"
+        public static readonly string SpriteSheet1 = @"
         00000000ffffffffffffffffffffffffffffffff44fff44ffff44fff020121000004200002031000fff55fffffff555ff5555fff000000000001000000101000
         00000000ffffffffffffffffffffffffffff444fff4ffff4ff4fffff310310200303102041420000ff56655ffff56665f56665ff000100000011100001000100
         00000000fff4fffff4ffffffff4fffff4444fffffff444ff44fff44f205200024002001030310410f566665ffff566655666665f001110000110110010000100
@@ -141,7 +141,7 @@ namespace CSharpCraft
         11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
         ";
 
-        public static string SpriteSheet2 = @"
+        public static readonly string SpriteSheet2 = @"
         cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfcccccccccccccccccccccccccccc
         ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccf4cccccccccccccccccccccccccccc
         cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccf44cccccccccccccccccccccccccccc

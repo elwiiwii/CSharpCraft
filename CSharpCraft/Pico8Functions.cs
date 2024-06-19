@@ -8,21 +8,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions : IDisposable
+    public class Pico8Functions(Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
     {
-        private SpriteBatch batch;
-        private readonly GraphicsDevice graphicsDevice;
-        private Texture2D pixel;
-        private Dictionary<int, Texture2D> spriteTextures = new Dictionary<int, Texture2D>();
-        private int[] mapstuff = new int[128*64];
-
-        // Add a constructor that takes a SpriteBatch as a parameter
-        public Pico8Functions(Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice)
-        {
-            this.batch = batch;
-            this.graphicsDevice = graphicsDevice;
-            this.pixel = pixel;
-        }
+        private readonly SpriteBatch batch = batch;
+        private readonly GraphicsDevice graphicsDevice = graphicsDevice;
+        private readonly Texture2D pixel = pixel;
+        private readonly Dictionary<int, Texture2D> spriteTextures = new();
+        private int[] Map1 = new int[64 * 64];
+        private int[] Map2 = new int[32 * 32];
 
         private static Color HexToColor(string hex)
         {
@@ -34,8 +27,8 @@ namespace CSharpCraft
         }
 
         // pico-8 colors
-        private Color[] colors = new Color[]
-        {
+        private readonly Color[] colors =
+        [
                 HexToColor("000000"), // 00 black
                 HexToColor("1D2B53"), // 01 dark-blue
                 HexToColor("7E2553"), // 02 dark-purple
@@ -69,8 +62,8 @@ namespace CSharpCraft
                 HexToColor("754665"), // 29 mauve
                 HexToColor("FF6E59"), // 30 dark-peach
                 HexToColor("FF9D81"), // 31 peach
-        };
-        private Dictionary<Color, int> paletteSwap = new Dictionary<Color, int>();
+        ];
+        private readonly Dictionary<Color, int> paletteSwap = new();
 
         public Texture2D CreateTextureFromSpriteData(string spriteData, int spriteWidth, int spriteHeight)
         {
@@ -79,7 +72,7 @@ namespace CSharpCraft
             int width = spriteWidth * 16; // 16 sprites per row
             int height = spriteData.Length / width;
 
-            Texture2D texture = new Texture2D(graphicsDevice, width, height);
+            Texture2D texture = new(graphicsDevice, width, height);
 
             Color[] colorData = new Color[width * height];
 
@@ -96,7 +89,7 @@ namespace CSharpCraft
             return texture;
         }
 
-        public void circ(double x, double y, double r, int c)
+        public void Circ(double x, double y, double r, int c)
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
@@ -133,8 +126,8 @@ namespace CSharpCraft
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
                         // Calculate the position and size of the line
-                        Vector2 position = new Vector2(i * cellWidth, j * cellHeight);
-                        Vector2 size = new Vector2(cellWidth, cellHeight);
+                        Vector2 position = new(i * cellWidth, j * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
                         batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -143,7 +136,7 @@ namespace CSharpCraft
             }
         }
 
-        public void circfill(double x, double y, double r, int c)
+        public void Circfill(double x, double y, double r, int c)
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
@@ -172,8 +165,8 @@ namespace CSharpCraft
                     if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                     {
                         // Calculate the position and size
-                        Vector2 position = new Vector2(i * cellWidth, j * cellHeight);
-                        Vector2 size = new Vector2(cellWidth, cellHeight);
+                        Vector2 position = new(i * cellWidth, j * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
                         batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -182,12 +175,12 @@ namespace CSharpCraft
             }
         }
 
-        public int mget(double celx, double cely)
+        public static int MgetOld(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
 
-            string MapData = new string(MapFile.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+            string MapData = new(MapFile.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
             char c = MapData[xFlr + (yFlr * 128)];
 
@@ -206,26 +199,26 @@ namespace CSharpCraft
 
         }
 
-        public int mget_dad(double celx, double cely)
+        public int Mget(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
 
-            int mval = mapstuff[xFlr + (yFlr * 128)];
+            int mval = Map1[xFlr + (yFlr * 64)];
 
             return mval;
         }
 
-        public void mset(double celx, double cely, double snum = 0)
+        public void Mset(double celx, double cely, double snum = 0)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
             int sFlr = (int)Math.Floor(snum);
 
-
+            Map1[xFlr + (yFlr * 64)] = sFlr;
         }
 
-        public void print(string str, int x, int y, int c)
+        public void Print(string str, int x, int y, int c)
         {
             int charWidth = 4;
             //int charHeight = 5;
@@ -258,10 +251,11 @@ namespace CSharpCraft
             }
         }
 
-        public void pset(double x, double y, double c)
+        public void Pset(double x, double y, double c)
         {
             int xFlr = (int)Math.Floor(x);
-            float yFlr = (float)(Math.Floor(y) - 0.5);
+            int yFlr = (int)Math.Floor(y);
+            //float yFlr = (float)(Math.Floor(y) - 0.5);
             int cFlr = (int)Math.Floor(c);
 
             // Get the size of the viewport
@@ -273,14 +267,14 @@ namespace CSharpCraft
             int cellHeight = viewportHeight / 128;
 
             // Calculate the position and size of the line
-            Vector2 position = new Vector2(xFlr * cellWidth, yFlr * cellHeight);
-            Vector2 size = new Vector2(cellWidth, cellHeight);
+            Vector2 position = new(xFlr * cellWidth, yFlr * cellHeight);
+            Vector2 size = new(cellWidth, cellHeight);
 
             // Draw the line
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
-        public void rectfill(int x1, int y1, int x2, int y2, int c)
+        public void Rectfill(int x1, int y1, int x2, int y2, int c)
         {
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -297,7 +291,7 @@ namespace CSharpCraft
             batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[c], rectThickness);
         }
 
-        public void spr(int spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
+        public void Spr(int spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
         {
             var spriteWidth = 8;
             var spriteHeight = 8;
@@ -335,8 +329,8 @@ namespace CSharpCraft
                     if (color.A != 0 && color != colors[0]) // Add this condition
                     {
                         // Calculate the position and size
-                        Vector2 position = new Vector2(((int)x + (flip_x ? -j : j)) * cellWidth, ((int)y + (flip_y ? -i : i)) * cellHeight);
-                        Vector2 size = new Vector2(cellWidth, cellHeight);
+                        Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth, ((int)y + (flip_y ? -i : i)) * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the pixel
                         batch.Draw(pixel, position, null, color, 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -347,6 +341,8 @@ namespace CSharpCraft
 
         public void Dispose()
         {
+            GC.SuppressFinalize(this);
+
             foreach (var texture in spriteTextures.Values)
             {
                 texture.Dispose();

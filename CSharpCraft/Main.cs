@@ -3,23 +3,37 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
+    public class Level
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Sx { get; set; }
+        public int Sy { get; set; }
+        public bool Isunder { get; set; }
+        public int Stx { get; set; }
+        public int Sty { get; set; }
+    }
+
     class FNAGame : Game
     {
         [STAThread]
         static void Main(string[] args)
         {
-            using (FNAGame g = new FNAGame())
-            {
-                g.Run();
-            }
+            ArgumentNullException.ThrowIfNull(args);
+
+            using FNAGame g = new();
+            g.Run();
         }
 
 #nullable enable
@@ -27,20 +41,21 @@ namespace CSharpCraft
         private Texture2D pixel;
         private Texture2D SpriteSheet1;
         private Pico8Functions pico8Functions;
-        private double time = 0;
-        private GraphicsDeviceManager graphics;
+        private readonly GraphicsDeviceManager graphics;
         private double frameRate = 0.0;
         private int frameCounter = 0;
         private TimeSpan elapsedTime = TimeSpan.Zero;
 
+        private double time;
+
         public double plx;
         public double ply;
-        public double prot = 0;
+        public double prot;
         public double lrot;
         public double panim;
         public double banim;
 
-        public bool levelunder;
+        public bool levelunder = false;
         public int levelsx;
         public int levelsy;
         public int levelx;
@@ -52,8 +67,10 @@ namespace CSharpCraft
         public double cmx;
         public double cmy;
 
-        double[][] level = [];
-        int[] typecount = [];
+        public double[][] level;
+        readonly int[] typecount = new int[11];
+
+        private readonly Level currentLevel;
 
 #nullable disable
 
@@ -90,9 +107,11 @@ namespace CSharpCraft
             lrot = 0.0;
             panim = 0.0;
             banim = 0.0;
+
+            Createlevel(0,0,64,64,false);
         }
 
-        public void spr8(int spriteNumber, int x, int y)
+        public void Spr8(int spriteNumber, int x, int y)
         {
             // Calculate the top left corner of the 4x4 block
             int startRow = spriteNumber / 16 * 8;
@@ -110,32 +129,63 @@ namespace CSharpCraft
                     int spriteX = x + col * 8;
                     int spriteY = y + row * 8;
 
-                    pico8Functions.spr(currentSpriteNumber, spriteX, spriteY);
+                    pico8Functions.Spr(currentSpriteNumber, spriteX, spriteY);
                 }
             }
         }
 
-        public double lerp(double a, double b, double alpha)
+        public Level Createlevel(int xx, int yy, int sizex, int sizey, bool isUnderground)
+        {
+            var l = new Level
+            {
+                X = xx,
+                Y = yy,
+                Sx = sizex,
+                Sy = sizey,
+                Isunder = isUnderground
+            };
+
+            Setlevel(l);
+            Createmap();
+            l.Stx = (holex - levelx) * 16 + 8;
+            l.Sty = (holey - levely) * 16 + 8;
+
+            return l;
+        }
+
+        public static void Setlevel(Level l)
+        {
+            var currentlevel = l;
+            var levelx = l.X;
+            var levely = l.Y;
+            var levelsx = l.Sx;
+            var levelsy = l.Sy;
+            var levelunder = l.Isunder;
+            var plx = l.Stx;
+            var ply = l.Sty;
+        }
+
+        public static double Lerp(double a, double b, double alpha)
         {
             return a * (1.0 - alpha) + b * alpha;
         }
 
-        public double getlen(double x, double y)
+        public static double Getlen(double x, double y)
         {
             return Math.Sqrt(x * x + y * y + 0.001);
         }
 
-        public double getinvlen(double x, double y)
+        public static double Getinvlen(double x, double y)
         {
-            return 1 / getlen(x, y);
+            return 1 / Getlen(x, y);
         }
 
-        public double getrot(double dx, double dy)
+        public static double Getrot(double dx, double dy)
         {
             return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
         }
         
-        public (int, int) mirror(double rot)
+        public static (int, int) Mirror(double rot)
         {
             if (rot < 0.125)
             {
@@ -159,7 +209,7 @@ namespace CSharpCraft
             }
         }
 
-        public (double, double) reflectcol(double dx, double dy, double dp)
+        public static (double, double) Reflectcol(double dx, double dy, double dp)
         {
             dx = -dx * dp;
             dy = -dy * dp;
@@ -167,7 +217,7 @@ namespace CSharpCraft
             return (dx, dy);
         }
 
-        public double uprot(double grot, double rot)
+        public static double Uprot(double grot, double rot)
         {
             if (Math.Abs(rot - grot) > 0.5)
             {
@@ -180,10 +230,10 @@ namespace CSharpCraft
                     grot -= 1;
                 }
             }
-            return (lerp(rot, grot, 0.4) % 1 + 1) % 1;
+            return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
         }
 
-        public void dplayer(double x, double y, double rot, double anim, double subanim)
+        public void Dplayer(double x, double y, double rot, double anim, double subanim)
         {
             rot = -rot * 2 * Math.PI;
 
@@ -197,8 +247,8 @@ namespace CSharpCraft
 
             var lan = Math.Sin(anim * 2) * 1.5;
 
-            pico8Functions.circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
-            pico8Functions.circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
+            pico8Functions.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
+            pico8Functions.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
 
             var blade = (rot + 0.25) % 1;
 
@@ -213,30 +263,30 @@ namespace CSharpCraft
             //var mx = mirror(blade);
             //var my = mirror(blade);
 
-            (int mx, int my) = mirror(blade);
+            (int mx, int my) = Mirror(blade);
 
             var weap = 75;
 
             //pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
 
-            pico8Functions.circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
-            pico8Functions.circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
+            pico8Functions.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
+            pico8Functions.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
             //var mx2 = mirror((rot + 0.75) % 1);
             //var my2 = mirror((rot + 0.75) % 1);
 
-            (int mx2, int my2) = mirror((rot + 0.75) % 1);
+            (int mx2, int my2) = Mirror((rot + 0.75) % 1);
 
             //pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
 
-            pico8Functions.circfill(x + cr + 0.001, y + sr - 2 + 0.001, 4, 2);
-            pico8Functions.circfill(x + cr + 0.001, y + sr + 0.001, 4, 2);
-            pico8Functions.circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
-            pico8Functions.circfill(x - cr + 0.001, y - sr - 3, 3, 4);
+            pico8Functions.Circfill(x + cr + 0.001, y + sr - 2 + 0.001, 4, 2);
+            pico8Functions.Circfill(x + cr + 0.001, y + sr + 0.001, 4, 2);
+            pico8Functions.Circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
+            pico8Functions.Circfill(x - cr + 0.001, y - sr - 3, 3, 4);
 
         }
 
-        public double[][] noise(int sx, int sy, double startscale, double scalemod, int featstep)
+        public static double[][] Noise(int sx, int sy, double startscale, double scalemod, int featstep)
         {
             double[][] n = new double[sx + 1][];
 
@@ -288,12 +338,12 @@ namespace CSharpCraft
             return n;
         }
 
-        public double[][] createmapstep(int sx, int sy, double a, double b, double c, double d, double e)
+        public double[][] Createmapstep(int sx, int sy, double a, double b, double c, double d, double e)
         {
-            var cur = noise(sx, sy, 0.9, 0.2, sx);
-            var cur2 = noise(sx, sy, 0.9, 0.4, 8);
-            var cur3 = noise(sx, sy, 0.9, 0.3, 8);
-            var cur4 = noise(sx, sy, 0.8, 1.1, 4);
+            var cur = Noise(sx, sy, 0.9, 0.2, sx);
+            var cur2 = Noise(sx, sy, 0.9, 0.4, 8);
+            var cur3 = Noise(sx, sy, 0.9, 0.3, 8);
+            var cur4 = Noise(sx, sy, 0.8, 1.1, 4);
 
             for (int i = 0; i < 11; i++)
             {
@@ -326,9 +376,9 @@ namespace CSharpCraft
             return cur;
         }
 
-        public void createmap()
+        public void Createmap()
         {
-            var needmap = true;
+            var needmap = !true;
 
             while (needmap)
             {
@@ -336,7 +386,7 @@ namespace CSharpCraft
 
                 if (levelunder)
                 {
-                    level = createmapstep(levelsx, levelsy, 3, 8, 1, 9, 10);
+                    level = Createmapstep(levelsx, levelsy, 3, 8, 1, 9, 10);
 
                     if (typecount[8] < 30) { needmap = true; }
                     if (typecount[9] < 20) { needmap = true; }
@@ -344,7 +394,7 @@ namespace CSharpCraft
                 }
                 else
                 {
-                    level = createmapstep(levelsx, levelsy, 0, 1, 2, 3, 4);
+                    level = Createmapstep(levelsx, levelsy, 0, 1, 2, 3, 4);
 
                     if (typecount[3] < 30) { needmap = true; }
                     if (typecount[4] < 30) { needmap = true; }
@@ -380,7 +430,7 @@ namespace CSharpCraft
             {
                 for (int j = 0; j < levelsy; j++)
                 {
-                    pico8Functions.mset(i + levelx, j + levely, level[i][j]);
+                    pico8Functions.Mset(i + levelx, j + levely, level[i][j]);
                 }
             }
 
@@ -391,11 +441,11 @@ namespace CSharpCraft
             {
                 for (int j = -1; j < 1; j++)
                 {
-                    pico8Functions.mset(holex + i, holey + j, levelunder ? 1 : 3);
+                    pico8Functions.Mset(holex + i, holey + j, levelunder ? 1 : 3);
                 }
             }
 
-            pico8Functions.mset(holex, holey, 11);
+            pico8Functions.Mset(holex, holey, 11);
 
             clx = plx;
             cly = ply;
@@ -404,9 +454,9 @@ namespace CSharpCraft
             cmy = ply;
         }
 
-        public void printc(string t, int x, int y, int c)
+        public void Printc(string t, int x, int y, int c)
         {
-            pico8Functions.print(t, x - (t.Length * 2), y, c);
+            pico8Functions.Print(t, x - (t.Length * 2), y, c);
         }
 
         protected override void Update(GameTime gameTime)
@@ -431,14 +481,14 @@ namespace CSharpCraft
             if (state.IsKeyDown(Keys.W)) dy -= 1.0;
             if (state.IsKeyDown(Keys.S)) dy += 1.0;
 
-            double dl = getinvlen(dx, dy);
+            double dl = Getinvlen(dx, dy);
 
             dx *= dl;
             dy *= dl;
 
             if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
             {
-                lrot = getrot(dx, dy);
+                lrot = Getrot(dx, dy);
                 panim += 1.0 / 5.5;
             }
             else
@@ -454,12 +504,12 @@ namespace CSharpCraft
             //dx = reflectcol(dx, dy, -1).Item1;
             //dy = reflectcol(dx, dy, -1).Item2;
 
-            (dx, dy) = reflectcol(dx, dy, 0);
+            (dx, dy) = Reflectcol(dx, dy, 0);
 
             plx += dx;
             ply += dy;
 
-            prot = uprot(lrot, prot);
+            prot = Uprot(lrot, prot);
 
             time += 0.1;
 
@@ -492,7 +542,7 @@ namespace CSharpCraft
 
             //pico8Functions.spr(90, 1, 1);
 
-            pico8Functions.rectfill(0, 0, 128, 128, 7);
+            pico8Functions.Rectfill(0, 0, 128, 128, 7);
 
             /*
             pico8Functions.rectfill(0, 0, 128, 46, 12);
@@ -519,30 +569,34 @@ namespace CSharpCraft
 
             if (false)
             {
-                pico8Functions.rectfill(31, 31, 64, 64, 8);
-                pico8Functions.rectfill(32, 32, 63, 63, 7);
+                pico8Functions.Rectfill(31, 31, 64, 64, 8);
+                pico8Functions.Rectfill(32, 32, 63, 63, 7);
                 for (int i = 0; i < 31; i++)
                 {
                     for (int j = 0; j < 31; j++)
                     {
-                        var c = pico8Functions.mget(i + 64, j);
-                        pico8Functions.pset(i + 32, j + 32, c);
+                        var c = pico8Functions.Mget(i + 64, j);
+                        pico8Functions.Pset(i + 32, j + 32, c);
                     }
                 }
             }
             else
             {
-                pico8Functions.rectfill(31, 31, 96, 96, 8);
-                pico8Functions.rectfill(32, 32, 95, 95, 7);
+                pico8Functions.Rectfill(31, 31, 96, 96, 8);
+                pico8Functions.Rectfill(32, 32, 95, 95, 7);
                 for (int i = 0; i < 63; i++)
                 {
                     for (int j = 0; j < 63; j++)
                     {
-                        var c = pico8Functions.mget(i, j);
-                        pico8Functions.pset(i + 32, j + 32, c);
+                        var c = pico8Functions.Mget(i, j);
+                        pico8Functions.Pset(i + 32, j + 32, c);
                     }
                 }
             }
+
+            //pico8Functions.mset(1, 1, 8);
+            //var ec = pico8Functions.mget(1, 1);
+            //pico8Functions.pset(1, 1, ec);
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)
