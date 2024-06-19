@@ -55,6 +55,13 @@ namespace CSharpCraft
         public double panim;
         public double banim;
 
+        public Level currentlevel;
+        //public double levelx;
+        //public double levely;
+        //public double levelsx;
+        //public double levelsy;
+        //public double levelunder;
+
         public bool levelunder = false;
         public int levelsx;
         public int levelsy;
@@ -101,8 +108,8 @@ namespace CSharpCraft
 
             UpdateViewport();
 
-            plx = 64.0;
-            ply = 64.0;
+            //plx = 64.0;
+            //ply = 64.0;
             prot = 0.0;
             lrot = 0.0;
             panim = 0.0;
@@ -153,16 +160,16 @@ namespace CSharpCraft
             return l;
         }
 
-        public static void Setlevel(Level l)
+        public void Setlevel(Level l)
         {
-            var currentlevel = l;
-            var levelx = l.X;
-            var levely = l.Y;
-            var levelsx = l.Sx;
-            var levelsy = l.Sy;
-            var levelunder = l.Isunder;
-            var plx = l.Stx;
-            var ply = l.Sty;
+            currentlevel = l;
+            levelx = l.X;
+            levely = l.Y;
+            levelsx = l.Sx;
+            levelsy = l.Sy;
+            levelunder = l.Isunder;
+            plx = l.Stx;
+            ply = l.Sty;
         }
 
         public static double Lerp(double a, double b, double alpha)
@@ -307,9 +314,9 @@ namespace CSharpCraft
                 var cscal = scale;
                 if (step == featstep) { cscal = 1; }
 
-                for (int i = 0; i < sx; i += step)
+                for (int i = 0; i < sx - 1; i += step)
                 {
-                    for (int j = 0; j < sy; j += step)
+                    for (int j = 0; j < sy - 1; j += step)
                     {
                         var c1 = n[i][j];
                         var c2 = n[i + step][j];
@@ -357,8 +364,9 @@ namespace CSharpCraft
                     var v = Math.Abs(cur[i][j] - cur2[i][j]);
                     var v2 = Math.Abs(cur[i][j] - cur3[i][j]);
                     var v3 = Math.Abs(cur[i][j] - cur4[i][j]);
-                    var dist = Math.Max(Math.Abs(i / sx - 0.5) * 2, Math.Abs(j / sy - 0.5) * 2);
+                    var dist = Math.Max(Math.Abs((double)i / sx - 0.5) * 2, Math.Abs((double)j / sy - 0.5) * 2);
                     dist = dist * dist * dist * dist;
+                    //Math.Pow(dist, 5);
                     var coast = v * 4 - dist * 4;
 
                     var id = a;
@@ -378,7 +386,7 @@ namespace CSharpCraft
 
         public void Createmap()
         {
-            var needmap = !true;
+            var needmap = true;
 
             while (needmap)
             {
@@ -398,6 +406,8 @@ namespace CSharpCraft
 
                     if (typecount[3] < 30) { needmap = true; }
                     if (typecount[4] < 30) { needmap = true; }
+
+                    //if (typecount[0] < 100) { needmap = true; }
                 }
 
                 if (!needmap)
@@ -407,8 +417,8 @@ namespace CSharpCraft
 
                     for (int i = 0; i < 500; i++)
                     {
-                        var depx = (int)Math.Floor(levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
-                        var depy = (int)Math.Floor(levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
+                        var depx = (int)Math.Floor((double)levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
+                        var depy = (int)Math.Floor((double)levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
                         var c = level[depx][depy];
 
                         if (c == 1 || c == 2)
