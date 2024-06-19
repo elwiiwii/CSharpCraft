@@ -561,7 +561,7 @@ namespace CSharpCraft
 
             //pico8Functions.spr(90, 1, 1);
 
-            //pico8Functions.Rectfill(0, 0, 128, 128, 7);
+            pico8Functions.Rectfill(0, 0, 128, 128, 7);
 
             /*
             pico8Functions.rectfill(0, 0, 128, 46, 12);
@@ -588,8 +588,8 @@ namespace CSharpCraft
 
             if (false)
             {
-                pico8Functions.Rectfill(31, 31, 64, 64, 8);
-                pico8Functions.Rectfill(32, 32, 63, 63, 7);
+                pico8Functions.Rectfill(31, 31, 65, 65, 8);
+                pico8Functions.Rectfill(32, 32, 64, 64, 7);
                 for (int i = 0; i <= 31; i++)
                 {
                     for (int j = 0; j <= 31; j++)
