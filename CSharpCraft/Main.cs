@@ -16,13 +16,13 @@ namespace CSharpCraft
 {
     public class Level
     {
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Sx { get; set; }
-        public int Sy { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Sx { get; set; }
+        public double Sy { get; set; }
         public bool Isunder { get; set; }
-        public int Stx { get; set; }
-        public int Sty { get; set; }
+        public double Stx { get; set; }
+        public double Sty { get; set; }
     }
 
     class FNAGame : Game
@@ -56,19 +56,14 @@ namespace CSharpCraft
         public double banim;
 
         public Level currentlevel;
-        //public double levelx;
-        //public double levely;
-        //public double levelsx;
-        //public double levelsy;
-        //public double levelunder;
 
         public bool levelunder = false;
-        public int levelsx;
-        public int levelsy;
-        public int levelx;
-        public int levely;
-        public int holex;
-        public int holey;
+        public double levelsx;
+        public double levelsy;
+        public double levelx;
+        public double levely;
+        public double holex;
+        public double holey;
         public double clx;
         public double cly;
         public double cmx;
@@ -141,14 +136,19 @@ namespace CSharpCraft
             }
         }
 
-        public Level Createlevel(int xx, int yy, int sizex, int sizey, bool isUnderground)
+        public Level Createlevel(double xx, double yy, double sizex, double sizey, bool isUnderground)
         {
+            int xxFlr = (int)Math.Floor(xx);
+            int yyFlr = (int)Math.Floor(yy);
+            int sizexFlr = (int)Math.Floor(sizex);
+            int sizeyFlr = (int)Math.Floor(sizey);
+
             var l = new Level
             {
-                X = xx,
-                Y = yy,
-                Sx = sizex,
-                Sy = sizey,
+                X = xxFlr,
+                Y = yyFlr,
+                Sx = sizexFlr,
+                Sy = sizeyFlr,
                 Isunder = isUnderground
             };
 
@@ -172,27 +172,27 @@ namespace CSharpCraft
             ply = l.Sty;
         }
 
-        public static double Lerp(double a, double b, double alpha)
+        public double Lerp(double a, double b, double alpha)
         {
             return a * (1.0 - alpha) + b * alpha;
         }
 
-        public static double Getlen(double x, double y)
+        public double Getlen(double x, double y)
         {
             return Math.Sqrt(x * x + y * y + 0.001);
         }
 
-        public static double Getinvlen(double x, double y)
+        public double Getinvlen(double x, double y)
         {
             return 1 / Getlen(x, y);
         }
 
-        public static double Getrot(double dx, double dy)
+        public double Getrot(double dx, double dy)
         {
             return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
         }
         
-        public static (int, int) Mirror(double rot)
+        public (int, int) Mirror(double rot)
         {
             if (rot < 0.125)
             {
@@ -216,7 +216,7 @@ namespace CSharpCraft
             }
         }
 
-        public static (double, double) Reflectcol(double dx, double dy, double dp)
+        public (double, double) Reflectcol(double dx, double dy, double dp)
         {
             dx = -dx * dp;
             dy = -dy * dp;
@@ -224,7 +224,7 @@ namespace CSharpCraft
             return (dx, dy);
         }
 
-        public static double Uprot(double grot, double rot)
+        public double Uprot(double grot, double rot)
         {
             if (Math.Abs(rot - grot) > 0.5)
             {
@@ -293,30 +293,34 @@ namespace CSharpCraft
 
         }
 
-        public static double[][] Noise(int sx, int sy, double startscale, double scalemod, int featstep)
+        public double[][] Noise(double sx, double sy, double startscale, double scalemod, double featstep)
         {
-            double[][] n = new double[sx + 1][];
+            int sxFlr = (int)Math.Floor(sx);
+            int syFlr = (int)Math.Floor(sy);
+            int featstepFlr = (int)Math.Floor(featstep);
 
-            for (int i = 0; i <= sx; i++)
+            double[][] n = new double[sxFlr + 1][];
+
+            for (int i = 0; i <= sxFlr; i++)
             {
-                n[i] = new double[sy + 1];
-                for (int j = 0; j <= sy; j++)
+                n[i] = new double[syFlr + 1];
+                for (int j = 0; j <= syFlr; j++)
                 {
                     n[i][j] = 0.5;
                 }
             }
 
-            var step = sx;
+            var step = sxFlr;
             var scale = startscale;
 
             while (step > 1)
             {
                 var cscal = scale;
-                if (step == featstep) { cscal = 1; }
+                if (step == featstepFlr) { cscal = 1; }
 
-                for (int i = 0; i < sx - 1; i += step)
+                for (int i = 0; i <= sxFlr - 1; i += step)
                 {
-                    for (int j = 0; j < sy - 1; j += step)
+                    for (int j = 0; j <= syFlr - 1; j += step)
                     {
                         var c1 = n[i][j];
                         var c2 = n[i + step][j];
@@ -326,9 +330,9 @@ namespace CSharpCraft
                     }
                 }
 
-                for (int i = 0; i < sx; i += step)
+                for (int i = 0; i <= sxFlr - 1; i += step)
                 {
-                    for (int j = 0; j < sy; j += step)
+                    for (int j = 0; j <= syFlr - 1; j += step)
                     {
                         var c1 = n[i][j];
                         var c2 = n[i + step][j];
@@ -345,26 +349,29 @@ namespace CSharpCraft
             return n;
         }
 
-        public double[][] Createmapstep(int sx, int sy, double a, double b, double c, double d, double e)
+        public double[][] Createmapstep(double sx, double sy, double a, double b, double c, double d, double e)
         {
-            var cur = Noise(sx, sy, 0.9, 0.2, sx);
-            var cur2 = Noise(sx, sy, 0.9, 0.4, 8);
-            var cur3 = Noise(sx, sy, 0.9, 0.3, 8);
-            var cur4 = Noise(sx, sy, 0.8, 1.1, 4);
+            int sxFlr = (int)Math.Floor(sx);
+            int syFlr = (int)Math.Floor(sy);
+
+            var cur = Noise(sxFlr, syFlr, 0.9, 0.2, sxFlr);
+            var cur2 = Noise(sxFlr, syFlr, 0.9, 0.4, 8);
+            var cur3 = Noise(sxFlr, syFlr, 0.9, 0.3, 8);
+            var cur4 = Noise(sxFlr, syFlr, 0.8, 1.1, 4);
 
             for (int i = 0; i < 11; i++)
             {
                 typecount[i] = 0;
             }
 
-            for (int i = 0; i < sx; i++)
+            for (int i = 0; i <= sxFlr; i++)
             {
-                for (int j = 0; j < sy; j++)
+                for (int j = 0; j <= syFlr; j++)
                 {
                     var v = Math.Abs(cur[i][j] - cur2[i][j]);
                     var v2 = Math.Abs(cur[i][j] - cur3[i][j]);
                     var v3 = Math.Abs(cur[i][j] - cur4[i][j]);
-                    var dist = Math.Max(Math.Abs((double)i / sx - 0.5) * 2, Math.Abs((double)j / sy - 0.5) * 2);
+                    var dist = Math.Max(Math.Abs((double)i / sxFlr - 0.5) * 2, Math.Abs((double)j / syFlr - 0.5) * 2);
                     dist = dist * dist * dist * dist;
                     //Math.Pow(dist, 5);
                     var coast = v * 4 - dist * 4;
@@ -415,10 +422,10 @@ namespace CSharpCraft
                     plx = -1;
                     ply = -1;
 
-                    for (int i = 0; i < 500; i++)
+                    for (int i = 0; i <= 500; i++)
                     {
-                        var depx = (int)Math.Floor((double)levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
-                        var depy = (int)Math.Floor((double)levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
+                        var depx = (int)Math.Floor(levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
+                        var depy = (int)Math.Floor(levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
                         var c = level[depx][depy];
 
                         if (c == 1 || c == 2)
@@ -447,9 +454,9 @@ namespace CSharpCraft
             holex = levelsx / 2 + levelx;
             holey = levelsy / 2 + levely;
 
-            for (int i = -1; i < 1; i++)
+            for (int i = -1; i <= 1; i++)
             {
-                for (int j = -1; j < 1; j++)
+                for (int j = -1; j <= 1; j++)
                 {
                     pico8Functions.Mset(holex + i, holey + j, levelunder ? 1 : 3);
                 }
@@ -482,6 +489,8 @@ namespace CSharpCraft
             }
 
             KeyboardState state = Keyboard.GetState();
+
+            if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 64, 64, false);
 
             double dx = 0.0;
             double dy = 0.0;
@@ -552,7 +561,7 @@ namespace CSharpCraft
 
             //pico8Functions.spr(90, 1, 1);
 
-            pico8Functions.Rectfill(0, 0, 128, 128, 7);
+            //pico8Functions.Rectfill(0, 0, 128, 128, 7);
 
             /*
             pico8Functions.rectfill(0, 0, 128, 46, 12);
@@ -581,9 +590,9 @@ namespace CSharpCraft
             {
                 pico8Functions.Rectfill(31, 31, 64, 64, 8);
                 pico8Functions.Rectfill(32, 32, 63, 63, 7);
-                for (int i = 0; i < 31; i++)
+                for (int i = 0; i <= 31; i++)
                 {
-                    for (int j = 0; j < 31; j++)
+                    for (int j = 0; j <= 31; j++)
                     {
                         var c = pico8Functions.Mget(i + 64, j);
                         pico8Functions.Pset(i + 32, j + 32, c);
@@ -592,11 +601,11 @@ namespace CSharpCraft
             }
             else
             {
-                pico8Functions.Rectfill(31, 31, 96, 96, 8);
-                pico8Functions.Rectfill(32, 32, 95, 95, 7);
-                for (int i = 0; i < 63; i++)
+                pico8Functions.Rectfill(31, 31, 97, 97, 8);
+                pico8Functions.Rectfill(32, 32, 96, 96, 7);
+                for (int i = 0; i <= 63; i++)
                 {
-                    for (int j = 0; j < 63; j++)
+                    for (int j = 0; j <= 63; j++)
                     {
                         var c = pico8Functions.Mget(i, j);
                         pico8Functions.Pset(i + 32, j + 32, c);

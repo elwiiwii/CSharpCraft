@@ -175,7 +175,7 @@ namespace CSharpCraft
             }
         }
 
-        public static int MgetOld(double celx, double cely)
+        public int MgetOld(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
