@@ -7,6 +7,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Schema;
+using CSharpCraft;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,8 +15,24 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
-    public class Level
+    /*public class Material
     {
+        
+    }*/
+
+    public class Ground
+    {
+        public int Id { get; set; }
+        public int Gr { get; set; }
+        /*public Material? Mat { get; set; }*/
+        public Ground? Tile { get; set; }
+        public int? Life { get; set; }
+        public bool Istree { get; set; }
+        public int[]? Pal { get; set; }
+    }
+
+    public class Level
+    { 
         public double X { get; set; }
         public double Y { get; set; }
         public double Sx { get; set; }
@@ -23,6 +40,7 @@ namespace CSharpCraft
         public bool Isunder { get; set; }
         public double Stx { get; set; }
         public double Sty { get; set; }
+        public double[] Dat { get; set; }
     }
 
     class FNAGame : Game
@@ -46,7 +64,7 @@ namespace CSharpCraft
         private int frameCounter = 0;
         private TimeSpan elapsedTime = TimeSpan.Zero;
 
-        private double time;
+        public double time;
 
         public double plx;
         public double ply;
@@ -62,6 +80,7 @@ namespace CSharpCraft
         public double levelsy;
         public double levelx;
         public double levely;
+        public double[] data;
         public double holex;
         public double holey;
         public double clx;
@@ -74,7 +93,24 @@ namespace CSharpCraft
 
         private readonly Level currentLevel;
 
+        public int[][] Rndwat = new int[16][];
+
 #nullable disable
+
+        static readonly Ground grwater = new() { Id = 0, Gr = 0 };
+        static readonly Ground grsand = new() { Id = 1, Gr = 1 };
+        static readonly Ground grgrass = new() { Id = 2, Gr = 2 };
+        static readonly Ground grrock = new() { Id = 3, Gr = 3, /*Mat = stone,*/ Tile = grsand, Life = 15 };
+        static readonly Ground grtree = new() { Id = 4, Gr = 2, /*Mat = wood,*/ Tile = grgrass, Life = 8, Istree = true, Pal = [1, 5, 3, 11] };
+        static readonly Ground grfarm = new() { Id = 5, Gr = 1 };
+        static readonly Ground grwheat = new() { Id = 6, Gr = 1 };
+        static readonly Ground grplant = new() { Id = 7, Gr = 2 };
+        static readonly Ground griron = new() { Id = 8, Gr = 1, /*Mat = iron,*/ Tile = grsand, Life = 45, Istree = true, Pal = [1, 1, 13, 6] };
+        static readonly Ground grgold = new() { Id = 9, Gr = 1, /*Mat = gold,*/ Tile = grsand, Life = 80, Istree = true, Pal = [1, 2, 9, 10] };
+        static readonly Ground grgem = new() { Id = 10, Gr = 1, /*Mat = gem,*/ Tile = grsand, Life = 160, Istree = true, Pal = [1, 2, 14, 12] };
+        static readonly Ground grhole = new() { Id = 11, Gr = 1 };
+
+        readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
 
         private FNAGame()
         {
@@ -110,7 +146,8 @@ namespace CSharpCraft
             panim = 0.0;
             banim = 0.0;
 
-            Createlevel(0,0,64,64,false);
+            Createlevel(0, 0, 64, 64, false);
+            //Createlevel(0, 0, 32, 32, true);
         }
 
         public void Spr8(int spriteNumber, int x, int y)
@@ -136,6 +173,14 @@ namespace CSharpCraft
             }
         }
 
+        public void Setpal(int[] l)
+        {
+            for (int i = 1; i < l.Length; i++)
+            {
+                pico8Functions.Pal(i, l[i]);
+            }
+        }
+
         public Level Createlevel(double xx, double yy, double sizex, double sizey, bool isUnderground)
         {
             int xxFlr = (int)Math.Floor(xx);
@@ -149,7 +194,8 @@ namespace CSharpCraft
                 Y = yyFlr,
                 Sx = sizexFlr,
                 Sy = sizeyFlr,
-                Isunder = isUnderground
+                Isunder = isUnderground,
+                Dat = new double[1] //not sure what this number should be
             };
 
             Setlevel(l);
@@ -168,8 +214,29 @@ namespace CSharpCraft
             levelsx = l.Sx;
             levelsy = l.Sy;
             levelunder = l.Isunder;
+            data = l.Dat;
             plx = l.Stx;
             ply = l.Sty;
+        }
+
+        public Ground Getdirectgr(double i, double j)
+        {
+            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[1 - 1]; }
+            return grounds[pico8Functions.Mget(i + levelx, j) + 1 - 1];
+        }
+
+        public double Dirgetdata(double i, double j, double @default)
+        {
+            int iFlr = (int)Math.Floor(i);
+            int jFlr = (int)Math.Floor(j);
+            int levelsxFlr = (int)Math.Floor(levelsx);
+
+            int g = iFlr + jFlr * levelsxFlr;
+            if (data[g] == null)
+            {
+                data[g] = @default;
+            }
+            return data[g];
         }
 
         public double Lerp(double a, double b, double alpha)
@@ -413,8 +480,6 @@ namespace CSharpCraft
 
                     if (typecount[3] < 30) { needmap = true; }
                     if (typecount[4] < 30) { needmap = true; }
-
-                    //if (typecount[0] < 100) { needmap = true; }
                 }
 
                 if (!needmap)
@@ -471,6 +536,159 @@ namespace CSharpCraft
             cmy = ply;
         }
 
+        public bool Comp(double i, double j, Ground gr)
+        {
+            var gr2 = Getdirectgr(i, j);
+            return gr != null && gr2 != null && gr.Gr == gr2.Gr;
+        }
+
+        public int Watval(double i, double j)
+        {
+            return Rndwat[(int)Math.Floor(i * 2 % 16)][(int)Math.Floor(j * 2 % 16)];
+        }
+
+        public void Watanim(double i, double j)
+        {
+            var a = (time * 0.6 + (double)Watval(i, j) / 100) % 1 * 19;
+            if (a > 16) { pico8Functions.Spr(13 + a - 16, i * 16, j * 16); }
+        }
+
+        public double Rndcenter(double i, double j)
+        {
+            return (double)((int)Math.Floor((double)Watval(i, j) / 34) + 18) % 20;
+        }
+
+        public int Rndsand(double i, double j)
+        {
+            return (int)Math.Floor((double)Watval(i, j) / 34) + 1;
+        }
+
+        public int Rndtree(double i, double j)
+        {
+            return (int)Math.Floor((double)Watval(i, j) / 51) * 32;
+        }
+
+        public void Spr4(double i, double j, double gi, double gj, double a, double b, double c, double d, double off, Func<double,double,int> f)
+        {
+            pico8Functions.Spr(f(i, j + off) + a, gi, gj + 2 * off);
+            pico8Functions.Spr(f(i + 0.5, j + off) + b, gi + 8, gj + 2 * off);
+            pico8Functions.Spr(f(i, j + 0.5 + off) + c, gi, gj + 8 + 2 * off);
+            pico8Functions.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + 2 * off);
+        }
+
+        public void Drawback()
+        {
+            var ci = (int)Math.Floor((clx - 64) / 16);
+            var cj = (int)Math.Floor((cly - 64) / 16);
+
+            for (int i = ci; i <= ci + 8; i++)
+            {
+                for (var j = cj; j <= cj + 8; j++)
+                {
+                    var gr = Getdirectgr(i, j);
+
+                    var gi = (i - ci) * 2 + 64;
+                    var gj = (j - cj) * 2 + 32;
+
+                    if (gr != null && gr.Gr == 1)
+                    {
+                        var sv = 0;
+                        if (gr == grfarm || gr == grwheat) { sv = 3; }
+                        pico8Functions.Mset(gi, gj, Rndsand(i, j) + sv);
+                        pico8Functions.Mset(gi + 1, gj, Rndsand(i + 0.5, j) + sv);
+                        pico8Functions.Mset(gi, gj + 1, Rndsand(i, j + 0.5) + sv);
+                        pico8Functions.Mset(gi + 1, gj + 1, Rndsand(i + 0.5, j + 0.5) + sv);
+                    }
+                    else
+                    {
+                        var u = Comp(i, j - 1, gr);
+                        var d = Comp(i, j + 1, gr);
+                        var l = Comp(i - 1, j, gr);
+                        var r = Comp(i + 1, j, gr);
+
+                        var b = gr == grrock ? 21 : gr == grwater ? 26 : 16;
+
+                        pico8Functions.Mset(gi, gj, b + (l ? (u ? (Comp(i - 1, j - 1, gr) ? 17 + Rndcenter(i, j) : 20) : 1) : (u ? 16 : 0)));
+                        pico8Functions.Mset(gi + 1, gj, b + (r ? (u ? (Comp(i + 1, j - 1, gr) ? 17 + Rndcenter(i + 0.5, j) : 19) : 1) : (u ? 18 : 2)));
+                        pico8Functions.Mset(gi, gj + 1, b + (l ? (d ? (Comp(i - 1, j + 1, gr) ? 17 + Rndcenter(i, j + 0.5) : 4) : 33) : (d ? 16 : 32)));
+                        pico8Functions.Mset(gi + 1, gj + 1, b + (r ? (d ? (Comp(i + 1, j + 1, gr) ? 17 + Rndcenter(i + 0.5, j + 0.5) : 3) : 33) : (d ? 18 : 34)));
+
+                    }
+                }
+            }
+
+            pico8Functions.Pal();
+
+            if (levelunder)
+            {
+                pico8Functions.Pal(15, 5);
+                pico8Functions.Pal(4, 1);
+            }
+
+            pico8Functions.Map(64, 32, ci * 16, cj * 16, 18, 18);
+
+            for (int i = ci - 1; i <= ci + 8; i++)
+            {
+                for (int j = cj - 1; j <= cj + 8; j++)
+                {
+                    var gr = Getdirectgr(i, j);
+
+                    if (gr != null)
+                    {
+                        var gi = i * 16;
+                        var gj = j * 16;
+
+                        pico8Functions.Pal();
+
+                        if (gr == grwater)
+                        {
+                            Watanim(i, j);
+                            Watanim(i + 0.5, j);
+                            Watanim(i, j + 0.5);
+                            Watanim(i + 0.5, j + 0.5);
+                        }
+
+                        if (gr == grwheat)
+                        {
+                            var d = Dirgetdata(i, j, 0) - time;
+                            for (int pp = 2; pp <= 4; pp++)
+                            {
+                                pico8Functions.Pal(pp, 3);
+                                if (d > (10 - pp * 2)) { pico8Functions.Palt(pp, true); }
+                            }
+                            if (d < 0) { pico8Functions.Pal(4, 9); }
+                            Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, Rndsand);
+                        }
+
+                        if (gr.Istree)
+                        {
+                            Setpal(gr.Pal);
+
+                            Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
+                            
+                            if (pico8Functions.Mget(i + levelx, j + 1) == 80) // original code had c instead of 80 so i assumed that was referring to the c arg of Spr4
+                            {
+                                Spr4(i, j, gi, gj, 64, 65, 80, 81, 4, Rndtree);
+                            }
+                        }
+
+                        if (gr == grhole)
+                        {
+                            pico8Functions.Pal();
+                            if (!levelunder)
+                            {
+                                pico8Functions.Palt(0, false);
+                                pico8Functions.Spr(31, gi, gj, 1, 2);
+                                pico8Functions.Spr(31, gi + 8, gj, 1, 2, true);
+                            }
+                            pico8Functions.Palt();
+                            pico8Functions.Spr(77, gi + 4, gj, 1, 2);
+                        }
+                    }
+                }
+            }
+        }
+
         public void Printc(string t, int x, int y, int c)
         {
             pico8Functions.Print(t, x - (t.Length * 2), y, c);
@@ -491,6 +709,7 @@ namespace CSharpCraft
             KeyboardState state = Keyboard.GetState();
 
             if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 64, 64, false);
+            //if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 32, 32, true);
 
             double dx = 0.0;
             double dy = 0.0;
@@ -594,7 +813,7 @@ namespace CSharpCraft
                 {
                     for (int j = 0; j <= 31; j++)
                     {
-                        var c = pico8Functions.Mget(i + 64, j);
+                        var c = pico8Functions.Mget(i, j);
                         pico8Functions.Pset(i + 32, j + 32, c);
                     }
                 }
@@ -679,7 +898,6 @@ namespace CSharpCraft
         {
             UpdateViewport();
         }
-
 
     }
 }

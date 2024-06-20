@@ -175,6 +175,11 @@ namespace CSharpCraft
             }
         }
 
+        public void Map(double celx, double cely, double sx, double sy, double celw, double celh, double layer = 0)
+        {
+
+        }
+
         public int MgetOld(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
@@ -216,6 +221,16 @@ namespace CSharpCraft
             int sFlr = (int)Math.Floor(snum);
 
             Map1[xFlr + (yFlr * 64)] = sFlr;
+        }
+
+        public void Pal(double c0 = 0, double c1 = 0, double p = 0)
+        {
+
+        }
+
+        public void Palt(double col = 0, bool t = true)
+        {
+
         }
 
         public void Print(string str, int x, int y, int c)
@@ -291,19 +306,21 @@ namespace CSharpCraft
             batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[c], rectThickness);
         }
 
-        public void Spr(int spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
+        public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
         {
+            int spriteNumberFlr = (int)Math.Floor(spriteNumber);
+
             var spriteWidth = 8;
             var spriteHeight = 8;
 
-            if (!spriteTextures.TryGetValue(spriteNumber, out var texture))
+            if (!spriteTextures.TryGetValue(spriteNumberFlr, out var texture))
             {
                 texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteWidth, spriteHeight);
-                spriteTextures[spriteNumber] = texture;
+                spriteTextures[spriteNumberFlr] = texture;
             }
 
-            int spriteX = spriteNumber % 16 * spriteWidth;
-            int spriteY = spriteNumber / 16 * spriteHeight;
+            int spriteX = spriteNumberFlr % 16 * spriteWidth;
+            int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
             // Get the size of the viewport
             int viewportWidth = batch.GraphicsDevice.Viewport.Width;
