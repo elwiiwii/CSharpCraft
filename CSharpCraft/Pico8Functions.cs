@@ -65,7 +65,7 @@ namespace CSharpCraft
         ];
         private readonly Dictionary<Color, int> paletteSwap = new();
 
-        public Texture2D CreateTextureFromSpriteData(string spriteData, int spriteWidth, int spriteHeight)
+        private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteWidth, int spriteHeight)
         {
             spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
@@ -87,6 +87,11 @@ namespace CSharpCraft
             texture.SetData(colorData);
 
             return texture;
+        }
+
+        public void Camera(double x = 0, double y = 0)
+        {
+            
         }
 
         public void Circ(double x, double y, double r, int c)

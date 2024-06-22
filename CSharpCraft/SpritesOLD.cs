@@ -10,7 +10,7 @@ namespace CSharpCraft
 {
     public static class SpritesOLD
     {
-        private static readonly int[,] zero = new int[,]
+        public static readonly int[,] zero = new int[,]
         {
             { -1, -1, -1, -1, -1, -1, -1, -1 },
             { -1, -1, -1, -1, -1, -1, -1, -1 },
@@ -22,7 +22,7 @@ namespace CSharpCraft
             { -1, -1, -1, -1, -1, -1, -1, -1 }
         };
 
-        private static readonly int[,] one = new int[,]
+        public static readonly int[,] one = new int[,]
         {
             { -1, -1,  0,  0,  0,  0, -1, -1 },
             { -1,  0, 10, 10, 10, 10,  0, -1 },

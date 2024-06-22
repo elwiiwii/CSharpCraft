@@ -15,7 +15,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
-    /*public class Material
+    /*private class Material
     {
         
     }*/
@@ -32,7 +32,7 @@ namespace CSharpCraft
     }
 
     public class Level
-    { 
+    {
         public double X { get; set; }
         public double Y { get; set; }
         public double Sx { get; set; }
@@ -64,36 +64,36 @@ namespace CSharpCraft
         private int frameCounter = 0;
         private TimeSpan elapsedTime = TimeSpan.Zero;
 
-        public double time;
+        private double time;
 
-        public double plx;
-        public double ply;
-        public double prot;
-        public double lrot;
-        public double panim;
-        public double banim;
+        private double plx;
+        private double ply;
+        private double prot;
+        private double lrot;
+        private double panim;
+        private double banim;
 
-        public Level currentlevel;
+        private Level currentlevel;
 
-        public bool levelunder = false;
-        public double levelsx;
-        public double levelsy;
-        public double levelx;
-        public double levely;
-        public double[] data;
-        public double holex;
-        public double holey;
-        public double clx;
-        public double cly;
-        public double cmx;
-        public double cmy;
+        private bool levelunder = false;
+        private double levelsx;
+        private double levelsy;
+        private double levelx;
+        private double levely;
+        private double[] data;
+        private double holex;
+        private double holey;
+        private double clx;
+        private double cly;
+        private double cmx;
+        private double cmy;
 
-        public double[][] level;
+        private double[][] level;
         readonly int[] typecount = new int[11];
 
         private readonly Level currentLevel;
 
-        public int[][] Rndwat = new int[16][];
+        private int[][] Rndwat = new int[16][];
 
 #nullable disable
 
@@ -139,18 +139,10 @@ namespace CSharpCraft
 
             UpdateViewport();
 
-            //plx = 64.0;
-            //ply = 64.0;
-            prot = 0.0;
-            lrot = 0.0;
-            panim = 0.0;
-            banim = 0.0;
-
-            Createlevel(0, 0, 64, 64, false);
-            //Createlevel(0, 0, 32, 32, true);
+            Resetlevel();
         }
 
-        public void Spr8(int spriteNumber, int x, int y)
+        private void Spr8(int spriteNumber, int x, int y)
         {
             // Calculate the top left corner of the 4x4 block
             int startRow = spriteNumber / 16 * 8;
@@ -173,7 +165,7 @@ namespace CSharpCraft
             }
         }
 
-        public void Setpal(int[] l)
+        private void Setpal(int[] l)
         {
             for (int i = 1; i < l.Length; i++)
             {
@@ -181,7 +173,27 @@ namespace CSharpCraft
             }
         }
 
-        public Level Createlevel(double xx, double yy, double sizex, double sizey, bool isUnderground)
+        private double Lerp(double a, double b, double alpha)
+        {
+            return a * (1.0 - alpha) + b * alpha;
+        }
+
+        private double Getinvlen(double x, double y)
+        {
+            return 1 / Getlen(x, y);
+        }
+
+        private double Getlen(double x, double y)
+        {
+            return Math.Sqrt(x * x + y * y + 0.001);
+        }
+
+        private double Getrot(double dx, double dy)
+        {
+            return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
+        }
+
+        private Level Createlevel(double xx, double yy, double sizex, double sizey, bool isUnderground)
         {
             int xxFlr = (int)Math.Floor(xx);
             int yyFlr = (int)Math.Floor(yy);
@@ -206,7 +218,7 @@ namespace CSharpCraft
             return l;
         }
 
-        public void Setlevel(Level l)
+        private void Setlevel(Level l)
         {
             currentlevel = l;
             levelx = l.X;
@@ -219,13 +231,36 @@ namespace CSharpCraft
             ply = l.Sty;
         }
 
-        public Ground Getdirectgr(double i, double j)
+        private void Resetlevel()
+        {
+            for (int i = 0; i <= 15; i++)
+            {
+                Rndwat[i] = new int[16];
+                for (int j = 0; j <= 15; j++)
+                {
+                    Rndwat[i][j] = new Random().Next(100);
+                }
+            }
+
+            //plx = 64.0;
+            //ply = 64.0;
+            time = 0;
+            prot = 0.0;
+            lrot = 0.0;
+            panim = 0.0;
+            banim = 0.0;
+
+            Createlevel(0, 0, 64, 64, false);
+            //Createlevel(0, 0, 32, 32, true);
+        }
+
+        private Ground Getdirectgr(double i, double j)
         {
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[1 - 1]; }
             return grounds[pico8Functions.Mget(i + levelx, j) + 1 - 1];
         }
 
-        public double Dirgetdata(double i, double j, double @default)
+        private double Dirgetdata(double i, double j, double @default)
         {
             int iFlr = (int)Math.Floor(i);
             int jFlr = (int)Math.Floor(j);
@@ -239,27 +274,31 @@ namespace CSharpCraft
             return data[g];
         }
 
-        public double Lerp(double a, double b, double alpha)
+        private (double, double) Reflectcol(double dx, double dy, double dp)
         {
-            return a * (1.0 - alpha) + b * alpha;
+            dx = -dx * dp;
+            dy = -dy * dp;
+
+            return (dx, dy);
         }
 
-        public double Getlen(double x, double y)
+        private double Uprot(double grot, double rot)
         {
-            return Math.Sqrt(x * x + y * y + 0.001);
+            if (Math.Abs(rot - grot) > 0.5)
+            {
+                if (rot > grot)
+                {
+                    grot += 1;
+                }
+                else
+                {
+                    grot -= 1;
+                }
+            }
+            return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
         }
 
-        public double Getinvlen(double x, double y)
-        {
-            return 1 / Getlen(x, y);
-        }
-
-        public double Getrot(double dx, double dy)
-        {
-            return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
-        }
-        
-        public (int, int) Mirror(double rot)
+        private (int, int) Mirror(double rot)
         {
             if (rot < 0.125)
             {
@@ -283,31 +322,7 @@ namespace CSharpCraft
             }
         }
 
-        public (double, double) Reflectcol(double dx, double dy, double dp)
-        {
-            dx = -dx * dp;
-            dy = -dy * dp;
-
-            return (dx, dy);
-        }
-
-        public double Uprot(double grot, double rot)
-        {
-            if (Math.Abs(rot - grot) > 0.5)
-            {
-                if (rot > grot)
-                {
-                    grot += 1;
-                }
-                else
-                {
-                    grot -= 1;
-                }
-            }
-            return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
-        }
-
-        public void Dplayer(double x, double y, double rot, double anim, double subanim)
+        private void Dplayer(double x, double y, double rot, double anim, double subanim)
         {
             rot = -rot * 2 * Math.PI;
 
@@ -360,7 +375,7 @@ namespace CSharpCraft
 
         }
 
-        public double[][] Noise(double sx, double sy, double startscale, double scalemod, double featstep)
+        private double[][] Noise(double sx, double sy, double startscale, double scalemod, double featstep)
         {
             int sxFlr = (int)Math.Floor(sx);
             int syFlr = (int)Math.Floor(sy);
@@ -416,7 +431,7 @@ namespace CSharpCraft
             return n;
         }
 
-        public double[][] Createmapstep(double sx, double sy, double a, double b, double c, double d, double e)
+        private double[][] Createmapstep(double sx, double sy, double a, double b, double c, double d, double e)
         {
             int sxFlr = (int)Math.Floor(sx);
             int syFlr = (int)Math.Floor(sy);
@@ -458,7 +473,7 @@ namespace CSharpCraft
             return cur;
         }
 
-        public void Createmap()
+        private void Createmap()
         {
             var needmap = true;
 
@@ -536,39 +551,39 @@ namespace CSharpCraft
             cmy = ply;
         }
 
-        public bool Comp(double i, double j, Ground gr)
+        private bool Comp(double i, double j, Ground gr)
         {
             var gr2 = Getdirectgr(i, j);
             return gr != null && gr2 != null && gr.Gr == gr2.Gr;
         }
 
-        public int Watval(double i, double j)
+        private int Watval(double i, double j)
         {
             return Rndwat[(int)Math.Floor(i * 2 % 16)][(int)Math.Floor(j * 2 % 16)];
         }
 
-        public void Watanim(double i, double j)
+        private void Watanim(double i, double j)
         {
             var a = (time * 0.6 + (double)Watval(i, j) / 100) % 1 * 19;
             if (a > 16) { pico8Functions.Spr(13 + a - 16, i * 16, j * 16); }
         }
 
-        public double Rndcenter(double i, double j)
+        private double Rndcenter(double i, double j)
         {
             return (double)((int)Math.Floor((double)Watval(i, j) / 34) + 18) % 20;
         }
 
-        public int Rndsand(double i, double j)
+        private int Rndsand(double i, double j)
         {
             return (int)Math.Floor((double)Watval(i, j) / 34) + 1;
         }
 
-        public int Rndtree(double i, double j)
+        private int Rndtree(double i, double j)
         {
             return (int)Math.Floor((double)Watval(i, j) / 51) * 32;
         }
 
-        public void Spr4(double i, double j, double gi, double gj, double a, double b, double c, double d, double off, Func<double,double,int> f)
+        private void Spr4(double i, double j, double gi, double gj, double a, double b, double c, double d, double off, Func<double,double,int> f)
         {
             pico8Functions.Spr(f(i, j + off) + a, gi, gj + 2 * off);
             pico8Functions.Spr(f(i + 0.5, j + off) + b, gi + 8, gj + 2 * off);
@@ -576,7 +591,7 @@ namespace CSharpCraft
             pico8Functions.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + 2 * off);
         }
 
-        public void Drawback()
+        private void Drawback()
         {
             var ci = (int)Math.Floor((clx - 64) / 16);
             var cj = (int)Math.Floor((cly - 64) / 16);
@@ -689,7 +704,7 @@ namespace CSharpCraft
             }
         }
 
-        public void Printc(string t, int x, int y, int c)
+        private void Printc(string t, int x, int y, int c)
         {
             pico8Functions.Print(t, x - (t.Length * 2), y, c);
         }
@@ -708,7 +723,7 @@ namespace CSharpCraft
 
             KeyboardState state = Keyboard.GetState();
 
-            if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 64, 64, false);
+            if (state.IsKeyDown(Keys.Tab)) Resetlevel();
             //if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 32, 32, true);
 
             double dx = 0.0;
@@ -780,7 +795,7 @@ namespace CSharpCraft
 
             //pico8Functions.spr(90, 1, 1);
 
-            pico8Functions.Rectfill(0, 0, 128, 128, 7);
+            //pico8Functions.Rectfill(0, 0, 128, 128, 7);
 
             /*
             pico8Functions.rectfill(0, 0, 128, 46, 12);
@@ -805,6 +820,11 @@ namespace CSharpCraft
             dplayer(84, 84, 0.875, panim, banim);
             */
 
+            //pico8Functions.Camera(clx - 64, cly - 64);
+
+            //Drawback();
+
+            
             if (false)
             {
                 pico8Functions.Rectfill(31, 31, 65, 65, 8);
@@ -831,6 +851,7 @@ namespace CSharpCraft
                     }
                 }
             }
+            
 
             //pico8Functions.mset(1, 1, 8);
             //var ec = pico8Functions.mget(1, 1);
