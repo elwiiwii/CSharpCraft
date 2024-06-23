@@ -250,14 +250,16 @@ namespace CSharpCraft
             panim = 0.0;
             banim = 0.0;
 
-            Createlevel(0, 0, 64, 64, false);
-            //Createlevel(0, 0, 32, 32, true);
+            Createlevel(64, 0, 32, 32, true); // cave
+            Createlevel(0, 0, 64, 64, false); // island
+            
         }
 
         private Ground Getdirectgr(double i, double j)
         {
-            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[1 - 1]; }
-            return grounds[pico8Functions.Mget(i + levelx, j) + 1 - 1];
+            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
+            //Console.WriteLine(pico8Functions.Mget(i + levelx, j));
+            return grounds[pico8Functions.Mget(i + levelx, j)];
         }
 
         private double Dirgetdata(double i, double j, double @default)
@@ -590,7 +592,7 @@ namespace CSharpCraft
             pico8Functions.Spr(f(i, j + 0.5 + off) + c, gi, gj + 8 + 2 * off);
             pico8Functions.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + 2 * off);
         }
-
+        
         private void Drawback()
         {
             var ci = (int)Math.Floor((clx - 64) / 16);
@@ -681,7 +683,7 @@ namespace CSharpCraft
 
                             Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
                             
-                            if (pico8Functions.Mget(i + levelx, j + 1) == 80) // original code had c instead of 80 so i assumed that was referring to the c arg of Spr4
+                            if (pico8Functions.Mget(i + levelx, j + 1) == null) // original code had c instead of 80 so i assumed that was referring to the c arg of Spr4
                             {
                                 Spr4(i, j, gi, gj, 64, 65, 80, 81, 4, Rndtree);
                             }
@@ -820,38 +822,35 @@ namespace CSharpCraft
             dplayer(84, 84, 0.875, panim, banim);
             */
 
+            //pico8Functions.Spr(91, 1, 1);
+
             //pico8Functions.Camera(clx - 64, cly - 64);
 
-            //Drawback();
-
+            Drawback();
             
-            if (false)
+            /*
+            pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
+            pico8Functions.Rectfill(32 + 50, 32 + 16, 64 + 50, 64 + 16, 0);
+            for (int i = 0; i <= 31; i++)
             {
-                pico8Functions.Rectfill(31, 31, 65, 65, 8);
-                pico8Functions.Rectfill(32, 32, 64, 64, 7);
-                for (int i = 0; i <= 31; i++)
+                for (int j = 0; j <= 31; j++)
                 {
-                    for (int j = 0; j <= 31; j++)
-                    {
-                        var c = pico8Functions.Mget(i, j);
-                        pico8Functions.Pset(i + 32, j + 32, c);
-                    }
+                    var c = pico8Functions.Mget(i + 64, j);
+                    pico8Functions.Pset(i + 32 + 50, j + 32 + 16, c);
                 }
             }
-            else
+         
+            pico8Functions.Rectfill(31 - 20, 31, 97 - 20, 97, 8);
+            pico8Functions.Rectfill(32 - 20, 32, 96 - 20, 96, 0);
+            for (int i = 0; i <= 63; i++)
             {
-                pico8Functions.Rectfill(31, 31, 97, 97, 8);
-                pico8Functions.Rectfill(32, 32, 96, 96, 7);
-                for (int i = 0; i <= 63; i++)
+                for (int j = 0; j <= 63; j++)
                 {
-                    for (int j = 0; j <= 63; j++)
-                    {
-                        var c = pico8Functions.Mget(i, j);
-                        pico8Functions.Pset(i + 32, j + 32, c);
-                    }
+                    var c = pico8Functions.Mget(i, j);
+                    pico8Functions.Pset(i + 32 - 20, j + 32, c);
                 }
             }
-            
+            */
 
             //pico8Functions.mset(1, 1, 8);
             //var ec = pico8Functions.mget(1, 1);

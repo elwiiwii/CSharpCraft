@@ -14,7 +14,7 @@ namespace CSharpCraft
         private readonly GraphicsDevice graphicsDevice = graphicsDevice;
         private readonly Texture2D pixel = pixel;
         private readonly Dictionary<int, Texture2D> spriteTextures = new();
-        private int[] Map1 = new int[64 * 64];
+        private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
 
         private static Color HexToColor(string hex)
@@ -45,7 +45,8 @@ namespace CSharpCraft
                 HexToColor("83769C"), // 13 lavender
                 HexToColor("FF77A8"), // 14 pink
                 HexToColor("FFCCAA"), // 15 light-peach
-
+                
+                /*
                 HexToColor("291814"), // 16 brownish-black
                 HexToColor("111D35"), // 17 darker-blue
                 HexToColor("422136"), // 18 darker-purple
@@ -62,6 +63,7 @@ namespace CSharpCraft
                 HexToColor("754665"), // 29 mauve
                 HexToColor("FF6E59"), // 30 dark-peach
                 HexToColor("FF9D81"), // 31 peach
+                */
         ];
         private readonly Dictionary<Color, int> paletteSwap = new();
 
@@ -180,9 +182,22 @@ namespace CSharpCraft
             }
         }
 
-        public void Map(double celx, double cely, double sx, double sy, double celw, double celh, double layer = 0)
+        public void Map(double celx, double cely, double sx, double sy, double celw, double celh)
         {
+            int cxFlr = (int)Math.Floor(celx);
+            int cyFlr = (int)Math.Floor(cely);
+            int sxFlr = (int)Math.Floor(sx);
+            int syFlr = (int)Math.Floor(sy);
+            int cwFlr = (int)Math.Floor(celw);
+            int chFlr = (int)Math.Floor(celh);
 
+            for (int i = 0; i <= cwFlr; i++)
+            {
+                for (int j = 0; j <= chFlr; j++)
+                {
+                    Spr(Mget(i + cxFlr, j + cyFlr), i * 8, j * 8);
+                }
+            }
         }
 
         public int MgetOld(double celx, double cely)
@@ -214,7 +229,7 @@ namespace CSharpCraft
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
 
-            int mval = Map1[xFlr + (yFlr * 64)];
+            int mval = Map1[xFlr + (yFlr * 128)];
 
             return mval;
         }
@@ -225,7 +240,7 @@ namespace CSharpCraft
             int yFlr = (int)Math.Floor(cely);
             int sFlr = (int)Math.Floor(snum);
 
-            Map1[xFlr + (yFlr * 64)] = sFlr;
+            Map1[xFlr + (yFlr * 128)] = sFlr;
         }
 
         public void Pal(double c0 = 0, double c1 = 0, double p = 0)
@@ -289,7 +304,7 @@ namespace CSharpCraft
             // Calculate the position and size of the line
             Vector2 position = new(xFlr * cellWidth, yFlr * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
-
+            
             // Draw the line
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
