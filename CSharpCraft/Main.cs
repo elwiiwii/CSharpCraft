@@ -153,6 +153,8 @@ namespace CSharpCraft
 
             Array.Copy(pico8Functions.colors, pico8Functions.resetColors, pico8Functions.colors.Length);
 
+            pico8Functions.Palt();
+
             Resetlevel();
         }
 

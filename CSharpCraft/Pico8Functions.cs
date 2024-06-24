@@ -265,26 +265,25 @@ namespace CSharpCraft
 
         public void Palt()
         {
-            //colors[0].A = 0;
-            //for (int i = 1; i <= 15; i++)
-            //{
-            //    colors[i].A = 0;
-            //}
+            colors[0].A = 0;
+            for (int i = 1; i <= 15; i++)
+            {
+                colors[i].A = 255;
+            }
         }
 
-        public void Palt(double col = 0, bool t = true)
+        public void Palt(double col, bool t)
         {
-            //int colFlr = (int)Math.Floor(col);
-            //
-            //
-            //if (t)
-            //{
-            //    colors[colFlr].A = 255;
-            //}
-            //else
-            //{
-            //    colors[colFlr].A = 0;
-            //}
+            int colFlr = (int)Math.Floor(col);
+            
+            if (!t)
+            {
+                colors[colFlr].A = 255;
+            }
+            else
+            {
+                colors[colFlr].A = 0;
+            }
         }
 
         public void Print(string str, int x, int y, int c)
@@ -397,7 +396,7 @@ namespace CSharpCraft
                     Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
 
                     // If the color is transparent or black, don't draw anything
-                    if (color.A != 0 && color != colors[0])
+                    if (color.A != 0)
                     {
                         // Calculate the position and size
                         Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
