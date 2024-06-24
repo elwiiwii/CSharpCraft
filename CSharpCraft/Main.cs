@@ -99,6 +99,12 @@ namespace CSharpCraft
         private double coffx = 0.0;
         private double coffy = 0.0;
 
+        private bool switchlevel = false;
+        private bool canswitchlevel = false;
+
+        private Level cave;
+        private Level island;
+
 #nullable disable
 
         static readonly Ground grwater = new() { Id = 0, Gr = 0 };
@@ -114,7 +120,9 @@ namespace CSharpCraft
         static readonly Ground grgem = new() { Id = 10, Gr = 1, /*Mat = gem,*/ Tile = grsand, Life = 160, Istree = true, Pal = [1, 2, 14, 12] };
         static readonly Ground grhole = new() { Id = 11, Gr = 1 };
 
-        readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
+        private Ground lastground = grsand;
+
+        private readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
 
         private FNAGame()
         {
@@ -259,9 +267,9 @@ namespace CSharpCraft
             coffx = 0;
             coffy = 0;
 
-            Createlevel(64, 0, 32, 32, true); // cave
-            Createlevel(0, 0, 64, 64, false); // island
-            
+            cave = Createlevel(64, 0, 32, 32, true); // cave
+            island = Createlevel(0, 0, 64, 64, false); // island
+
         }
 
         private (int, int) Getmcoord(double x, double y)
@@ -782,8 +790,7 @@ namespace CSharpCraft
             if (state.IsKeyDown(Keys.Tab)) Resetlevel();
             //if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 32, 32, true);
 
-            double dx = 0.0;
-            double dy = 0.0;
+            if (state.IsKeyDown(Keys.Q)) switchlevel = true;
 
             //if (state.IsKeyDown(Keys.A)) dx -= 1.0;
             //if (state.IsKeyDown(Keys.D)) dx += 1.0;
@@ -794,6 +801,30 @@ namespace CSharpCraft
             if (state.IsKeyDown(Keys.D)) clx += 3.0;
             if (state.IsKeyDown(Keys.W)) cly -= 3.0;
             if (state.IsKeyDown(Keys.S)) cly += 3.0;
+
+            if (switchlevel)
+            {
+                if (currentlevel == cave) { Setlevel(island); }
+                else { Setlevel(cave); }
+                plx = currentlevel.Stx;
+                ply = currentlevel.Sty;
+                switchlevel = false;
+                canswitchlevel = false;
+            }
+
+            var playhit = Getgr(plx, ply);
+            lastground = playhit;
+            if (playhit == grhole)
+            {
+                switchlevel = switchlevel || canswitchlevel;
+            }
+            else
+            {
+                canswitchlevel = true;
+            }
+
+            double dx = 0.0;
+            double dy = 0.0;
 
             //double dl = Getinvlen(dx, dy);
             //
