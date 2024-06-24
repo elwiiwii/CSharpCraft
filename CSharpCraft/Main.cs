@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.SqlTypes;
+using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
@@ -95,6 +96,9 @@ namespace CSharpCraft
 
         private int[][] Rndwat = new int[16][];
 
+        private double coffx = 0.0;
+        private double coffy = 0.0;
+
 #nullable disable
 
         static readonly Ground grwater = new() { Id = 0, Gr = 0 };
@@ -139,6 +143,8 @@ namespace CSharpCraft
 
             UpdateViewport();
 
+            Array.Copy(pico8Functions.colors, pico8Functions.resetColors, pico8Functions.colors.Length);
+
             Resetlevel();
         }
 
@@ -167,9 +173,9 @@ namespace CSharpCraft
 
         private void Setpal(int[] l)
         {
-            for (int i = 1; i < l.Length; i++)
+            for (int i = 0; i < l.Length; i++)
             {
-                pico8Functions.Pal(i, l[i]);
+                pico8Functions.Pal(i + 1, l[i]);
             }
         }
 
@@ -242,17 +248,37 @@ namespace CSharpCraft
                 }
             }
 
-            //plx = 64.0;
-            //ply = 64.0;
+            plx = 64.0;
+            ply = 64.0;
             time = 0;
             prot = 0.0;
             lrot = 0.0;
             panim = 0.0;
             banim = 0.0;
 
+            coffx = 0;
+            coffy = 0;
+
             Createlevel(64, 0, 32, 32, true); // cave
             Createlevel(0, 0, 64, 64, false); // island
             
+        }
+
+        private (int, int) Getmcoord(double x, double y)
+        {
+            return ((int)Math.Floor(x / 16), (int)Math.Floor(y / 16));
+        }
+
+        private bool Isfree(double x, double y)
+        {
+            var gr = Getgr(x, y);
+            return !(gr.Istree || gr == grrock);
+        }
+
+        private Ground Getgr(double x, double y)
+        {
+            var (i, j) = Getmcoord(x, y);
+            return Getdirectgr(i, j);
         }
 
         private Ground Getdirectgr(double i, double j)
@@ -276,10 +302,38 @@ namespace CSharpCraft
             return data[g];
         }
 
-        private (double, double) Reflectcol(double dx, double dy, double dp)
+        private (double, double) Reflectcol(double x, double y, double dx, double dy, Func<double,double,bool> checkfun, double dp)
         {
-            dx = -dx * dp;
-            dy = -dy * dp;
+            var newx = x + dx;
+            var newy = y + dy;
+
+            var ccur = checkfun(x, y);
+            var ctotal = checkfun(newx, newy);
+            var chor = checkfun(newx, y);
+            var cver = checkfun(x, newy);
+
+            if (ccur)
+            {
+                if (chor || cver)
+                {
+                    if (!ctotal)
+                    {
+                        if (chor)
+                        {
+                            dy = -dy * dp;
+                        }
+                        else
+                        {
+                            dx = -dx * dp;
+                        }
+                    }
+                }
+                else
+                {
+                    dx = -dx * dp;
+                    dy = -dy * dp;
+                }
+            }
 
             return (dx, dy);
         }
@@ -652,8 +706,8 @@ namespace CSharpCraft
 
                     if (gr != null)
                     {
-                        var gi = i * 16;
-                        var gj = j * 16;
+                        var gi = (i - ci) * 16;
+                        var gj = (j - cj) * 16;
 
                         pico8Functions.Pal();
 
@@ -696,7 +750,7 @@ namespace CSharpCraft
                             {
                                 pico8Functions.Palt(0, false);
                                 pico8Functions.Spr(31, gi, gj, 1, 2);
-                                pico8Functions.Spr(31, gi + 8, gj, 1, 2, true);
+                                pico8Functions.Spr(31, gi + 15, gj, 1, 2, true); // changed 8 to 15
                             }
                             pico8Functions.Palt();
                             pico8Functions.Spr(77, gi + 4, gj, 1, 2);
@@ -731,42 +785,74 @@ namespace CSharpCraft
             double dx = 0.0;
             double dy = 0.0;
 
-            if (state.IsKeyDown(Keys.A)) dx -= 1.0;
-            if (state.IsKeyDown(Keys.D)) dx += 1.0;
-            if (state.IsKeyDown(Keys.W)) dy -= 1.0;
-            if (state.IsKeyDown(Keys.S)) dy += 1.0;
+            //if (state.IsKeyDown(Keys.A)) dx -= 1.0;
+            //if (state.IsKeyDown(Keys.D)) dx += 1.0;
+            //if (state.IsKeyDown(Keys.W)) dy -= 1.0;
+            //if (state.IsKeyDown(Keys.S)) dy += 1.0;
 
-            double dl = Getinvlen(dx, dy);
+            if (state.IsKeyDown(Keys.A)) clx -= 3.0;
+            if (state.IsKeyDown(Keys.D)) clx += 3.0;
+            if (state.IsKeyDown(Keys.W)) cly -= 3.0;
+            if (state.IsKeyDown(Keys.S)) cly += 3.0;
 
-            dx *= dl;
-            dy *= dl;
+            //double dl = Getinvlen(dx, dy);
+            //
+            //dx *= dl;
+            //dy *= dl;
+            //
+            //if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
+            //{
+            //    lrot = Getrot(dx, dy);
+            //    panim += 1.0 / 5.5;
+            //}
+            //else
+            //{
+            //    panim = 0;
+            //}
+            //
+            //var s = 2.0;
+            //
+            //dx *= s;
+            //dy *= s;
+            //
+            //(dx, dy) = Reflectcol(plx, ply, dx, dy, Isfree, 0);
+            //
+            //plx += dx;
+            //ply += dy;
+            //
+            //prot = Uprot(lrot, prot);
+            //
+            //var m = 16;
+            //var msp = 4;
+            //
+            //if (Math.Abs(cmx - plx) > m)
+            //{
+            //    coffx += dx * 0.4;
+            //}
+            //if (Math.Abs(cmy - ply) > m)
+            //{
+            //    coffy += dy * 0.4;
+            //}
+            //
+            //cmx = Math.Max(plx - m, cmx);
+            //cmx = Math.Min(plx + m, cmx);
+            //cmy = Math.Max(ply - m, cmy);
+            //cmy = Math.Min(ply + m, cmy);
+            //
+            //coffx *= 0.9;
+            //coffy *= 0.9;
+            //coffx = Math.Min(msp, Math.Max(-msp, coffx));
+            //coffy = Math.Min(msp, Math.Max(-msp, coffy));
+            //
+            //clx += coffx;
+            //cly += coffy;
+            //
+            //clx = Math.Max(cmx - m, clx);
+            //clx = Math.Min(cmx + m, clx);
+            //cly = Math.Max(cmy - m, cly);
+            //cly = Math.Min(cmy + m, cly);
 
-            if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
-            {
-                lrot = Getrot(dx, dy);
-                panim += 1.0 / 5.5;
-            }
-            else
-            {
-                panim = 0;
-            }
-
-            var s = 1.0;
-
-            dx *= s;
-            dy *= s;
-
-            //dx = reflectcol(dx, dy, -1).Item1;
-            //dy = reflectcol(dx, dy, -1).Item2;
-
-            (dx, dy) = Reflectcol(dx, dy, 0);
-
-            plx += dx;
-            ply += dy;
-
-            prot = Uprot(lrot, prot);
-
-            time += 0.1;
+            time += 1/30;
 
             base.Update(gameTime);
         }
@@ -826,8 +912,14 @@ namespace CSharpCraft
 
             //pico8Functions.Camera(clx - 64, cly - 64);
 
+            //pico8Functions.Camera(clx - 64, cly - 64);
+
             Drawback();
-            
+
+            Dplayer(plx, ply, prot, panim, banim);
+
+            //pico8Functions.Camera();
+
             /*
             pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
             pico8Functions.Rectfill(32 + 50, 32 + 16, 64 + 50, 64 + 16, 0);

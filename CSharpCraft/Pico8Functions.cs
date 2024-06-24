@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
@@ -16,6 +18,7 @@ namespace CSharpCraft
         private readonly Dictionary<int, Texture2D> spriteTextures = new();
         private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
+        private (int, int) CameraOffset = (0, 0);
 
         private static Color HexToColor(string hex)
         {
@@ -27,7 +30,7 @@ namespace CSharpCraft
         }
 
         // pico-8 colors
-        private readonly Color[] colors =
+        public Color[] colors =
         [
                 HexToColor("000000"), // 00 black
                 HexToColor("1D2B53"), // 01 dark-blue
@@ -65,7 +68,8 @@ namespace CSharpCraft
                 HexToColor("FF9D81"), // 31 peach
                 */
         ];
-        private readonly Dictionary<Color, int> paletteSwap = new();
+        public readonly Dictionary<Color, int> paletteSwap = new();
+        public Color[] resetColors = new Color[16];
 
         private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteWidth, int spriteHeight)
         {
@@ -93,7 +97,10 @@ namespace CSharpCraft
 
         public void Camera(double x = 0, double y = 0)
         {
-            
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
+
+            CameraOffset = (xFlr, yFlr);
         }
 
         public void Circ(double x, double y, double r, int c)
@@ -133,7 +140,7 @@ namespace CSharpCraft
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
                         // Calculate the position and size of the line
-                        Vector2 position = new(i * cellWidth, j * cellHeight);
+                        Vector2 position = new(i * cellWidth + CameraOffset.Item1, j * cellHeight + CameraOffset.Item2);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
@@ -172,7 +179,7 @@ namespace CSharpCraft
                     if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                     {
                         // Calculate the position and size
-                        Vector2 position = new(i * cellWidth, j * cellHeight);
+                        Vector2 position = new(i * cellWidth + CameraOffset.Item1, j * cellHeight + CameraOffset.Item2);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
@@ -243,14 +250,41 @@ namespace CSharpCraft
             Map1[xFlr + (yFlr * 128)] = sFlr;
         }
 
-        public void Pal(double c0 = 0, double c1 = 0, double p = 0)
+        public void Pal()
         {
+            Array.Copy(resetColors, colors, colors.Length);
+        }
 
+        public void Pal(double c0 = 0, double c1 = 0)
+        {
+            int c0Flr = (int)Math.Floor(c0);
+            int c1Flr = (int)Math.Floor(c1);
+
+            colors[c0Flr] = resetColors[c1Flr];
+        }
+
+        public void Palt()
+        {
+            //colors[0].A = 0;
+            //for (int i = 1; i <= 15; i++)
+            //{
+            //    colors[i].A = 0;
+            //}
         }
 
         public void Palt(double col = 0, bool t = true)
         {
-
+            //int colFlr = (int)Math.Floor(col);
+            //
+            //
+            //if (t)
+            //{
+            //    colors[colFlr].A = 255;
+            //}
+            //else
+            //{
+            //    colors[colFlr].A = 0;
+            //}
         }
 
         public void Print(string str, int x, int y, int c)
@@ -276,9 +310,9 @@ namespace CSharpCraft
                     {
                         if (Font.chars[letter][i, j] == 1)
                         {
-                            var charStartX = (s * charWidth + x + j) * cellWidth;
-                            var charEndX = charStartX + cellWidth;
-                            var charStartY = (int)((y + i + 0.5) * cellHeight);
+                            var charStartX = (s * charWidth + x + j) * cellWidth + CameraOffset.Item1;
+                            var charEndX = charStartX + cellWidth + CameraOffset.Item1;
+                            var charStartY = (int)((y + i + 0.5) * cellHeight + CameraOffset.Item2);
                             batch.DrawLine(pixel, new Vector2(charStartX, charStartY), new Vector2(charEndX, charStartY), colors[c], cellHeight);
                         }
                     }
@@ -302,7 +336,7 @@ namespace CSharpCraft
             int cellHeight = viewportHeight / 128;
 
             // Calculate the position and size of the line
-            Vector2 position = new(xFlr * cellWidth, yFlr * cellHeight);
+            Vector2 position = new(xFlr * cellWidth + CameraOffset.Item1, yFlr * cellHeight + CameraOffset.Item2);
             Vector2 size = new(cellWidth, cellHeight);
             
             // Draw the line
@@ -319,9 +353,9 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            var rectStartX = x1 * cellWidth;
-            var rectEndX = x2 * cellWidth;
-            var rectStartY = (y1 + ((y2 - y1) / 2)) * cellHeight;
+            var rectStartX = x1 * cellWidth + CameraOffset.Item1;
+            var rectEndX = x2 * cellWidth + CameraOffset.Item1;
+            var rectStartY = (y1 + ((y2 - y1) / 2)) * cellHeight + CameraOffset.Item2;
             var rectThickness = (y2 - y1) * cellHeight;
             batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[c], rectThickness);
         }
@@ -363,10 +397,10 @@ namespace CSharpCraft
                     Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
 
                     // If the color is transparent or black, don't draw anything
-                    if (color.A != 0 && color != colors[0]) // Add this condition
+                    if (color.A != 0 && color != colors[0])
                     {
                         // Calculate the position and size
-                        Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth, ((int)y + (flip_y ? -i : i)) * cellHeight);
+                        Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the pixel
