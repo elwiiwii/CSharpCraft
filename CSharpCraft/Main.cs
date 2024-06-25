@@ -227,6 +227,7 @@ namespace CSharpCraft
             };
 
             Setlevel(l);
+            levelunder = isUnderground;
             Createmap();
             l.Stx = (holex - levelx) * 16 + 8;
             l.Sty = (holey - levely) * 16 + 8;
@@ -719,7 +720,7 @@ namespace CSharpCraft
                         var gi = (i - ci) * 16;
                         var gj = (j - cj) * 16;
 
-                        pico8Functions.Pal();
+                        //pico8Functions.Pal();
 
                         if (gr == grwater)
                         {

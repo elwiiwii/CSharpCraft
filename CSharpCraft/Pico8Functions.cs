@@ -68,7 +68,7 @@ namespace CSharpCraft
                 HexToColor("FF9D81"), // 31 peach
                 */
         ];
-        public readonly Dictionary<Color, int> paletteSwap = new();
+        public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
 
         private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteWidth, int spriteHeight)
@@ -396,7 +396,7 @@ namespace CSharpCraft
                     Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
 
                     // If the color is transparent or black, don't draw anything
-                    if (color.A != 0)
+                    if (color.A != 0 && color != colors[0])
                     {
                         // Calculate the position and size
                         Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
