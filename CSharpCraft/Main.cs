@@ -720,7 +720,7 @@ namespace CSharpCraft
                         var gi = (i - ci) * 16;
                         var gj = (j - cj) * 16;
 
-                        //pico8Functions.Pal();
+                        pico8Functions.Pal();
 
                         if (gr == grwater)
                         {
@@ -745,6 +745,7 @@ namespace CSharpCraft
                         if (gr.Istree)
                         {
                             Setpal(gr.Pal);
+                            //pico8Functions.Palt();
 
                             Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
                             
@@ -763,7 +764,7 @@ namespace CSharpCraft
                                 pico8Functions.Spr(31, gi, gj, 1, 2);
                                 pico8Functions.Spr(31, gi + 15, gj, 1, 2, true); // changed 8 to 15
                             }
-                            pico8Functions.Palt();
+                            //pico8Functions.Palt();
                             pico8Functions.Spr(77, gi + 4, gj, 1, 2);
                         }
                     }

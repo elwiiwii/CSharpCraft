@@ -395,8 +395,8 @@ namespace CSharpCraft
                     // Get the color of the pixel
                     Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
 
-                    // If the color is transparent or black, don't draw anything
-                    if (color.A != 0 && color != colors[0])
+                    // If the color is transparent don't draw anything
+                    if (color.A != 0)
                     {
                         // Calculate the position and size
                         Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
