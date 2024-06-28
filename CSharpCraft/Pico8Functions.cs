@@ -71,27 +71,24 @@ namespace CSharpCraft
         public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
 
-        private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY)
+        private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
             spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
-            int width = 8;
-            int height = 8;
+            Texture2D texture = new(graphicsDevice, spriteWidth, spriteHeight);
 
-            Texture2D texture = new(graphicsDevice, width, height);
-
-            Color[] colorData = new Color[width * height];
+            Color[] colorData = new Color[spriteWidth * spriteHeight];
 
             int j = 0;
 
-            for (int i = spriteX + (spriteY * 128); j <= 63; i++)
+            for (int i = spriteX + (spriteY * 128); j < (spriteWidth * spriteHeight); i++)
             {
                 char c = spriteData[i];
                 int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
                 Color color = colors[colorIndex]; // Convert the PICO-8 color index to a Color
                 colorData[j] = color;
 
-                if (i % 8 == 7) { i += 120; }
+                if (i % 8 == 7) { i += 128 - spriteWidth; }
                 j++;
             }
 
@@ -369,6 +366,8 @@ namespace CSharpCraft
             int spriteNumberFlr = (int)Math.Floor(spriteNumber);
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
+            int wFlr = (int)Math.Floor(w);
+            int hFlr = (int)Math.Floor(h);
 
             var spriteWidth = 8;
             var spriteHeight = 8;
@@ -376,11 +375,17 @@ namespace CSharpCraft
             int spriteX = spriteNumberFlr % 16 * spriteWidth;
             int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
-            //if (!spriteTextures.TryGetValue(spriteNumberFlr, out var texture))
-            //{
-            var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteX, spriteY);
-            spriteTextures[spriteNumberFlr] = texture;
-            //}
+            if (!spriteTextures.TryGetValue(spriteNumberFlr, out var texture))
+            {
+                texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                spriteTextures[spriteNumberFlr + 
+                    ((colors[4] == resetColors[6]) ? 200 :
+                    (colors[4] == resetColors[10]) ? 400 :
+                    (colors[4] == resetColors[11]) ? 600 :
+                    (colors[4] == resetColors[12]) ? 800 :
+                    (colors[15] == resetColors[5]) ? 1000 : 0)
+                    ] = texture;
+            }
 
             // Get the size of the viewport
             int viewportWidth = batch.GraphicsDevice.Viewport.Width;
@@ -390,10 +395,11 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(xFlr + CameraOffset.Item1, yFlr + CameraOffset.Item2);
+            Vector2 position = new((flip_x ? xFlr + (2 * spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) * cellWidth + CameraOffset.Item1, (flip_y ? yFlr + (spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) * cellHeight + CameraOffset.Item2);
             Vector2 size = new(cellWidth, cellHeight);
+            SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
-            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
 
             //    int spriteX = spriteNumberFlr % 16 * spriteWidth;
             //    int spriteY = spriteNumberFlr / 16 * spriteHeight;

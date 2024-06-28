@@ -747,11 +747,6 @@ namespace CSharpCraft
                             pico8Functions.Palt();
 
                             Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
-                            
-                            if (pico8Functions.Mget(i + levelx, j + 1) == null) // original code had c instead of 80 so i assumed that was referring to the c arg of Spr4
-                            {
-                                Spr4(i, j, gi, gj, 64, 65, 80, 81, 4, Rndtree);
-                            }
                         }
 
                         if (gr == grhole)
@@ -761,7 +756,7 @@ namespace CSharpCraft
                             {
                                 pico8Functions.Palt(0, false);
                                 pico8Functions.Spr(31, gi, gj, 1, 2);
-                                pico8Functions.Spr(31, gi + 15, gj, 1, 2, true); // changed 8 to 15
+                                pico8Functions.Spr(31, gi + 8, gj, 1, 2, true);
                             }
                             pico8Functions.Palt();
                             pico8Functions.Spr(77, gi + 4, gj, 1, 2);
@@ -944,15 +939,11 @@ namespace CSharpCraft
 
             //pico8Functions.Spr(91, 1, 1);
 
-            //pico8Functions.Camera(clx - 64, cly - 64);
-
-            //pico8Functions.Camera(clx - 64, cly - 64);
+            pico8Functions.Camera(-64, -64);
 
             Drawback();
 
             //Dplayer(plx, ply, prot, panim, banim);
-
-            //pico8Functions.Camera();
 
             /*
             pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
