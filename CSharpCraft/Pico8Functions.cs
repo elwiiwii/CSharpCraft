@@ -390,14 +390,12 @@ namespace CSharpCraft
                     {
                         if (colors[i] == resetColors[j])
                         {
-                            colorCache = (i + j) * 1000;
-                            goto Continue;
+                            colorCache += (i + j) * 1000;
+                            break;
                         }
                     }
                 }
             }
-
-            Continue:
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
@@ -413,7 +411,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? xFlr + (2 * spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) + CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) + CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? xFlr + (spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) + CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) + CameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 

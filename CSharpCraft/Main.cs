@@ -249,6 +249,18 @@ namespace CSharpCraft
 
         private void Resetlevel()
         {
+            prot = 0.0;
+            lrot = 0.0;
+
+            panim = 0.0;
+
+            banim = 0.0;
+
+            coffx = 0;
+            coffy = 0;
+
+            time = 0;
+
             for (int i = 0; i <= 15; i++)
             {
                 Rndwat[i] = new int[16];
@@ -257,17 +269,6 @@ namespace CSharpCraft
                     Rndwat[i][j] = new Random().Next(100);
                 }
             }
-
-            plx = 64.0;
-            ply = 64.0;
-            time = 0;
-            prot = 0.0;
-            lrot = 0.0;
-            panim = 0.0;
-            banim = 0.0;
-
-            coffx = 0;
-            coffy = 0;
 
             cave = Createlevel(64, 0, 32, 32, true); // cave
             island = Createlevel(0, 0, 64, 64, false); // island
@@ -305,10 +306,10 @@ namespace CSharpCraft
             int levelsxFlr = (int)Math.Floor(levelsx);
 
             int g = iFlr + jFlr * levelsxFlr;
-            if (data[g] == null)
-            {
-                data[g] = @default;
-            }
+            //if (data[g] == null)
+            //{
+            //    data[g] = @default;
+            //}
             return data[g];
         }
 
@@ -402,6 +403,8 @@ namespace CSharpCraft
 
             var lan = Math.Sin(anim * 2) * 1.5;
 
+            pico8Functions.Pal(); // not in the original code
+
             pico8Functions.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
             pico8Functions.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
 
@@ -422,7 +425,7 @@ namespace CSharpCraft
 
             var weap = 75;
 
-            //pico8Functions.spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
+            pico8Functions.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
 
             pico8Functions.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
             pico8Functions.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
@@ -432,7 +435,7 @@ namespace CSharpCraft
 
             (int mx2, int my2) = Mirror((rot + 0.75) % 1);
 
-            //pico8Functions.spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
+            pico8Functions.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
 
             pico8Functions.Circfill(x + cr + 0.001, y + sr - 2 + 0.001, 4, 2);
             pico8Functions.Circfill(x + cr + 0.001, y + sr + 0.001, 4, 2);
@@ -674,7 +677,7 @@ namespace CSharpCraft
                     if (gr != null && gr.Gr == 1)
                     {
                         var sv = 0;
-                        if (gr == grfarm || gr == grwheat) { sv = 3; }
+                        if (gr == grfarm || gr == grwheat) { sv = 3; } // sand
                         pico8Functions.Mset(gi, gj, Rndsand(i, j) + sv);
                         pico8Functions.Mset(gi + 1, gj, Rndsand(i + 0.5, j) + sv);
                         pico8Functions.Mset(gi, gj + 1, Rndsand(i, j + 0.5) + sv);
@@ -755,7 +758,7 @@ namespace CSharpCraft
                             {
                                 pico8Functions.Palt(0, false);
                                 pico8Functions.Spr(31, gi, gj, 1, 2);
-                                pico8Functions.Spr(31, gi + 8, gj, 1, 2, true);
+                                pico8Functions.Spr(31, gi + 16, gj, 1, 2, true); // changed +8 to +16 because of a temporary spr change
                             }
                             pico8Functions.Palt();
                             pico8Functions.Spr(77, gi + 4, gj, 1, 2);
@@ -789,15 +792,18 @@ namespace CSharpCraft
 
             if (state.IsKeyDown(Keys.Q)) switchlevel = true;
 
-            //if (state.IsKeyDown(Keys.A)) dx -= 1.0;
-            //if (state.IsKeyDown(Keys.D)) dx += 1.0;
-            //if (state.IsKeyDown(Keys.W)) dy -= 1.0;
-            //if (state.IsKeyDown(Keys.S)) dy += 1.0;
+            double dx = 0.0;
+            double dy = 0.0;
 
-            if (state.IsKeyDown(Keys.A)) clx -= 3.0;
-            if (state.IsKeyDown(Keys.D)) clx += 3.0;
-            if (state.IsKeyDown(Keys.W)) cly -= 3.0;
-            if (state.IsKeyDown(Keys.S)) cly += 3.0;
+            if (state.IsKeyDown(Keys.A)) dx -= 1.0;
+            if (state.IsKeyDown(Keys.D)) dx += 1.0;
+            if (state.IsKeyDown(Keys.W)) dy -= 1.0;
+            if (state.IsKeyDown(Keys.S)) dy += 1.0;
+
+            //if (state.IsKeyDown(Keys.A)) clx -= 3.0;
+            //if (state.IsKeyDown(Keys.D)) clx += 3.0;
+            //if (state.IsKeyDown(Keys.W)) cly -= 3.0;
+            //if (state.IsKeyDown(Keys.S)) cly += 3.0;
 
             if (switchlevel)
             {
@@ -820,65 +826,62 @@ namespace CSharpCraft
                 canswitchlevel = true;
             }
 
-            double dx = 0.0;
-            double dy = 0.0;
-
-            //double dl = Getinvlen(dx, dy);
-            //
-            //dx *= dl;
-            //dy *= dl;
-            //
-            //if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
-            //{
-            //    lrot = Getrot(dx, dy);
-            //    panim += 1.0 / 5.5;
-            //}
-            //else
-            //{
-            //    panim = 0;
-            //}
-            //
-            //var s = 2.0;
-            //
-            //dx *= s;
-            //dy *= s;
-            //
-            //(dx, dy) = Reflectcol(plx, ply, dx, dy, Isfree, 0);
-            //
-            //plx += dx;
-            //ply += dy;
-            //
-            //prot = Uprot(lrot, prot);
-            //
-            //var m = 16;
-            //var msp = 4;
-            //
-            //if (Math.Abs(cmx - plx) > m)
-            //{
-            //    coffx += dx * 0.4;
-            //}
-            //if (Math.Abs(cmy - ply) > m)
-            //{
-            //    coffy += dy * 0.4;
-            //}
-            //
-            //cmx = Math.Max(plx - m, cmx);
-            //cmx = Math.Min(plx + m, cmx);
-            //cmy = Math.Max(ply - m, cmy);
-            //cmy = Math.Min(ply + m, cmy);
-            //
-            //coffx *= 0.9;
-            //coffy *= 0.9;
-            //coffx = Math.Min(msp, Math.Max(-msp, coffx));
-            //coffy = Math.Min(msp, Math.Max(-msp, coffy));
-            //
-            //clx += coffx;
-            //cly += coffy;
-            //
-            //clx = Math.Max(cmx - m, clx);
-            //clx = Math.Min(cmx + m, clx);
-            //cly = Math.Max(cmy - m, cly);
-            //cly = Math.Min(cmy + m, cly);
+            double dl = Getinvlen(dx, dy);
+            
+            dx *= dl;
+            dy *= dl;
+            
+            if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
+            {
+                lrot = Getrot(dx, dy);
+                panim += 1.0 / 5.5;
+            }
+            else
+            {
+                panim = 0;
+            }
+            
+            var s = 2.0;
+            
+            dx *= s;
+            dy *= s;
+            
+            (dx, dy) = Reflectcol(plx, ply, dx, dy, Isfree, 0);
+            
+            plx += dx;
+            ply += dy;
+            
+            prot = Uprot(lrot, prot);
+            
+            var m = 16;
+            var msp = 4;
+            
+            if (Math.Abs(cmx - plx) > m)
+            {
+                coffx += dx * 0.4;
+            }
+            if (Math.Abs(cmy - ply) > m)
+            {
+                coffy += dy * 0.4;
+            }
+            
+            cmx = Math.Max(plx - m, cmx);
+            cmx = Math.Min(plx + m, cmx);
+            cmy = Math.Max(ply - m, cmy);
+            cmy = Math.Min(ply + m, cmy);
+            
+            coffx *= 0.9;
+            coffy *= 0.9;
+            coffx = Math.Min(msp, Math.Max(-msp, coffx));
+            coffy = Math.Min(msp, Math.Max(-msp, coffy));
+            
+            clx += coffx;
+            cly += coffy;
+            
+            clx = Math.Max(cmx - m, clx);
+            clx = Math.Min(cmx + m, clx);
+            cly = Math.Max(cmy - m, cly);
+            cly = Math.Min(cmy + m, cly);
 
             time += 1/30;
 
@@ -942,7 +945,9 @@ namespace CSharpCraft
 
             Drawback();
 
-            //Dplayer(plx, ply, prot, panim, banim);
+            Dplayer(80, 80, prot, panim, banim);
+
+            //pico8Functions.Camera();
 
             /*
             pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
