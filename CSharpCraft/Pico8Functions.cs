@@ -82,15 +82,16 @@ namespace CSharpCraft
 
             Color[] colorData = new Color[width * height];
 
-            for (int i = spriteX + (spriteY * 128); i <= spriteX + width + ((spriteY + height) * 128); i++)
+            int j = 0;
+
+            for (int i = spriteX + (spriteY * 128); j <= 63; i++)
             {
-                int j = 0;
                 char c = spriteData[i];
                 int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
                 Color color = colors[colorIndex]; // Convert the PICO-8 color index to a Color
                 colorData[j] = color;
 
-                if (i % 8 == 7) { i += 128; }
+                if (i % 8 == 7) { i += 120; }
                 j++;
             }
 
@@ -378,7 +379,7 @@ namespace CSharpCraft
             //if (!spriteTextures.TryGetValue(spriteNumberFlr, out var texture))
             //{
             var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteX, spriteY);
-                spriteTextures[spriteNumberFlr] = texture;
+            spriteTextures[spriteNumberFlr] = texture;
             //}
 
             // Get the size of the viewport
@@ -389,7 +390,10 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            batch.Draw(texture, new Vector2((float)x, (float)y), null, Color.White, 0, Vector2.Zero, new Vector2(cellWidth,cellHeight), SpriteEffects.None, 0);
+            Vector2 position = new(xFlr + CameraOffset.Item1, yFlr + CameraOffset.Item2);
+            Vector2 size = new(cellWidth, cellHeight);
+
+            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             //    int spriteX = spriteNumberFlr % 16 * spriteWidth;
             //    int spriteY = spriteNumberFlr / 16 * spriteHeight;

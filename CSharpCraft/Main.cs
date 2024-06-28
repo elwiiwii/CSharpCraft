@@ -950,7 +950,7 @@ namespace CSharpCraft
 
             Drawback();
 
-            Dplayer(plx, ply, prot, panim, banim);
+            //Dplayer(plx, ply, prot, panim, banim);
 
             //pico8Functions.Camera();
 
