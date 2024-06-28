@@ -744,7 +744,6 @@ namespace CSharpCraft
                         if (gr.Istree)
                         {
                             Setpal(gr.Pal);
-                            pico8Functions.Palt();
 
                             Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
                         }

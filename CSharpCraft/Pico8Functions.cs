@@ -269,9 +269,11 @@ namespace CSharpCraft
         public void Palt()
         {
             colors[0].A = 0;
+            resetColors[0].A = 0;
             for (int i = 1; i <= 15; i++)
             {
                 colors[i].A = 255;
+                resetColors[i].A = 255;
             }
         }
 
@@ -282,10 +284,12 @@ namespace CSharpCraft
             if (!t)
             {
                 colors[colFlr].A = 255;
+                resetColors[colFlr].A = 255;
             }
             else
             {
                 colors[colFlr].A = 0;
+                resetColors[colFlr].A = 0;
             }
         }
 
