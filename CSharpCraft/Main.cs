@@ -135,13 +135,12 @@ namespace CSharpCraft
             // All graphics loaded will be in a "Graphics" folder
             Content.RootDirectory = "Graphics";
 
-            // Set fixed time step to true
+            graphics.PreferredBackBufferWidth = 512;
+            graphics.PreferredBackBufferHeight = 512;
+            graphics.IsFullScreen = false;
+
             this.IsFixedTimeStep = true;
-
-            // Set the target elapsed time to 1/30th of a second (30 frames per second)
             this.TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 30.0);
-
-            // Decouple the frame rate from the monitor's refresh rate
             graphics.SynchronizeWithVerticalRetrace = true;
         }
 
@@ -745,7 +744,7 @@ namespace CSharpCraft
                         if (gr.Istree)
                         {
                             Setpal(gr.Pal);
-                            //pico8Functions.Palt();
+                            pico8Functions.Palt();
 
                             Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
                             
@@ -764,7 +763,7 @@ namespace CSharpCraft
                                 pico8Functions.Spr(31, gi, gj, 1, 2);
                                 pico8Functions.Spr(31, gi + 15, gj, 1, 2, true); // changed 8 to 15
                             }
-                            //pico8Functions.Palt();
+                            pico8Functions.Palt();
                             pico8Functions.Spr(77, gi + 4, gj, 1, 2);
                         }
                     }

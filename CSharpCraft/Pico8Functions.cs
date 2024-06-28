@@ -71,23 +71,27 @@ namespace CSharpCraft
         public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
 
-        private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteWidth, int spriteHeight)
+        private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY)
         {
             spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
-            int width = spriteWidth * 16; // 16 sprites per row
-            int height = spriteData.Length / width;
+            int width = 8;
+            int height = 8;
 
             Texture2D texture = new(graphicsDevice, width, height);
 
             Color[] colorData = new Color[width * height];
 
-            for (int i = 0; i < spriteData.Length; i++)
+            for (int i = spriteX + (spriteY * 128); i <= spriteX + width + ((spriteY + height) * 128); i++)
             {
+                int j = 0;
                 char c = spriteData[i];
                 int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
                 Color color = colors[colorIndex]; // Convert the PICO-8 color index to a Color
-                colorData[i] = color;
+                colorData[j] = color;
+
+                if (i % 8 == 7) { i += 128; }
+                j++;
             }
 
             texture.SetData(colorData);
@@ -362,51 +366,66 @@ namespace CSharpCraft
         public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
         {
             int spriteNumberFlr = (int)Math.Floor(spriteNumber);
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
 
             var spriteWidth = 8;
             var spriteHeight = 8;
 
-            if (!spriteTextures.TryGetValue(spriteNumberFlr, out var texture))
-            {
-                texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteWidth, spriteHeight);
-                spriteTextures[spriteNumberFlr] = texture;
-            }
-
             int spriteX = spriteNumberFlr % 16 * spriteWidth;
             int spriteY = spriteNumberFlr / 16 * spriteHeight;
+
+            //if (!spriteTextures.TryGetValue(spriteNumberFlr, out var texture))
+            //{
+            var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteX, spriteY);
+                spriteTextures[spriteNumberFlr] = texture;
+            //}
 
             // Get the size of the viewport
             int viewportWidth = batch.GraphicsDevice.Viewport.Width;
             int viewportHeight = batch.GraphicsDevice.Viewport.Height;
 
-            // Calculate the size of each cell
+            //Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            // Get all pixel data from the texture
-            Color[] allColors = new Color[texture.Width * texture.Height];
-            texture.GetData(allColors);
+            batch.Draw(texture, new Vector2((float)x, (float)y), null, Color.White, 0, Vector2.Zero, new Vector2(cellWidth,cellHeight), SpriteEffects.None, 0);
 
-            // Draw each pixel of the sprite
-            for (int i = 0; i < spriteHeight * h; i++)
-            {
-                for (int j = 0; j < spriteWidth * w; j++)
-                {
-                    // Get the color of the pixel
-                    Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
-
-                    // If the color is transparent don't draw anything
-                    if (color.A != 0)
-                    {
-                        // Calculate the position and size
-                        Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
-                        Vector2 size = new(cellWidth, cellHeight);
-
-                        // Draw the pixel
-                        batch.Draw(pixel, position, null, color, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                    }
-                }
-            }
+            //    int spriteX = spriteNumberFlr % 16 * spriteWidth;
+            //    int spriteY = spriteNumberFlr / 16 * spriteHeight;
+            //
+            //    // Get the size of the viewport
+            //    int viewportWidth = batch.GraphicsDevice.Viewport.Width;
+            //    int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+            //
+            //    // Calculate the size of each cell
+            //    int cellWidth = viewportWidth / 128;
+            //    int cellHeight = viewportHeight / 128;
+            //
+            //    // Get all pixel data from the texture
+            //    Color[] allColors = new Color[texture.Width * texture.Height];
+            //    texture.GetData(allColors);
+            //
+            //    // Draw each pixel of the sprite
+            //    for (int i = 0; i < spriteHeight * h; i++)
+            //    {
+            //        for (int j = 0; j < spriteWidth * w; j++)
+            //        {
+            //            // Get the color of the pixel
+            //            Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
+            //
+            //            // If the color is transparent don't draw anything
+            //            if (color.A != 0)
+            //            {
+            //                // Calculate the position and size
+            //                Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
+            //                Vector2 size = new(cellWidth, cellHeight);
+            //
+            //                // Draw the pixel
+            //                batch.Draw(pixel, position, null, color, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            //            }
+            //        }
+            //    }
         }
 
         public void Dispose()
