@@ -939,7 +939,7 @@ namespace CSharpCraft
 
             //pico8Functions.Spr(91, 1, 1);
 
-            pico8Functions.Camera(-64, -64);
+            pico8Functions.Camera(-8, -8);
 
             Drawback();
 
