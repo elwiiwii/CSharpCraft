@@ -80,17 +80,17 @@ namespace CSharpCraft
 
             Color[] colorData = new Color[spriteWidth * spriteHeight];
 
-            int j = 0;
+            //int j = 0;
 
-            for (int i = spriteX + (spriteY * 128); j < (spriteWidth * spriteHeight); i++)
+            for (int i = spriteX + (spriteY * 128), j = 0; j < (spriteWidth * spriteHeight); i++, j++)
             {
                 char c = spriteData[i];
                 int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
                 Color color = colors[colorIndex]; // Convert the PICO-8 color index to a Color
                 colorData[j] = color;
 
-                if (i % 8 == 7) { i += 128 - spriteWidth; }
-                j++;
+                if (i % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
+                //j++;
             }
 
             texture.SetData(colorData);

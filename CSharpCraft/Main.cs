@@ -719,8 +719,8 @@ namespace CSharpCraft
 
                     if (gr != null)
                     {
-                        var gi = (i + 4.5) * 16;
-                        var gj = (j + 4.5) * 16;
+                        var gi = (i + 4) * 16;
+                        var gj = (j + 4) * 16;
 
                         pico8Functions.Pal();
 
@@ -883,7 +883,7 @@ namespace CSharpCraft
             cly = Math.Max(cmy - m, cly);
             cly = Math.Min(cmy + m, cly);
 
-            time += 1/30;
+            time += 1.0 / 30.0;
 
             base.Update(gameTime);
         }
@@ -894,7 +894,7 @@ namespace CSharpCraft
 
             GraphicsDevice.Clear(Color.Black);
 
-            batch.Begin();
+            batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -917,12 +917,12 @@ namespace CSharpCraft
             //pico8Functions.Rectfill(0, 0, 128, 128, 7);
 
             /*
-            pico8Functions.rectfill(0, 0, 128, 46, 12);
-            pico8Functions.rectfill(0, 46, 128, 128, 1);
-            spr8(16, 32, 14);
-            printc("by nusan", 64, 80, 6);
-            printc("2016", 64, 90, 6);
-            printc("press button 1", 64, 112, (int)(6 + time % 2));
+            pico8Functions.Rectfill(0, 0, 128, 46, 12);
+            pico8Functions.Rectfill(0, 46, 128, 128, 1);
+            pico8Functions.Spr(128, 24, 6, 8, 8);
+            Printc("by nusan", 64, 80, 6);
+            Printc("2016", 64, 90, 6);
+            Printc("press button 1", 64, 112, (int)(6 + time % 2));
             */
 
             /*
@@ -941,11 +941,11 @@ namespace CSharpCraft
 
             //pico8Functions.Spr(91, 1, 1);
 
-            pico8Functions.Camera(-clx - 8, -cly - 8);
+            //pico8Functions.Camera(-clx - 8, -cly - 8);
 
-            Drawback();
+            //Drawback();
 
-            Dplayer(clx + 80, cly + 80, prot, panim, banim);
+            //Dplayer(clx + 80, cly + 80, prot, panim, banim);
 
             //pico8Functions.Camera();
 
