@@ -633,7 +633,7 @@ namespace CSharpCraft
 
         private void Watanim(double i, double j)
         {
-            var a = (time * 0.6 + (double)Watval(i, j) / 100) % 1 * 19;
+            var a = ((time * 0.6 + (double)Watval(i, j) / 100) % 1) * 19;
             if (a > 16) { pico8Functions.Spr(13 + a - 16, i * 16, j * 16); }
         }
 
@@ -941,11 +941,11 @@ namespace CSharpCraft
 
             //pico8Functions.Spr(91, 1, 1);
 
-            pico8Functions.Camera(-8, -8);
+            pico8Functions.Camera(-clx - 8, -cly - 8);
 
             Drawback();
 
-            Dplayer(80, 80, prot, panim, banim);
+            Dplayer(clx + 80, cly + 80, prot, panim, banim);
 
             //pico8Functions.Camera();
 

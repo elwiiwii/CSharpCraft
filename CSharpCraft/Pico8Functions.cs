@@ -390,7 +390,7 @@ namespace CSharpCraft
                     {
                         if (colors[i] == resetColors[j])
                         {
-                            colorCache += (i * 100 + j) * 100;
+                            colorCache += (i * 100 + j) * 1000;
                             break;
                         }
                     }
