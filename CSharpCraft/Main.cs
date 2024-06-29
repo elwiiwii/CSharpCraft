@@ -719,8 +719,8 @@ namespace CSharpCraft
 
                     if (gr != null)
                     {
-                        var gi = (i - ci) * 16;
-                        var gj = (j - cj) * 16;
+                        var gi = (i + 4.5) * 16;
+                        var gj = (j + 4.5) * 16;
 
                         pico8Functions.Pal();
 
