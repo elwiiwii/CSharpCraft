@@ -96,8 +96,8 @@ namespace CSharpCraft
 
         private int[][] Rndwat = new int[16][];
 
-        private double coffx = 0.0;
-        private double coffy = 0.0;
+        private double coffx;
+        private double coffy;
 
         private bool switchlevel = false;
         private bool canswitchlevel = false;
