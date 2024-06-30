@@ -143,7 +143,7 @@ namespace CSharpCraft
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
                         // Calculate the position and size of the line
-                        Vector2 position = new((i + CameraOffset.Item1) * cellWidth, (j + CameraOffset.Item2) * cellHeight);
+                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
@@ -182,7 +182,7 @@ namespace CSharpCraft
                     if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                     {
                         // Calculate the position and size
-                        Vector2 position = new((i + CameraOffset.Item1) * cellWidth, (j + CameraOffset.Item2) * cellHeight);
+                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
@@ -205,7 +205,7 @@ namespace CSharpCraft
             {
                 for (int j = 0; j <= chFlr; j++)
                 {
-                    Spr(Mget(i + cxFlr, j + cyFlr), i * 8, j * 8);
+                    Spr(Mget(i + cxFlr, j + cyFlr), sxFlr + i * 8, syFlr + j * 8);
                 }
             }
         }
@@ -316,9 +316,9 @@ namespace CSharpCraft
                     {
                         if (Font.chars[letter][i, j] == 1)
                         {
-                            var charStartX = (s * charWidth + x + j + CameraOffset.Item1) * cellWidth;
-                            var charEndX = charStartX + cellWidth + CameraOffset.Item1;
-                            var charStartY = (int)((y + i + 0.5 + CameraOffset.Item2) * cellHeight);
+                            var charStartX = (s * charWidth + x + j - CameraOffset.Item1) * cellWidth;
+                            var charEndX = charStartX + cellWidth - CameraOffset.Item1;
+                            var charStartY = (int)((y + i + 0.5 - CameraOffset.Item2) * cellHeight);
                             batch.DrawLine(pixel, new Vector2(charStartX, charStartY), new Vector2(charEndX, charStartY), colors[c], cellHeight);
                         }
                     }
@@ -342,7 +342,7 @@ namespace CSharpCraft
             int cellHeight = viewportHeight / 128;
 
             // Calculate the position and size of the line
-            Vector2 position = new((xFlr + CameraOffset.Item1) * cellWidth, (yFlr + CameraOffset.Item2) * cellHeight);
+            Vector2 position = new((xFlr - CameraOffset.Item1) * cellWidth, (yFlr - CameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             
             // Draw the line
@@ -359,9 +359,9 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            var rectStartX = (x1 + CameraOffset.Item1) * cellWidth;
-            var rectEndX = (x2 + CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1 + ((y2 - y1) / 2) + CameraOffset.Item2) * cellHeight;
+            var rectStartX = (x1 - CameraOffset.Item1) * cellWidth;
+            var rectEndX = (x2 - CameraOffset.Item1) * cellWidth;
+            var rectStartY = (y1 + ((y2 - y1) / 2) - CameraOffset.Item2) * cellHeight;
             var rectThickness = (y2 - y1) * cellHeight;
             batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[c], rectThickness);
         }
@@ -411,7 +411,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? xFlr + (spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) + CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) + CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? xFlr + (2 * spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (2 * spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
@@ -444,7 +444,7 @@ namespace CSharpCraft
             //            if (color.A != 0)
             //            {
             //                // Calculate the position and size
-            //                Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth + CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight + CameraOffset.Item2);
+            //                Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth - CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight - CameraOffset.Item2);
             //                Vector2 size = new(cellWidth, cellHeight);
             //
             //                // Draw the pixel

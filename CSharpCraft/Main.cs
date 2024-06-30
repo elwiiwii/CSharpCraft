@@ -674,10 +674,10 @@ namespace CSharpCraft
                     var gi = (i - ci) * 2 + 64;
                     var gj = (j - cj) * 2 + 32;
 
-                    if (gr != null && gr.Gr == 1)
+                    if (gr != null && gr.Gr == 1) // sand
                     {
                         var sv = 0;
-                        if (gr == grfarm || gr == grwheat) { sv = 3; } // sand
+                        if (gr == grfarm || gr == grwheat) { sv = 3; }
                         pico8Functions.Mset(gi, gj, Rndsand(i, j) + sv);
                         pico8Functions.Mset(gi + 1, gj, Rndsand(i + 0.5, j) + sv);
                         pico8Functions.Mset(gi, gj + 1, Rndsand(i, j + 0.5) + sv);
@@ -719,8 +719,8 @@ namespace CSharpCraft
 
                     if (gr != null)
                     {
-                        var gi = (i + 4) * 16;
-                        var gj = (j + 4) * 16;
+                        var gi = i * 16;
+                        var gj = j * 16;
 
                         pico8Functions.Pal();
 
@@ -758,7 +758,7 @@ namespace CSharpCraft
                             {
                                 pico8Functions.Palt(0, false);
                                 pico8Functions.Spr(31, gi, gj, 1, 2);
-                                pico8Functions.Spr(31, gi + 16, gj, 1, 2, true); // changed +8 to +16 because of a temporary spr change
+                                pico8Functions.Spr(31, gi + 8, gj, 1, 2, true); // changed +8 to +16 because of a temporary spr change
                             }
                             pico8Functions.Palt();
                             pico8Functions.Spr(77, gi + 4, gj, 1, 2);
@@ -792,19 +792,6 @@ namespace CSharpCraft
 
             if (state.IsKeyDown(Keys.Q)) switchlevel = true;
 
-            double dx = 0.0;
-            double dy = 0.0;
-
-            if (state.IsKeyDown(Keys.A)) dx -= 1.0;
-            if (state.IsKeyDown(Keys.D)) dx += 1.0;
-            if (state.IsKeyDown(Keys.W)) dy -= 1.0;
-            if (state.IsKeyDown(Keys.S)) dy += 1.0;
-
-            //if (state.IsKeyDown(Keys.A)) clx -= 3.0;
-            //if (state.IsKeyDown(Keys.D)) clx += 3.0;
-            //if (state.IsKeyDown(Keys.W)) cly -= 3.0;
-            //if (state.IsKeyDown(Keys.S)) cly += 3.0;
-
             if (switchlevel)
             {
                 if (currentlevel == cave) { Setlevel(island); }
@@ -825,6 +812,19 @@ namespace CSharpCraft
             {
                 canswitchlevel = true;
             }
+
+            double dx = 0.0;
+            double dy = 0.0;
+
+            if (state.IsKeyDown(Keys.A)) dx -= 1.0;
+            if (state.IsKeyDown(Keys.D)) dx += 1.0;
+            if (state.IsKeyDown(Keys.W)) dy -= 1.0;
+            if (state.IsKeyDown(Keys.S)) dy += 1.0;
+
+            //if (state.IsKeyDown(Keys.A)) clx -= 3.0;
+            //if (state.IsKeyDown(Keys.D)) clx += 3.0;
+            //if (state.IsKeyDown(Keys.W)) cly -= 3.0;
+            //if (state.IsKeyDown(Keys.S)) cly += 3.0;
 
             double dl = Getinvlen(dx, dy);
             
@@ -941,13 +941,15 @@ namespace CSharpCraft
 
             //pico8Functions.Spr(91, 1, 1);
 
-            //pico8Functions.Camera(-clx - 8, -cly - 8);
+            pico8Functions.Camera(clx - 64, cly - 64);
 
-            //Drawback();
+            Drawback();
 
-            //Dplayer(clx + 80, cly + 80, prot, panim, banim);
+            Dplayer(plx, plx, prot, panim, banim);
 
-            //pico8Functions.Camera();
+            pico8Functions.Pset(plx + 8, ply + 8, 8);
+
+            pico8Functions.Camera();
 
             /*
             pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
