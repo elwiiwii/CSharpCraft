@@ -667,7 +667,7 @@ namespace CSharpCraft
 
             for (int i = ci; i <= ci + 8; i++)
             {
-                for (var j = cj; j <= cj + 8; j++)
+                for (int j = cj; j <= cj + 8; j++)
                 {
                     var gr = Getdirectgr(i, j);
 
@@ -710,7 +710,7 @@ namespace CSharpCraft
             }
 
             pico8Functions.Map(64, 32, ci * 16, cj * 16, 18, 18);
-
+            
             for (int i = ci - 1; i <= ci + 8; i++)
             {
                 for (int j = cj - 1; j <= cj + 8; j++)
