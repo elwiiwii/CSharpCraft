@@ -17,18 +17,18 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
-    /*private class Material
-    {
-        
-    }*/
+    //private class Material
+    //{
+    //    public Item? 
+    //}
 
     public class Ground
     {
-        public int Id { get; set; }
-        public int Gr { get; set; }
+        public double Id { get; set; }
+        public double Gr { get; set; }
         /*public Material? Mat { get; set; }*/
         public Ground? Tile { get; set; }
-        public int? Life { get; set; }
+        public double Life { get; set; }
         public bool Istree { get; set; }
         public int[]? Pal { get; set; }
     }
@@ -65,6 +65,10 @@ namespace CSharpCraft
         private double frameRate = 0.0;
         private int frameCounter = 0;
         private TimeSpan elapsedTime = TimeSpan.Zero;
+
+        private bool lb4 = false;
+        private bool lb5 = false;
+        private bool block5 = false;
 
         private double time;
 
@@ -110,19 +114,21 @@ namespace CSharpCraft
         private Level cave;
         private Level island;
 
+        private double stamcost;
+
 #nullable disable
 
         static readonly Ground grwater = new() { Id = 0, Gr = 0 };
         static readonly Ground grsand = new() { Id = 1, Gr = 1 };
         static readonly Ground grgrass = new() { Id = 2, Gr = 2 };
         static readonly Ground grrock = new() { Id = 3, Gr = 3, /*Mat = stone,*/ Tile = grsand, Life = 15 };
-        static readonly Ground grtree = new() { Id = 4, Gr = 2, /*Mat = wood,*/ Tile = grgrass, Life = 8, Istree = true, Pal = [1, 5, 3, 11] };
+        static readonly Ground grtree = new() { Id = 4, Gr = 2, /*Mat = wood, */ Tile = grgrass, Life = 8, Istree = true, Pal = [1, 5, 3, 11] };
         static readonly Ground grfarm = new() { Id = 5, Gr = 1 };
         static readonly Ground grwheat = new() { Id = 6, Gr = 1 };
         static readonly Ground grplant = new() { Id = 7, Gr = 2 };
-        static readonly Ground griron = new() { Id = 8, Gr = 1, /*Mat = iron,*/ Tile = grsand, Life = 45, Istree = true, Pal = [1, 1, 13, 6] };
-        static readonly Ground grgold = new() { Id = 9, Gr = 1, /*Mat = gold,*/ Tile = grsand, Life = 80, Istree = true, Pal = [1, 2, 9, 10] };
-        static readonly Ground grgem = new() { Id = 10, Gr = 1, /*Mat = gem,*/ Tile = grsand, Life = 160, Istree = true, Pal = [1, 2, 14, 12] };
+        static readonly Ground griron = new() { Id = 8, Gr = 1, /*Mat = iron, */ Tile = grsand, Life = 45, Istree = true, Pal = [1, 1, 13, 6] };
+        static readonly Ground grgold = new() { Id = 9, Gr = 1, /*Mat = gold, */ Tile = grsand, Life = 80, Istree = true, Pal = [1, 2, 9, 10] };
+        static readonly Ground grgem = new() { Id = 10, Gr = 1, /*Mat = gem, */ Tile = grsand, Life = 160, Istree = true, Pal = [1, 2, 14, 12] };
         static readonly Ground grhole = new() { Id = 11, Gr = 1 };
 
         private Ground lastground = grsand;
@@ -311,6 +317,13 @@ namespace CSharpCraft
             return grounds[pico8Functions.Mget(i + levelx, j)];
         }
 
+        private void Setgr(double x, double y, Ground v)
+        {
+            var (i, j) = Getmcoord(x, y);
+            if (i < 0 || j < 0 || i >= levelx || j >= levely) { return; }
+            pico8Functions.Mset(i + levelx, j, v.Id);
+        }
+
         private double Dirgetdata(double i, double j, double @default)
         {
             int iFlr = (int)Math.Floor(i);
@@ -323,6 +336,41 @@ namespace CSharpCraft
             //    data[g] = @default;
             //}
             return data[g];
+        }
+
+        private void Dirsetdata(double i, double j, double v)
+        {
+            data[(int)(i + j * levelsx)] = v;
+        }
+
+        private double Getdata(double x, double y, double @default)
+        {
+            var (i, j) = Getmcoord(x, y);
+            if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
+            {
+                return @default;
+            }
+            return Dirgetdata(i, j, @default);
+        }
+
+        private void Setdata(double x, double y, double v)
+        {
+            var (i, j) = Getmcoord(x, y);
+            if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
+            {
+                return;
+            }
+            Dirsetdata(i, j, v);
+        }
+
+        private void Cleardata(double x, double y)
+        {
+            var (i, j) = Getmcoord(x,y);
+            if (i < 0 || j < 0 || i > levelsx -1 || j > levelsy - 1)
+            {
+                return;
+            }
+            data[(int)(i + j * levelsx)] = 0; // original code has null
         }
 
         private (double, double) Reflectcol(double x, double y, double dx, double dy, Func<double,double,bool> checkfun, double dp)
@@ -448,7 +496,7 @@ namespace CSharpCraft
 
             var weap = 75;
 
-            pico8Functions.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
+            pico8Functions.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7 - 8, 1, 1, mx == 1, my == 1);
 
             if (bel != grwater)
             {
@@ -456,7 +504,7 @@ namespace CSharpCraft
                 pico8Functions.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
                 (int mx2, int my2) = Mirror((rot + 0.75) % 1);
-                pico8Functions.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
+                pico8Functions.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7 - 8, 1, 1, mx2 == 0, my2 == 1);
             }
 
             pico8Functions.Circfill(x + cr, y + sr - 2, 4, 2);
@@ -650,7 +698,7 @@ namespace CSharpCraft
 
         private int Watval(double i, double j)
         {
-            return Rndwat[(int)Math.Floor(i * 2 % 16)][(int)Math.Floor(j * 2 % 16)];
+            return Rndwat[(int)Math.Floor(Math.Abs(i) * 2 % 16)][(int)Math.Floor(Math.Abs(j) * 2 % 16)];
         }
 
         private void Watanim(double i, double j)
@@ -868,12 +916,63 @@ namespace CSharpCraft
             dy *= s;
             
             (dx, dy) = Reflectcol(plx, ply, dx, dy, Isfree, 0);
-            
+
+            var canact = true;
+
             plx += dx;
             ply += dy;
             
             prot = Uprot(lrot, prot);
-            
+
+            llife += Math.Max(-1, Math.Min(1, plife - llife));
+            lstam += Math.Max(-1, Math.Min(1, pstam - lstam));
+
+            if (state.IsKeyDown(Keys.X) !& block5 && canact)
+            {
+                var bx = Math.Cos(prot);
+                var by = Math.Sin(prot);
+                var hitx = plx + bx * 8;
+                var hity = ply + by * 8;
+                var hit = Getgr(hitx, hity);
+
+                if (banim == 0 && pstam > 0 && canact)
+                {
+                    banim = 8;
+                    stamcost = 20;
+                    if (0 != 0)
+                    {
+                    }
+                    else if (0 == 0)
+                    {
+                        var pow = 1.0;
+
+                        pow = Math.Floor(pow);
+
+                        var d = Getdata(hitx, hity, hit.Life);
+                        if (d - pow <= 0)
+                        {
+                            Setgr(hitx, hity, hit.Tile);
+                            Cleardata(hitx, hity);
+                        }
+                        else
+                        {
+                            Setdata(hitx, hity, d - pow);
+                        }
+                    }
+                    pstam -= stamcost;
+                }
+            }
+
+            if (banim > 0)
+            {
+                banim -= 1;
+            }
+
+            if (pstam < 100)
+            {
+                pstam = Math.Min(100, pstam + 1);
+            }
+
             var m = 16;
             var msp = 4;
             
@@ -903,6 +1002,13 @@ namespace CSharpCraft
             clx = Math.Min(cmx + m, clx);
             cly = Math.Max(cmy - m, cly);
             cly = Math.Min(cmy + m, cly);
+
+            lb4 = state.IsKeyDown(Keys.Z);
+            lb5 = state.IsKeyDown(Keys.X);
+            if (!state.IsKeyDown(Keys.X))
+            {
+                block5 = false;
+            }
 
             time += 1.0 / 30.0;
 
@@ -966,9 +1072,9 @@ namespace CSharpCraft
 
             Drawback();
 
-            Dplayer(plx, plx, prot, panim, banim);
+            Dplayer(plx, ply, prot, panim, banim);
 
-            pico8Functions.Pset(plx + 8, ply + 8, 8);
+            //pico8Functions.Pset(plx + 8, ply + 8, 8);
 
             pico8Functions.Camera();
 

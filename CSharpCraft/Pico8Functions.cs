@@ -369,8 +369,8 @@ namespace CSharpCraft
         public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
         {
             int spriteNumberFlr = (int)Math.Floor(spriteNumber);
-            int xFlr = (int)Math.Floor(x);
-            int yFlr = (int)Math.Floor(y);
+            int xFlr = (int)Math.Floor(x) - 8;
+            int yFlr = (int)Math.Floor(y) - 8;
             int wFlr = (int)Math.Floor(w);
             int hFlr = (int)Math.Floor(h);
 
