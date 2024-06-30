@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
@@ -73,6 +74,10 @@ namespace CSharpCraft
         private double lrot;
         private double panim;
         private double banim;
+        private double pstam;
+        private double lstam;
+        private double plife;
+        private double llife;
 
         private Level currentlevel;
 
@@ -254,6 +259,13 @@ namespace CSharpCraft
 
             panim = 0.0;
 
+
+            pstam = 100;
+            lstam = pstam;
+            plife = 100;
+            llife = plife;
+
+
             banim = 0.0;
 
             coffx = 0;
@@ -402,11 +414,25 @@ namespace CSharpCraft
             y = Math.Floor(y - 4);
 
             var lan = Math.Sin(anim * 2) * 1.5;
+            var bel = Getgr(x, y);
 
             pico8Functions.Pal(); // not in the original code
 
-            pico8Functions.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
-            pico8Functions.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
+            if (bel == grwater)
+            {
+                y += 4;
+                pico8Functions.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 6);
+                pico8Functions.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
+
+                var anc = 3 + time * 3 % 1 * 3;
+                pico8Functions.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc, 6);
+                pico8Functions.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc, 6);
+            }
+            else
+            {
+                pico8Functions.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
+                pico8Functions.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
+            }
 
             var blade = (rot + 0.25) % 1;
 
@@ -418,29 +444,25 @@ namespace CSharpCraft
             var bcr = Math.Cos(blade);
             var bsr = Math.Sin(blade);
 
-            //var mx = mirror(blade);
-            //var my = mirror(blade);
-
             (int mx, int my) = Mirror(blade);
 
             var weap = 75;
 
             pico8Functions.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
 
-            pico8Functions.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
-            pico8Functions.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
+            if (bel != grwater)
+            {
+                pico8Functions.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
+                pico8Functions.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-            //var mx2 = mirror((rot + 0.75) % 1);
-            //var my2 = mirror((rot + 0.75) % 1);
+                (int mx2, int my2) = Mirror((rot + 0.75) % 1);
+                pico8Functions.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
+            }
 
-            (int mx2, int my2) = Mirror((rot + 0.75) % 1);
-
-            pico8Functions.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
-
-            pico8Functions.Circfill(x + cr + 0.001, y + sr - 2 + 0.001, 4, 2);
-            pico8Functions.Circfill(x + cr + 0.001, y + sr + 0.001, 4, 2);
+            pico8Functions.Circfill(x + cr, y + sr - 2, 4, 2);
+            pico8Functions.Circfill(x + cr, y + sr, 4, 2);
             pico8Functions.Circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
-            pico8Functions.Circfill(x - cr + 0.001, y - sr - 3, 3, 4);
+            pico8Functions.Circfill(x - cr, y - sr - 3, 3, 4);
 
         }
 
@@ -804,6 +826,7 @@ namespace CSharpCraft
 
             var playhit = Getgr(plx, ply);
             lastground = playhit;
+            var s = (playhit == grwater || pstam == 0) ? 1 : 2;
             if (playhit == grhole)
             {
                 switchlevel = switchlevel || canswitchlevel;
@@ -840,8 +863,6 @@ namespace CSharpCraft
             {
                 panim = 0;
             }
-            
-            var s = 2.0;
             
             dx *= s;
             dy *= s;
