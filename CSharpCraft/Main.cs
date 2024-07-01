@@ -994,8 +994,9 @@ namespace CSharpCraft
 
             if (state.IsKeyDown(Keys.X) && !block5 && canact)
             {
-                var bx = Math.Cos(prot);
-                var by = Math.Sin(prot);
+                var pxrot = -prot * 2 * Math.PI;
+                var bx = Math.Cos(pxrot);
+                var by = Math.Sin(pxrot);
                 var hitx = plx + bx * 8;
                 var hity = ply + by * 8;
                 var hit = Getgr(hitx, hity);

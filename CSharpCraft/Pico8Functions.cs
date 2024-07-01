@@ -98,6 +98,12 @@ namespace CSharpCraft
             return texture;
         }
 
+        public void Add(int[] table, int value, int index = -1)
+        {
+            if (index == -1) { index = table.Length + 1; }
+            table[index] = value;
+        }
+
         public void Camera(double x = 0, double y = 0)
         {
             int xFlr = (int)Math.Floor(x);
