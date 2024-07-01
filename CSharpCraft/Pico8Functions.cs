@@ -349,8 +349,14 @@ namespace CSharpCraft
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
-        public void Rectfill(int x1, int y1, int x2, int y2, int c)
+        public void Rectfill(double x1, double y1, double x2, double y2, double c)
         {
+            int x1Flr = (int)Math.Floor(x1);
+            int y1Flr = (int)Math.Floor(y1);
+            int x2Flr = (int)Math.Floor(x2);
+            int y2Flr = (int)Math.Floor(y2);
+            int cFlr = (int)Math.Floor(c);
+
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
             int viewportHeight = graphicsDevice.Viewport.Height;
@@ -359,11 +365,11 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            var rectStartX = (x1 - CameraOffset.Item1) * cellWidth;
-            var rectEndX = (x2 - CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1 + ((y2 - y1) / 2) - CameraOffset.Item2) * cellHeight;
-            var rectThickness = (y2 - y1) * cellHeight;
-            batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[c], rectThickness);
+            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
+            var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            var rectStartY = (y1Flr + ((y2Flr - y1Flr) / 2) - CameraOffset.Item2) * cellHeight;
+            var rectThickness = (y2Flr - y1Flr) * cellHeight;
+            batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
         }
 
         public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)

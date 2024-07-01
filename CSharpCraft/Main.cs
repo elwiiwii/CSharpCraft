@@ -17,16 +17,19 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
-    //private class Material
-    //{
-    //    public Item? 
-    //}
+    public class Material
+    {
+        public string Name { get; set; }
+        public int Spr { get; set; }
+        public int[]? Pal { get; set; }
+        public bool? Becraft { get; set; }
+    }
 
     public class Ground
     {
         public double Id { get; set; }
         public double Gr { get; set; }
-        /*public Material? Mat { get; set; }*/
+        public Material? Mat { get; set; }
         public Ground? Tile { get; set; }
         public double Life { get; set; }
         public bool Istree { get; set; }
@@ -116,19 +119,59 @@ namespace CSharpCraft
 
         private double stamcost;
 
+        private int[] nearenemies;
+
 #nullable disable
+
+        static readonly string[] pwrnames = ["wood", "stone", "iron", "gold", "gem"];
+        static readonly int[][] pwrpal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
+
+        static readonly Material haxe = Item("haxe", 98);
+        static readonly Material sword = Item("sword", 99);
+        static readonly Material scythe = Item("scythe", 100);
+        static readonly Material shovel = Item("shovel", 101);
+        static readonly Material pick = Item("pick", 102);
+
+        static readonly int[] pstone = [0, 1, 5, 13];
+        static readonly int[] piron = [1, 5, 13, 6];
+        static readonly int[] pgold = [1, 9, 10, 7];
+
+        static readonly Material wood = Item("wood", 103);
+        static readonly Material sand = Item("sand", 114, [15]);
+        static readonly Material seed = Item("seed", 115);
+        static readonly Material wheat = Item("wheat", 118, [4, 9, 10, 9]);
+        static readonly Material apple = Item("apple", 116);
+        //apple.Givelife = 20;
+        static readonly Material glass = Item("glass", 117);
+        static readonly Material stone = Item("stone", 118, pstone);
+        static readonly Material iron = Item("iron", 118, piron);
+        static readonly Material gold = Item("gold", 118, pgold);
+        static readonly Material gem = Item("gem", 118, [1, 2, 14, 12]);
+
+        static readonly Material fabric = Item("fabric", 69);
+        static readonly Material sail = Item("sail", 70);
+        static readonly Material glue = Item("glue", 85, [1, 13, 12, 7]);
+        static readonly Material boat = Item("boat", 86);
+        static readonly Material ichor = Item("ichor", 114, [11]);
+        static readonly Material potion = Item("potion", 85, [1, 2, 8, 14]);
+        //potion.Givelife = 100
+
+        static readonly Material ironbar = Item("iron bar", 119, piron);
+        static readonly Material goldbar = Item("gold bar", 119, pgold);
+        static readonly Material bread = Item("bread", 119, [1, 4, 15, 7]);
+        //bread.Givelife = 40
 
         static readonly Ground grwater = new() { Id = 0, Gr = 0 };
         static readonly Ground grsand = new() { Id = 1, Gr = 1 };
         static readonly Ground grgrass = new() { Id = 2, Gr = 2 };
-        static readonly Ground grrock = new() { Id = 3, Gr = 3, /*Mat = stone,*/ Tile = grsand, Life = 15 };
-        static readonly Ground grtree = new() { Id = 4, Gr = 2, /*Mat = wood, */ Tile = grgrass, Life = 8, Istree = true, Pal = [1, 5, 3, 11] };
+        static readonly Ground grrock = new() { Id = 3, Gr = 3, Mat = stone, Tile = grsand, Life = 15 };
+        static readonly Ground grtree = new() { Id = 4, Gr = 2, Mat = wood, Tile = grgrass, Life = 8, Istree = true, Pal = [1, 5, 3, 11] };
         static readonly Ground grfarm = new() { Id = 5, Gr = 1 };
         static readonly Ground grwheat = new() { Id = 6, Gr = 1 };
         static readonly Ground grplant = new() { Id = 7, Gr = 2 };
-        static readonly Ground griron = new() { Id = 8, Gr = 1, /*Mat = iron, */ Tile = grsand, Life = 45, Istree = true, Pal = [1, 1, 13, 6] };
-        static readonly Ground grgold = new() { Id = 9, Gr = 1, /*Mat = gold, */ Tile = grsand, Life = 80, Istree = true, Pal = [1, 2, 9, 10] };
-        static readonly Ground grgem = new() { Id = 10, Gr = 1, /*Mat = gem, */ Tile = grsand, Life = 160, Istree = true, Pal = [1, 2, 14, 12] };
+        static readonly Ground griron = new() { Id = 8, Gr = 1, Mat = iron, Tile = grsand, Life = 45, Istree = true, Pal = [1, 1, 13, 6] };
+        static readonly Ground grgold = new() { Id = 9, Gr = 1, Mat = gold, Tile = grsand, Life = 80, Istree = true, Pal = [1, 2, 9, 10] };
+        static readonly Ground grgem = new() { Id = 10, Gr = 1, Mat = gem, Tile = grsand, Life = 160, Istree = true, Pal = [1, 2, 14, 12] };
         static readonly Ground grhole = new() { Id = 11, Gr = 1 };
 
         private Ground lastground = grsand;
@@ -166,6 +209,16 @@ namespace CSharpCraft
             pico8Functions.Palt();
 
             Resetlevel();
+        }
+
+        private static Material Item(string n, int s, int[] p = null, bool? bc = null)
+        {
+            return new() { Name = n, Spr = s, Pal = p, Becraft = bc };
+        }
+
+        private Material Bigspr(int spr, Func<string, int, int[], bool?, Material> ent)
+        {
+            return new();
         }
 
         private void Spr8(int spriteNumber, int x, int y)
@@ -233,7 +286,7 @@ namespace CSharpCraft
                 Sx = sizexFlr,
                 Sy = sizeyFlr,
                 Isunder = isUnderground,
-                Dat = new double[1] //not sure what this number should be
+                Dat = new double[10000] //not sure what this number should be
             };
 
             Setlevel(l);
@@ -320,7 +373,7 @@ namespace CSharpCraft
         private void Setgr(double x, double y, Ground v)
         {
             var (i, j) = Getmcoord(x, y);
-            if (i < 0 || j < 0 || i >= levelx || j >= levely) { return; }
+            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
             pico8Functions.Mset(i + levelx, j, v.Id);
         }
 
@@ -331,10 +384,11 @@ namespace CSharpCraft
             int levelsxFlr = (int)Math.Floor(levelsx);
 
             int g = iFlr + jFlr * levelsxFlr;
-            //if (data[g] == null)
-            //{
-            //    data[g] = @default;
-            //}
+            if (data[g] == 0)
+            {
+                data[g] = @default;
+            }
+            Console.WriteLine(data[g]);
             return data[g];
         }
 
@@ -843,6 +897,17 @@ namespace CSharpCraft
             pico8Functions.Print(t, x - (t.Length * 2), y, c);
         }
 
+        private void Dbar(double px, double py, double v, double m, double c, double c2)
+        {
+            pico8Functions.Pal();
+            var pe = px + v * 0.3;
+            var pe2 = px + m * 0.3;
+            pico8Functions.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
+            pico8Functions.Rectfill(px, py, pe, py + 3, c2);
+            pico8Functions.Rectfill(px, py, Math.Max(px, pe - 1), py + 2, c);
+            if (m > v) { pico8Functions.Rectfill(pe + 1, py, pe2, py + 3, 10); }
+        }
+
         protected override void Update(GameTime gameTime)
         {
             elapsedTime += gameTime.ElapsedGameTime;
@@ -927,7 +992,7 @@ namespace CSharpCraft
             llife += Math.Max(-1, Math.Min(1, plife - llife));
             lstam += Math.Max(-1, Math.Min(1, pstam - lstam));
 
-            if (state.IsKeyDown(Keys.X) !& block5 && canact)
+            if (state.IsKeyDown(Keys.X) && !block5 && canact)
             {
                 var bx = Math.Cos(prot);
                 var by = Math.Sin(prot);
@@ -941,8 +1006,9 @@ namespace CSharpCraft
                     stamcost = 20;
                     if (0 != 0)
                     {
+
                     }
-                    else if (0 == 0)
+                    else if (hit.Mat != null)
                     {
                         var pow = 1.0;
 
@@ -958,6 +1024,10 @@ namespace CSharpCraft
                         {
                             Setdata(hitx, hity, d - pow);
                         }
+                    }
+                    else
+                    {
+
                     }
                     pstam -= stamcost;
                 }
@@ -1074,9 +1144,11 @@ namespace CSharpCraft
 
             Dplayer(plx, ply, prot, panim, banim);
 
-            //pico8Functions.Pset(plx + 8, ply + 8, 8);
-
             pico8Functions.Camera();
+
+            pico8Functions.Palt();
+            Dbar(4, 4, plife, llife, 8, 2);
+            Dbar(4, 9, Math.Max(0, pstam), lstam, 11, 3);
 
             /*
             pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
