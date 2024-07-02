@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection.Emit;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Schema;
@@ -46,6 +47,19 @@ namespace CSharpCraft
         public double Stx { get; set; }
         public double Sty { get; set; }
         public double[] Dat { get; set; }
+    }
+
+    public class Entity
+    {
+        public Material Type { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Vx { get; set; }
+        public double Vy { get; set; }
+        public string Text { get; set; }
+        public double Timer { get; set; }
+        public double C { get; set; }
+        public bool Hascol { get; set; }
     }
 
     class FNAGame : Game
@@ -121,6 +135,8 @@ namespace CSharpCraft
 
         private int[] nearenemies;
 
+        private List<Entity> entities = new();
+
 #nullable disable
 
         static readonly string[] pwrnames = ["wood", "stone", "iron", "gold", "gem"];
@@ -160,6 +176,13 @@ namespace CSharpCraft
         static readonly Material goldbar = Item("gold bar", 119, pgold);
         static readonly Material bread = Item("bread", 119, [1, 4, 15, 7]);
         //bread.Givelife = 40
+
+
+
+        static readonly Material inventary = Item("inventory", 89);
+        static readonly Material pickuptool = Item("pickup tool", 73);
+
+        static readonly Material etext = Item("text", 103);
 
         static readonly Ground grwater = new() { Id = 0, Gr = 0 };
         static readonly Ground grsand = new() { Id = 1, Gr = 1 };
@@ -214,6 +237,19 @@ namespace CSharpCraft
         private static Material Item(string n, int s, int[] p = null, bool? bc = null)
         {
             return new() { Name = n, Spr = s, Pal = p, Becraft = bc };
+        }
+
+        private Entity Entity(Material it, double xx, double yy, double vxx, double vyy)
+        {
+            return new() { Type = it, X = xx, Y = yy, Vx = vxx, Vy = vyy };
+        }
+
+        private Entity Settext(string t, double c, double time, Entity e)
+        {
+            e.Text = t;
+            e.Timer = time;
+            e.C = c;
+            return e;
         }
 
         private Material Bigspr(int spr, Func<string, int, int[], bool?, Material> ent)
@@ -892,9 +928,51 @@ namespace CSharpCraft
             }
         }
 
-        private void Printc(string t, int x, int y, int c)
+        public void Printb(string t, double x, double y, double c)
+        {
+            pico8Functions.Print(t, x + 1, y, 1);
+            pico8Functions.Print(t, x - 1, y, 1);
+            pico8Functions.Print(t, x, y + 1, 1);
+            pico8Functions.Print(t, x, y - 1, 1);
+            pico8Functions.Print(t, x, y, c);
+        }
+
+        private void Printc(string t, double x, double y, double c)
         {
             pico8Functions.Print(t, x - (t.Length * 2), y, c);
+        }
+
+        private void Dent()
+        {
+            for (int i = 0; i < entities.Count(); i++)
+            {
+                var e = entities[i];
+                pico8Functions.Pal();
+                if (e.Type.Pal != null) { Setpal(e.Type.Pal); }
+                if (0 != 0) { }
+                //if (e.Type.Bigspr != null)
+                //{
+                //    pico8Functions.Spr(e.Type.Bigspr, e.X - 8, e.Y - 8, 2, 2);
+                //}
+                else
+                {
+                    if (e.Type == etext)
+                    {
+                        Printb(e.Text, e.X - 2, e.Y - 4, e.C);
+                    }
+                    else
+                    {
+                        if (e.Timer != null && e.Timer < 45 && e.Timer % 4 > 2)
+                        {
+                            for (int j = 0; j <= 15; j++)
+                            {
+                                pico8Functions.Palt(j, true);
+                            }
+                        }
+                        pico8Functions.Spr(e.Type.Spr, e.X - 4, e.Y - 4);
+                    }
+                }
+            }
         }
 
         private void Dbar(double px, double py, double v, double m, double c, double c2)
@@ -984,6 +1062,31 @@ namespace CSharpCraft
 
             var canact = true;
 
+            var fin = entities.Count();
+            for (int i = fin; i > 0; i--)
+            {
+                var e = entities[i];
+                if (e.Hascol)
+                {
+                    (e.Vx, e.Vy) = Reflectcol(e.X, e.Y, e.Vx, e.Vy, Isfree, 0.9);
+                }
+                e.X += e.Vx;
+                e.Y += e.Vy;
+                e.Vx *= 0.95;
+                e.Vy *= 0.95;
+
+                if (e.Timer != null && e.Timer < 1)
+                {
+                    pico8Functions.Del(entities, e);
+                }
+                else
+                {
+                    if (e.Timer != null) { e.Timer -= 1; }
+                }
+            }
+
+            (dx, dy) = Reflectcol(plx, ply, dx, dy, Isfree, 0);
+
             plx += dx;
             ply += dy;
             
@@ -1025,6 +1128,8 @@ namespace CSharpCraft
                         {
                             Setdata(hitx, hity, d - pow);
                         }
+                        pico8Functions.Add(entities, Settext(pow.ToString(), 10, 20, Entity(etext, hitx, hity, 0, -1)));
+                        Console.WriteLine(pow.ToString());
                     }
                     else
                     {
@@ -1143,13 +1248,18 @@ namespace CSharpCraft
 
             Drawback();
 
+            Dent();
+
+            //Denemies();
+
             Dplayer(plx, ply, prot, panim, banim);
 
             pico8Functions.Camera();
 
-            pico8Functions.Palt();
             Dbar(4, 4, plife, llife, 8, 2);
             Dbar(4, 9, Math.Max(0, pstam), lstam, 11, 3);
+
+            Printb("1", 1, 1, 10);
 
             /*
             pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);

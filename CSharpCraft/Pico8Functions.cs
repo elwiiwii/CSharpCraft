@@ -98,9 +98,9 @@ namespace CSharpCraft
             return texture;
         }
 
-        public void Add(int[] table, int value, int index = -1)
+        public void Add(List<Entity> table, Entity value, int index = -1)
         {
-            if (index == -1) { index = table.Length + 1; }
+            if (index == -1) { table.Add(value); return; }
             table[index] = value;
         }
 
@@ -196,6 +196,16 @@ namespace CSharpCraft
                     }
                 }
             }
+        }
+
+        public void Del(List<Entity> table, Entity value)
+        {
+            table.Remove(value);
+
+            //for (int i = 0; i <= table.Count(); i++)
+            //{
+            //    if (table[i] == value) { table.RemoveAt(i); }
+            //}
         }
 
         public void Map(double celx, double cely, double sx, double sy, double celw, double celh)
@@ -299,8 +309,12 @@ namespace CSharpCraft
             }
         }
 
-        public void Print(string str, int x, int y, int c)
+        public void Print(string str, double x, double y, double c)
         {
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
+            int cFlr = (int)Math.Floor(c);
+
             int charWidth = 4;
             //int charHeight = 5;
 
@@ -322,10 +336,10 @@ namespace CSharpCraft
                     {
                         if (Font.chars[letter][i, j] == 1)
                         {
-                            var charStartX = (s * charWidth + x + j - CameraOffset.Item1) * cellWidth;
+                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
                             var charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            var charStartY = (int)((y + i + 0.5 - CameraOffset.Item2) * cellHeight);
-                            batch.DrawLine(pixel, new Vector2(charStartX, charStartY), new Vector2(charEndX, charStartY), colors[c], cellHeight);
+                            var charStartY = (int)((yFlr + i + 0.5 - CameraOffset.Item2) * cellHeight);
+                            batch.DrawLine(pixel, new Vector2(charStartX, charStartY), new Vector2(charEndX, charStartY), colors[cFlr], cellHeight);
                         }
                     }
                 }
