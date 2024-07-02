@@ -71,6 +71,7 @@ namespace CSharpCraft
         ];
         public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
+        public Color[] sprColors = new Color[16];
 
         private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
@@ -86,7 +87,7 @@ namespace CSharpCraft
             {
                 char c = spriteData[i];
                 int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
-                Color color = colors[colorIndex]; // Convert the PICO-8 color index to a Color
+                Color color = sprColors[colorIndex]; // Convert the PICO-8 color index to a Color
                 colorData[j] = color;
 
                 if (i % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
@@ -198,7 +199,7 @@ namespace CSharpCraft
             }
         }
 
-        public void Del(List<Entity> table, Entity value)
+        public void Del<T>(List<T> table, T value)
         {
             table.Remove(value);
 
@@ -271,7 +272,7 @@ namespace CSharpCraft
 
         public void Pal()
         {
-            Array.Copy(resetColors, colors, colors.Length);
+            Array.Copy(resetColors, sprColors, colors.Length);
         }
 
         public void Pal(double c0 = 0, double c1 = 0)
@@ -279,16 +280,16 @@ namespace CSharpCraft
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            colors[c0Flr] = resetColors[c1Flr];
+            sprColors[c0Flr] = resetColors[c1Flr];
         }
 
         public void Palt()
         {
-            colors[0].A = 0;
+            sprColors[0].A = 0;
             resetColors[0].A = 0;
             for (int i = 1; i <= 15; i++)
             {
-                colors[i].A = 255;
+                sprColors[i].A = 255;
                 resetColors[i].A = 255;
             }
         }
@@ -299,12 +300,12 @@ namespace CSharpCraft
             
             if (!t)
             {
-                colors[colFlr].A = 255;
+                sprColors[colFlr].A = 255;
                 resetColors[colFlr].A = 255;
             }
             else
             {
-                colors[colFlr].A = 0;
+                sprColors[colFlr].A = 0;
                 resetColors[colFlr].A = 0;
             }
         }
@@ -337,9 +338,13 @@ namespace CSharpCraft
                         if (Font.chars[letter][i, j] == 1)
                         {
                             var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
-                            var charEndX = charStartX + cellWidth - CameraOffset.Item1;
+                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
                             var charStartY = (int)((yFlr + i + 0.5 - CameraOffset.Item2) * cellHeight);
-                            batch.DrawLine(pixel, new Vector2(charStartX, charStartY), new Vector2(charEndX, charStartY), colors[cFlr], cellHeight);
+
+                            Vector2 position = new Vector2(charStartX, charStartY);
+                            Vector2 size = new(cellWidth, cellHeight);
+
+                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                         }
                     }
                 }
@@ -386,10 +391,19 @@ namespace CSharpCraft
             int cellHeight = viewportHeight / 128;
 
             var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
-            var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1Flr + ((y2Flr - y1Flr) / 2) - CameraOffset.Item2) * cellHeight;
-            var rectThickness = (y2Flr - y1Flr) * cellHeight;
-            batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
+            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
+
+            var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
+            var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
+
+            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            //var rectThickness = (y2Flr - y1Flr) * cellHeight;
+            //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
+
+            Vector2 position = new(rectStartX, rectStartY);
+            Vector2 size = new(rectSizeX, rectSizeY);
+
+            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
         public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
@@ -410,11 +424,11 @@ namespace CSharpCraft
 
             for (int i = 0; i < resetColors.Length; i++)
             {
-                if (colors[i] != resetColors[i])
+                if (sprColors[i] != resetColors[i])
                 {
                     for (int j = 0; j < resetColors.Length; j++)
                     {
-                        if (colors[i] == resetColors[j])
+                        if (sprColors[i] == resetColors[j])
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
@@ -442,42 +456,59 @@ namespace CSharpCraft
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
+        }
 
-            //    int spriteX = spriteNumberFlr % 16 * spriteWidth;
-            //    int spriteY = spriteNumberFlr / 16 * spriteHeight;
-            //
-            //    // Get the size of the viewport
-            //    int viewportWidth = batch.GraphicsDevice.Viewport.Width;
-            //    int viewportHeight = batch.GraphicsDevice.Viewport.Height;
-            //
-            //    // Calculate the size of each cell
-            //    int cellWidth = viewportWidth / 128;
-            //    int cellHeight = viewportHeight / 128;
-            //
-            //    // Get all pixel data from the texture
-            //    Color[] allColors = new Color[texture.Width * texture.Height];
-            //    texture.GetData(allColors);
-            //
-            //    // Draw each pixel of the sprite
-            //    for (int i = 0; i < spriteHeight * h; i++)
-            //    {
-            //        for (int j = 0; j < spriteWidth * w; j++)
-            //        {
-            //            // Get the color of the pixel
-            //            Color color = allColors[(spriteY + i) * texture.Width + spriteX + j];
-            //
-            //            // If the color is transparent don't draw anything
-            //            if (color.A != 0)
-            //            {
-            //                // Calculate the position and size
-            //                Vector2 position = new(((int)x + (flip_x ? -j : j)) * cellWidth - CameraOffset.Item1, ((int)y + (flip_y ? -i : i)) * cellHeight - CameraOffset.Item2);
-            //                Vector2 size = new(cellWidth, cellHeight);
-            //
-            //                // Draw the pixel
-            //                batch.Draw(pixel, position, null, color, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            //            }
-            //        }
-            //    }
+        public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = 0, double dh = 0, bool flip_x = false, bool flip_y = false)
+        {
+            int sxFlr = (int)Math.Floor(sx);
+            int syFlr = (int)Math.Floor(sy);
+            int swFlr = (int)Math.Floor(sw);
+            int shFlr = (int)Math.Floor(sh);
+            int dxFlr = (int)Math.Floor(dx);
+            int dyFlr = (int)Math.Floor(dy);
+
+            var spriteWidth = swFlr;
+            var spriteHeight = shFlr;
+
+            //int spriteX = spriteNumberFlr % 16 * spriteWidth;
+            //int spriteY = spriteNumberFlr / 16 * spriteHeight;
+
+            int colorCache = 0;
+
+            for (int i = 0; i < resetColors.Length; i++)
+            {
+                if (sprColors[i] != resetColors[i])
+                {
+                    for (int j = 0; j < resetColors.Length; j++)
+                    {
+                        if (sprColors[i] == resetColors[j])
+                        {
+                            colorCache += (i * 100 + j) * 1000;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            //if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
+            //{
+                var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr * swFlr, shFlr * shFlr);
+            //    spriteTextures[spriteNumberFlr + colorCache] = texture;
+            //}
+
+            // Get the size of the viewport
+            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+
+            //Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            Vector2 position = new(((flip_x ? sxFlr + (2 * spriteWidth * swFlr) - spriteWidth : sxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? syFlr + (2 * spriteHeight * shFlr) - spriteHeight : syFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 size = new(cellWidth, cellHeight);
+            SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
+
+            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
 
         public void Dispose()
