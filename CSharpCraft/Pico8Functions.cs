@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
@@ -20,6 +21,13 @@ namespace CSharpCraft
         private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
+
+        public bool prev0 = false;
+        public bool prev1 = false;
+        public bool prev2 = false;
+        public bool prev3 = false;
+        public bool prev4 = false;
+        public bool prev5 = false;
 
         private static Color HexToColor(string hex)
         {
@@ -105,6 +113,30 @@ namespace CSharpCraft
             table[index] = value;
         }
 
+        public bool Btn(int i, int p = 0)
+        {
+            KeyboardState state = Keyboard.GetState();
+
+            if (i == 0) { return state.IsKeyDown(Keys.A); }
+            if (i == 1) { return state.IsKeyDown(Keys.D); }
+            if (i == 2) { return state.IsKeyDown(Keys.W); }
+            if (i == 3) { return state.IsKeyDown(Keys.S); }
+            if (i == 4) { return state.IsKeyDown(Keys.M); }
+            if (i == 5) { return state.IsKeyDown(Keys.N); }
+            else { return false; }
+        }
+
+        public bool Btnp(int i, int p = 0)
+        {
+            if (i == 0 && Btn(i) && !prev0) { return true; }
+            if (i == 1 && Btn(i) && !prev1) { return true; }
+            if (i == 2 && Btn(i) && !prev2) { return true; }
+            if (i == 3 && Btn(i) && !prev3) { return true; }
+            if (i == 4 && Btn(i) && !prev4) { return true; }
+            if (i == 5 && Btn(i) && !prev5) { return true; }
+            else { return false; }
+        }
+
         public void Camera(double x = 0, double y = 0)
         {
             int xFlr = (int)Math.Floor(x);
@@ -154,7 +186,7 @@ namespace CSharpCraft
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        batch.Draw(pixel, position, null, sprColors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -193,7 +225,7 @@ namespace CSharpCraft
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        batch.Draw(pixel, position, null, sprColors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -202,11 +234,6 @@ namespace CSharpCraft
         public void Del<T>(List<T> table, T value)
         {
             table.Remove(value);
-
-            //for (int i = 0; i <= table.Count(); i++)
-            //{
-            //    if (table[i] == value) { table.RemoveAt(i); }
-            //}
         }
 
         public void Map(double celx, double cely, double sx, double sy, double celw, double celh)
@@ -344,7 +371,7 @@ namespace CSharpCraft
                             Vector2 position = new Vector2(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
 
-                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                            batch.Draw(pixel, position, null, sprColors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                         }
                     }
                 }
@@ -458,14 +485,16 @@ namespace CSharpCraft
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
 
-        public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = 0, double dh = 0, bool flip_x = false, bool flip_y = false)
+        public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = -1, double dh = -1, bool flip_x = false, bool flip_y = false)
         {
             int sxFlr = (int)Math.Floor(sx);
             int syFlr = (int)Math.Floor(sy);
             int swFlr = (int)Math.Floor(sw);
             int shFlr = (int)Math.Floor(sh);
-            int dxFlr = (int)Math.Floor(dx);
-            int dyFlr = (int)Math.Floor(dy);
+            int dxFlr = (int)Math.Floor(dx) - 8;
+            int dyFlr = (int)Math.Floor(dy) - 8;
+            int dwFlr = dw == -1 ? swFlr : (int)Math.Floor(dw);
+            int dhFlr = dh == -1 ? shFlr : (int)Math.Floor(dh);
 
             var spriteWidth = swFlr;
             var spriteHeight = shFlr;
@@ -492,7 +521,7 @@ namespace CSharpCraft
 
             //if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             //{
-                var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr * swFlr, shFlr * shFlr);
+                var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr, shFlr);
             //    spriteTextures[spriteNumberFlr + colorCache] = texture;
             //}
 
@@ -504,8 +533,8 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? sxFlr + (2 * spriteWidth * swFlr) - spriteWidth : sxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? syFlr + (2 * spriteHeight * shFlr) - spriteHeight : syFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
-            Vector2 size = new(cellWidth, cellHeight);
+            Vector2 position = new(((flip_x ? dxFlr + (2 * spriteWidth * swFlr) - spriteWidth : dxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + (2 * spriteHeight * shFlr) - spriteHeight : dyFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 size = new(dwFlr, dhFlr);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);

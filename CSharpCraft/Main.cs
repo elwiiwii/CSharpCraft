@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Reflection.Emit;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Schema;
@@ -19,71 +20,79 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
-    public class Material
-    {
-        public string? Name { get; set; }
-        public int? Spr { get; set; }
-        public int[]? Pal { get; set; }
-        public bool? Becraft { get; set; }
-        public int Bigspr { get; set; }
-        public bool Drop { get; set; }
-    }
-
-    public class Ground
-    {
-        public double Id { get; set; }
-        public double Gr { get; set; }
-        public Material? Mat { get; set; }
-        public Ground? Tile { get; set; }
-        public double Life { get; set; }
-        public bool Istree { get; set; }
-        public int[]? Pal { get; set; }
-    }
-
-    public class Level
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Sx { get; set; }
-        public double Sy { get; set; }
-        public bool Isunder { get; set; }
-        public double Stx { get; set; }
-        public double Sty { get; set; }
-        public List<Entity> Ent { get; set; }
-        public List<Entity> Ene { get; set; }
-        public double[] Dat { get; set; }
-    }
 
     public class Entity
     {
-        public Material? Type { get; set; }
+        public double Banim { get; set; }
+        public double C { get; set; }
         public int? Count { get; set; }
+        public double Dtim { get; set; }
+        public double Dx { get; set; }
+        public double Dy { get; set; }
+        public Material? Giveitem { get; set; }
+        public bool Hascol { get; set; }
+        public double Life { get; set; }
         public List<Entity>? List { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Vx { get; set; }
-        public double Vy { get; set; }
+        public double Lrot { get; set; }
+        public double Off { get; set; }
+        public double Ox { get; set; }
+        public double Oy { get; set; }
+        public double Panim { get; set; }
+        public int Power { get; set; }
+        public double Prot { get; set; }
+        public Entity[]? Req { get; set; }
+        public double Sel { get; set; }
+        public int? Spr { get; set; }
+        public double Step { get; set; }
         public string? Text { get; set; }
         public string? Text2 { get; set; }
         public double Timer { get; set; }
-        public double C { get; set; }
-        public int Power { get; set; }
-        public Entity[]? Req { get; set; }
-        public double Sel { get; set; }
-        public double Off { get; set; }
-        public int Spr { get; set; }
-        public double Life { get; set; }
-        public double Prot { get; set; }
-        public double Lrot { get; set; }
-        public double Panim { get; set; }
-        public double Banim { get; set; }
-        public double Dtim { get; set; }
-        public double Step { get; set; }
-        public double Ox { get; set; }
-        public double Oy { get; set; }
-        public bool Hascol { get; set; }
-        public Material Giveitem { get; set; }
+        public Material? Type { get; set; }
+        public double Vx { get; set; }
+        public double Vy { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
     }
+
+
+    public class Ground
+    {
+        public double Gr { get; set; }
+        public double Id { get; set; }
+        public bool Istree { get; set; }
+        public double Life { get; set; }
+        public Material? Mat { get; set; }
+        public int[]? Pal { get; set; }
+        public Ground? Tile { get; set; }
+    }
+
+
+    public class Level
+    {
+        public double[]? Dat { get; set; }
+        public List<Entity>? Ene { get; set; }
+        public List<Entity>? Ent { get; set; }
+        public bool Isunder { get; set; }
+        public double Stx { get; set; }
+        public double Sty { get; set; }
+        public double Sx { get; set; }
+        public double Sy { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+
+
+    public class Material
+    {
+        public bool? Becraft { get; set; }
+        public int Bigspr { get; set; }
+        public bool Drop { get; set; }
+        public int Givelife { get; set; }
+        public string? Name { get; set; }
+        public int[]? Pal { get; set; }
+        public int Spr { get; set; }
+    }
+
 
     class FNAGame : Game
     {
@@ -96,97 +105,99 @@ namespace CSharpCraft
             g.Run();
         }
 
+
 #nullable enable
+
+
+        private List<Entity> anvilrecipe;
+
+        private double banim;
         private SpriteBatch batch;
-        private Texture2D pixel;
-        private Texture2D SpriteSheet1;
-        private Pico8Functions pico8Functions;
-        private readonly GraphicsDeviceManager graphics;
-        private double frameRate = 0.0;
-        private int frameCounter = 0;
+
+        private bool canswitchlevel = false;
+        private Level cave;
+        private List<Entity> chemrecipe;
+        private double clx;
+        private double cly;
+        private double cmx;
+        private double cmy;
+        private double coffx;
+        private double coffy;
+        private Entity curitem;
+        private Entity curmenu;
+        private Level currentlevel;
+        private readonly Level currentLevel;
+
+        private double[] Dat;
+        private double[] data = new double[8192];
+
         private TimeSpan elapsedTime = TimeSpan.Zero;
+        private List<Entity> Ene;
+        private List<Entity> enemies = [];
+        private List<Entity> Ent;
+        private List<Entity> entities = [];
+
+        private List<Entity> factoryrecipe;
+        private int frameCounter = 0;
+        private double frameRate = 0.0;
+        private List<Entity> furnacerecipe;
+
+        private readonly GraphicsDeviceManager graphics;
+
+        private double holex;
+        private double holey;
+
+        private List<Entity> invent = [];
+        private Level island;
+
+        private double[][] level;
+        private double levelsx;
+        private double levelsy;
+        private double levelx;
+        private double levely;
+        private bool levelunder = false;
+        private double llife;
+        private double lrot;
+        private double lstam;
+
+        private Entity menuinvent;
+
+        private List<Entity> nearenemies;
+
+        private double panim;
+        private Pico8Functions p8;
+        private Texture2D pixel;
+        private double plife;
+        private double plx;
+        private double ply;
+        private double prot;
+        private double pstam;
+
+        private int[][] Rndwat = new int[16][];
+
+        private Texture2D SpriteSheet1;
+        private double stamcost;
+        private List<Entity> stonebenchrecipe;
+        private bool switchlevel = false;
+
+        private double time;
+        private int tooglemenu;
+        readonly int[] typecount = new int[11];
+
+        private List<Entity> workbenchrecipe;
+
+
+#nullable disable
+
 
         private bool lb4 = false;
         private bool lb5 = false;
         private bool block5 = false;
 
-        private double time;
-
-        private double plx;
-        private double ply;
-        private double prot;
-        private double lrot;
-        private double panim;
-        private double banim;
-        private double pstam;
-        private double lstam;
-        private double plife;
-        private double llife;
-
-        private Level currentlevel;
-
-        private bool levelunder = false;
-        private double levelsx;
-        private double levelsy;
-        private double levelx;
-        private double levely;
-        private double[] data = [8192];
-        private double holex;
-        private double holey;
-        private double clx;
-        private double cly;
-        private double cmx;
-        private double cmy;
-
-        private double[][] level;
-        readonly int[] typecount = new int[11];
-
-        private readonly Level currentLevel;
-
-        private int[][] Rndwat = new int[16][];
-
-        private double coffx;
-        private double coffy;
-
-        private bool switchlevel = false;
-        private bool canswitchlevel = false;
-
-        private Level cave;
-        private Level island;
-
-        private double stamcost;
-
-        private int[] nearenemies;
-
-        private List<Entity> entities = new();
-
         private int enstep_wait = 0;
         private int enstep_walk = 1;
         private int enstep_chase = 2;
         private int enstep_patrol = 3;
-
-        private List<Entity> invent = new();
-
-        private List<Entity> enemies = new();
-
-        List<Entity> furnacerecipe;
-        List<Entity> workbenchrecipe;
-        List<Entity> stonebenchrecipe;
-        List<Entity> anvilrecipe;
-        List<Entity> factoryrecipe;
-        List<Entity> chemrecipe;
-
-        List<Entity> Ent;
-        List<Entity> Ene;
-        private double[] Dat;
-
-        private Entity curmenu;
-
-        private int tooglemenu;
-        private Entity curitem;
-        private Entity menuinvent;
-
-#nullable disable
 
         static readonly string[] pwrnames = ["wood", "stone", "iron", "gold", "gem"];
         static readonly int[][] pwrpal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
@@ -283,16 +294,17 @@ namespace CSharpCraft
             graphics.SynchronizeWithVerticalRetrace = true;
         }
 
+
         protected override void Initialize()
         {
             base.Initialize();
 
             UpdateViewport();
 
-            Array.Copy(pico8Functions.colors, pico8Functions.resetColors, pico8Functions.colors.Length);
-            Array.Copy(pico8Functions.colors, pico8Functions.sprColors, pico8Functions.colors.Length);
+            Array.Copy(p8.colors, p8.resetColors, p8.colors.Length);
+            Array.Copy(p8.colors, p8.sprColors, p8.colors.Length);
 
-            pico8Functions.Palt();
+            p8.Palt();
 
             furnacerecipe = [];
             workbenchrecipe = [];
@@ -301,16 +313,16 @@ namespace CSharpCraft
             factoryrecipe = [];
             chemrecipe = [];
 
-            pico8Functions.Add(factoryrecipe, Recipe(Instc(sail, 1), [Instc(fabric, 3), Instc(glue, 1)]));
-            pico8Functions.Add(factoryrecipe, Recipe(Instc(boat), [Instc(wood, 30), Instc(ironbar, 8), Instc(glue, 5), Instc(sail, 4)]));
+            p8.Add(factoryrecipe, Recipe(Instc(sail, 1), [Instc(fabric, 3), Instc(glue, 1)]));
+            p8.Add(factoryrecipe, Recipe(Instc(boat), [Instc(wood, 30), Instc(ironbar, 8), Instc(glue, 5), Instc(sail, 4)]));
 
-            pico8Functions.Add(chemrecipe, Recipe(Instc(glue, 1), [Instc(glass, 1), Instc(ichor, 3)]));
-            pico8Functions.Add(chemrecipe, Recipe(Instc(potion, 1), [Instc(glass, 1), Instc(ichor, 1)]));
+            p8.Add(chemrecipe, Recipe(Instc(glue, 1), [Instc(glass, 1), Instc(ichor, 3)]));
+            p8.Add(chemrecipe, Recipe(Instc(potion, 1), [Instc(glass, 1), Instc(ichor, 1)]));
 
-            pico8Functions.Add(furnacerecipe, Recipe(Instc(ironbar, 1), [Instc(iron, 3)]));
-            pico8Functions.Add(furnacerecipe, Recipe(Instc(goldbar, 1), [Instc(gold, 3)]));
-            pico8Functions.Add(furnacerecipe, Recipe(Instc(glass, 1), [Instc(sand, 3)]));
-            pico8Functions.Add(furnacerecipe, Recipe(Instc(bread, 1), [Instc(wheat, 5)]));
+            p8.Add(furnacerecipe, Recipe(Instc(ironbar, 1), [Instc(iron, 3)]));
+            p8.Add(furnacerecipe, Recipe(Instc(goldbar, 1), [Instc(gold, 3)]));
+            p8.Add(furnacerecipe, Recipe(Instc(glass, 1), [Instc(sand, 3)]));
+            p8.Add(furnacerecipe, Recipe(Instc(bread, 1), [Instc(wheat, 5)]));
 
             Material[] tooltypes = [haxe, pick, sword, shovel, scythe];
             int[] quant = [5, 5, 7, 7, 7];
@@ -322,62 +334,70 @@ namespace CSharpCraft
             {
                 for (int i = 0; i < tooltypes.Length; i++)
                 {
-                    pico8Functions.Add(crafter[j], Recipe(Setpower(pows[j], Instc(tooltypes[i])), [Instc(materials[j], quant[i] * mult[j])]));
+                    p8.Add(crafter[j], Recipe(Setpower(pows[j], Instc(tooltypes[i])), [Instc(materials[j], quant[i] * mult[j])]));
                 }
             }
 
-            pico8Functions.Add(workbenchrecipe, Recipe(Instc(workbench, null, workbenchrecipe), [Instc(wood, 15)]));
-            pico8Functions.Add(workbenchrecipe, Recipe(Instc(stonebench, null, stonebenchrecipe), [Instc(stone, 15)]));
-            pico8Functions.Add(workbenchrecipe, Recipe(Instc(factory, null, factoryrecipe), [Instc(wood, 15), Instc(stone, 15)]));
-            pico8Functions.Add(workbenchrecipe, Recipe(Instc(chem, null, chemrecipe), [Instc(wood, 10), Instc(glass, 3), Instc(gem, 10)]));
-            pico8Functions.Add(workbenchrecipe, Recipe(Instc(chest), [Instc(wood, 15), Instc(stone, 10)]));
+            p8.Add(workbenchrecipe, Recipe(Instc(workbench, null, workbenchrecipe), [Instc(wood, 15)]));
+            p8.Add(workbenchrecipe, Recipe(Instc(stonebench, null, stonebenchrecipe), [Instc(stone, 15)]));
+            p8.Add(workbenchrecipe, Recipe(Instc(factory, null, factoryrecipe), [Instc(wood, 15), Instc(stone, 15)]));
+            p8.Add(workbenchrecipe, Recipe(Instc(chem, null, chemrecipe), [Instc(wood, 10), Instc(glass, 3), Instc(gem, 10)]));
+            p8.Add(workbenchrecipe, Recipe(Instc(chest), [Instc(wood, 15), Instc(stone, 10)]));
 
-            pico8Functions.Add(stonebenchrecipe, Recipe(Instc(anvil, null, anvilrecipe), [Instc(iron, 25), Instc(wood, 10), Instc(stone, 25)]));
-            pico8Functions.Add(stonebenchrecipe, Recipe(Instc(furnace, null, furnacerecipe), [Instc(wood, 10), Instc(stone, 15)]));
+            p8.Add(stonebenchrecipe, Recipe(Instc(anvil, null, anvilrecipe), [Instc(iron, 25), Instc(wood, 10), Instc(stone, 25)]));
+            p8.Add(stonebenchrecipe, Recipe(Instc(furnace, null, furnacerecipe), [Instc(wood, 10), Instc(stone, 15)]));
 
-            //curmenu = mainmenu;
+            curmenu = mainmenu;
 
             Resetlevel();
         }
 
-        private static Material Item(string n, int s, int[] p = null, bool? bc = null)
+
+        private void Additem(Material mat, double count, double hitx, double hity)
         {
-            return new() { Name = n, Spr = s, Pal = p, Becraft = bc };
+            var countFlr = (int)Math.Floor(count);
+
+            for (int i = 0; i < countFlr; i++)
+            {
+                var gi = Rentity(mat, Math.Floor(hitx / 16) * 16 + new Random().Next(14) + 1, Math.Floor(hity / 16) * 16 + new Random().Next(14) + 1);
+                gi.Giveitem = mat;
+                gi.Hascol = true;
+                gi.Timer = 110 + new Random().Next(20);
+                p8.Add(entities, gi);
+            }
         }
 
-        private Entity Inst(Material it)
+
+        private void Additeminlist(List<Entity> list, Entity it, int p)
         {
-            return new() { Type = it };
+            var it2 = Isinlist(list, it);
+            if (it2 == null || it2.Count == null)
+            {
+                Addplace(list, it, p);
+            }
+            else
+            {
+                it2.Count += it.Count;
+            }
         }
 
-        private Entity Instc(Material it, int? c = null, List<Entity> l = null)
+
+        private void Addplace(List<Entity> l, Entity e, int p)
         {
-            return new() { Type = it, Count = c, List = l }; 
+            if (p < l.Count && p > 0)
+            {
+                for (int i = l.Count; i > p; i--)
+                {
+                    l[i + 1] = l[i];
+                }
+                l[p] = e;
+            }
+            else
+            {
+                p8.Add(l, e);
+            }
         }
 
-        private Entity Setpower(int v, Entity i)
-        {
-            i.Power = v;
-            return i;
-        }
-
-        private Entity Entity(Material it, double xx, double yy, double vxx, double vyy)
-        {
-            return new() { Type = it, X = xx, Y = yy, Vx = vxx, Vy = vyy };
-        }
-
-        private Entity Rentity(Material it, double xx, double yy)
-        {
-            return Entity(it, xx, yy, new Random().Next(3) - 1.5, new Random().Next(3) - 1.5);
-        }
-
-        private Entity Settext(string t, double c, double time, Entity e)
-        {
-            e.Text = t;
-            e.Timer = time;
-            e.C = c;
-            return e;
-        }
 
         private static Material Bigspr(int spr, Material ent)
         {
@@ -386,10 +406,6 @@ namespace CSharpCraft
             return ent;
         }
 
-        private Entity Recipe(Entity m, Entity[] require)
-        {
-            return new() { Type = m.Type, Power = m.Power, Count = m.Count, Req = require, List = m.List };
-        }
 
         private bool Cancraft(Entity req)
         {
@@ -405,6 +421,31 @@ namespace CSharpCraft
             return can;
         }
 
+
+        private void Cleardata(double x, double y)
+        {
+            var (i, j) = Getmcoord(x, y);
+            if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
+            {
+                return;
+            }
+            data[(int)(i + j * levelsx)] = 0; // original code has null
+        }
+
+
+        private static Entity Cmenu(Material t, List<Entity> l = null, int? s = null, string te1 = null, string te2 = null)
+        {
+            return new() { List = l, Type = t, Sel = 1, Off = 0, Spr = s, Text = te1, Text2 = te2 };
+        }
+
+
+        private bool Comp(double i, double j, Ground gr)
+        {
+            var gr2 = Getdirectgr(i, j);
+            return gr != null && gr2 != null && gr.Gr == gr2.Gr;
+        }
+
+
         private void Craft(Entity req)
         {
             for (int i = 0; i < req.Req.Length; i++)
@@ -414,137 +455,438 @@ namespace CSharpCraft
             Additeminlist(invent, Setpower(req.Power, Instc(req.Type, req.Count, req.List)), 0);
         }
 
-        private void Setpal(int[] l)
+
+        private Level Createlevel(int xx, int yy, int sizex, int sizey, bool isUnderground)
         {
-            for (int i = 0; i < l.Length; i++)
+            var l = new Level { X = xx, Y = yy, Sx = sizex, Sy = sizey, Isunder = isUnderground, Ent = [], Ene = [], Dat = new double[8192] };
+            Setlevel(l);
+            levelunder = isUnderground;
+            Createmap();
+            Fillene(l);
+            l.Stx = (holex - levelx) * 16 + 8;
+            l.Sty = (holey - levely) * 16 + 8;
+            return l;
+        }
+
+
+        private void Createmap()
+        {
+            var needmap = true;
+
+            while (needmap)
             {
-                pico8Functions.Pal(i + 1, l[i]);
+                needmap = false;
+
+                if (levelunder)
+                {
+                    level = Createmapstep(levelsx, levelsy, 3, 8, 1, 9, 10);
+
+                    if (typecount[8] < 30) { needmap = true; }
+                    if (typecount[9] < 20) { needmap = true; }
+                    if (typecount[10] < 15) { needmap = true; }
+                }
+                else
+                {
+                    level = Createmapstep(levelsx, levelsy, 0, 1, 2, 3, 4);
+
+                    if (typecount[3] < 30) { needmap = true; }
+                    if (typecount[4] < 30) { needmap = true; }
+                }
+
+                if (!needmap)
+                {
+                    plx = -1;
+                    ply = -1;
+
+                    for (int i = 0; i <= 500; i++)
+                    {
+                        var depx = (int)Math.Floor(levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
+                        var depy = (int)Math.Floor(levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
+                        var c = level[depx][depy];
+
+                        if (c == 1 || c == 2)
+                        {
+                            plx = depx * 16 + 8;
+                            ply = depy * 16 + 8;
+                            break;
+                        }
+                    }
+
+                    if (plx < 0)
+                    {
+                        needmap = true;
+                    }
+                }
+            }
+
+            for (int i = 0; i < levelsx; i++)
+            {
+                for (int j = 0; j < levelsy; j++)
+                {
+                    p8.Mset(i + levelx, j + levely, level[i][j]);
+                }
+            }
+
+            holex = levelsx / 2 + levelx;
+            holey = levelsy / 2 + levely;
+
+            for (int i = -1; i <= 1; i++)
+            {
+                for (int j = -1; j <= 1; j++)
+                {
+                    p8.Mset(holex + i, holey + j, levelunder ? 1 : 3);
+                }
+            }
+
+            p8.Mset(holex, holey, 11);
+
+            clx = plx;
+            cly = ply;
+
+            cmx = plx;
+            cmy = ply;
+        }
+
+
+        private double[][] Createmapstep(double sx, double sy, double a, double b, double c, double d, double e)
+        {
+            int sxFlr = (int)Math.Floor(sx);
+            int syFlr = (int)Math.Floor(sy);
+
+            var cur = Noise(sxFlr, syFlr, 0.9, 0.2, sxFlr);
+            var cur2 = Noise(sxFlr, syFlr, 0.9, 0.4, 8);
+            var cur3 = Noise(sxFlr, syFlr, 0.9, 0.3, 8);
+            var cur4 = Noise(sxFlr, syFlr, 0.8, 1.1, 4);
+
+            for (int i = 0; i < 11; i++)
+            {
+                typecount[i] = 0;
+            }
+
+            for (int i = 0; i <= sxFlr; i++)
+            {
+                for (int j = 0; j <= syFlr; j++)
+                {
+                    var v = Math.Abs(cur[i][j] - cur2[i][j]);
+                    var v2 = Math.Abs(cur[i][j] - cur3[i][j]);
+                    var v3 = Math.Abs(cur[i][j] - cur4[i][j]);
+                    var dist = Math.Max(Math.Abs((double)i / sxFlr - 0.5) * 2, Math.Abs((double)j / syFlr - 0.5) * 2);
+                    dist = dist * dist * dist * dist;
+                    var coast = v * 4 - dist * 4;
+
+                    var id = a;
+                    if (coast > 0.3) { id = b; } // sand
+                    if (coast > 0.6) { id = c; } // grass
+                    if (coast > 0.3 && v2 > 0.5) { id = d; } // stone
+                    if (id == c && v3 > 0.5) { id = e; } // tree
+
+                    typecount[(int)id] += 1;
+
+                    cur[i][j] = id;
+                }
+            }
+
+            return cur;
+        }
+
+
+        private void Dbar(double px, double py, double v, double m, double c, double c2)
+        {
+            p8.Pal();
+            var pe = px + v * 0.299988;
+            var pe2 = px + m * 0.299988;
+            p8.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
+            p8.Rectfill(px, py, pe, py + 3, c2);
+            p8.Rectfill(px, py, Math.Max(px, pe - 1), py + 2, c);
+            if (m > v) { p8.Rectfill(pe + 1, py, pe2, py + 3, 10); }
+        }
+
+
+        private void Denemies()
+        {
+            Sorty(enemies);
+
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (e.Type == player)
+                {
+                    p8.Pal();
+                    Dplayer(plx, ply, prot, panim, banim, true);
+                }
+                else
+                {
+                    if (Isin(e, 72))
+                    {
+                        p8.Pal();
+                        p8.Pal(15, 3);
+                        p8.Pal(4, 1);
+                        p8.Pal(2, 8);
+                        p8.Pal(1, 1);
+
+                        Dplayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, false);
+                    }
+                }
             }
         }
 
-        private static Entity Cmenu(Material t, List<Entity>? l, int? s = null, string te1 = null, string te2 = null)
+
+        private void Dent()
         {
-            return new() { List = l, Type = t, Sel = 1, Off = 0, Spr = (int)s, Text = te1, Text2 = te2 };
+            for (int i = 0; i < entities.Count(); i++)
+            {
+                var e = entities[i];
+                p8.Pal();
+                if (e.Type.Pal != null) { Setpal(e.Type.Pal); }
+                if (0 != 0) { }
+                if (e.Type.Bigspr != null)
+                {
+                    p8.Spr(e.Type.Bigspr, e.X - 8, e.Y - 8, 2, 2);
+                }
+                else
+                {
+                    if (e.Type == etext)
+                    {
+                        Printb(e.Text, e.X - 2, e.Y - 4, e.C);
+                    }
+                    else
+                    {
+                        if (e.Timer != null && e.Timer < 45 && e.Timer % 4 > 2)
+                        {
+                            for (int j = 0; j <= 15; j++)
+                            {
+                                p8.Palt(j, true);
+                            }
+                        }
+                        p8.Spr((double)e.Type.Spr, e.X - 4, e.Y - 4);
+                    }
+                }
+            }
         }
 
-        private int Howmany(List<Entity> list, Entity it)
+
+        private double Dirgetdata(double i, double j, double @default)
         {
-            var count = 0;
-            for (int i = 0; i < list.Count; i++)
+            int iFlr = (int)Math.Floor(i);
+            int jFlr = (int)Math.Floor(j);
+            int levelsxFlr = (int)Math.Floor(levelsx);
+
+            int g = iFlr + jFlr * levelsxFlr;
+            if (data[g] == 0)
             {
-                if (list[i].Type == it.Type)
+                data[g] = @default;
+            }
+            Console.WriteLine(data[g]);
+            return data[g];
+        }
+
+
+        private void Dirsetdata(double i, double j, double v)
+        {
+            data[(int)(i + j * levelsx)] = v;
+        }
+
+
+        private void Dplayer(double x, double y, double rot, double anim, double subanim, bool isplayer)
+        {
+            rot = -rot * 2 * Math.PI;
+
+            var cr = Math.Cos(rot);
+            var sr = Math.Sin(rot);
+            var cv = -sr;
+            var sv = cr;
+
+            x = Math.Floor(x);
+            y = Math.Floor(y - 4);
+
+            var lan = Math.Sin(anim * 2) * 1.5;
+            var bel = Getgr(x, y);
+
+            if (bel == grwater)
+            {
+                y += 4;
+                p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 6);
+                p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
+
+                var anc = 3 + time * 3 % 1 * 3;
+                p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc, 6);
+                p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc, 6);
+            }
+            else
+            {
+                p8.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
+                p8.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
+            }
+
+            var blade = (rot + 0.25) % 1;
+
+            if (subanim > 0)
+            {
+                blade = blade - 0.3 + subanim * 0.04;
+            }
+
+            var bcr = Math.Cos(blade);
+            var bsr = Math.Sin(blade);
+
+            (int mx, int my) = Mirror(blade);
+
+            var weap = 75;
+
+            if (isplayer && curitem != null)
+            {
+                p8.Pal();
+                weap = (int)curitem.Type.Spr;
+                if (curitem.Power != null)
                 {
-                    if (it.Power == null || it.Power == list[i].Power)
+                    Setpal(pwrpal[curitem.Power]);
+                }
+                if (curitem.Type != null && curitem.Type.Pal != null)
+                {
+                    Setpal(curitem.Type.Pal);
+                }
+            }
+
+            p8.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7 - 8, 1, 1, mx == 1, my == 1);
+
+            if (isplayer) { p8.Pal(); }
+
+            if (bel != grwater)
+            {
+                p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
+                p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
+
+                (int mx2, int my2) = Mirror((rot + 0.75) % 1);
+                p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7 - 8, 1, 1, mx2 == 0, my2 == 1);
+            }
+
+            p8.Circfill(x + cr, y + sr - 2, 4, 2);
+            p8.Circfill(x + cr, y + sr, 4, 2);
+            p8.Circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
+            p8.Circfill(x - cr, y - sr - 3, 3, 4);
+
+        }
+
+
+        private void Drawback()
+        {
+            var ci = (int)Math.Floor((clx - 64) / 16);
+            var cj = (int)Math.Floor((cly - 64) / 16);
+
+            for (int i = ci; i <= ci + 8; i++)
+            {
+                for (int j = cj; j <= cj + 8; j++)
+                {
+                    var gr = Getdirectgr(i, j);
+
+                    var gi = (i - ci) * 2 + 64;
+                    var gj = (j - cj) * 2 + 32;
+
+                    if (gr != null && gr.Gr == 1) // sand
                     {
-                        if (list[i].Count != null)
+                        var sv = 0;
+                        if (gr == grfarm || gr == grwheat) { sv = 3; }
+                        p8.Mset(gi, gj, Rndsand(i, j) + sv);
+                        p8.Mset(gi + 1, gj, Rndsand(i + 0.5, j) + sv);
+                        p8.Mset(gi, gj + 1, Rndsand(i, j + 0.5) + sv);
+                        p8.Mset(gi + 1, gj + 1, Rndsand(i + 0.5, j + 0.5) + sv);
+                    }
+                    else
+                    {
+                        var u = Comp(i, j - 1, gr);
+                        var d = Comp(i, j + 1, gr);
+                        var l = Comp(i - 1, j, gr);
+                        var r = Comp(i + 1, j, gr);
+
+                        var b = gr == grrock ? 21 : gr == grwater ? 26 : 16;
+
+                        p8.Mset(gi, gj, b + (l ? (u ? (Comp(i - 1, j - 1, gr) ? 17 + Rndcenter(i, j) : 20) : 1) : (u ? 16 : 0)));
+                        p8.Mset(gi + 1, gj, b + (r ? (u ? (Comp(i + 1, j - 1, gr) ? 17 + Rndcenter(i + 0.5, j) : 19) : 1) : (u ? 18 : 2)));
+                        p8.Mset(gi, gj + 1, b + (l ? (d ? (Comp(i - 1, j + 1, gr) ? 17 + Rndcenter(i, j + 0.5) : 4) : 33) : (d ? 16 : 32)));
+                        p8.Mset(gi + 1, gj + 1, b + (r ? (d ? (Comp(i + 1, j + 1, gr) ? 17 + Rndcenter(i + 0.5, j + 0.5) : 3) : 33) : (d ? 18 : 34)));
+
+                    }
+                }
+            }
+
+            p8.Pal();
+
+            if (levelunder)
+            {
+                p8.Pal(15, 5);
+                p8.Pal(4, 1);
+            }
+
+            p8.Map(64, 32, ci * 16, cj * 16, 18, 18);
+
+            for (int i = ci - 1; i <= ci + 8; i++)
+            {
+                for (int j = cj - 1; j <= cj + 8; j++)
+                {
+                    var gr = Getdirectgr(i, j);
+
+                    if (gr != null)
+                    {
+                        var gi = i * 16;
+                        var gj = j * 16;
+
+                        p8.Pal();
+
+                        if (gr == grwater)
                         {
-                            count += (int)list[i].Count;
+                            Watanim(i, j);
+                            Watanim(i + 0.5, j);
+                            Watanim(i, j + 0.5);
+                            Watanim(i + 0.5, j + 0.5);
                         }
-                        else
+
+                        if (gr == grwheat)
                         {
-                            count += 1;
+                            var d = Dirgetdata(i, j, 0) - time;
+                            for (int pp = 2; pp <= 4; pp++)
+                            {
+                                p8.Pal(pp, 3);
+                                if (d > (10 - pp * 2)) { p8.Palt(pp, true); }
+                            }
+                            if (d < 0) { p8.Pal(4, 9); }
+                            Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, Rndsand);
+                        }
+
+                        if (gr.Istree)
+                        {
+                            Setpal(gr.Pal);
+
+                            Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
+                        }
+
+                        if (gr == grhole)
+                        {
+                            p8.Pal();
+                            if (!levelunder)
+                            {
+                                p8.Palt(0, false);
+                                p8.Spr(31, gi, gj, 1, 2);
+                                p8.Spr(31, gi + 8, gj, 1, 2, true); // changed +8 to +16 because of a temporary spr change
+                            }
+                            p8.Palt();
+                            p8.Spr(77, gi + 4, gj, 1, 2);
                         }
                     }
                 }
             }
-            return count;
         }
 
-        private Entity Isinlist(List<Entity> list, Entity it)
+
+        private bool Entcolfree(double x, double y, Entity e)
         {
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i].Type == it.Type)
-                {
-                    if (it.Power == null || it.Power == list[i].Power)
-                    {
-                        return list[i];
-                    }
-                }
-            }
-            return null;
+            return Math.Max(Math.Abs(e.X - x), Math.Abs(e.Y - y)) > 8;
         }
 
-        private void Reminlist(List<Entity> list, Entity elem)
+
+        private Entity Entity(Material it, double xx, double yy, double vxx, double vyy)
         {
-            var it = Isinlist(list, elem);
-            if (it == null)
-            {
-                return;
-            }
-            if (it.Count != null)
-            {
-                it.Count -= elem.Count;
-                if (it.Count <= 0)
-                {
-                    pico8Functions.Del(list, it);
-                }
-            }
-            else
-            {
-                pico8Functions.Del(list, it);
-            }
+            return new() { Type = it, X = xx, Y = yy, Vx = vxx, Vy = vyy };
         }
 
-        private void Additeminlist(List<Entity> list, Entity it, int p)
-        {
-            var it2 = Isinlist(list, it);
-            if (it2 == null || it2.Count == null)
-            {
-                Addplace(list, it, p);
-            }
-            else
-            {
-                it2.Count += it.Count;
-            }
-        }
-
-        private void Addplace(List<Entity> l, Entity e, int p)
-        {
-            if (p < l.Count && p > 0)
-            {
-                for (int i = l.Count; i > p; i--)
-                {
-                    l[i + 1] = l[i];
-                }
-                l[p] = e;
-            }
-            else
-            {
-                pico8Functions.Add(l, e);
-            }
-        }
-
-        private bool Isin(Entity e, int size)
-        {
-            return e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size;
-        }
-
-        private double Lerp(double a, double b, double alpha)
-        {
-            return a * (1.0 - alpha) + b * alpha;
-        }
-
-        private double Getinvlen(double x, double y)
-        {
-            return 1 / Getlen(x, y);
-        }
-
-        private double Getlen(double x, double y)
-        {
-            return Math.Sqrt(x * x + y * y + 0.001);
-        }
-
-        private double Getrot(double dx, double dy)
-        {
-            return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
-        }
-
-        private double Normgetrot(double dx, double dy)
-        {
-            var l = 1 / Math.Sqrt(dx * dx + dy * dy + 0.001);
-            return Getrot(dx * l, dy * l);
-        }
 
         private void Fillene(Level l)
         {
@@ -571,146 +913,12 @@ namespace CSharpCraft
                         newe.Step = 0;
                         newe.Ox = 0;
                         newe.Oy = 0;
-                        pico8Functions.Add(l.Ene, newe);
+                        p8.Add(l.Ene, newe);
                     }
                 }
             }
         }
 
-        private Level Createlevel(int xx, int yy, int sizex, int sizey, bool isUnderground)
-        {
-            var l = new Level {X = xx, Y = yy, Sx = sizex, Sy = sizey, Isunder = isUnderground, Ent = [], Ene = [], Dat = new double[8192]};
-            Setlevel(l);
-            levelunder = isUnderground;
-            Createmap();
-            Fillene(l);
-            l.Stx = (holex - levelx) * 16 + 8;
-            l.Sty = (holey - levely) * 16 + 8;
-            return l;
-        }
-
-        private void Setlevel(Level l)
-        {
-            currentlevel = l;
-            levelx = l.X;
-            levely = l.Y;
-            levelsx = l.Sx;
-            levelsy = l.Sy;
-            levelunder = l.Isunder;
-            entities = l.Ent;
-            enemies = l.Ene;
-            data = l.Dat;
-            plx = l.Stx;
-            ply = l.Sty;
-        }
-
-        private void Resetlevel()
-        {
-            prot = 0.0;
-            lrot = 0.0;
-
-            panim = 0.0;
-
-            pstam = 100;
-            lstam = pstam;
-            plife = 100;
-            llife = plife;
-
-            banim = 0.0;
-
-            coffx = 0;
-            coffy = 0;
-
-            time = 0;
-
-            tooglemenu = 0;
-            invent = [];
-            curitem = null;
-            switchlevel = false;
-            canswitchlevel = false;
-            //menuinvent = Cmenu(inventary, invent);
-
-            for (int i = 0; i <= 15; i++)
-            {
-                Rndwat[i] = new int[16];
-                for (int j = 0; j <= 15; j++)
-                {
-                    Rndwat[i][j] = new Random().Next(100);
-                }
-            }
-
-            cave = Createlevel(64, 0, 32, 32, true); // cave
-            island = Createlevel(0, 0, 64, 64, false); // island
-
-            var tmpworkbench = Entity(workbench, plx, ply, 0, 0);
-            tmpworkbench.Hascol = true;
-            tmpworkbench.List = workbenchrecipe;
-
-            pico8Functions.Add(invent, tmpworkbench);
-            pico8Functions.Add(invent, Inst(pickuptool));
-        }
-
-        private (int, int) Getmcoord(double x, double y)
-        {
-            return ((int)Math.Floor(x / 16), (int)Math.Floor(y / 16));
-        }
-
-        private bool Isfree(double x, double y, Entity? e = null)
-        {
-            var gr = Getgr(x, y);
-            return !(gr.Istree || gr == grrock);
-        }
-
-        private bool Isfreeenem(double x, double y)
-        {
-            var gr = Getgr(x, y);
-            return !(gr.Istree || gr == grrock || gr == grwater);
-        }
-
-        private bool Iscool(double x, double y)
-        {
-            return !Isfree(x, y);
-        }
-
-        private Ground Getgr(double x, double y)
-        {
-            var (i, j) = Getmcoord(x, y);
-            return Getdirectgr(i, j);
-        }
-
-        private Ground Getdirectgr(double i, double j)
-        {
-            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
-            //Console.WriteLine(pico8Functions.Mget(i + levelx, j));
-            return grounds[pico8Functions.Mget(i + levelx, j)];
-        }
-
-        private void Setgr(double x, double y, Ground v)
-        {
-            var (i, j) = Getmcoord(x, y);
-            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
-            pico8Functions.Mset(i + levelx, j, v.Id);
-        }
-
-        private double Dirgetdata(double i, double j, double @default)
-        {
-            int iFlr = (int)Math.Floor(i);
-            int jFlr = (int)Math.Floor(j);
-            int levelsxFlr = (int)Math.Floor(levelsx);
-
-            int g = iFlr + jFlr * levelsxFlr;
-            if (data[g] == 0)
-            {
-                data[g] = @default;
-            }
-            Console.WriteLine(data[g]);
-            return data[g];
-        }
-
-        private void Dirsetdata(double i, double j, double v)
-        {
-            data[(int)(i + j * levelsx)] = v;
-        }
 
         private double Getdata(double x, double y, double @default)
         {
@@ -722,25 +930,196 @@ namespace CSharpCraft
             return Dirgetdata(i, j, @default);
         }
 
-        private void Setdata(double x, double y, double v)
+
+        private Ground Getdirectgr(double i, double j)
         {
-            var (i, j) = Getmcoord(x, y);
-            if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
-            {
-                return;
-            }
-            Dirsetdata(i, j, v);
+            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
+            return grounds[p8.Mget(i + levelx, j)];
         }
 
-        private void Cleardata(double x, double y)
+
+        private Ground Getgr(double x, double y)
         {
-            var (i, j) = Getmcoord(x,y);
-            if (i < 0 || j < 0 || i > levelsx -1 || j > levelsy - 1)
+            var (i, j) = Getmcoord(x, y);
+            return Getdirectgr(i, j);
+        }
+
+
+        private double Getinvlen(double x, double y)
+        {
+            return 1 / Getlen(x, y);
+        }
+
+
+        private double Getlen(double x, double y)
+        {
+            return Math.Sqrt(x * x + y * y + 0.001);
+        }
+
+
+        private (int, int) Getmcoord(double x, double y)
+        {
+            return ((int)Math.Floor(x / 16), (int)Math.Floor(y / 16));
+        }
+
+
+        private double Getrot(double dx, double dy)
+        {
+            return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
+        }
+
+
+        private int Howmany(List<Entity> list, Entity it)
+        {
+            var count = 0;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Type == it.Type)
+                {
+                    if (it.Power == null || it.Power == list[i].Power)
+                    {
+                        if (list[i].Count != null)
+                        {
+                            count += (int)list[i].Count;
+                        }
+                        else
+                        {
+                            count += 1;
+                        }
+                    }
+                }
+            }
+            return count;
+        }
+
+
+        private Entity Inst(Material it)
+        {
+            return new() { Type = it };
+        }
+
+
+        private Entity Instc(Material it, int? c = null, List<Entity> l = null)
+        {
+            return new() { Type = it, Count = c, List = l };
+        }
+
+
+        private bool Isfree(double x, double y, Entity? e = null)
+        {
+            var gr = Getgr(x, y);
+            return !(gr.Istree || gr == grrock);
+        }
+
+
+        private bool Isfreeenem(double x, double y, Entity? e = null)
+        {
+            var gr = Getgr(x, y);
+            return !(gr.Istree || gr == grrock || gr == grwater);
+        }
+
+
+        private bool Isin(Entity e, int size)
+        {
+            return e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size;
+        }
+
+
+        private Entity Isinlist(List<Entity> list, Entity it)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Type == it.Type)
+                {
+                    if (it.Power == null || it.Power == list[i].Power)
+                    {
+                        return list[i];
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        private static Material Item(string n, int s, int[] p = null, bool? bc = null)
+        {
+            return new() { Name = n, Spr = s, Pal = p, Becraft = bc };
+        }
+
+
+        private void Itemname(double x, double y, Entity it, int col)
+        {
+            var ty = it.Type;
+            p8.Pal();
+            var px = x;
+            if (it.Power != null)
+            {
+                var pwn = pwrnames[it.Power];
+                p8.Print(pwn, x + 10, y, col);
+                px += pwn.Length * 4 + 4;
+                Setpal(pwrpal[it.Power]);
+            }
+            if (ty.Pal != null) { Setpal(ty.Pal); }
+            p8.Spr((double)ty.Spr, x, y - 2);
+            p8.Pal();
+            p8.Print(ty.Name, px + 10, y, col);
+        }
+
+
+        private double Lerp(double a, double b, double alpha)
+        {
+            return a * (1.0 - alpha) + b * alpha;
+        }
+
+
+        private void List(Entity menu, double x, double y, double sx, double sy, double my)
+        {
+            Panel(menu.Type.Name, x, y, sx, sy);
+
+            var tlist = menu.List.Count;
+            if (tlist < 1)
             {
                 return;
             }
-            data[(int)(i + j * levelsx)] = 0; // original code has null
+
+            var sel = menu.Sel;
+            if (menu.Off > Math.Max(0, sel - 4)) { menu.Off = Math.Max(0, sel - 4); }
+            if (menu.Off < Math.Min(tlist, sel + 3) - my) { menu.Off = Math.Min(tlist, sel + 3) - my; }
+
+            sel -= menu.Off;
+
+            var debut = (int)menu.Off + 1;
+            var fin = Math.Min(menu.Off + my, tlist);
+
+            var sely = y + 3 + sel * 8;
+            p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
+
+            x += 5;
+            y += 12;
+
+            for (int i = debut; i < fin; i++)
+            {
+                var it = menu.List[i];
+                var py = y + (i - 1 - menu.Off) * 8;
+                var col = 7;
+                if ((it.Req != null) && !Cancraft(it))
+                {
+                    col = 0;
+                }
+
+                Itemname(x, py, it, col);
+
+                if (it.Count != null)
+                {
+                    var c = $"{it.Count}";
+                    p8.Print(c, x + sx - c.Length * 4 - 10, py, col);
+                }
+            }
+
+            p8.Spr(68, x - 8, sely);
+            p8.Spr(68, x + sx - 10, sely, 1, 1, true);
         }
+
 
         private double Loop(double sel, List<Entity> l)
         {
@@ -748,95 +1127,6 @@ namespace CSharpCraft
             return (sel - 1) % lp % lp + 1;
         }
 
-        private bool Entcolfree(double x, double y, Entity e)
-        {
-            return Math.Max(Math.Abs(e.X - x), Math.Abs(e.Y - y)) > 8;
-        }
-
-        private (double, double) Reflectcol(double x, double y, double dx, double dy, Func<double,double,Entity?,bool> checkfun, double dp, Entity? e = null)
-        {
-            var newx = x + dx;
-            var newy = y + dy;
-
-            var ccur = checkfun(x, y, e);
-            var ctotal = checkfun(newx, newy, e);
-            var chor = checkfun(newx, y, e);
-            var cver = checkfun(x, newy, e);
-
-            if (ccur)
-            {
-                if (chor || cver)
-                {
-                    if (!ctotal)
-                    {
-                        if (chor)
-                        {
-                            dy = -dy * dp;
-                        }
-                        else
-                        {
-                            dx = -dx * dp;
-                        }
-                    }
-                }
-                else
-                {
-                    dx = -dx * dp;
-                    dy = -dy * dp;
-                }
-            }
-
-            return (dx, dy);
-        }
-
-        private void Additem(Material mat, int count, double hitx, double hity)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                var gi = Rentity(mat, Math.Floor(hitx / 16) * 16 + new Random().Next(14) + 1, Math.Floor(hity / 16) * 16 + new Random().Next(14) + 1);
-                gi.Giveitem = mat;
-                gi.Hascol = true;
-                gi.Timer = 110 + new Random().Next(20);
-                pico8Functions.Add(entities, gi);
-            }
-        }
-
-        public void Upground()
-        {
-            var ci = (int)Math.Floor((clx - 64) / 16);
-            var cj = (int)Math.Floor((cly - 64) / 16);
-            for (int i = ci; i < ci + 8; i++)
-            {
-                for (int j = cj; j < cj + 8; j++)
-                {
-                    var gr = Getdirectgr(i, j);
-                    if (gr == grfarm)
-                    {
-                        var d = Dirgetdata(i, j, 0);
-                        if (time > d)
-                        {
-                            pico8Functions.Mset(i + levelx, j, grsand.Id);
-                        }
-                    }
-                }
-            }
-        }
-
-        private double Uprot(double grot, double rot)
-        {
-            if (Math.Abs(rot - grot) > 0.5)
-            {
-                if (rot > grot)
-                {
-                    grot += 1;
-                }
-                else
-                {
-                    grot -= 1;
-                }
-            }
-            return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
-        }
 
         private (int, int) Mirror(double rot)
         {
@@ -862,84 +1152,6 @@ namespace CSharpCraft
             }
         }
 
-        private void Dplayer(double x, double y, double rot, double anim, double subanim, bool isplayer)
-        {
-            rot = -rot * 2 * Math.PI;
-
-            var cr = Math.Cos(rot);
-            var sr = Math.Sin(rot);
-            var cv = -sr;
-            var sv = cr;
-
-            x = Math.Floor(x);
-            y = Math.Floor(y - 4);
-
-            var lan = Math.Sin(anim * 2) * 1.5;
-            var bel = Getgr(x, y);
-
-            if (bel == grwater)
-            {
-                y += 4;
-                pico8Functions.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 6);
-                pico8Functions.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
-
-                var anc = 3 + time * 3 % 1 * 3;
-                pico8Functions.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc, 6);
-                pico8Functions.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc, 6);
-            }
-            else
-            {
-                pico8Functions.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
-                pico8Functions.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
-            }
-
-            var blade = (rot + 0.25) % 1;
-
-            if (subanim > 0)
-            {
-                blade = blade - 0.3 + subanim * 0.04;
-            }
-
-            var bcr = Math.Cos(blade);
-            var bsr = Math.Sin(blade);
-
-            (int mx, int my) = Mirror(blade);
-
-            var weap = 75;
-
-            if (isplayer && curitem != null)
-            {
-                pico8Functions.Pal();
-                weap = (int)curitem.Type.Spr;
-                if (curitem.Power != null)
-                {
-                    Setpal(pwrpal[curitem.Power]);
-                }
-                if (curitem.Type != null && curitem.Type.Pal != null)
-                {
-                    Setpal(curitem.Type.Pal);
-                }
-            }
-
-            pico8Functions.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7 - 8, 1, 1, mx == 1, my == 1);
-
-            if (isplayer) { pico8Functions.Pal(); }
-
-            if (bel != grwater)
-            {
-                pico8Functions.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
-                pico8Functions.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
-
-                (int mx2, int my2) = Mirror((rot + 0.75) % 1);
-                pico8Functions.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7 - 8, 1, 1, mx2 == 0, my2 == 1);
-            }
-
-            pico8Functions.Circfill(x + cr, y + sr - 2, 4, 2);
-            pico8Functions.Circfill(x + cr, y + sr, 4, 2);
-            pico8Functions.Circfill(x + cr * 1.5, y + sr * 1.5 - 2, 2.5, 15);
-            pico8Functions.Circfill(x - cr, y - sr - 3, 3, 4);
-
-        }
 
         private double[][] Noise(double sx, double sy, double startscale, double scalemod, double featstep)
         {
@@ -997,356 +1209,111 @@ namespace CSharpCraft
             return n;
         }
 
-        private double[][] Createmapstep(double sx, double sy, double a, double b, double c, double d, double e)
-        {
-            int sxFlr = (int)Math.Floor(sx);
-            int syFlr = (int)Math.Floor(sy);
-
-            var cur = Noise(sxFlr, syFlr, 0.9, 0.2, sxFlr);
-            var cur2 = Noise(sxFlr, syFlr, 0.9, 0.4, 8);
-            var cur3 = Noise(sxFlr, syFlr, 0.9, 0.3, 8);
-            var cur4 = Noise(sxFlr, syFlr, 0.8, 1.1, 4);
-
-            for (int i = 0; i < 11; i++)
-            {
-                typecount[i] = 0;
-            }
-
-            for (int i = 0; i <= sxFlr; i++)
-            {
-                for (int j = 0; j <= syFlr; j++)
-                {
-                    var v = Math.Abs(cur[i][j] - cur2[i][j]);
-                    var v2 = Math.Abs(cur[i][j] - cur3[i][j]);
-                    var v3 = Math.Abs(cur[i][j] - cur4[i][j]);
-                    var dist = Math.Max(Math.Abs((double)i / sxFlr - 0.5) * 2, Math.Abs((double)j / syFlr - 0.5) * 2);
-                    dist = dist * dist * dist * dist;
-                    //Math.Pow(dist, 5);
-                    var coast = v * 4 - dist * 4;
-
-                    var id = a;
-                    if (coast > 0.3) { id = b; } // sand
-                    if (coast > 0.6) { id = c; } // grass
-                    if (coast > 0.3 && v2 > 0.5) { id = d; } // stone
-                    if (id == c && v3 > 0.5) { id = e; } // tree
-
-                    typecount[(int)id] += 1;
-
-                    cur[i][j] = id;
-                }
-            }
-
-            return cur;
-        }
-
-        private void Createmap()
-        {
-            var needmap = true;
-
-            while (needmap)
-            {
-                needmap = false;
-
-                if (levelunder)
-                {
-                    level = Createmapstep(levelsx, levelsy, 3, 8, 1, 9, 10);
-
-                    if (typecount[8] < 30) { needmap = true; }
-                    if (typecount[9] < 20) { needmap = true; }
-                    if (typecount[10] < 15) { needmap = true; }
-                }
-                else
-                {
-                    level = Createmapstep(levelsx, levelsy, 0, 1, 2, 3, 4);
-
-                    if (typecount[3] < 30) { needmap = true; }
-                    if (typecount[4] < 30) { needmap = true; }
-                }
-
-                if (!needmap)
-                {
-                    plx = -1;
-                    ply = -1;
-
-                    for (int i = 0; i <= 500; i++)
-                    {
-                        var depx = (int)Math.Floor(levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
-                        var depy = (int)Math.Floor(levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
-                        var c = level[depx][depy];
-
-                        if (c == 1 || c == 2)
-                        {
-                            plx = depx * 16 + 8;
-                            ply = depy * 16 + 8;
-                            break;
-                        }
-                    }
-
-                    if (plx < 0) 
-                    {
-                        needmap = true; 
-                    }
-                }
-            }
-
-            for (int i = 0; i < levelsx; i++)
-            {
-                for (int j = 0; j < levelsy; j++)
-                {
-                    pico8Functions.Mset(i + levelx, j + levely, level[i][j]);
-                }
-            }
-
-            holex = levelsx / 2 + levelx;
-            holey = levelsy / 2 + levely;
-
-            for (int i = -1; i <= 1; i++)
-            {
-                for (int j = -1; j <= 1; j++)
-                {
-                    pico8Functions.Mset(holex + i, holey + j, levelunder ? 1 : 3);
-                }
-            }
-
-            pico8Functions.Mset(holex, holey, 11);
-
-            clx = plx;
-            cly = ply;
-
-            cmx = plx;
-            cmy = ply;
-        }
-
-        private bool Comp(double i, double j, Ground gr)
-        {
-            var gr2 = Getdirectgr(i, j);
-            return gr != null && gr2 != null && gr.Gr == gr2.Gr;
-        }
-
-        private int Watval(double i, double j)
-        {
-            return Rndwat[(int)Math.Floor(Math.Abs(i) * 2 % 16)][(int)Math.Floor(Math.Abs(j) * 2 % 16)];
-        }
-
-        private void Watanim(double i, double j)
-        {
-            var a = ((time * 0.6 + (double)Watval(i, j) / 100) % 1) * 19;
-            if (a > 16) { pico8Functions.Spr(13 + a - 16, i * 16, j * 16); }
-        }
-
-        private double Rndcenter(double i, double j)
-        {
-            return (double)((int)Math.Floor((double)Watval(i, j) / 34) + 18) % 20;
-        }
-
-        private int Rndsand(double i, double j)
-        {
-            return (int)Math.Floor((double)Watval(i, j) / 34) + 1;
-        }
-
-        private int Rndtree(double i, double j)
-        {
-            return (int)Math.Floor((double)Watval(i, j) / 51) * 32;
-        }
-
-        private void Spr4(double i, double j, double gi, double gj, double a, double b, double c, double d, double off, Func<double,double,int> f)
-        {
-            pico8Functions.Spr(f(i, j + off) + a, gi, gj + 2 * off);
-            pico8Functions.Spr(f(i + 0.5, j + off) + b, gi + 8, gj + 2 * off);
-            pico8Functions.Spr(f(i, j + 0.5 + off) + c, gi, gj + 8 + 2 * off);
-            pico8Functions.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + 2 * off);
-        }
-        
-        private void Drawback()
-        {
-            var ci = (int)Math.Floor((clx - 64) / 16);
-            var cj = (int)Math.Floor((cly - 64) / 16);
-
-            for (int i = ci; i <= ci + 8; i++)
-            {
-                for (int j = cj; j <= cj + 8; j++)
-                {
-                    var gr = Getdirectgr(i, j);
-
-                    var gi = (i - ci) * 2 + 64;
-                    var gj = (j - cj) * 2 + 32;
-
-                    if (gr != null && gr.Gr == 1) // sand
-                    {
-                        var sv = 0;
-                        if (gr == grfarm || gr == grwheat) { sv = 3; }
-                        pico8Functions.Mset(gi, gj, Rndsand(i, j) + sv);
-                        pico8Functions.Mset(gi + 1, gj, Rndsand(i + 0.5, j) + sv);
-                        pico8Functions.Mset(gi, gj + 1, Rndsand(i, j + 0.5) + sv);
-                        pico8Functions.Mset(gi + 1, gj + 1, Rndsand(i + 0.5, j + 0.5) + sv);
-                    }
-                    else
-                    {
-                        var u = Comp(i, j - 1, gr);
-                        var d = Comp(i, j + 1, gr);
-                        var l = Comp(i - 1, j, gr);
-                        var r = Comp(i + 1, j, gr);
-
-                        var b = gr == grrock ? 21 : gr == grwater ? 26 : 16;
-
-                        pico8Functions.Mset(gi, gj, b + (l ? (u ? (Comp(i - 1, j - 1, gr) ? 17 + Rndcenter(i, j) : 20) : 1) : (u ? 16 : 0)));
-                        pico8Functions.Mset(gi + 1, gj, b + (r ? (u ? (Comp(i + 1, j - 1, gr) ? 17 + Rndcenter(i + 0.5, j) : 19) : 1) : (u ? 18 : 2)));
-                        pico8Functions.Mset(gi, gj + 1, b + (l ? (d ? (Comp(i - 1, j + 1, gr) ? 17 + Rndcenter(i, j + 0.5) : 4) : 33) : (d ? 16 : 32)));
-                        pico8Functions.Mset(gi + 1, gj + 1, b + (r ? (d ? (Comp(i + 1, j + 1, gr) ? 17 + Rndcenter(i + 0.5, j + 0.5) : 3) : 33) : (d ? 18 : 34)));
-
-                    }
-                }
-            }
-
-            pico8Functions.Pal();
-
-            if (levelunder)
-            {
-                pico8Functions.Pal(15, 5);
-                pico8Functions.Pal(4, 1);
-            }
-
-            pico8Functions.Map(64, 32, ci * 16, cj * 16, 18, 18);
-            
-            for (int i = ci - 1; i <= ci + 8; i++)
-            {
-                for (int j = cj - 1; j <= cj + 8; j++)
-                {
-                    var gr = Getdirectgr(i, j);
-
-                    if (gr != null)
-                    {
-                        var gi = i * 16;
-                        var gj = j * 16;
-
-                        pico8Functions.Pal();
-
-                        if (gr == grwater)
-                        {
-                            Watanim(i, j);
-                            Watanim(i + 0.5, j);
-                            Watanim(i, j + 0.5);
-                            Watanim(i + 0.5, j + 0.5);
-                        }
-
-                        if (gr == grwheat)
-                        {
-                            var d = Dirgetdata(i, j, 0) - time;
-                            for (int pp = 2; pp <= 4; pp++)
-                            {
-                                pico8Functions.Pal(pp, 3);
-                                if (d > (10 - pp * 2)) { pico8Functions.Palt(pp, true); }
-                            }
-                            if (d < 0) { pico8Functions.Pal(4, 9); }
-                            Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, Rndsand);
-                        }
-
-                        if (gr.Istree)
-                        {
-                            Setpal(gr.Pal);
-
-                            Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, Rndtree);
-                        }
-
-                        if (gr == grhole)
-                        {
-                            pico8Functions.Pal();
-                            if (!levelunder)
-                            {
-                                pico8Functions.Palt(0, false);
-                                pico8Functions.Spr(31, gi, gj, 1, 2);
-                                pico8Functions.Spr(31, gi + 8, gj, 1, 2, true); // changed +8 to +16 because of a temporary spr change
-                            }
-                            pico8Functions.Palt();
-                            pico8Functions.Spr(77, gi + 4, gj, 1, 2);
-                        }
-                    }
-                }
-            }
-        }
 
         private void Panel(string name, double x, double y, double sx, double sy)
         {
-            pico8Functions.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
-            pico8Functions.Spr(66, x, y);
-            pico8Functions.Spr(67, x + sx - 8, y);
-            pico8Functions.Spr(82, x, y + sy - 8);
-            pico8Functions.Spr(83, x + sx - 8, y + sy - 8);
-            pico8Functions.Sspr(24, 32, 4, 8, x + 8, y, sx - 16, 8);
-            pico8Functions.Sspr(24, 40, 4, 8, x + 8, y + sy - 8, sx - 16, 8);
-            pico8Functions.Sspr(16, 36, 8, 4, x, y + 8, 8, sy - 16);
-            pico8Functions.Sspr(24, 36, 8, 4, x + sx - 8, y + 8, 8, sy - 16);
+            p8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
+            p8.Spr(66, x, y);
+            p8.Spr(67, x + sx - 8, y);
+            p8.Spr(82, x, y + sy - 8);
+            p8.Spr(83, x + sx - 8, y + sy - 8);
+            p8.Sspr(24, 32, 4, 8, x + 8, y, sx - 16, 8);
+            p8.Sspr(24, 40, 4, 8, x + 8, y + sy - 8, sx - 16, 8);
+            p8.Sspr(16, 36, 8, 4, x, y + 8, 8, sy - 16);
+            p8.Sspr(24, 36, 8, 4, x + sx - 8, y + 8, 8, sy - 16);
 
             var hx = x + (sx - name.Length * 4) / 2;
-            pico8Functions.Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
-            pico8Functions.Print(name, hx + 1, y + 2, 7);
+            p8.Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
+            p8.Print(name, hx + 1, y + 2, 7);
         }
 
-        private void Itemname(double x, double y, Entity it, int col)
+
+        public void Printb(string t, double x, double y, double c)
         {
-            var ty = it.Type;
-            pico8Functions.Pal();
-            var px = x;
-            if (it.Power != null)
+            p8.Print(t, x + 1, y, 1);
+            p8.Print(t, x - 1, y, 1);
+            p8.Print(t, x, y + 1, 1);
+            p8.Print(t, x, y - 1, 1);
+            p8.Print(t, x, y, c);
+        }
+
+
+        private void Printc(string t, double x, double y, double c)
+        {
+            p8.Print(t, x - (t.Length * 2), y, c);
+        }
+
+
+        private Entity Recipe(Entity m, Entity[] require)
+        {
+            return new() { Type = m.Type, Power = m.Power, Count = m.Count, Req = require, List = m.List };
+        }
+
+
+        private (double, double) Reflectcol(double x, double y, double dx, double dy, Func<double, double, Entity?, bool> checkfun, double dp, Entity? e = null)
+        {
+            var newx = x + dx;
+            var newy = y + dy;
+
+            var ccur = checkfun(x, y, e);
+            var ctotal = checkfun(newx, newy, e);
+            var chor = checkfun(newx, y, e);
+            var cver = checkfun(x, newy, e);
+
+            if (ccur)
             {
-                var pwn = pwrnames[it.Power];
-                pico8Functions.Print(pwn, x + 10, y, col);
-                px += pwn.Length * 4 + 4;
-                Setpal(pwrpal[it.Power]);
+                if (chor || cver)
+                {
+                    if (!ctotal)
+                    {
+                        if (chor)
+                        {
+                            dy = -dy * dp;
+                        }
+                        else
+                        {
+                            dx = -dx * dp;
+                        }
+                    }
+                }
+                else
+                {
+                    dx = -dx * dp;
+                    dy = -dy * dp;
+                }
             }
-            if (ty.Pal != null) { Setpal(ty.Pal); }
-            pico8Functions.Spr((double)ty.Spr, x, y - 2);
-            pico8Functions.Pal();
-            pico8Functions.Print(ty.Name, px + 10, y, col);
+
+            return (dx, dy);
         }
 
-        private void List(Entity menu, double x, double y, double sx, double sy, double my)
-        {
-            Panel(menu.Type.Name, x, y, sx, sy);
 
-            var tlist = menu.List.Count;
-            if (tlist < 1)
+        private void Reminlist(List<Entity> list, Entity elem)
+        {
+            var it = Isinlist(list, elem);
+            if (it == null)
             {
                 return;
             }
-
-            var sel = menu.Sel;
-            if (menu.Off > Math.Max(0, sel - 4)) { menu.Off = Math.Max(0, sel - 4); }
-            if (menu.Off < Math.Min(tlist, sel + 3) - my) { menu.Off = Math.Min(tlist, sel + 3) - my; }
-
-            sel -= menu.Off;
-
-            var debut = (int)menu.Off + 1;
-            var fin = Math.Min(menu.Off + my, tlist);
-
-            var sely = y + 3 + sel * 8;
-            pico8Functions.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
-
-            x += 5;
-            y += 12;
-
-            for (int i = debut; i < fin; i++)
+            if (it.Count != null)
             {
-                var it = menu.List[i];
-                var py = y + (i - 1 - menu.Off) * 8;
-                var col = 7;
-                if ((it.Req != null) !& Cancraft(it))
+                it.Count -= elem.Count;
+                if (it.Count <= 0)
                 {
-                    col = 0;
-                }
-
-                Itemname(x, py, it, col);
-
-                if (it.Count != null)
-                {
-                    var c = $"{it.Count}";
-                    pico8Functions.Print(c, x + sx - c.Length * 4 - 10, py, col);
+                    p8.Del(list, it);
                 }
             }
-
-            pico8Functions.Spr(68, x - 8, sely);
-            pico8Functions.Spr(68, x + sx - 10, sely, 1, 1, true);
+            else
+            {
+                p8.Del(list, it);
+            }
         }
+
+
+        private Entity Rentity(Material it, double xx, double yy)
+        {
+            return Entity(it, xx, yy, new Random().Next(3) - 1.5, new Random().Next(3) - 1.5);
+        }
+
 
         private void Requirelist(Entity recip, double x, double y, double sx, double sy)
         {
@@ -1370,57 +1337,136 @@ namespace CSharpCraft
                 {
                     var h = Howmany(invent, it);
                     var c = $"{h}/{it.Count}";
-                    pico8Functions.Print(c, x + sx - c.Length * 4 - 10, py, h < it.Count ? 8 : 7);
+                    p8.Print(c, x + sx - c.Length * 4 - 10, py, h < it.Count ? 8 : 7);
                 }
             }
         }
 
-        public void Printb(string t, double x, double y, double c)
-        {
-            pico8Functions.Print(t, x + 1, y, 1);
-            pico8Functions.Print(t, x - 1, y, 1);
-            pico8Functions.Print(t, x, y + 1, 1);
-            pico8Functions.Print(t, x, y - 1, 1);
-            pico8Functions.Print(t, x, y, c);
-        }
 
-        private void Printc(string t, double x, double y, double c)
+        private void Resetlevel()
         {
-            pico8Functions.Print(t, x - (t.Length * 2), y, c);
-        }
+            prot = 0.0;
+            lrot = 0.0;
 
-        private void Dent()
-        {
-            for (int i = 0; i < entities.Count(); i++)
+            panim = 0.0;
+
+            pstam = 100;
+            lstam = pstam;
+            plife = 100;
+            llife = plife;
+
+            banim = 0.0;
+
+            coffx = 0;
+            coffy = 0;
+
+            time = 0;
+
+            tooglemenu = 0;
+            invent = [];
+            curitem = null;
+            switchlevel = false;
+            canswitchlevel = false;
+            menuinvent = Cmenu(inventary, invent);
+
+            for (int i = 0; i <= 15; i++)
             {
-                var e = entities[i];
-                pico8Functions.Pal();
-                if (e.Type.Pal != null) { Setpal(e.Type.Pal); }
-                if (0 != 0) { }
-                if (e.Type.Bigspr != null)
+                Rndwat[i] = new int[16];
+                for (int j = 0; j <= 15; j++)
                 {
-                    pico8Functions.Spr(e.Type.Bigspr, e.X - 8, e.Y - 8, 2, 2);
-                }
-                else
-                {
-                    if (e.Type == etext)
-                    {
-                        Printb(e.Text, e.X - 2, e.Y - 4, e.C);
-                    }
-                    else
-                    {
-                        if (e.Timer != null && e.Timer < 45 && e.Timer % 4 > 2)
-                        {
-                            for (int j = 0; j <= 15; j++)
-                            {
-                                pico8Functions.Palt(j, true);
-                            }
-                        }
-                        pico8Functions.Spr((double)e.Type.Spr, e.X - 4, e.Y - 4);
-                    }
+                    Rndwat[i][j] = new Random().Next(100);
                 }
             }
+
+            cave = Createlevel(64, 0, 32, 32, true); // cave
+            island = Createlevel(0, 0, 64, 64, false); // island
+
+            var tmpworkbench = Entity(workbench, plx, ply, 0, 0);
+            tmpworkbench.Hascol = true;
+            tmpworkbench.List = workbenchrecipe;
+
+            p8.Add(invent, tmpworkbench);
+            p8.Add(invent, Inst(pickuptool));
         }
+
+
+        private double Rndcenter(double i, double j)
+        {
+            return (double)((int)Math.Floor((double)Watval(i, j) / 34) + 18) % 20;
+        }
+
+
+        private int Rndsand(double i, double j)
+        {
+            return (int)Math.Floor((double)Watval(i, j) / 34) + 1;
+        }
+
+
+        private int Rndtree(double i, double j)
+        {
+            return (int)Math.Floor((double)Watval(i, j) / 51) * 32;
+        }
+
+
+        private void Setdata(double x, double y, double v)
+        {
+            var (i, j) = Getmcoord(x, y);
+            if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
+            {
+                return;
+            }
+            Dirsetdata(i, j, v);
+        }
+
+
+        private void Setgr(double x, double y, Ground v)
+        {
+            var (i, j) = Getmcoord(x, y);
+            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
+            p8.Mset(i + levelx, j, v.Id);
+        }
+
+
+        private void Setlevel(Level l)
+        {
+            currentlevel = l;
+            levelx = l.X;
+            levely = l.Y;
+            levelsx = l.Sx;
+            levelsy = l.Sy;
+            levelunder = l.Isunder;
+            entities = l.Ent;
+            enemies = l.Ene;
+            data = l.Dat;
+            plx = l.Stx;
+            ply = l.Sty;
+        }
+
+
+        private void Setpal(int[] l)
+        {
+            for (int i = 0; i < l.Length; i++)
+            {
+                p8.Pal(i + 1, l[i]);
+            }
+        }
+
+
+        private Entity Setpower(int v, Entity i)
+        {
+            i.Power = v;
+            return i;
+        }
+
+
+        private Entity Settext(string t, double c, double time, Entity e)
+        {
+            e.Text = t;
+            e.Timer = time;
+            e.C = c;
+            return e;
+        }
+
 
         private void Sorty(List<Entity> t)
         {
@@ -1437,44 +1483,67 @@ namespace CSharpCraft
             }
         }
 
-        private void Denemies()
+
+        private void Spr4(double i, double j, double gi, double gj, double a, double b, double c, double d, double off, Func<double, double, int> f)
         {
-            Sorty(enemies);
+            p8.Spr(f(i, j + off) + a, gi, gj + 2 * off);
+            p8.Spr(f(i + 0.5, j + off) + b, gi + 8, gj + 2 * off);
+            p8.Spr(f(i, j + 0.5 + off) + c, gi, gj + 8 + 2 * off);
+            p8.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + 2 * off);
+        }
 
-            for (int i = 0; i < enemies.Count; i++)
+
+        public void Upground()
+        {
+            var ci = (int)Math.Floor((clx - 64) / 16);
+            var cj = (int)Math.Floor((cly - 64) / 16);
+            for (int i = ci; i < ci + 8; i++)
             {
-                var e = enemies[i];
-                if (e.Type == player)
+                for (int j = cj; j < cj + 8; j++)
                 {
-                    pico8Functions.Pal();
-                    Dplayer(plx, ply, prot, panim, banim, true);
-                }
-                else
-                {
-                    if (Isin(e, 72))
+                    var gr = Getdirectgr(i, j);
+                    if (gr == grfarm)
                     {
-                        pico8Functions.Pal();
-                        pico8Functions.Pal(15, 3);
-                        pico8Functions.Pal(4, 1);
-                        pico8Functions.Pal(2, 8);
-                        pico8Functions.Pal(1, 1);
-
-                        Dplayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, false);
+                        var d = Dirgetdata(i, j, 0);
+                        if (time > d)
+                        {
+                            p8.Mset(i + levelx, j, grsand.Id);
+                        }
                     }
                 }
             }
         }
 
-        private void Dbar(double px, double py, double v, double m, double c, double c2)
+
+        private double Uprot(double grot, double rot)
         {
-            pico8Functions.Pal();
-            var pe = px + v * 0.299988;
-            var pe2 = px + m * 0.299988;
-            pico8Functions.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
-            pico8Functions.Rectfill(px, py, pe, py + 3, c2);
-            pico8Functions.Rectfill(px, py, Math.Max(px, pe - 1), py + 2, c);
-            if (m > v) { pico8Functions.Rectfill(pe + 1, py, pe2, py + 3, 10); }
+            if (Math.Abs(rot - grot) > 0.5)
+            {
+                if (rot > grot)
+                {
+                    grot += 1;
+                }
+                else
+                {
+                    grot -= 1;
+                }
+            }
+            return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
         }
+
+
+        private void Watanim(double i, double j)
+        {
+            var a = ((time * 0.6 + (double)Watval(i, j) / 100) % 1) * 19;
+            if (a > 16) { p8.Spr(13 + a - 16, i * 16, j * 16); }
+        }
+
+
+        private int Watval(double i, double j)
+        {
+            return Rndwat[(int)Math.Floor(Math.Abs(i) * 2 % 16)][(int)Math.Floor(Math.Abs(j) * 2 % 16)];
+        }
+
 
         protected override void Update(GameTime gameTime)
         {
@@ -1491,7 +1560,6 @@ namespace CSharpCraft
             KeyboardState state = Keyboard.GetState();
 
             if (state.IsKeyDown(Keys.Tab)) Resetlevel();
-            //if (state.IsKeyDown(Keys.Tab)) Createlevel(0, 0, 32, 32, true);
 
             if (state.IsKeyDown(Keys.Q)) switchlevel = true;
 
@@ -1499,7 +1567,7 @@ namespace CSharpCraft
             {
                 if (curmenu.Spr != null)
                 {
-                    if (state.IsKeyDown(Keys.Z))
+                    if (p8.Btnp(4) && !lb4)
                     {
                         if (curmenu == mainmenu)
                         {
@@ -1511,8 +1579,8 @@ namespace CSharpCraft
                             curmenu = null;
                         }
                     }
-                    lb4 = state.IsKeyDown(Keys.Z);
-                    return;
+                    lb4 = p8.Btn(4);
+                    goto Continue;
                 }
                 else
                 {
@@ -1520,8 +1588,8 @@ namespace CSharpCraft
                     var othmenu = menuinvent;
                     if (curmenu.Type == chest)
                     {
-                        if (state.IsKeyDown(Keys.A)) { tooglemenu -= 1; }
-                        if (state.IsKeyDown(Keys.D)) { tooglemenu += 1; }
+                        if (p8.Btnp(0)) { tooglemenu -= 1; }
+                        if (p8.Btnp(1)) { tooglemenu += 1; }
                         tooglemenu = (tooglemenu % 2 + 2) & 2;
                         if (tooglemenu == 1)
                         {
@@ -1532,17 +1600,17 @@ namespace CSharpCraft
 
                     if (intmenu.List.Count > 0)
                     {
-                        if (state.IsKeyDown(Keys.W)) { intmenu.Sel -= 1; }
-                        if (state.IsKeyDown(Keys.S)) { intmenu.Sel += 1; }
+                        if (p8.Btnp(2)) { intmenu.Sel -= 1; }
+                        if (p8.Btnp(3)) { intmenu.Sel += 1; }
 
                         intmenu.Sel = Loop(intmenu.Sel, intmenu.List);
 
-                        if (state.IsKeyDown(Keys.X))
+                        if (p8.Btnp(5))
                         {
                             if (curmenu.Type == chest)
                             {
                                 var el = intmenu.List[(int)intmenu.Sel];
-                                pico8Functions.Del(intmenu.List, el);
+                                p8.Del(intmenu.List, el);
                                 Additeminlist(othmenu.List, el, (int)othmenu.Sel);
                                 if (intmenu.List.Count > 0 && intmenu.Sel > intmenu.List.Count) { intmenu.Sel -= 1; }
                                 if (intmenu == menuinvent && curitem == el)
@@ -1550,7 +1618,7 @@ namespace CSharpCraft
                                     curitem = null;
                                 }
                             }
-                            else if ((bool)curmenu.Type.Becraft)
+                            else if (curmenu.Type.Becraft == true)
                             {
                                 if (curmenu.Sel > 0 && curmenu.Sel <= intmenu.List.Count)
                                 {
@@ -1567,8 +1635,8 @@ namespace CSharpCraft
                             }
                             else
                             {
-                                curitem = curmenu.List[(int)curmenu.Sel];
-                                pico8Functions.Del(curmenu.List, curitem);
+                                curitem = curmenu.List[(int)curmenu.Sel - 1];
+                                p8.Del(curmenu.List, curitem);
                                 Additeminlist(curmenu.List, curitem, 1);
                                 curmenu.Sel = 1;
                                 curmenu = null;
@@ -1577,13 +1645,13 @@ namespace CSharpCraft
                         }
                     }
                 }
-                if (state.IsKeyDown(Keys.Z)! & lb4)
+                if (p8.Btnp(4) && !lb4)
                 {
                     curmenu = null;
                 }
-                lb4 = state.IsKeyDown(Keys.Z);
-                lb5 = state.IsKeyDown(Keys.X);
-                return;
+                lb4 = p8.Btnp(4);
+                lb5 = p8.Btnp(5);
+                goto Continue;
             }
 
             if (switchlevel)
@@ -1618,10 +1686,10 @@ namespace CSharpCraft
             double dx = 0.0;
             double dy = 0.0;
 
-            if (state.IsKeyDown(Keys.A)) dx -= 1.0;
-            if (state.IsKeyDown(Keys.D)) dx += 1.0;
-            if (state.IsKeyDown(Keys.W)) dy -= 1.0;
-            if (state.IsKeyDown(Keys.S)) dy += 1.0;
+            if (p8.Btn(0)) dx -= 1.0;
+            if (p8.Btn(1)) dx += 1.0;
+            if (p8.Btn(2)) dy -= 1.0;
+            if (p8.Btn(3)) dy += 1.0;
 
             double dl = Getinvlen(dx, dy);
             
@@ -1660,7 +1728,7 @@ namespace CSharpCraft
 
                 if (e.Timer != null && e.Timer < 1)
                 {
-                    pico8Functions.Del(entities, e);
+                    p8.Del(entities, e);
                 }
                 else
                 {
@@ -1675,8 +1743,8 @@ namespace CSharpCraft
                             {
                                 var newit = Instc(e.Giveitem, 1);
                                 Additeminlist(invent, newit, -1);
-                                pico8Functions.Del(entities, e);
-                                pico8Functions.Add(entities, Settext($"{Howmany(invent, newit)}", 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
+                                p8.Del(entities, e);
+                                p8.Add(entities, Settext($"{Howmany(invent, newit)}", 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
                             }
                         }
                     }
@@ -1686,6 +1754,143 @@ namespace CSharpCraft
                         {
                             (dx, dy) = Reflectcol(plx, ply, dx, dy, Entcolfree, 0, e);
                         }
+                        if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
+                        {
+                            if (curitem != null && curitem.Type == pickuptool)
+                            {
+                                if (e.Type == chest || e.Type.Becraft == true)
+                                {
+                                    Additeminlist(invent, e, 0);
+                                    curitem = e;
+                                    p8.Del(entities, e);
+                                }
+                                canact = false;
+                            }
+                            else
+                            {
+                                if (e.Type == chest || e.Type.Becraft == true)
+                                {
+                                    tooglemenu = 0;
+                                    curmenu = Cmenu(e.Type, e.List);
+                                }
+                                canact = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            nearenemies = [];
+
+            var ebx = Math.Cos(prot);
+            var eby = Math.Sin(prot);
+
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (Isin(e, 100))
+                {
+                    if (e.Type == player)
+                    {
+                        e.X = plx;
+                        e.Y = ply;
+                    }
+                    else
+                    {
+                        var distp = Getlen(e.X - plx, e.Y - ply);
+                        var mspeed = 0.8;
+
+                        var disten = Getlen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
+                        if (disten < 10)
+                        {
+                            p8.Add(nearenemies, e);
+                        }
+                        if (distp < 8)
+                        {
+                            e.Ox += Math.Max(-0.4, Math.Min(0.4, e.X - plx));
+                            e.Oy += Math.Max(-0.4, Math.Min(0.4, e.Y - ply));
+                        }
+
+                        if (e.Dtim <= 0)
+                        {
+                            if (e.Step == enstep_wait || e.Step == enstep_patrol)
+                            {
+                                e.Step = enstep_walk;
+                                e.Dx = new Random().Next(2) - 1;
+                                e.Dy = new Random().Next(2) - 1;
+                                e.Dtim = 30 + new Random().Next(60);
+                            }
+                            else if (e.Step == enstep_walk)
+                            {
+                                e.Step = enstep_wait;
+                                e.Dx = 0;
+                                e.Dy = 0;
+                                e.Dtim = 30 + new Random().Next(60);
+                            }
+                            else // chase
+                            {
+                                e.Dtim = 10 + new Random().Next(60);
+                            }
+                        }
+                        else
+                        {
+                            if (e.Step == enstep_chase)
+                            {
+                                if (distp > 10)
+                                {
+                                    e.Dx += plx - e.X;
+                                    e.Dy += ply - e.Y;
+                                    e.Banim = 0;
+                                }
+                                else
+                                {
+                                    e.Dx = 0;
+                                    e.Dy = 0;
+                                    e.Banim -= 1;
+                                    e.Banim = e.Banim % 8;
+                                    var pow = 10;
+                                    if (e.Banim == 4)
+                                    {
+                                        plife -= pow;
+                                        p8.Add(entities, Settext($"{pow}", 8, 20, Entity(etext, plx, ply - 10, 0, -1)));
+                                    }
+                                    plife = Math.Max(0, plife);
+                                }
+                                mspeed = 1.4;
+                                if (distp > 70)
+                                {
+                                    e.Step = enstep_chase;
+                                    e.Dtim = 10 + new Random().Next(60);
+                                }
+                            }
+                            e.Dtim -= 1;
+                        }
+
+                        var dl2 = mspeed * Getinvlen(e.Dx, e.Dy);
+                        e.Dx *= dl2;
+                        e.Dy *= dl2;
+
+                        var fx = e.Dx + e.Ox;
+                        var fy = e.Dy + e.Oy;
+                        (fx, fy) = Reflectcol(e.X, e.Y, fx, fy, Isfreeenem, 0);
+
+                        if (Math.Abs(e.Dx) > 0 || Math.Abs(e.Dy) > 0)
+                        {
+                            e.Lrot = Getrot(e.Dx, e.Dy);
+                            e.Panim += 1.0 / 33.0;
+                        }
+                        else
+                        {
+                            e.Panim = 0;
+                        }
+
+                        e.X += fx;
+                        e.Y += fy;
+
+                        e.Ox *= 0.9;
+                        e.Oy *= 0.9;
+
+                        e.Prot = Uprot(e.Lrot, e.Prot);
                     }
                 }
             }
@@ -1700,7 +1905,7 @@ namespace CSharpCraft
             llife += Math.Max(-1, Math.Min(1, plife - llife));
             lstam += Math.Max(-1, Math.Min(1, pstam - lstam));
 
-            if (state.IsKeyDown(Keys.X) && !block5 && canact)
+            if (p8.Btn(5) && !block5 && canact)
             {
                 var pxrot = -prot * 2 * Math.PI;
                 var bx = Math.Cos(pxrot);
@@ -1709,18 +1914,71 @@ namespace CSharpCraft
                 var hity = ply + by * 8;
                 var hit = Getgr(hitx, hity);
 
+                if (!lb5 && curitem != null && curitem.Type.Drop)
+                {
+                    if (hit == grsand || hit == grgrass)
+                    {
+                        if (curitem.List != null) { curitem.List = []; }
+                        curitem.Hascol = true;
+
+                        curitem.X = Math.Floor(hitx / 16) * 16 + 8;
+                        curitem.Y = Math.Floor(hity / 16) * 16 + 8;
+                        curitem.Vx = 0;
+                        curitem.Vy = 0;
+                        p8.Add(entities, curitem);
+                        Reminlist(invent, curitem);
+                        canact = false;
+                    }
+                }
+
                 if (banim == 0 && pstam > 0 && canact)
                 {
                     banim = 8;
                     stamcost = 20;
-                    if (0 != 0)
+                    if (nearenemies.Count > 0)
                     {
-
+                        var pow = 1.0;
+                        if (curitem != null && curitem.Type == sword)
+                        {
+                            pow = 1 + curitem.Power + new Random().Next(curitem.Power * curitem.Power);
+                            stamcost = Math.Max(0, 20 - curitem.Power * 2);
+                            pow = Math.Floor(pow);
+                        }
+                        for (int i = 0; i < nearenemies.Count; i++)
+                        {
+                            var e = nearenemies[i];
+                            e.Life -= pow / nearenemies.Count;
+                            var push = (pow - 1) * 0.5;
+                            e.Ox += Math.Max(-push, Math.Min(push, e.X - plx));
+                            e.Oy += Math.Max(-push, Math.Min(push, e.Y - ply));
+                            if (e.Life <= 0)
+                            {
+                                p8.Del(enemies, e);
+                                Additem(ichor, new Random().Next(3), e.X, e.Y);
+                                Additem(fabric, new Random().Next(3), e.X, e.Y);
+                            }
+                            p8.Add(entities, Settext($"{pow}", 9, 20, Entity(etext, e.X, e.Y - 10, 0, -1)));
+                        }
                     }
                     else if (hit.Mat != null)
                     {
                         var pow = 1.0;
-
+                        if (curitem != null)
+                        {
+                            if (hit == grtree)
+                            {
+                                if (curitem.Type == haxe)
+                                {
+                                    pow = 1 + curitem.Power + new Random().Next(curitem.Power * curitem.Power);
+                                    stamcost = Math.Max(0, 20 - curitem.Power * 2);
+                                }
+                            }
+                            else if ((hit == grrock || hit.Istree) && curitem.Type == pick)
+                            {
+                                pow = 1 + curitem.Power * 2 + new Random().Next(curitem.Power * curitem.Power);
+                                stamcost = Math.Max(0, 20 - curitem.Power * 2);
+                            }
+                        }
                         pow = Math.Floor(pow);
 
                         var d = Getdata(hitx, hity, hit.Life);
@@ -1728,17 +1986,73 @@ namespace CSharpCraft
                         {
                             Setgr(hitx, hity, hit.Tile);
                             Cleardata(hitx, hity);
+                            Additem(hit.Mat, new Random().Next(3) + 2, hitx, hity);
+                            if (hit == grtree && new Random().Next() > 0.7)
+                            {
+                                Additem(apple, 1, hitx, hity);
+                            }
                         }
                         else
                         {
                             Setdata(hitx, hity, d - pow);
                         }
-                        pico8Functions.Add(entities, Settext(pow.ToString(), 10, 20, Entity(etext, hitx, hity, 0, -1)));
-                        Console.WriteLine(pow.ToString());
+                        p8.Add(entities, Settext(pow.ToString(), 10, 20, Entity(etext, hitx, hity, 0, -1)));
                     }
                     else
                     {
-
+                        if (curitem != null)
+                        {
+                            if (curitem.Power != null)
+                            {
+                                stamcost = Math.Max(0, 20 - curitem.Power * 2);
+                            }
+                            if (curitem.Type.Givelife != null)
+                            {
+                                plife = Math.Min(100, plife + curitem.Type.Givelife);
+                                Reminlist(invent, Instc(curitem.Type, 1));
+                            }
+                            if (hit == grgrass && curitem.Type == scythe)
+                            {
+                                Setgr(hitx, hity, grsand);
+                                if (new Random().Next() > 0.4) { Additem(seed, 1, hitx, hity); }
+                            }
+                            if (hit == grsand && curitem.Type == shovel)
+                            {
+                                if (curitem.Power > 3)
+                                {
+                                    Setgr(hitx, hity, grwater);
+                                    Additem(sand, 2, hitx, hity);
+                                }
+                                else
+                                {
+                                    Setgr(hitx, hity, grfarm);
+                                    Setdata(hitx, hity, time + 15 + new Random().Next(5));
+                                    Additem(sand, new Random().Next(2), hitx, hity);
+                                }
+                            }
+                            if (hit == grwater && curitem.Type == sand)
+                            {
+                                Setgr(hitx, hity, grsand);
+                                Reminlist(invent, Instc(sand, 1));
+                            }
+                            if (hit == grwater && curitem.Type == boat)
+                            {
+                                curmenu = winmenu;
+                            }
+                            if (hit == grfarm && curitem.Type == seed)
+                            {
+                                Setgr(hitx, hity, grwheat);
+                                Setdata(hitx, hity, time + 15 + new Random().Next(5));
+                                Reminlist(invent, Instc(seed, 1));
+                            }
+                            if (hit == grwheat && curitem.Type == scythe)
+                            {
+                                Setgr(hitx, hity, grsand);
+                                var d = Math.Max(0, Math.Min(4, 4 - (Getdata(hitx, hity, 0) - time)));
+                                Additem(wheat, d / 2 + new Random().NextDouble() * (d / 2), hitx, hity);
+                                Additem(seed, 1, hitx, hity);
+                            }
+                        }
                     }
                     pstam -= stamcost;
                 }
@@ -1784,17 +2098,37 @@ namespace CSharpCraft
             cly = Math.Max(cmy - m, cly);
             cly = Math.Min(cmy + m, cly);
 
-            lb4 = state.IsKeyDown(Keys.Z);
-            lb5 = state.IsKeyDown(Keys.X);
-            if (!state.IsKeyDown(Keys.X))
+            if (p8.Btnp(4) && !lb4)
+            {
+                curmenu = menuinvent;
+            }
+
+            lb4 = p8.Btn(4);
+            lb5 = p8.Btnp(5);
+            if (!p8.Btnp(5))
             {
                 block5 = false;
             }
 
             time += 1.0 / 30.0;
 
+            if (plife <= 0)
+            {
+                curmenu = deathmenu;
+            }
+
+            Continue:
+
+            p8.prev0 = state.IsKeyDown(Keys.A);
+            p8.prev1 = state.IsKeyDown(Keys.D);
+            p8.prev2 = state.IsKeyDown(Keys.W);
+            p8.prev3 = state.IsKeyDown(Keys.S);
+            p8.prev4 = state.IsKeyDown(Keys.M);
+            p8.prev5 = state.IsKeyDown(Keys.N);
+
             base.Update(gameTime);
         }
+
 
         protected override void Draw(GameTime gameTime)
         {
@@ -1814,19 +2148,19 @@ namespace CSharpCraft
 
             if (curmenu != null && curmenu.Spr != null)
             {
-                pico8Functions.Camera();
-                pico8Functions.Palt(0, false);
-                pico8Functions.Rectfill(0, 0, 128, 46, 12);
-                pico8Functions.Rectfill(0, 46, 128, 128, 1);
-                pico8Functions.Spr(curmenu.Spr, 32, 14, 8, 8);
+                p8.Camera();
+                p8.Palt(0, false);
+                p8.Rectfill(0, 0, 128, 46, 12);
+                p8.Rectfill(0, 46, 128, 128, 1);
+                p8.Spr((double)curmenu.Spr, 32, 14, 8, 8);
                 Printc(curmenu.Text, 64, 80, 6);
                 Printc(curmenu.Text2, 64, 90, 6);
                 Printc("press button 1", 64, 112, 6 + time % 2);
                 time += 0.1;
-                return;
+                goto Continue;
             }
 
-            pico8Functions.Camera(clx - 64, cly - 64);
+            p8.Camera(clx - 64, cly - 64);
 
             Drawback();
 
@@ -1836,7 +2170,7 @@ namespace CSharpCraft
 
             Denemies();
 
-            pico8Functions.Camera();
+            p8.Camera();
 
             Dbar(4, 4, plife, llife, 8, 2);
             Dbar(4, 9, Math.Max(0, pstam), lstam, 11, 3);
@@ -1849,12 +2183,12 @@ namespace CSharpCraft
                 if (curitem.Count != null)
                 {
                     var c = $"{curitem.Count}";
-                    pico8Functions.Print(c, ix + 88 - 16, iy + 3, 7);
+                    p8.Print(c, ix + 88 - 16, iy + 3, 7);
                 }
             }
             if (curmenu != null)
             {
-                pico8Functions.Camera();
+                p8.Camera();
                 if (curmenu.Type == chest)
                 {
                     if (tooglemenu == 0)
@@ -1874,7 +2208,7 @@ namespace CSharpCraft
                     {
                         var curgoal = curmenu.List[(int)curmenu.Sel];
                         Panel("have", 71, 50, 52, 30);
-                        pico8Functions.Print($"{Howmany(invent, curgoal)}", 91, 65, 7);
+                        p8.Print($"{Howmany(invent, curgoal)}", 91, 65, 7);
                         Requirelist(curgoal, 4, 79, 104, 50);
                     }
                     List(curmenu, 4, 16, 68, 64, 6);
@@ -1886,32 +2220,32 @@ namespace CSharpCraft
             }
 
             /*
-            pico8Functions.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
-            pico8Functions.Rectfill(32 + 50, 32 + 16, 64 + 50, 64 + 16, 0);
+            p8.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
+            p8.Rectfill(32 + 50, 32 + 16, 64 + 50, 64 + 16, 0);
             for (int i = 0; i <= 31; i++)
             {
                 for (int j = 0; j <= 31; j++)
                 {
-                    var c = pico8Functions.Mget(i + 64, j);
-                    pico8Functions.Pset(i + 32 + 50, j + 32 + 16, c);
+                    var c = p8.Mget(i + 64, j);
+                    p8.Pset(i + 32 + 50, j + 32 + 16, c);
                 }
             }
 
-            pico8Functions.Rectfill(31 - 20, 31, 97 - 20, 97, 8);
-            pico8Functions.Rectfill(32 - 20, 32, 96 - 20, 96, 0);
+            p8.Rectfill(31 - 20, 31, 97 - 20, 97, 8);
+            p8.Rectfill(32 - 20, 32, 96 - 20, 96, 0);
             for (int i = 0; i <= 63; i++)
             {
                 for (int j = 0; j <= 63; j++)
                 {
-                    var c = pico8Functions.Mget(i, j);
-                    pico8Functions.Pset(i + 32 - 20, j + 32, c);
+                    var c = p8.Mget(i, j);
+                    p8.Pset(i + 32 - 20, j + 32, c);
                 }
             }
             */
 
-            //pico8Functions.mset(1, 1, 8);
-            //var ec = pico8Functions.mget(1, 1);
-            //pico8Functions.pset(1, 1, ec);
+            //p8.mset(1, 1, 8);
+            //var ec = p8.mget(1, 1);
+            //p8.pset(1, 1, ec);
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)
@@ -1922,10 +2256,13 @@ namespace CSharpCraft
                 batch.DrawLine(pixel, new Vector2(0, i * cellHeight), new Vector2(viewportWidth, i * cellHeight), Color.White, 1);
             }*/
 
+            Continue:
+
             batch.End();
 
             base.Draw(gameTime);
         }
+
 
         protected override void LoadContent()
         {
@@ -1939,16 +2276,17 @@ namespace CSharpCraft
             // ... then load a texture from ./Graphics/FNATexture.png
             SpriteSheet1 = Content.Load<Texture2D>("SpriteSheet1");
 
-            pico8Functions = new Pico8Functions(pixel, batch, GraphicsDevice);
+            p8 = new Pico8Functions(pixel, batch, GraphicsDevice);
 
         }
+
 
         protected override void UnloadContent()
         {
             batch.Dispose();
             SpriteSheet1.Dispose();
             pixel.Dispose();
-            pico8Functions.Dispose();
+            p8.Dispose();
         }
 
         private void UpdateViewport()
@@ -1970,6 +2308,7 @@ namespace CSharpCraft
             // Set the viewport to the square area
             GraphicsDevice.Viewport = new Viewport(left, top, size, size);
         }
+
 
         private void Window_ClientSizeChanged(object sender, EventArgs e)
         {
