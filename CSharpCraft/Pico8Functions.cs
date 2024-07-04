@@ -366,7 +366,7 @@ namespace CSharpCraft
                         {
                             var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
                             //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            var charStartY = (int)((yFlr + i + 0.5 - CameraOffset.Item2) * cellHeight);
+                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
 
                             Vector2 position = new Vector2(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
@@ -491,10 +491,10 @@ namespace CSharpCraft
             int syFlr = (int)Math.Floor(sy);
             int swFlr = (int)Math.Floor(sw);
             int shFlr = (int)Math.Floor(sh);
-            int dxFlr = (int)Math.Floor(dx) - 8;
-            int dyFlr = (int)Math.Floor(dy) - 8;
-            int dwFlr = dw == -1 ? swFlr : (int)Math.Floor(dw);
-            int dhFlr = dh == -1 ? shFlr : (int)Math.Floor(dh);
+            int dxFlr = (int)Math.Floor(dw) > 8 ? (int)Math.Floor(dx) - 4 : (int)Math.Floor(dx) - 8;
+            int dyFlr = (int)Math.Floor(dh) > 8 ? (int)Math.Floor(dy) - 4 : (int)Math.Floor(dy) - 8;
+            int dwFlr = dw == -1 ? swFlr : (int)Math.Floor(dw) > 8 ? (int)Math.Floor(dw / 4) : (int)Math.Floor(dw / 8);
+            int dhFlr = dh == -1 ? shFlr : (int)Math.Floor(dh) > 8 ? (int)Math.Floor(dh / 4) : (int)Math.Floor(dh / 8);
 
             var spriteWidth = swFlr;
             var spriteHeight = shFlr;
@@ -534,7 +534,7 @@ namespace CSharpCraft
             int cellHeight = viewportHeight / 128;
 
             Vector2 position = new(((flip_x ? dxFlr + (2 * spriteWidth * swFlr) - spriteWidth : dxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + (2 * spriteHeight * shFlr) - spriteHeight : dyFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
-            Vector2 size = new(dwFlr, dhFlr);
+            Vector2 size = new(dwFlr * cellWidth, dhFlr * cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);

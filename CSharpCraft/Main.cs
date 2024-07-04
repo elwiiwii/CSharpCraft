@@ -348,8 +348,6 @@ namespace CSharpCraft
             p8.Add(stonebenchrecipe, Recipe(Instc(furnace, null, furnacerecipe), [Instc(wood, 10), Instc(stone, 15)]));
 
             curmenu = mainmenu;
-
-            Resetlevel();
         }
 
 
@@ -1744,7 +1742,7 @@ namespace CSharpCraft
                                 var newit = Instc(e.Giveitem, 1);
                                 Additeminlist(invent, newit, -1);
                                 p8.Del(entities, e);
-                                p8.Add(entities, Settext($"{Howmany(invent, newit)}", 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
+                                p8.Add(entities, Settext(Howmany(invent, newit).ToString(), 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
                             }
                         }
                     }
@@ -1785,115 +1783,115 @@ namespace CSharpCraft
             var ebx = Math.Cos(prot);
             var eby = Math.Sin(prot);
 
-            for (int i = 0; i < enemies.Count; i++)
-            {
-                var e = enemies[i];
-                if (Isin(e, 100))
-                {
-                    if (e.Type == player)
-                    {
-                        e.X = plx;
-                        e.Y = ply;
-                    }
-                    else
-                    {
-                        var distp = Getlen(e.X - plx, e.Y - ply);
-                        var mspeed = 0.8;
-
-                        var disten = Getlen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
-                        if (disten < 10)
-                        {
-                            p8.Add(nearenemies, e);
-                        }
-                        if (distp < 8)
-                        {
-                            e.Ox += Math.Max(-0.4, Math.Min(0.4, e.X - plx));
-                            e.Oy += Math.Max(-0.4, Math.Min(0.4, e.Y - ply));
-                        }
-
-                        if (e.Dtim <= 0)
-                        {
-                            if (e.Step == enstep_wait || e.Step == enstep_patrol)
-                            {
-                                e.Step = enstep_walk;
-                                e.Dx = new Random().Next(2) - 1;
-                                e.Dy = new Random().Next(2) - 1;
-                                e.Dtim = 30 + new Random().Next(60);
-                            }
-                            else if (e.Step == enstep_walk)
-                            {
-                                e.Step = enstep_wait;
-                                e.Dx = 0;
-                                e.Dy = 0;
-                                e.Dtim = 30 + new Random().Next(60);
-                            }
-                            else // chase
-                            {
-                                e.Dtim = 10 + new Random().Next(60);
-                            }
-                        }
-                        else
-                        {
-                            if (e.Step == enstep_chase)
-                            {
-                                if (distp > 10)
-                                {
-                                    e.Dx += plx - e.X;
-                                    e.Dy += ply - e.Y;
-                                    e.Banim = 0;
-                                }
-                                else
-                                {
-                                    e.Dx = 0;
-                                    e.Dy = 0;
-                                    e.Banim -= 1;
-                                    e.Banim = e.Banim % 8;
-                                    var pow = 10;
-                                    if (e.Banim == 4)
-                                    {
-                                        plife -= pow;
-                                        p8.Add(entities, Settext($"{pow}", 8, 20, Entity(etext, plx, ply - 10, 0, -1)));
-                                    }
-                                    plife = Math.Max(0, plife);
-                                }
-                                mspeed = 1.4;
-                                if (distp > 70)
-                                {
-                                    e.Step = enstep_chase;
-                                    e.Dtim = 10 + new Random().Next(60);
-                                }
-                            }
-                            e.Dtim -= 1;
-                        }
-
-                        var dl2 = mspeed * Getinvlen(e.Dx, e.Dy);
-                        e.Dx *= dl2;
-                        e.Dy *= dl2;
-
-                        var fx = e.Dx + e.Ox;
-                        var fy = e.Dy + e.Oy;
-                        (fx, fy) = Reflectcol(e.X, e.Y, fx, fy, Isfreeenem, 0);
-
-                        if (Math.Abs(e.Dx) > 0 || Math.Abs(e.Dy) > 0)
-                        {
-                            e.Lrot = Getrot(e.Dx, e.Dy);
-                            e.Panim += 1.0 / 33.0;
-                        }
-                        else
-                        {
-                            e.Panim = 0;
-                        }
-
-                        e.X += fx;
-                        e.Y += fy;
-
-                        e.Ox *= 0.9;
-                        e.Oy *= 0.9;
-
-                        e.Prot = Uprot(e.Lrot, e.Prot);
-                    }
-                }
-            }
+            //for (int i = 0; i < enemies.Count; i++)
+            //{
+            //    var e = enemies[i];
+            //    if (Isin(e, 100))
+            //    {
+            //        if (e.Type == player)
+            //        {
+            //            e.X = plx;
+            //            e.Y = ply;
+            //        }
+            //        else
+            //        {
+            //            var distp = Getlen(e.X - plx, e.Y - ply);
+            //            var mspeed = 0.8;
+            //
+            //            var disten = Getlen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
+            //            if (disten < 10)
+            //            {
+            //                p8.Add(nearenemies, e);
+            //            }
+            //            if (distp < 8)
+            //            {
+            //                e.Ox += Math.Max(-0.4, Math.Min(0.4, e.X - plx));
+            //                e.Oy += Math.Max(-0.4, Math.Min(0.4, e.Y - ply));
+            //            }
+            //
+            //            if (e.Dtim <= 0)
+            //            {
+            //                if (e.Step == enstep_wait || e.Step == enstep_patrol)
+            //                {
+            //                    e.Step = enstep_walk;
+            //                    e.Dx = new Random().Next(2) - 1;
+            //                    e.Dy = new Random().Next(2) - 1;
+            //                    e.Dtim = 30 + new Random().Next(60);
+            //                }
+            //                else if (e.Step == enstep_walk)
+            //                {
+            //                    e.Step = enstep_wait;
+            //                    e.Dx = 0;
+            //                    e.Dy = 0;
+            //                    e.Dtim = 30 + new Random().Next(60);
+            //                }
+            //                else // chase
+            //                {
+            //                    e.Dtim = 10 + new Random().Next(60);
+            //                }
+            //            }
+            //            else
+            //            {
+            //                if (e.Step == enstep_chase)
+            //                {
+            //                    if (distp > 10)
+            //                    {
+            //                        e.Dx += plx - e.X;
+            //                        e.Dy += ply - e.Y;
+            //                        e.Banim = 0;
+            //                    }
+            //                    else
+            //                    {
+            //                        e.Dx = 0;
+            //                        e.Dy = 0;
+            //                        e.Banim -= 1;
+            //                        e.Banim = e.Banim % 8;
+            //                        var pow = 10;
+            //                        if (e.Banim == 4)
+            //                        {
+            //                            plife -= pow;
+            //                            p8.Add(entities, Settext(pow.ToString(), 8, 20, Entity(etext, plx, ply - 10, 0, -1)));
+            //                        }
+            //                        plife = Math.Max(0, plife);
+            //                    }
+            //                    mspeed = 1.4;
+            //                    if (distp > 70)
+            //                    {
+            //                        e.Step = enstep_chase;
+            //                        e.Dtim = 10 + new Random().Next(60);
+            //                    }
+            //                }
+            //                e.Dtim -= 1;
+            //            }
+            //
+            //            var dl2 = mspeed * Getinvlen(e.Dx, e.Dy);
+            //            e.Dx *= dl2;
+            //            e.Dy *= dl2;
+            //
+            //            var fx = e.Dx + e.Ox;
+            //            var fy = e.Dy + e.Oy;
+            //            (fx, fy) = Reflectcol(e.X, e.Y, fx, fy, Isfreeenem, 0);
+            //
+            //            if (Math.Abs(e.Dx) > 0 || Math.Abs(e.Dy) > 0)
+            //            {
+            //                e.Lrot = Getrot(e.Dx, e.Dy);
+            //                e.Panim += 1.0 / 33.0;
+            //            }
+            //            else
+            //            {
+            //                e.Panim = 0;
+            //            }
+            //
+            //            e.X += fx;
+            //            e.Y += fy;
+            //
+            //            e.Ox *= 0.9;
+            //            e.Oy *= 0.9;
+            //
+            //            e.Prot = Uprot(e.Lrot, e.Prot);
+            //        }
+            //    }
+            //}
 
             (dx, dy) = Reflectcol(plx, ply, dx, dy, Isfree, 0);
 
@@ -1935,7 +1933,7 @@ namespace CSharpCraft
                 {
                     banim = 8;
                     stamcost = 20;
-                    if (nearenemies.Count > 0)
+                    /*if (nearenemies.Count > 0)
                     {
                         var pow = 1.0;
                         if (curitem != null && curitem.Type == sword)
@@ -1957,10 +1955,10 @@ namespace CSharpCraft
                                 Additem(ichor, new Random().Next(3), e.X, e.Y);
                                 Additem(fabric, new Random().Next(3), e.X, e.Y);
                             }
-                            p8.Add(entities, Settext($"{pow}", 9, 20, Entity(etext, e.X, e.Y - 10, 0, -1)));
+                            p8.Add(entities, Settext(pow.ToString(), 9, 20, Entity(etext, e.X, e.Y - 10, 0, -1)));
                         }
                     }
-                    else if (hit.Mat != null)
+                    else */if (hit.Mat != null)
                     {
                         var pow = 1.0;
                         if (curitem != null)
@@ -1980,7 +1978,7 @@ namespace CSharpCraft
                             }
                         }
                         pow = Math.Floor(pow);
-
+                    
                         var d = Getdata(hitx, hity, hit.Life);
                         if (d - pow <= 0)
                         {
@@ -1998,62 +1996,62 @@ namespace CSharpCraft
                         }
                         p8.Add(entities, Settext(pow.ToString(), 10, 20, Entity(etext, hitx, hity, 0, -1)));
                     }
-                    else
-                    {
-                        if (curitem != null)
-                        {
-                            if (curitem.Power != null)
-                            {
-                                stamcost = Math.Max(0, 20 - curitem.Power * 2);
-                            }
-                            if (curitem.Type.Givelife != null)
-                            {
-                                plife = Math.Min(100, plife + curitem.Type.Givelife);
-                                Reminlist(invent, Instc(curitem.Type, 1));
-                            }
-                            if (hit == grgrass && curitem.Type == scythe)
-                            {
-                                Setgr(hitx, hity, grsand);
-                                if (new Random().Next() > 0.4) { Additem(seed, 1, hitx, hity); }
-                            }
-                            if (hit == grsand && curitem.Type == shovel)
-                            {
-                                if (curitem.Power > 3)
-                                {
-                                    Setgr(hitx, hity, grwater);
-                                    Additem(sand, 2, hitx, hity);
-                                }
-                                else
-                                {
-                                    Setgr(hitx, hity, grfarm);
-                                    Setdata(hitx, hity, time + 15 + new Random().Next(5));
-                                    Additem(sand, new Random().Next(2), hitx, hity);
-                                }
-                            }
-                            if (hit == grwater && curitem.Type == sand)
-                            {
-                                Setgr(hitx, hity, grsand);
-                                Reminlist(invent, Instc(sand, 1));
-                            }
-                            if (hit == grwater && curitem.Type == boat)
-                            {
-                                curmenu = winmenu;
-                            }
-                            if (hit == grfarm && curitem.Type == seed)
-                            {
-                                Setgr(hitx, hity, grwheat);
-                                Setdata(hitx, hity, time + 15 + new Random().Next(5));
-                                Reminlist(invent, Instc(seed, 1));
-                            }
-                            if (hit == grwheat && curitem.Type == scythe)
-                            {
-                                Setgr(hitx, hity, grsand);
-                                var d = Math.Max(0, Math.Min(4, 4 - (Getdata(hitx, hity, 0) - time)));
-                                Additem(wheat, d / 2 + new Random().NextDouble() * (d / 2), hitx, hity);
-                                Additem(seed, 1, hitx, hity);
-                            }
-                        }
-                    }
+                    //else
+                    //{
+                    //    if (curitem != null)
+                    //    {
+                    //        if (curitem.Power != null)
+                    //        {
+                    //            stamcost = Math.Max(0, 20 - curitem.Power * 2);
+                    //        }
+                    //        if (curitem.Type.Givelife != null)
+                    //        {
+                    //            plife = Math.Min(100, plife + curitem.Type.Givelife);
+                    //            Reminlist(invent, Instc(curitem.Type, 1));
+                    //        }
+                    //        if (hit == grgrass && curitem.Type == scythe)
+                    //        {
+                    //            Setgr(hitx, hity, grsand);
+                    //            if (new Random().Next() > 0.4) { Additem(seed, 1, hitx, hity); }
+                    //        }
+                    //        if (hit == grsand && curitem.Type == shovel)
+                    //        {
+                    //            if (curitem.Power > 3)
+                    //            {
+                    //                Setgr(hitx, hity, grwater);
+                    //                Additem(sand, 2, hitx, hity);
+                    //            }
+                    //            else
+                    //            {
+                    //                Setgr(hitx, hity, grfarm);
+                    //                Setdata(hitx, hity, time + 15 + new Random().Next(5));
+                    //                Additem(sand, new Random().Next(2), hitx, hity);
+                    //            }
+                    //        }
+                    //        if (hit == grwater && curitem.Type == sand)
+                    //        {
+                    //            Setgr(hitx, hity, grsand);
+                    //            Reminlist(invent, Instc(sand, 1));
+                    //        }
+                    //        if (hit == grwater && curitem.Type == boat)
+                    //        {
+                    //            curmenu = winmenu;
+                    //        }
+                    //        if (hit == grfarm && curitem.Type == seed)
+                    //        {
+                    //            Setgr(hitx, hity, grwheat);
+                    //            Setdata(hitx, hity, time + 15 + new Random().Next(5));
+                    //            Reminlist(invent, Instc(seed, 1));
+                    //        }
+                    //        if (hit == grwheat && curitem.Type == scythe)
+                    //        {
+                    //            Setgr(hitx, hity, grsand);
+                    //            var d = Math.Max(0, Math.Min(4, 4 - (Getdata(hitx, hity, 0) - time)));
+                    //            Additem(wheat, d / 2 + new Random().NextDouble() * (d / 2), hitx, hity);
+                    //            Additem(seed, 1, hitx, hity);
+                    //        }
+                    //    }
+                    //}
                     pstam -= stamcost;
                 }
             }
@@ -2145,6 +2143,8 @@ namespace CSharpCraft
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
+
+            p8.Palt();
 
             if (curmenu != null && curmenu.Spr != null)
             {
