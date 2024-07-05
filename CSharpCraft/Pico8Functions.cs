@@ -107,10 +107,11 @@ namespace CSharpCraft
             return texture;
         }
 
-        public void Add(List<Entity> table, Entity value, int index = -1)
+        public Entity Add(List<Entity> table, Entity value, int index = -1)
         {
-            if (index == -1) { table.Add(value); return; }
-            table[index] = value;
+            if (index == -1) { table.Add(value); return value; }
+            table.Insert(index, value);
+            return value;
         }
 
         public bool Btn(int i, int p = 0)
