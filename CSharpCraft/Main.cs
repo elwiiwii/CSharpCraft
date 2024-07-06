@@ -230,12 +230,10 @@ namespace CSharpCraft
         static readonly Material boat = Item("boat", 86);
         static readonly Material ichor = Item("ichor", 114, [11]);
         static readonly Material potion = Item("potion", 85, [1, 2, 8, 14]);
-        //potion.Givelife = 100
 
         static readonly Material ironbar = Item("iron bar", 119, piron);
         static readonly Material goldbar = Item("gold bar", 119, pgold);
         static readonly Material bread = Item("bread", 119, [1, 4, 15, 7]);
-        //bread.Givelife = 40
 
         static readonly Material workbench = Bigspr(104, Item("workbench", 89, [1, 4, 9], true));
         static readonly Material stonebench = Bigspr(104, Item("stonebench", 89, [1, 6, 13], true));
@@ -274,10 +272,16 @@ namespace CSharpCraft
         private Entity deathmenu = Cmenu(inventary, null, 128, "you died", "alone ...");
         private Entity winmenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
 
+
         static FNAGame()
         {
             apple.Givelife = 20;
+
+            potion.Givelife = 100;
+
+            bread.Givelife = 40;
         }
+
 
         private FNAGame()
         {
@@ -1391,6 +1395,7 @@ namespace CSharpCraft
 
             p8.Add(invent, tmpworkbench);
             p8.Add(invent, Inst(pickuptool));
+            //p8.Add(invent, Inst(boat));
         }
 
 
@@ -2208,9 +2213,9 @@ namespace CSharpCraft
                         List(menuinvent, 39, 24, 84, 96, 10);
                     }
                 }
-                else if (curmenu.Type.Becraft != null)
+                else if (curmenu.Type.Becraft == true)
                 {
-                    if (curmenu.Sel >= 1 && curmenu.Sel <= curmenu.List.Count)
+                    if (curmenu.Sel >= 0 + 1 && curmenu.Sel <= curmenu.List.Count + 1)
                     {
                         var curgoal = curmenu.List[(int)curmenu.Sel];
                         Panel("have", 71, 50, 52, 30);

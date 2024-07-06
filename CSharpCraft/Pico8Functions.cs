@@ -520,11 +520,13 @@ namespace CSharpCraft
                 }
             }
 
-            //if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
-            //{
-                var texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr, shFlr);
-            //    spriteTextures[spriteNumberFlr + colorCache] = texture;
-            //}
+            var spriteNumberFlr = (sxFlr * 100) + (syFlr * 100) + (swFlr * 100) + (shFlr * 100);
+
+            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
+            {
+                texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr, shFlr);
+                spriteTextures[spriteNumberFlr + colorCache] = texture;
+            }
 
             // Get the size of the viewport
             int viewportWidth = batch.GraphicsDevice.Viewport.Width;
