@@ -29,6 +29,7 @@ namespace CSharpCraft
         public bool prev4 = false;
         public bool prev5 = false;
 
+
         private static Color HexToColor(string hex)
         {
             hex = hex.TrimStart('#');
@@ -38,7 +39,8 @@ namespace CSharpCraft
             return new Color(r, g, b);
         }
 
-        // pico-8 colors
+
+        // pico-8 colors https://pico-8.fandom.com/wiki/Palette
         public Color[] colors =
         [
                 HexToColor("000000"), // 00 black
@@ -79,7 +81,9 @@ namespace CSharpCraft
         ];
         public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
+        public Color[] resetSprColors = new Color[16];
         public Color[] sprColors = new Color[16];
+
 
         private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
@@ -107,14 +111,16 @@ namespace CSharpCraft
             return texture;
         }
 
-        public Entity Add(List<Entity> table, Entity value, int index = -1)
+
+        public Entity Add(List<Entity> table, Entity value, int index = -1) // https://pico-8.fandom.com/wiki/Add
         {
             if (index == -1) { table.Add(value); return value; }
             table.Insert(index, value);
             return value;
         }
 
-        public bool Btn(int i, int p = 0)
+
+        public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
         {
             KeyboardState state = Keyboard.GetState();
 
@@ -127,7 +133,8 @@ namespace CSharpCraft
             else { return false; }
         }
 
-        public bool Btnp(int i, int p = 0)
+
+        public bool Btnp(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btnp
         {
             if (i == 0 && Btn(i) && !prev0) { return true; }
             if (i == 1 && Btn(i) && !prev1) { return true; }
@@ -138,7 +145,8 @@ namespace CSharpCraft
             else { return false; }
         }
 
-        public void Camera(double x = 0, double y = 0)
+
+        public void Camera(double x = 0, double y = 0) // https://pico-8.fandom.com/wiki/Camera
         {
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -146,7 +154,8 @@ namespace CSharpCraft
             CameraOffset = (xFlr, yFlr);
         }
 
-        public void Circ(double x, double y, double r, int c)
+
+        public void Circ(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
@@ -187,13 +196,14 @@ namespace CSharpCraft
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        batch.Draw(pixel, position, null, sprColors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
         }
 
-        public void Circfill(double x, double y, double r, int c)
+
+        public void Circfill(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circfill
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
 
@@ -226,18 +236,26 @@ namespace CSharpCraft
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        batch.Draw(pixel, position, null, sprColors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
         }
 
-        public void Del<T>(List<T> table, T value)
+
+        public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
+        {
+            return Math.Cos(-angle * 2 * Math.PI);
+        }
+
+
+        public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
         {
             table.Remove(value);
         }
 
-        public void Map(double celx, double cely, double sx, double sy, double celw, double celh)
+
+        public void Map(double celx, double cely, double sx, double sy, double celw, double celh) // https://pico-8.fandom.com/wiki/Map
         {
             int cxFlr = (int)Math.Floor(celx);
             int cyFlr = (int)Math.Floor(cely);
@@ -254,6 +272,7 @@ namespace CSharpCraft
                 }
             }
         }
+
 
         public int MgetOld(double celx, double cely)
         {
@@ -279,7 +298,8 @@ namespace CSharpCraft
 
         }
 
-        public int Mget(double celx, double cely)
+
+        public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
@@ -289,7 +309,8 @@ namespace CSharpCraft
             return mval;
         }
 
-        public void Mset(double celx, double cely, double snum = 0)
+
+        public void Mset(double celx, double cely, double snum = 0) // https://pico-8.fandom.com/wiki/Mset
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
@@ -298,47 +319,54 @@ namespace CSharpCraft
             Map1[xFlr + (yFlr * 128)] = sFlr;
         }
 
-        public void Pal()
+
+        public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
-            Array.Copy(resetColors, sprColors, colors.Length);
+            Array.Copy(resetSprColors, sprColors, resetColors.Length);
+            Array.Copy(resetColors, colors, resetColors.Length);
         }
 
-        public void Pal(double c0 = 0, double c1 = 0)
+
+        public void Pal(double c0 = 0, double c1 = 0) // https://pico-8.fandom.com/wiki/Pal
         {
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            sprColors[c0Flr] = resetColors[c1Flr];
+            sprColors[c0Flr] = resetSprColors[c1Flr];
+            colors[c0Flr] = resetColors[c1Flr];
         }
 
-        public void Palt()
+
+        public void Palt() // https://pico-8.fandom.com/wiki/Palt
         {
             sprColors[0].A = 0;
-            resetColors[0].A = 0;
+            resetSprColors[0].A = 0;
             for (int i = 1; i <= 15; i++)
             {
                 sprColors[i].A = 255;
-                resetColors[i].A = 255;
+                resetSprColors[i].A = 255;
             }
         }
 
-        public void Palt(double col, bool t)
+
+        public void Palt(double col, bool t) // https://pico-8.fandom.com/wiki/Palt
         {
             int colFlr = (int)Math.Floor(col);
             
             if (!t)
             {
                 sprColors[colFlr].A = 255;
-                resetColors[colFlr].A = 255;
+                resetSprColors[colFlr].A = 255;
             }
             else
             {
                 sprColors[colFlr].A = 0;
-                resetColors[colFlr].A = 0;
+                resetSprColors[colFlr].A = 0;
             }
         }
 
-        public void Print(string str, double x, double y, double c)
+
+        public void Print(string str, double x, double y, double c) // https://pico-8.fandom.com/wiki/Print
         {
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -379,7 +407,8 @@ namespace CSharpCraft
             }
         }
 
-        public void Pset(double x, double y, double c)
+
+        public void Pset(double x, double y, double c) // https://pico-8.fandom.com/wiki/Pset
         {
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -402,7 +431,8 @@ namespace CSharpCraft
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
-        public void Rectfill(double x1, double y1, double x2, double y2, double c)
+
+        public void Rectfill(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rectfill
         {
             int x1Flr = (int)Math.Floor(x1);
             int y1Flr = (int)Math.Floor(y1);
@@ -434,7 +464,14 @@ namespace CSharpCraft
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
-        public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
+
+        public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
+        {
+            return Math.Sin(-angle * 2 * Math.PI);
+        }
+
+
+        public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
         {
             int spriteNumberFlr = (int)Math.Floor(spriteNumber);
             int xFlr = (int)Math.Floor(x) - 8;
@@ -486,7 +523,8 @@ namespace CSharpCraft
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
 
-        public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = -1, double dh = -1, bool flip_x = false, bool flip_y = false)
+
+        public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = -1, double dh = -1, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Sspr
         {
             int sxFlr = (int)Math.Floor(sx);
             int syFlr = (int)Math.Floor(sy);
@@ -494,8 +532,8 @@ namespace CSharpCraft
             int shFlr = (int)Math.Floor(sh);
             int dxFlr = (int)Math.Floor(dw) > 8 ? (int)Math.Floor(dx) - 4 : (int)Math.Floor(dx) - 8;
             int dyFlr = (int)Math.Floor(dh) > 8 ? (int)Math.Floor(dy) - 4 : (int)Math.Floor(dy) - 8;
-            int dwFlr = dw == -1 ? swFlr : (int)Math.Floor(dw) > 8 ? (int)Math.Floor(dw / 4) : (int)Math.Floor(dw / 8);
-            int dhFlr = dh == -1 ? shFlr : (int)Math.Floor(dh) > 8 ? (int)Math.Floor(dh / 4) : (int)Math.Floor(dh / 8);
+            int dwFlr = dw == -1 ? swFlr : (int)Math.Floor(dw) > 8 ? (int)Math.Floor(dw / 4) + 1 : (int)Math.Floor(dw / 8);
+            int dhFlr = dh == -1 ? shFlr : (int)Math.Floor(dh) > 8 ? (int)Math.Floor(dh / 4) + 1 : (int)Math.Floor(dh / 8);
 
             var spriteWidth = swFlr;
             var spriteHeight = shFlr;

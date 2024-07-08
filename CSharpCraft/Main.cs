@@ -40,7 +40,7 @@ namespace CSharpCraft
         public double Panim { get; set; }
         public int? Power { get; set; }
         public double Prot { get; set; }
-        public Entity[]? Req { get; set; }
+        public List<Entity>? Req { get; set; }
         public int Sel { get; set; }
         public int? Spr { get; set; }
         public double Step { get; set; }
@@ -194,10 +194,10 @@ namespace CSharpCraft
         private bool lb5 = false;
         private bool block5 = false;
 
-        private int enstep_wait = 0;
-        private int enstep_walk = 1;
-        private int enstep_chase = 2;
-        private int enstep_patrol = 3;
+        private readonly int enstep_wait = 0;
+        private readonly int enstep_walk = 1;
+        private readonly int enstep_chase = 2;
+        private readonly int enstep_patrol = 3;
 
         static readonly string[] pwrnames = ["wood", "stone", "iron", "gold", "gem"];
         static readonly int[][] pwrpal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
@@ -312,6 +312,7 @@ namespace CSharpCraft
 
             Array.Copy(p8.colors, p8.resetColors, p8.colors.Length);
             Array.Copy(p8.colors, p8.sprColors, p8.colors.Length);
+            Array.Copy(p8.colors, p8.resetSprColors, p8.colors.Length);
 
             p8.Palt();
 
@@ -426,7 +427,7 @@ namespace CSharpCraft
         private bool Cancraft(Entity req)
         {
             var can = true;
-            for (int i = 0; i < req.Req.Length; i++)
+            for (int i = 0; i < req.Req.Count; i++)
             {
                 if (Howmany(invent, req.Req[i]) < req.Req[i].Count)
                 {
@@ -464,11 +465,11 @@ namespace CSharpCraft
 
         private void Craft(Entity req)
         {
-            for (int i = 0; i < req.Req.Length; i++)
+            for (int i = 0; i < req.Req.Count; i++)
             {
                 Reminlist(invent, req.Req[i]);
             }
-            Additeminlist(invent, Setpower((int)req.Power, Instc(req.Type, req.Count, req.List)), 0);
+            Additeminlist(invent, Setpower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
         }
 
 
@@ -609,12 +610,13 @@ namespace CSharpCraft
         private void Dbar(double px, double py, double v, double m, double c, double c2)
         {
             p8.Pal();
-            var pe = px + v * 0.299988;
-            var pe2 = px + m * 0.299988;
+            p8.Palt();
+            var pe = px + v * 0.3;
+            var pe2 = px + m * 0.3;
             p8.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
-            p8.Rectfill(px, py, pe, py + 3, c2);
-            p8.Rectfill(px, py, Math.Max(px, pe - 1), py + 2, c);
-            if (m > v) { p8.Rectfill(pe + 1, py, pe2, py + 3, 10); }
+            p8.Rectfill(px, py, pe - 1, py + 3, c2);
+            p8.Rectfill(px, py, Math.Max(px, pe - 2), py + 2, c);
+            if (m > v) { p8.Rectfill(pe, py, pe2 - 1, py + 3, 10); }
         }
 
 
@@ -704,17 +706,15 @@ namespace CSharpCraft
 
         private void Dplayer(double x, double y, double rot, double anim, double subanim, bool isplayer)
         {
-            rot = -rot * 2 * Math.PI;
-
-            var cr = Math.Cos(rot);
-            var sr = Math.Sin(rot);
+            var cr = p8.Cos(rot);
+            var sr = p8.Sin(rot);
             var cv = -sr;
             var sv = cr;
 
             x = Math.Floor(x);
             y = Math.Floor(y - 4);
 
-            var lan = Math.Sin(anim * 2) * 1.5;
+            var lan = p8.Sin(anim * 2) * 1.5;
             var bel = Getgr(x, y);
 
             if (bel == grwater)
@@ -740,8 +740,8 @@ namespace CSharpCraft
                 blade = blade - 0.3 + subanim * 0.04;
             }
 
-            var bcr = Math.Cos(blade);
-            var bsr = Math.Sin(blade);
+            var bcr = p8.Cos(blade);
+            var bsr = p8.Sin(blade);
 
             (int mx, int my) = Mirror(blade);
 
@@ -750,10 +750,10 @@ namespace CSharpCraft
             if (isplayer && curitem != null)
             {
                 p8.Pal();
-                weap = (int)curitem.Type.Spr;
+                weap = curitem.Type.Spr;
                 if (curitem.Power != null)
                 {
-                    Setpal(pwrpal[(int)curitem.Power]);
+                    Setpal(pwrpal[(int)curitem.Power - 1]);
                 }
                 if (curitem.Type != null && curitem.Type.Pal != null)
                 {
@@ -1069,13 +1069,13 @@ namespace CSharpCraft
             var px = x;
             if (it.Power != null)
             {
-                var pwn = pwrnames[(int)it.Power];
+                var pwn = pwrnames[(int)it.Power - 1];
                 p8.Print(pwn, x + 10, y, col);
                 px += pwn.Length * 4 + 4;
-                Setpal(pwrpal[(int)it.Power]);
+                Setpal(pwrpal[(int)it.Power - 1]);
             }
             if (ty.Pal != null) { Setpal(ty.Pal); }
-            p8.Spr((double)ty.Spr, x, y - 2);
+            p8.Spr(ty.Spr, x, y - 2);
             p8.Pal();
             p8.Print(ty.Name, px + 10, y, col);
         }
@@ -1103,7 +1103,7 @@ namespace CSharpCraft
 
             sel -= menu.Off;
 
-            var debut = (int)menu.Off + 1;
+            var debut = menu.Off + 1;
             var fin = Math.Min(menu.Off + my, tlist);
 
             var sely = y + 3 + (sel + 1) * 8;
@@ -1135,11 +1135,11 @@ namespace CSharpCraft
             p8.Spr(68, x + sx - 10, sely, 1, 1, true);
         }
 
-
+        
         private int Loop(int sel, List<Entity> l)
         {
             var lp = l.Count;
-            return (sel - 1) % lp % lp + 1;
+            return ((sel % lp) + lp) % lp;
         }
 
 
@@ -1259,7 +1259,7 @@ namespace CSharpCraft
         }
 
 
-        private Entity Recipe(Entity m, Entity[] require)
+        private Entity Recipe(Entity m, List<Entity> require)
         {
             return new() { Type = m.Type, Power = m.Power, Count = m.Count, Req = require, List = m.List };
         }
@@ -1333,7 +1333,7 @@ namespace CSharpCraft
         private void Requirelist(Entity recip, double x, double y, double sx, double sy)
         {
             Panel("require", x, y, sx, sy);
-            var tlist = recip.Req.Length;
+            var tlist = recip.Req.Count;
             if (tlist < 1)
             {
                 return;
@@ -1468,7 +1468,7 @@ namespace CSharpCraft
         }
 
 
-        private Entity Setpower(int v, Entity i)
+        private Entity Setpower(int? v, Entity i)
         {
             i.Power = v;
             return i;
@@ -1776,7 +1776,7 @@ namespace CSharpCraft
                             {
                                 if (e.Type == chest || e.Type.Becraft == true)
                                 {
-                                    Additeminlist(invent, e, 0);
+                                    Additeminlist(invent, e, -1);
                                     curitem = e;
                                     p8.Del(entities, e);
                                 }
@@ -1798,8 +1798,8 @@ namespace CSharpCraft
 
             nearenemies = [];
 
-            var ebx = Math.Cos(prot);
-            var eby = Math.Sin(prot);
+            var ebx = p8.Cos(prot);
+            var eby = p8.Sin(prot);
 
             for (int i = 0; i < enemies.Count; i++)
             {
@@ -1923,9 +1923,8 @@ namespace CSharpCraft
 
             if (p8.Btn(5) && !block5 && canact)
             {
-                var pxrot = -prot * 2 * Math.PI;
-                var bx = Math.Cos(pxrot);
-                var by = Math.Sin(pxrot);
+                var bx = p8.Cos(prot);
+                var by = p8.Sin(prot);
                 var hitx = plx + bx * 8;
                 var hity = ply + by * 8;
                 var hit = Getgr(hitx, hity);
@@ -2162,6 +2161,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
+            p8.Pal();
             p8.Palt();
 
             if (curmenu != null && curmenu.Spr != null)
@@ -2236,7 +2236,7 @@ namespace CSharpCraft
                     List(curmenu, 4, 24, 84, 96, 10);
                 }
             }
-
+            
             /*
             p8.Rectfill(31 + 50, 31 + 16, 65 + 50, 65 + 16, 8);
             p8.Rectfill(32 + 50, 32 + 16, 64 + 50, 64 + 16, 0);
