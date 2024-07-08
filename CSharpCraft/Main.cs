@@ -34,14 +34,14 @@ namespace CSharpCraft
         public double Life { get; set; }
         public List<Entity>? List { get; set; }
         public double Lrot { get; set; }
-        public double Off { get; set; }
+        public int Off { get; set; }
         public double Ox { get; set; }
         public double Oy { get; set; }
         public double Panim { get; set; }
         public int? Power { get; set; }
         public double Prot { get; set; }
         public Entity[]? Req { get; set; }
-        public double Sel { get; set; }
+        public int Sel { get; set; }
         public int? Spr { get; set; }
         public double Step { get; set; }
         public string? Text { get; set; }
@@ -391,20 +391,27 @@ namespace CSharpCraft
 
         private void Addplace(List<Entity> l, Entity e, int p)
         {
-            //l.Insert(p, e);
-
             if (p < l.Count - 1 && p >= 0)
             {
-                for (int i = l.Count - 1; i >= p; i--)
-                {
-                    l[i] = l[i - 1];
-                }
-                l[p] = e;
+                l.Insert(p, e);
             }
             else
             {
                 p8.Add(l, e);
             }
+
+            //if (p < l.Count - 1 && p >= 0)
+            //{
+            //    for (int i = l.Count - 1; i >= p; i--)
+            //    {
+            //        l[i + 1] = l[i];
+            //    }
+            //    l[p] = e;
+            //}
+            //else
+            //{
+            //    p8.Add(l, e);
+            //}
         }
 
 
@@ -444,7 +451,7 @@ namespace CSharpCraft
 
         private static Entity Cmenu(Material t, List<Entity> l = null, int? s = null, string te1 = null, string te2 = null)
         {
-            return new() { List = l, Type = t, Sel = 1, Off = 0, Spr = s, Text = te1, Text2 = te2 };
+            return new() { List = l, Type = t, Sel = 0, Off = 0, Spr = s, Text = te1, Text2 = te2 };
         }
 
 
@@ -1080,7 +1087,7 @@ namespace CSharpCraft
         }
 
 
-        private void List(Entity menu, double x, double y, double sx, double sy, double my)
+        private void List(Entity menu, int x, int y, int sx, int sy, int my)
         {
             Panel(menu.Type.Name, x, y, sx, sy);
 
@@ -1099,16 +1106,16 @@ namespace CSharpCraft
             var debut = (int)menu.Off + 1;
             var fin = Math.Min(menu.Off + my, tlist);
 
-            var sely = y + 3 + sel * 8;
-            p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
+            var sely = y + 3 + (sel + 1) * 8;
+            p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 8);
 
             x += 5;
             y += 12;
 
-            for (int i = debut; i < fin; i++)
+            for (int i = debut - 1; i < fin; i++)
             {
                 var it = menu.List[i];
-                var py = y + (i - 1 - menu.Off) * 8;
+                var py = y + (i - menu.Off) * 8;
                 var col = 7;
                 if ((it.Req != null) && !Cancraft(it))
                 {
@@ -1129,7 +1136,7 @@ namespace CSharpCraft
         }
 
 
-        private double Loop(double sel, List<Entity> l)
+        private int Loop(int sel, List<Entity> l)
         {
             var lp = l.Count;
             return (sel - 1) % lp % lp + 1;
@@ -1338,7 +1345,7 @@ namespace CSharpCraft
             for (int i = 0; i < tlist; i++)
             {
                 var it = recip.Req[i];
-                var py = y + (i + 1) * 8;
+                var py = y + i * 8;
                 Itemname(x, py, it, 7);
 
                 if (it.Count != null)
@@ -1618,10 +1625,10 @@ namespace CSharpCraft
                         {
                             if (curmenu.Type == chest)
                             {
-                                var el = intmenu.List[(int)intmenu.Sel];
+                                var el = intmenu.List[intmenu.Sel];
                                 p8.Del(intmenu.List, el);
-                                Additeminlist(othmenu.List, el, (int)othmenu.Sel);
-                                if (intmenu.List.Count > 0 && intmenu.Sel > intmenu.List.Count) { intmenu.Sel -= 1; }
+                                Additeminlist(othmenu.List, el, othmenu.Sel);
+                                if (intmenu.List.Count > 0 && intmenu.Sel > (intmenu.List.Count - 1)) { intmenu.Sel -= 1; }
                                 if (intmenu == menuinvent && curitem == el)
                                 {
                                     curitem = null;
@@ -1629,9 +1636,9 @@ namespace CSharpCraft
                             }
                             else if (curmenu.Type.Becraft == true)
                             {
-                                if (curmenu.Sel > 0 && curmenu.Sel <= intmenu.List.Count)
+                                if (curmenu.Sel >= 0 && curmenu.Sel < intmenu.List.Count)
                                 {
-                                    var rec = curmenu.List[(int)curmenu.Sel];
+                                    var rec = curmenu.List[curmenu.Sel];
                                     if (Cancraft(rec))
                                     {
                                         Craft(rec);
@@ -1644,10 +1651,10 @@ namespace CSharpCraft
                             }
                             else
                             {
-                                curitem = curmenu.List[(int)curmenu.Sel - 1];
+                                curitem = curmenu.List[curmenu.Sel];
                                 p8.Del(curmenu.List, curitem);
-                                Additeminlist(curmenu.List, curitem, 1);
-                                curmenu.Sel = 1;
+                                Additeminlist(curmenu.List, curitem, 0);
+                                curmenu.Sel = 0;
                                 curmenu = null;
                                 block5 = true;
                             }
@@ -1708,7 +1715,7 @@ namespace CSharpCraft
             if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
             {
                 lrot = Getrot(dx, dy);
-                panim += 1.0 / 5.5;
+                panim += 1.0 / 33.0;
             }
             else
             {
@@ -1723,9 +1730,9 @@ namespace CSharpCraft
             var canact = true;
 
             var fin = entities.Count();
-            for (int i = fin; i > 0; i--)
+            for (int i = fin - 1; i >= 0; i--)
             {
-                var e = entities[i - 1];
+                var e = entities[i];
                 if (e.Hascol)
                 {
                     (e.Vx, e.Vy) = Reflectcol(e.X, e.Y, e.Vx, e.Vy, Isfree, 0.9);
@@ -1927,7 +1934,7 @@ namespace CSharpCraft
                 {
                     if (hit == grsand || hit == grgrass)
                     {
-                        if (curitem.List != null) { curitem.List = []; }
+                        if (curitem.List == null) { curitem.List = []; }
                         curitem.Hascol = true;
                 
                         curitem.X = Math.Floor(hitx / 16) * 16 + 8;
@@ -2215,9 +2222,9 @@ namespace CSharpCraft
                 }
                 else if (curmenu.Type.Becraft == true)
                 {
-                    if (curmenu.Sel >= 0 + 1 && curmenu.Sel <= curmenu.List.Count + 1)
+                    if (curmenu.Sel >= 0 && curmenu.Sel < curmenu.List.Count)
                     {
-                        var curgoal = curmenu.List[(int)curmenu.Sel];
+                        var curgoal = curmenu.List[curmenu.Sel];
                         Panel("have", 71, 50, 52, 30);
                         p8.Print($"{Howmany(invent, curgoal)}", 91, 65, 7);
                         Requirelist(curgoal, 4, 79, 104, 50);

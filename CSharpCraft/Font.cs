@@ -505,8 +505,47 @@ namespace CSharpCraft
             { 0, 0, 0 }
         };
 
+        private static readonly int[,] forwardSlash = new int[,]
+        {
+            { 0, 0, 1 },
+            { 0, 1, 0 },
+            { 0, 1, 0 },
+            { 0, 1, 0 },
+            { 1, 0, 0 }
+        };
+
         public static readonly Dictionary<char, int[,]> chars = new()
         {
+            { ' ', space },
+            { '!', exclamation },
+            //{ '"', quote },
+            { '#', hash },
+            { '$', dollar },
+            { '%', percent },
+            { '&', ampersand },
+            //{ "'", apostrophe },
+            { '(', openBracket },
+            { ')', closeBracket },
+            { '*', asterisk },
+            { '+', plus },
+            //{ ',', comma },
+            { '-', minus },
+            { '.', period },
+            { '/', forwardSlash },
+            { '0', zero },
+            { '1', one },
+            { '2', two },
+            { '3', three },
+            { '4', four },
+            { '5', five },
+            { '6', six },
+            { '7', seven },
+            { '8', eight },
+            { '9', nine },
+            { ':', colon },
+            //{ ';', semicolon },
+
+            //{ '`', backtick },
             { 'a', a },
             { 'b', b },
             { 'c', c },
@@ -533,35 +572,25 @@ namespace CSharpCraft
             { 'x', x },
             { 'y', y },
             { 'z', z },
-            { '0', zero },
-            { '1', one },
-            { '2', two },
-            { '3', three },
-            { '4', four },
-            { '5', five },
-            { '6', six },
-            { '7', seven },
-            { '8', eight },
-            { '9', nine },
+            
             { '~', tilda },
-            { '!', exclamation },
+            
             { '@', at },
-            { '#', hash },
-            { '$', dollar },
-            { '%', percent },
+            
+            
+            
             { '^', power },
-            { '&', ampersand },
-            { '*', asterisk },
-            { '(', openBracket },
-            { ')', closeBracket },
+            
+            
+            
             { '_', underscore },
-            { '+', plus },
-            { '-', minus },
+            
+            
             { '=', equals },
-            { '?', question },
-            { ':', colon },
-            { '.', period },
-            { ' ', space }
+            { '?', question }
+            
+            
+            
         };
     }
 }
