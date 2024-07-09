@@ -651,7 +651,7 @@ namespace CSharpCraft
 
         private void Dent()
         {
-            for (int i = 0; i < entities.Count(); i++)
+            for (int i = 0; i < entities.Count; i++)
             {
                 var e = entities[i];
                 p8.Pal();
@@ -1117,7 +1117,7 @@ namespace CSharpCraft
                 var it = menu.List[i];
                 var py = y + (i - menu.Off) * 8;
                 var col = 7;
-                if ((it.Req != null) && !Cancraft(it)) //?
+                if ((it.Req != null) && !Cancraft(it))
                 {
                     col = 0;
                 }
@@ -1729,7 +1729,7 @@ namespace CSharpCraft
 
             var canact = true;
 
-            var fin = entities.Count();
+            var fin = entities.Count;
             for (int i = fin - 1; i >= 0; i--)
             {
                 var e = entities[i];
