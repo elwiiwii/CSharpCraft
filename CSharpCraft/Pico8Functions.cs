@@ -332,7 +332,7 @@ namespace CSharpCraft
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            sprColors[c0Flr] = resetColors[c1Flr];
+            sprColors[c0Flr] = resetColors[c1Flr]; // idk resetSpr or not
             colors[c0Flr] = resetColors[c1Flr];
         }
 
@@ -487,13 +487,13 @@ namespace CSharpCraft
 
             int colorCache = 0;
 
-            for (int i = 0; i < resetColors.Length; i++)
+            for (int i = 0; i < resetSprColors.Length; i++)
             {
-                if (sprColors[i] != resetColors[i])
+                if (sprColors[i] != resetSprColors[i])
                 {
-                    for (int j = 0; j < resetColors.Length; j++)
+                    for (int j = 0; j < resetSprColors.Length; j++)
                     {
-                        if (sprColors[i] == resetColors[j])
+                        if (sprColors[i] == resetSprColors[j])
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
@@ -543,13 +543,13 @@ namespace CSharpCraft
 
             int colorCache = 0;
 
-            for (int i = 0; i < resetColors.Length; i++)
+            for (int i = 0; i < resetSprColors.Length; i++)
             {
-                if (sprColors[i] != resetColors[i])
+                if (sprColors[i] != resetSprColors[i])
                 {
-                    for (int j = 0; j < resetColors.Length; j++)
+                    for (int j = 0; j < resetSprColors.Length; j++)
                     {
-                        if (sprColors[i] == resetColors[j])
+                        if (sprColors[i] == resetSprColors[j])
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
