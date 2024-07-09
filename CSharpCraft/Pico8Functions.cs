@@ -322,7 +322,7 @@ namespace CSharpCraft
 
         public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
-            Array.Copy(resetSprColors, sprColors, resetColors.Length);
+            Array.Copy(resetSprColors, sprColors, resetSprColors.Length);
             Array.Copy(resetColors, colors, resetColors.Length);
         }
 
@@ -332,7 +332,7 @@ namespace CSharpCraft
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            sprColors[c0Flr] = resetSprColors[c1Flr];
+            sprColors[c0Flr] = resetColors[c1Flr];
             colors[c0Flr] = resetColors[c1Flr];
         }
 
@@ -400,7 +400,7 @@ namespace CSharpCraft
                             Vector2 position = new Vector2(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
 
-                            batch.Draw(pixel, position, null, sprColors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                         }
                     }
                 }

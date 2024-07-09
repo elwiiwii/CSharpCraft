@@ -761,7 +761,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7 - 8, 1, 1, mx == 1, my == 1);
+            p8.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
 
             if (isplayer) { p8.Pal(); }
 
@@ -771,7 +771,7 @@ namespace CSharpCraft
                 p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
                 (int mx2, int my2) = Mirror((rot + 0.75) % 1);
-                p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7 - 8, 1, 1, mx2 == 0, my2 == 1);
+                p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
             }
 
             p8.Circfill(x + cr, y + sr - 2, 4, 2);
@@ -1107,7 +1107,7 @@ namespace CSharpCraft
             var fin = Math.Min(menu.Off + my, tlist);
 
             var sely = y + 3 + (sel + 1) * 8;
-            p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 8);
+            p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
 
             x += 5;
             y += 12;
@@ -1117,7 +1117,7 @@ namespace CSharpCraft
                 var it = menu.List[i];
                 var py = y + (i - menu.Off) * 8;
                 var col = 7;
-                if ((it.Req != null) && !Cancraft(it))
+                if ((it.Req != null) && !Cancraft(it)) //?
                 {
                     col = 0;
                 }
