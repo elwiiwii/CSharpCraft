@@ -173,7 +173,7 @@ namespace CSharpCraft
         private double prot;
         private double pstam;
 
-        private int[][] Rndwat = new int[16][];
+        private double[][] Rndwat = new double[16][];
 
         private Texture2D SpriteSheet1;
         private double stamcost;
@@ -367,10 +367,10 @@ namespace CSharpCraft
 
             for (int i = 0; i < countFlr; i++)
             {
-                var gi = Rentity(mat, Math.Floor(hitx / 16) * 16 + new Random().Next(14) + 1, Math.Floor(hity / 16) * 16 + new Random().Next(14) + 1);
+                var gi = Rentity(mat, Math.Floor(hitx / 16) * 16 + p8.Rnd(14) + 1, Math.Floor(hity / 16) * 16 + p8.Rnd(14) + 1);
                 gi.Giveitem = mat;
                 gi.Hascol = true;
-                gi.Timer = 110 + new Random().Next(20);
+                gi.Timer = 110 + p8.Rnd(20);
                 p8.Add(entities, gi);
             }
         }
@@ -517,8 +517,8 @@ namespace CSharpCraft
 
                     for (int i = 0; i <= 500; i++)
                     {
-                        var depx = (int)Math.Floor(levelsx / 8 + new Random().NextDouble() * levelsx * 6 / 8);
-                        var depy = (int)Math.Floor(levelsy / 8 + new Random().NextDouble() * levelsy * 6 / 8);
+                        var depx = (int)Math.Floor(levelsx / 8 + p8.Rnd(levelsx * 6 / 8));
+                        var depy = (int)Math.Floor(levelsy / 8 + p8.Rnd(levelsy * 6 / 8));
                         var c = level[depx][depy];
 
                         if (c == 1 || c == 2)
@@ -693,7 +693,7 @@ namespace CSharpCraft
             {
                 data[g] = @default;
             }
-            Console.WriteLine(data[g]);
+            //Console.WriteLine(data[g]);
             return data[g];
         }
 
@@ -912,7 +912,7 @@ namespace CSharpCraft
                 for (int j = 0; j <= levelsy - 1; j++)
                 {
                     var c = Getdirectgr(i, j);
-                    var r = new Random().Next(100);
+                    var r = p8.Rnd(100);
                     var ex = i * 16 + 8;
                     var ey = j * 16 + 8;
                     var dist = Math.Max(Math.Abs(ex - plx), Math.Abs(ey - ply));
@@ -1200,8 +1200,8 @@ namespace CSharpCraft
                         var c1 = n[i][j];
                         var c2 = n[i + step][j];
                         var c3 = n[i][j + step];
-                        n[i + step / 2][j] = (c1 + c2) * 0.5 + (new Random().NextDouble() - 0.5) * cscal;
-                        n[i][j + step / 2] = (c1 + c3) * 0.5 + (new Random().NextDouble() - 0.5) * cscal;
+                        n[i + step / 2][j] = (c1 + c2) * 0.5 + (p8.Rnd() - 0.5) * cscal;
+                        n[i][j + step / 2] = (c1 + c3) * 0.5 + (p8.Rnd() - 0.5) * cscal;
                     }
                 }
 
@@ -1213,7 +1213,7 @@ namespace CSharpCraft
                         var c2 = n[i + step][j];
                         var c3 = n[i][j + step];
                         var c4 = n[i + step][j + step];
-                        n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * 0.25 + (new Random().NextDouble() - 0.5) * cscal;
+                        n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * 0.25 + (p8.Rnd() - 0.5) * cscal;
                     }
                 }
 
@@ -1326,7 +1326,7 @@ namespace CSharpCraft
 
         private Entity Rentity(Material it, double xx, double yy)
         {
-            return Entity(it, xx, yy, new Random().Next(3) - 1.5, new Random().Next(3) - 1.5);
+            return Entity(it, xx, yy, p8.Rnd(3) - 1.5, p8.Rnd(3) - 1.5);
         }
 
 
@@ -1386,10 +1386,10 @@ namespace CSharpCraft
 
             for (int i = 0; i <= 15; i++)
             {
-                Rndwat[i] = new int[16];
+                Rndwat[i] = new double[16];
                 for (int j = 0; j <= 15; j++)
                 {
-                    Rndwat[i][j] = new Random().Next(100);
+                    Rndwat[i][j] = p8.Rnd(100);
                 }
             }
 
@@ -1555,7 +1555,7 @@ namespace CSharpCraft
         }
 
 
-        private int Watval(double i, double j)
+        private double Watval(double i, double j)
         {
             return Rndwat[(int)Math.Floor(Math.Abs(i) * 2 % 16)][(int)Math.Floor(Math.Abs(j) * 2 % 16)];
         }
@@ -1621,7 +1621,7 @@ namespace CSharpCraft
 
                         intmenu.Sel = Loop(intmenu.Sel, intmenu.List);
 
-                        if (p8.Btnp(5))
+                        if (p8.Btnp(5) && !lb5)
                         {
                             if (curmenu.Type == chest)
                             {
@@ -1665,8 +1665,8 @@ namespace CSharpCraft
                 {
                     curmenu = null;
                 }
-                lb4 = p8.Btnp(4);
-                lb5 = p8.Btnp(5);
+                lb4 = p8.Btn(4);
+                lb5 = p8.Btn(5);
                 goto Continue;
             }
 
@@ -1770,7 +1770,8 @@ namespace CSharpCraft
                         {
                             (dx, dy) = Reflectcol(plx, ply, dx, dy, Entcolfree, 0, e);
                         }
-                        if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
+                        Console.WriteLine(lb5);
+                        if (dist < 12 && p8.Btn(5) && !block5 && !lb5) //found it
                         {
                             if (curitem != null && curitem.Type == pickuptool)
                             {
@@ -1789,7 +1790,8 @@ namespace CSharpCraft
                                     tooglemenu = 0;
                                     curmenu = Cmenu(e.Type, e.List);
                                 }
-                                canact = false;
+                                //Console.WriteLine("bollocks");
+                                canact = false; //
                             }
                         }
                     }
@@ -1832,20 +1834,20 @@ namespace CSharpCraft
                             if (e.Step == enstep_wait || e.Step == enstep_patrol)
                             {
                                 e.Step = enstep_walk;
-                                e.Dx = new Random().Next(2) - 1;
-                                e.Dy = new Random().Next(2) - 1;
-                                e.Dtim = 30 + new Random().Next(60);
+                                e.Dx = p8.Rnd(2) - 1;
+                                e.Dy = p8.Rnd(2) - 1;
+                                e.Dtim = 30 + p8.Rnd(60);
                             }
                             else if (e.Step == enstep_walk)
                             {
                                 e.Step = enstep_wait;
                                 e.Dx = 0;
                                 e.Dy = 0;
-                                e.Dtim = 30 + new Random().Next(60);
+                                e.Dtim = 30 + p8.Rnd(60);
                             }
                             else // chase
                             {
-                                e.Dtim = 10 + new Random().Next(60);
+                                e.Dtim = 10 + p8.Rnd(60);
                             }
                         }
                         else
@@ -1862,8 +1864,9 @@ namespace CSharpCraft
                                 {
                                     e.Dx = 0;
                                     e.Dy = 0;
-                                    e.Banim -= 1;
+                                    e.Banim += 1;
                                     e.Banim = e.Banim % 8;
+                                    Console.WriteLine(e.Banim);
                                     var pow = 10;
                                     if (e.Banim == 4)
                                     {
@@ -1876,7 +1879,15 @@ namespace CSharpCraft
                                 if (distp > 70)
                                 {
                                     e.Step = enstep_chase;
-                                    e.Dtim = 10 + new Random().Next(60);
+                                    e.Dtim = 10 + p8.Rnd(60);
+                                }
+                            }
+                            else
+                            {
+                                if (distp < 40)
+                                {
+                                    e.Step = enstep_chase;
+                                    e.Dtim = 10 + p8.Rnd(60);
                                 }
                             }
                             e.Dtim -= 1;
@@ -1920,7 +1931,7 @@ namespace CSharpCraft
 
             llife += Math.Max(-1, Math.Min(1, plife - llife));
             lstam += Math.Max(-1, Math.Min(1, pstam - lstam));
-
+            
             if (p8.Btn(5) && !block5 && canact)
             {
                 var bx = p8.Cos(prot);
@@ -1945,7 +1956,7 @@ namespace CSharpCraft
                         canact = false;
                     }
                 }
-
+                Console.WriteLine(banim);
                 if (banim == 0 && pstam > 0 && canact)
                 {
                     banim = 8;
@@ -1955,7 +1966,7 @@ namespace CSharpCraft
                         var pow = 1.0;
                         if (curitem != null && curitem.Type == sword)
                         {
-                            pow = 1 + (int)curitem.Power + new Random().Next((int)curitem.Power * (int)curitem.Power);
+                            pow = 1 + (int)curitem.Power + p8.Rnd((int)curitem.Power * (int)curitem.Power);
                             stamcost = Math.Max(0, 20 - (int)curitem.Power * 2);
                             pow = Math.Floor(pow);
                         }
@@ -1969,8 +1980,8 @@ namespace CSharpCraft
                             if (e.Life <= 0)
                             {
                                 p8.Del(enemies, e);
-                                Additem(ichor, new Random().Next(3), e.X, e.Y);
-                                Additem(fabric, new Random().Next(3), e.X, e.Y);
+                                Additem(ichor, p8.Rnd(3), e.X, e.Y);
+                                Additem(fabric, p8.Rnd(3), e.X, e.Y);
                             }
                             p8.Add(entities, Settext(pow.ToString(), 9, 20, Entity(etext, e.X, e.Y - 10, 0, -1)));
                         }
@@ -1984,13 +1995,13 @@ namespace CSharpCraft
                             {
                                 if (curitem.Type == haxe)
                                 {
-                                    pow = 1 + (int)curitem.Power + new Random().Next((int)curitem.Power * (int)curitem.Power);
+                                    pow = 1 + (int)curitem.Power + p8.Rnd((int)curitem.Power * (int)curitem.Power);
                                     stamcost = Math.Max(0, 20 - (int)curitem.Power * 2);
                                 }
                             }
                             else if ((hit == grrock || hit.Istree) && curitem.Type == pick)
                             {
-                                pow = 1 + (int)curitem.Power * 2 + new Random().Next((int)curitem.Power * (int)curitem.Power);
+                                pow = 1 + (int)curitem.Power * 2 + p8.Rnd((int)curitem.Power * (int)curitem.Power);
                                 stamcost = Math.Max(0, 20 - (int)curitem.Power * 2);
                             }
                         }
@@ -2001,8 +2012,8 @@ namespace CSharpCraft
                         {
                             Setgr(hitx, hity, hit.Tile);
                             Cleardata(hitx, hity);
-                            Additem(hit.Mat, new Random().Next(3) + 2, hitx, hity);
-                            if (hit == grtree && new Random().Next() > 0.7)
+                            Additem(hit.Mat, p8.Rnd(3) + 2, hitx, hity);
+                            if (hit == grtree && p8.Rnd() > 0.7)
                             {
                                 Additem(apple, 1, hitx, hity);
                             }
@@ -2029,7 +2040,7 @@ namespace CSharpCraft
                             if (hit == grgrass && curitem.Type == scythe)
                             {
                                 Setgr(hitx, hity, grsand);
-                                if (new Random().Next() > 0.4) { Additem(seed, 1, hitx, hity); }
+                                if (p8.Rnd() > 0.4) { Additem(seed, 1, hitx, hity); }
                             }
                             if (hit == grsand && curitem.Type == shovel)
                             {
@@ -2041,8 +2052,8 @@ namespace CSharpCraft
                                 else
                                 {
                                     Setgr(hitx, hity, grfarm);
-                                    Setdata(hitx, hity, time + 15 + new Random().Next(5));
-                                    Additem(sand, new Random().Next(2), hitx, hity);
+                                    Setdata(hitx, hity, time + 15 + p8.Rnd(5));
+                                    Additem(sand, p8.Rnd(2), hitx, hity);
                                 }
                             }
                             if (hit == grwater && curitem.Type == sand)
@@ -2057,14 +2068,14 @@ namespace CSharpCraft
                             if (hit == grfarm && curitem.Type == seed)
                             {
                                 Setgr(hitx, hity, grwheat);
-                                Setdata(hitx, hity, time + 15 + new Random().Next(5));
+                                Setdata(hitx, hity, time + 15 + p8.Rnd(5));
                                 Reminlist(invent, Instc(seed, 1));
                             }
                             if (hit == grwheat && curitem.Type == scythe)
                             {
                                 Setgr(hitx, hity, grsand);
                                 var d = Math.Max(0, Math.Min(4, 4 - (Getdata(hitx, hity, 0) - time)));
-                                Additem(wheat, d / 2 + new Random().NextDouble() * (d / 2), hitx, hity);
+                                Additem(wheat, d / 2 + p8.Rnd(d / 2), hitx, hity);
                                 Additem(seed, 1, hitx, hity);
                             }
                         }
@@ -2119,8 +2130,8 @@ namespace CSharpCraft
             }
 
             lb4 = p8.Btn(4);
-            lb5 = p8.Btnp(5);
-            if (!p8.Btnp(5))
+            lb5 = p8.Btn(5);
+            if (!p8.Btn(5))
             {
                 block5 = false;
             }

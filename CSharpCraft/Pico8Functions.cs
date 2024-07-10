@@ -465,6 +465,14 @@ namespace CSharpCraft
         }
 
 
+        public double Rnd(double limit = 1.0)
+        {
+            Random random = new();
+            double n = random.NextDouble() * limit;
+            return n;
+        }
+
+
         public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
             return Math.Sin(-angle * 2 * Math.PI);
