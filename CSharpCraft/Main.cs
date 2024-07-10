@@ -1878,8 +1878,8 @@ namespace CSharpCraft
                                 mspeed = 1.4;
                                 if (distp > 70)
                                 {
-                                    e.Step = enstep_chase;
-                                    e.Dtim = 10 + p8.Rnd(60);
+                                    e.Step = enstep_patrol;
+                                    e.Dtim = 30 + p8.Rnd(60);
                                 }
                             }
                             else
