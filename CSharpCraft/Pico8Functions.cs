@@ -327,12 +327,12 @@ namespace CSharpCraft
         }
 
 
-        public void Pal(double c0 = 0, double c1 = 0) // https://pico-8.fandom.com/wiki/Pal
+        public void Pal(double c0, double c1) // https://pico-8.fandom.com/wiki/Pal
         {
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            sprColors[c0Flr] = resetColors[c1Flr];
+            sprColors[c0Flr] = c1Flr == 0 ? resetColors[c1Flr] : resetSprColors[c1Flr];
             colors[c0Flr] = resetColors[c1Flr];
         }
 
@@ -355,12 +355,13 @@ namespace CSharpCraft
             
             if (t)
             {
-                sprColors[colFlr] = colors[0];
+                sprColors[colFlr] = sprColors[0];
                 sprColors[colFlr].A = 0;
                 resetSprColors[colFlr].A = 0;
             }
             else
             {
+                sprColors[colFlr] = resetSprColors[colFlr];
                 sprColors[colFlr].A = 255;
                 resetSprColors[colFlr].A = 255;
             }
@@ -496,24 +497,39 @@ namespace CSharpCraft
 
             int colorCache = 0;
 
-            for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
+            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
+            //{
+            //    if (sprColors[i] != resetSprColors[i])
+            //    {
+            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
+            //        {
+            //            if (sprColors[i] == resetSprColors[k])
+            //            {
+            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
+            //                goto Continue;
+            //            }
+            //        }
+            //    }
+            //
+            //    Continue:
+            //
+            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
+            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
+            //}
+
+            for (int i = 0; i < resetSprColors.Length; i++)
             {
                 if (sprColors[i] != resetSprColors[i])
                 {
-                    for (int k = 0; k < resetSprColors.Length; k++, j++)
+                    for (int j = 0; j < resetSprColors.Length; j++)
                     {
-                        if (sprColors[i] == resetSprColors[k])
+                        if (sprColors[i] == resetSprColors[j])
                         {
-                            colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
-                            goto Continue;
+                            colorCache += (i * 100 + j) * 1000;
+                            break;
                         }
                     }
                 }
-
-                Continue:
-
-                var transparency = sprColors[i].A == 0 ? 1 : 2;
-                colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
             }
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
@@ -556,6 +572,26 @@ namespace CSharpCraft
             //int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
             int colorCache = 0;
+
+            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
+            //{
+            //    if (sprColors[i] != resetSprColors[i])
+            //    {
+            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
+            //        {
+            //            if (sprColors[i] == resetSprColors[k])
+            //            {
+            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
+            //                goto Continue;
+            //            }
+            //        }
+            //    }
+            //
+            //    Continue:
+            //
+            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
+            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
+            //}
 
             for (int i = 0; i < resetSprColors.Length; i++)
             {

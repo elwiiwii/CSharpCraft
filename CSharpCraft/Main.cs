@@ -131,7 +131,6 @@ namespace CSharpCraft
         private double[] Dat;
         private double[] data = new double[8192];
 
-        private TimeSpan elapsedTime = TimeSpan.Zero;
         private List<Entity> Ene;
         private List<Entity> enemies = [];
         private List<Entity> Ent;
@@ -139,7 +138,6 @@ namespace CSharpCraft
 
         private List<Entity> factoryrecipe;
         private int frameCounter = 0;
-        private double frameRate = 0.0;
         private List<Entity> furnacerecipe;
 
         private readonly GraphicsDeviceManager graphics;
@@ -185,6 +183,8 @@ namespace CSharpCraft
         readonly int[] typecount = new int[11];
 
         private List<Entity> workbenchrecipe;
+
+        double elapsedSeconds = 0.0;
 
 
 #nullable disable
@@ -299,7 +299,7 @@ namespace CSharpCraft
             graphics.IsFullScreen = false;
 
             this.IsFixedTimeStep = true;
-            this.TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 30.0);
+            this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30));
             graphics.SynchronizeWithVerticalRetrace = true;
         }
 
@@ -866,7 +866,7 @@ namespace CSharpCraft
                             {
                                 p8.Palt(0, false);
                                 p8.Spr(31, gi, gj, 1, 2);
-                                p8.Spr(31, gi + 8, gj, 1, 2, true); // changed +8 to +16 because of a temporary spr change
+                                p8.Spr(31, gi + 8, gj, 1, 2, true);
                             }
                             p8.Palt();
                             p8.Spr(77, gi + 4, gj, 1, 2);
@@ -1549,14 +1549,12 @@ namespace CSharpCraft
 
         protected override void Update(GameTime gameTime)
         {
-            elapsedTime += gameTime.ElapsedGameTime;
-
-            if (elapsedTime > TimeSpan.FromSeconds(1))
+            double fps = 1.0 / gameTime.ElapsedGameTime.TotalSeconds;
+            elapsedSeconds += gameTime.ElapsedGameTime.TotalSeconds;
+            if (elapsedSeconds >= 1.0)
             {
-                frameRate = frameCounter / elapsedTime.TotalSeconds;
-                elapsedTime = TimeSpan.Zero;
-                frameCounter = 0;
-                Console.WriteLine("FPS: " + frameRate); // Print the frame rate to the console
+                Console.WriteLine($"FPS: {fps}");
+                elapsedSeconds = 0.0;
             }
 
             KeyboardState state = Keyboard.GetState();
@@ -1671,6 +1669,8 @@ namespace CSharpCraft
             {
                 if (Howmany(invent, curitem) <= 0) { curitem = null; }
             }
+
+            Upground();
 
             var playhit = Getgr(plx, ply);
             if (playhit != lastground && playhit == grwater) {  }
@@ -2166,6 +2166,7 @@ namespace CSharpCraft
                 p8.Spr((double)curmenu.Spr, 32, 14, 8, 8);
                 Printc(curmenu.Text, 64, 80, 6);
                 Printc(curmenu.Text2, 64, 90, 6);
+                //Console.WriteLine(time);
                 Printc("press button 1", 64, 112, 6 + time % 2);
                 time += 0.1;
                 goto Continue;
