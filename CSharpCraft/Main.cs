@@ -433,7 +433,7 @@ namespace CSharpCraft
             {
                 return;
             }
-            data[(int)(i + j * levelsx)] = 0; // original code has null
+            data[(int)(i + j * levelsx) - 1] = 0; // original code has null
         }
 
 
@@ -676,17 +676,17 @@ namespace CSharpCraft
             int levelsxFlr = (int)Math.Floor(levelsx);
 
             int g = iFlr + jFlr * levelsxFlr;
-            if (data[g] == 0)
+            if (data[g - 1] == 0)
             {
-                data[g] = @default;
+                data[g - 1] = @default;
             }
-            return data[g];
+            return data[g - 1];
         }
 
 
         private void Dirsetdata(double i, double j, double v)
         {
-            data[(int)(i + j * levelsx)] = v;
+            data[(int)(i + j * levelsx) - 1] = v;
         }
 
 
@@ -701,6 +701,7 @@ namespace CSharpCraft
             y = Math.Floor(y - 4);
 
             var lan = p8.Sin(anim * 2) * 1.5;
+
             var bel = Getgr(x, y);
 
             if (bel == grwater)
@@ -756,7 +757,7 @@ namespace CSharpCraft
                 p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
                 p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-                (int mx2, int my2) = Mirror((rot + 0.75) % 1);
+                (int mx2, int my2) = Mirror((-rot + 0.75) % 1);
                 p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
             }
 
@@ -1675,7 +1676,7 @@ namespace CSharpCraft
             var playhit = Getgr(plx, ply);
             if (playhit != lastground && playhit == grwater) {  }
             lastground = playhit;
-            var s = (playhit == grwater || pstam == 0) ? 1 : 2;
+            var s = (playhit == grwater || pstam <= 0) ? 1 : 2;
             if (playhit == grhole)
             {
                 switchlevel = switchlevel || canswitchlevel;
@@ -1708,6 +1709,11 @@ namespace CSharpCraft
                 panim = 0;
             }
             
+            if (s == 1)
+            {
+
+            }
+
             dx *= s;
             dy *= s;
             
