@@ -94,7 +94,7 @@ namespace CSharpCraft
     }
 
 
-    class FNAGame : Game
+    partial class FNAGame : Game
     {
         [STAThread]
         static void Main(string[] args)
@@ -400,19 +400,6 @@ namespace CSharpCraft
             {
                 p8.Add(l, e);
             }
-
-            //if (p < l.Count - 1 && p >= 0)
-            //{
-            //    for (int i = l.Count - 1; i >= p; i--)
-            //    {
-            //        l[i + 1] = l[i];
-            //    }
-            //    l[p] = e;
-            //}
-            //else
-            //{
-            //    p8.Add(l, e);
-            //}
         }
 
 
@@ -693,7 +680,6 @@ namespace CSharpCraft
             {
                 data[g] = @default;
             }
-            //Console.WriteLine(data[g]);
             return data[g];
         }
 
@@ -1770,8 +1756,7 @@ namespace CSharpCraft
                         {
                             (dx, dy) = Reflectcol(plx, ply, dx, dy, Entcolfree, 0, e);
                         }
-                        Console.WriteLine(lb5);
-                        if (dist < 12 && p8.Btn(5) && !block5 && !lb5) //found it
+                        if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
                         {
                             if (curitem != null && curitem.Type == pickuptool)
                             {
@@ -1790,8 +1775,7 @@ namespace CSharpCraft
                                     tooglemenu = 0;
                                     curmenu = Cmenu(e.Type, e.List);
                                 }
-                                //Console.WriteLine("bollocks");
-                                canact = false; //
+                                canact = false;
                             }
                         }
                     }
@@ -1866,7 +1850,6 @@ namespace CSharpCraft
                                     e.Dy = 0;
                                     e.Banim += 1;
                                     e.Banim = e.Banim % 8;
-                                    Console.WriteLine(e.Banim);
                                     var pow = 10;
                                     if (e.Banim == 4)
                                     {
@@ -1956,7 +1939,6 @@ namespace CSharpCraft
                         canact = false;
                     }
                 }
-                Console.WriteLine(banim);
                 if (banim == 0 && pstam > 0 && canact)
                 {
                     banim = 8;

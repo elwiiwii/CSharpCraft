@@ -332,7 +332,7 @@ namespace CSharpCraft
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            sprColors[c0Flr] = resetColors[c1Flr]; // idk resetSpr or not
+            sprColors[c0Flr] = resetColors[c1Flr];
             colors[c0Flr] = resetColors[c1Flr];
         }
 
@@ -353,15 +353,16 @@ namespace CSharpCraft
         {
             int colFlr = (int)Math.Floor(col);
             
-            if (!t)
+            if (t)
             {
-                sprColors[colFlr].A = 255;
-                resetSprColors[colFlr].A = 255;
+                sprColors[colFlr] = colors[0];
+                sprColors[colFlr].A = 0;
+                resetSprColors[colFlr].A = 0;
             }
             else
             {
-                sprColors[colFlr].A = 0;
-                resetSprColors[colFlr].A = 0;
+                sprColors[colFlr].A = 255;
+                resetSprColors[colFlr].A = 255;
             }
         }
 
@@ -495,19 +496,24 @@ namespace CSharpCraft
 
             int colorCache = 0;
 
-            for (int i = 0; i < resetSprColors.Length; i++)
+            for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
             {
                 if (sprColors[i] != resetSprColors[i])
                 {
-                    for (int j = 0; j < resetSprColors.Length; j++)
+                    for (int k = 0; k < resetSprColors.Length; k++, j++)
                     {
-                        if (sprColors[i] == resetSprColors[j])
+                        if (sprColors[i] == resetSprColors[k])
                         {
-                            colorCache += (i * 100 + j) * 1000;
-                            break;
+                            colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
+                            goto Continue;
                         }
                     }
                 }
+
+                Continue:
+
+                var transparency = sprColors[i].A == 0 ? 1 : 2;
+                colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
             }
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
