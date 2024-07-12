@@ -1,22 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Data.SqlTypes;
-using System.IO;
 using System.Linq;
-using System.Numerics;
-using System.Reflection.Emit;
-using System.Reflection.Metadata.Ecma335;
-using System.Reflection.PortableExecutable;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Schema;
-using CSharpCraft;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CSharpCraft
 {
@@ -105,6 +95,15 @@ namespace CSharpCraft
             g.Run();
         }
 
+        private SpriteBatch batch;
+        private GraphicsDeviceManager graphics;
+        private Pico8Functions p8;
+        private Texture2D pixel;
+        private List<SoundEffect> soundEffects;
+        private Texture2D SpriteSheet1;
+
+        private int frameCounter = 0;
+        double elapsedSeconds = 0.0;
 
 #nullable enable
 
@@ -112,8 +111,7 @@ namespace CSharpCraft
         private List<Entity> anvilrecipe;
 
         private double banim;
-        private SpriteBatch batch;
-
+        
         private bool canswitchlevel = false;
         private Level cave;
         private List<Entity> chemrecipe;
@@ -126,7 +124,7 @@ namespace CSharpCraft
         private Entity curitem;
         private Entity curmenu;
         private Level currentlevel;
-        private readonly Level currentLevel;
+        private Level currentLevel;
 
         private double[] Dat;
         private double[] data = new double[8192];
@@ -137,10 +135,8 @@ namespace CSharpCraft
         private List<Entity> entities = [];
 
         private List<Entity> factoryrecipe;
-        private int frameCounter = 0;
+        
         private List<Entity> furnacerecipe;
-
-        private readonly GraphicsDeviceManager graphics;
 
         private double holex;
         private double holey;
@@ -163,8 +159,7 @@ namespace CSharpCraft
         private List<Entity> nearenemies;
 
         private double panim;
-        private Pico8Functions p8;
-        private Texture2D pixel;
+        
         private double plife;
         private double plx;
         private double ply;
@@ -173,7 +168,6 @@ namespace CSharpCraft
 
         private double[][] Rndwat = new double[16][];
 
-        private Texture2D SpriteSheet1;
         private double stamcost;
         private List<Entity> stonebenchrecipe;
         private bool switchlevel = false;
@@ -184,9 +178,7 @@ namespace CSharpCraft
 
         private List<Entity> workbenchrecipe;
 
-        double elapsedSeconds = 0.0;
-
-
+        
 #nullable disable
 
 
@@ -291,8 +283,8 @@ namespace CSharpCraft
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += new EventHandler<EventArgs>(Window_ClientSizeChanged);
 
-            // All graphics loaded will be in a "Graphics" folder
-            Content.RootDirectory = "Graphics";
+            // All content loaded will be in a "Content" folder
+            Content.RootDirectory = "Content";
 
             graphics.PreferredBackBufferWidth = 512;
             graphics.PreferredBackBufferHeight = 512;
@@ -757,7 +749,12 @@ namespace CSharpCraft
                 p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
                 p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-                (int mx2, int my2) = Mirror((-rot + 0.75) % 1);
+                if (isplayer)
+                {
+                    Console.WriteLine((rot + 0.75) % 1);
+                }
+
+                (int mx2, int my2) = Mirror((rot + 0.75) % 1);
                 p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
             }
 
@@ -1564,6 +1561,8 @@ namespace CSharpCraft
 
             if (state.IsKeyDown(Keys.Q)) switchlevel = true;
 
+            if (state.IsKeyDown(Keys.E)) p8.Sfx(12, 3);
+
             if (curmenu != null)
             {
                 if (curmenu.Spr != null)
@@ -1589,8 +1588,8 @@ namespace CSharpCraft
                     var othmenu = menuinvent;
                     if (curmenu.Type == chest)
                     {
-                        if (p8.Btnp(0)) { tooglemenu -= 1; }
-                        if (p8.Btnp(1)) { tooglemenu += 1; }
+                        if (p8.Btnp(0)) { tooglemenu -= 1; p8.Sfx(18, 3); }
+                        if (p8.Btnp(1)) { tooglemenu += 1; p8.Sfx(18, 3); }
                         tooglemenu = (tooglemenu % 2 + 2) & 2;
                         if (tooglemenu == 1)
                         {
@@ -1601,8 +1600,8 @@ namespace CSharpCraft
 
                     if (intmenu.List.Count > 0)
                     {
-                        if (p8.Btnp(2)) { intmenu.Sel -= 1; }
-                        if (p8.Btnp(3)) { intmenu.Sel += 1; }
+                        if (p8.Btnp(2)) { intmenu.Sel -= 1; p8.Sfx(18, 3); }
+                        if (p8.Btnp(3)) { intmenu.Sel += 1; p8.Sfx(18, 3); }
 
                         intmenu.Sel = Loop(intmenu.Sel, intmenu.List);
 
@@ -1610,6 +1609,7 @@ namespace CSharpCraft
                         {
                             if (curmenu.Type == chest)
                             {
+                                p8.Sfx(16, 3);
                                 var el = intmenu.List[intmenu.Sel];
                                 p8.Del(intmenu.List, el);
                                 Additeminlist(othmenu.List, el, othmenu.Sel);
@@ -1627,10 +1627,11 @@ namespace CSharpCraft
                                     if (Cancraft(rec))
                                     {
                                         Craft(rec);
+                                        p8.Sfx(16, 3);
                                     }
                                     else
                                     {
-
+                                        p8.Sfx(17, 3);
                                     }
                                 }
                             }
@@ -1642,6 +1643,7 @@ namespace CSharpCraft
                                 curmenu.Sel = 0;
                                 curmenu = null;
                                 block5 = true;
+                                p8.Sfx(16, 3);
                             }
                         }
                     }
@@ -1649,6 +1651,7 @@ namespace CSharpCraft
                 if (p8.Btnp(4) && !lb4)
                 {
                     curmenu = null;
+                    p8.Sfx(17, 3);
                 }
                 lb4 = p8.Btn(4);
                 lb5 = p8.Btn(5);
@@ -1674,7 +1677,7 @@ namespace CSharpCraft
             Upground();
 
             var playhit = Getgr(plx, ply);
-            if (playhit != lastground && playhit == grwater) {  }
+            if (playhit != lastground && playhit == grwater) { p8.Sfx(11, 3); }
             lastground = playhit;
             var s = (playhit == grwater || pstam <= 0) ? 1 : 2;
             if (playhit == grhole)
@@ -1753,6 +1756,7 @@ namespace CSharpCraft
                                 Additeminlist(invent, newit, -1);
                                 p8.Del(entities, e);
                                 p8.Add(entities, Settext(Howmany(invent, newit).ToString(), 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
+                                p8.Sfx(18, 3);
                             }
                         }
                     }
@@ -1780,6 +1784,7 @@ namespace CSharpCraft
                                 {
                                     tooglemenu = 0;
                                     curmenu = Cmenu(e.Type, e.List);
+                                    p8.Sfx(13, 3);
                                 }
                                 canact = false;
                             }
@@ -1861,6 +1866,7 @@ namespace CSharpCraft
                                     {
                                         plife -= pow;
                                         p8.Add(entities, Settext(pow.ToString(), 8, 20, Entity(etext, plx, ply - 10, 0, -1)));
+                                        p8.Sfx(14 + p8.Rnd(2), 3);
                                     }
                                     plife = Math.Max(0, plife);
                                 }
@@ -1951,12 +1957,14 @@ namespace CSharpCraft
                     stamcost = 20;
                     if (nearenemies.Count > 0)
                     {
+                        p8.Sfx(19, 3);
                         var pow = 1.0;
                         if (curitem != null && curitem.Type == sword)
                         {
                             pow = 1 + (int)curitem.Power + p8.Rnd((int)curitem.Power * (int)curitem.Power);
                             stamcost = Math.Max(0, 20 - (int)curitem.Power * 2);
                             pow = Math.Floor(pow);
+                            p8.Sfx(14 + p8.Rnd(2), 3);
                         }
                         for (int i = 0; i < nearenemies.Count; i++)
                         {
@@ -1976,6 +1984,7 @@ namespace CSharpCraft
                     }
                     else if (hit.Mat != null)
                     {
+                        p8.Sfx(15, 3);
                         var pow = 1.0;
                         if (curitem != null)
                         {
@@ -1985,12 +1994,14 @@ namespace CSharpCraft
                                 {
                                     pow = 1 + (int)curitem.Power + p8.Rnd((int)curitem.Power * (int)curitem.Power);
                                     stamcost = Math.Max(0, 20 - (int)curitem.Power * 2);
+                                    p8.Sfx(12, 3);
                                 }
                             }
                             else if ((hit == grrock || hit.Istree) && curitem.Type == pick)
                             {
                                 pow = 1 + (int)curitem.Power * 2 + p8.Rnd((int)curitem.Power * (int)curitem.Power);
                                 stamcost = Math.Max(0, 20 - (int)curitem.Power * 2);
+                                p8.Sfx(12, 3);
                             }
                         }
                         pow = Math.Floor(pow);
@@ -2014,6 +2025,7 @@ namespace CSharpCraft
                     }
                     else
                     {
+                        p8.Sfx(19, 3);
                         if (curitem != null)
                         {
                             if (curitem.Power != null)
@@ -2024,6 +2036,7 @@ namespace CSharpCraft
                             {
                                 plife = Math.Min(100, plife + (int)curitem.Type.Givelife);
                                 Reminlist(invent, Instc(curitem.Type, 1));
+                                p8.Sfx(21, 3);
                             }
                             if (hit == grgrass && curitem.Type == scythe)
                             {
@@ -2115,6 +2128,7 @@ namespace CSharpCraft
             if (p8.Btnp(4) && !lb4)
             {
                 curmenu = menuinvent;
+                p8.Sfx(13, 3);
             }
 
             lb4 = p8.Btn(4);
@@ -2291,10 +2305,19 @@ namespace CSharpCraft
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
 
-            // ... then load a texture from ./Graphics/FNATexture.png
-            SpriteSheet1 = Content.Load<Texture2D>("SpriteSheet1");
+            // ... then load a texture from ./Content/FNATexture.png
+            //SpriteSheet1 = Content.Load<Texture2D>("SpriteSheet1");
 
-            p8 = new Pico8Functions(pixel, batch, GraphicsDevice);
+            List<SoundEffect> soundEffects = new List<SoundEffect>();
+            for (int i = 0; i <= 21; i++)
+            {
+                string fileName = $"Content/Sfx/sfx_{i}.wav";
+                using var stream = TitleContainer.OpenStream(fileName);
+                {
+                    soundEffects.Add(SoundEffect.FromStream(stream));
+                }
+            }
+            p8 = new Pico8Functions(soundEffects, pixel, batch, GraphicsDevice);
 
         }
 
@@ -2302,9 +2325,13 @@ namespace CSharpCraft
         protected override void UnloadContent()
         {
             batch.Dispose();
-            SpriteSheet1.Dispose();
+            //SpriteSheet1.Dispose();
             pixel.Dispose();
             p8.Dispose();
+            foreach (var soundEffect in soundEffects)
+            {
+                soundEffect.Dispose();
+            }
         }
 
         private void UpdateViewport()

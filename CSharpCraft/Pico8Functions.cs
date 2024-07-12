@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions(Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
+    public class Pico8Functions(List<SoundEffect> soundEffects, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
     {
         private readonly SpriteBatch batch = batch;
         private readonly GraphicsDevice graphicsDevice = graphicsDevice;
         private readonly Texture2D pixel = pixel;
+        private readonly List<SoundEffect> soundEffects = soundEffects;
         private readonly Dictionary<int, Texture2D> spriteTextures = new();
         private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
+
+        private List<SoundEffectInstance> channel0 = [];
+        private List<SoundEffectInstance> channel1 = [];
+        private List<SoundEffectInstance> channel2 = [];
+        private List<SoundEffectInstance> channel3 = [];
 
         public bool prev0 = false;
         public bool prev1 = false;
@@ -467,11 +472,32 @@ namespace CSharpCraft
         }
 
 
-        public double Rnd(double limit = 1.0)
+        public double Rnd(double limit = 1.0) // https://pico-8.fandom.com/wiki/Rnd
         {
             Random random = new();
             double n = random.NextDouble() * limit;
             return n;
+        }
+
+
+        public void Sfx(double n, double channel = 0, double? offset = null, double? length = null) // https://pico-8.fandom.com/wiki/Sfx
+        {
+            int nFlr = (int)Math.Floor(n);
+            int channelFlr = (int)Math.Floor(channel);
+
+            if (channel3 != null)
+            {
+                foreach (var sfxInstance in channel3)
+                {
+                    sfxInstance.Dispose();
+                }
+            }
+
+            SoundEffectInstance instance = soundEffects[nFlr].CreateInstance();
+
+            channel3.Add(instance);
+
+            instance.Play();
         }
 
 
