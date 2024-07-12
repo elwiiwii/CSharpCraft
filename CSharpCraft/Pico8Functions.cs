@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,10 +23,10 @@ namespace CSharpCraft
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
 
-        private List<SoundEffectInstance> channel0 = [];
-        private List<SoundEffectInstance> channel1 = [];
-        private List<SoundEffectInstance> channel2 = [];
-        private List<SoundEffectInstance> channel3 = [];
+        private List<SoundEffectInstance>? channel0 = [];
+        private List<SoundEffectInstance>? channel1 = [];
+        private List<SoundEffectInstance>? channel2 = [];
+        private List<SoundEffectInstance>? channel3 = [];
 
         public bool prev0 = false;
         public bool prev1 = false;
@@ -315,6 +316,13 @@ namespace CSharpCraft
         }
 
 
+        public double Mod(double x, double m)
+        {
+            double r = x % m;
+            return r < 0 ? r + m : r;
+        }
+
+
         public void Mset(double celx, double cely, double snum = 0) // https://pico-8.fandom.com/wiki/Mset
         {
             int xFlr = (int)Math.Floor(celx);
@@ -322,6 +330,12 @@ namespace CSharpCraft
             int sFlr = (int)Math.Floor(snum);
 
             Map1[xFlr + (yFlr * 128)] = sFlr;
+        }
+
+
+        public void Music(double n, double fadems = 0, double channelmask = 0) // https://pico-8.fandom.com/wiki/Music
+        {
+
         }
 
 
@@ -485,9 +499,18 @@ namespace CSharpCraft
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
 
-            if (channel3 != null)
+            List<SoundEffectInstance>? c = channelFlr switch
             {
-                foreach (var sfxInstance in channel3)
+                0 => channel0,
+                1 => channel1,
+                2 => channel2,
+                3 => channel3,
+                _ => throw new ArgumentOutOfRangeException(nameof(channel)),
+            };
+
+            if (c != null)
+            {
+                foreach (var sfxInstance in c)
                 {
                     sfxInstance.Dispose();
                 }
@@ -495,7 +518,7 @@ namespace CSharpCraft
 
             SoundEffectInstance instance = soundEffects[nFlr].CreateInstance();
 
-            channel3.Add(instance);
+            c.Add(instance);
 
             instance.Play();
         }

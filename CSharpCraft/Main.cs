@@ -1859,8 +1859,8 @@ namespace CSharpCraft
                                 {
                                     e.Dx = 0;
                                     e.Dy = 0;
-                                    e.Banim += 1;
-                                    e.Banim = e.Banim % 8;
+                                    e.Banim -= 1;
+                                    e.Banim = p8.Mod(e.Banim, 8);
                                     var pow = 10;
                                     if (e.Banim == 4)
                                     {
@@ -2308,7 +2308,7 @@ namespace CSharpCraft
             // ... then load a texture from ./Content/FNATexture.png
             //SpriteSheet1 = Content.Load<Texture2D>("SpriteSheet1");
 
-            List<SoundEffect> soundEffects = new List<SoundEffect>();
+            List<SoundEffect> soundEffects = [];
             for (int i = 0; i <= 21; i++)
             {
                 string fileName = $"Content/Sfx/sfx_{i}.wav";
@@ -2328,9 +2328,12 @@ namespace CSharpCraft
             //SpriteSheet1.Dispose();
             pixel.Dispose();
             p8.Dispose();
-            foreach (var soundEffect in soundEffects)
+            if (soundEffects != null)
             {
-                soundEffect.Dispose();
+                foreach (var soundEffect in soundEffects)
+                {
+                    soundEffect.Dispose();
+                }
             }
         }
 

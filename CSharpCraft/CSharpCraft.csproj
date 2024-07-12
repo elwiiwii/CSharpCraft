@@ -12,6 +12,8 @@
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
+		<None Remove="Content\Music\music_1.wav" />
+		<None Remove="Content\Music\music_4.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
 	</ItemGroup>
@@ -25,6 +27,12 @@
 		</Content>
 		<Content Include="Content\Graphics\font2.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_1.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_4.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\sfx_0.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -96,10 +104,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\FNA\FNA.Core.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Content\Music\" />
 	</ItemGroup>
 
 </Project>
