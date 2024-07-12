@@ -249,6 +249,14 @@ namespace CSharpCraft
         }
 
 
+        public void Cls(double color = 0) // https://pico-8.fandom.com/wiki/Cls
+        {
+            int colorFlr = (int)Math.Floor(color);
+
+            graphicsDevice.Clear(resetColors[colorFlr]);
+        }
+
+
         public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
             return Math.Cos(-angle * 2 * Math.PI);
