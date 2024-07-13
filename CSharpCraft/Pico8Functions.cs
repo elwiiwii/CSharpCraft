@@ -25,6 +25,7 @@ namespace CSharpCraft
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
 
+        private List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
@@ -347,13 +348,25 @@ namespace CSharpCraft
         {
             int nFlr = (int)Math.Floor(n);
 
+            if (channelMusic != null)
+            {
+                foreach (var song in channelMusic)
+                {
+                    song.Dispose();
+                }
+            }
+
             if (nFlr == 1)
             {
-                music[1].Play();
+                SoundEffectInstance instance = music[1].CreateInstance();
+                channelMusic.Add(instance);
+                instance.Play();
             }
             else if (nFlr == 4)
             {
-                music[4].Play();
+                SoundEffectInstance instance = music[4].CreateInstance();
+                channelMusic.Add(instance);
+                instance.Play();
             }
             else
             {

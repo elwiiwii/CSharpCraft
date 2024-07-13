@@ -89,11 +89,7 @@ namespace CSharpCraft
 
             KeyboardState state = Keyboard.GetState();
 
-            //if (state.IsKeyDown(Keys.Tab)) Resetlevel();
-            //
-            //if (state.IsKeyDown(Keys.Q)) switchlevel = true;
-            //
-            //if (state.IsKeyDown(Keys.E)) p8.Sfx(12, 3);
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) pcraft.Init();
 
             pcraft.Update();
 
