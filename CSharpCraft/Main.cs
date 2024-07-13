@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,10 +8,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace CSharpCraft
 {
-
 
     partial class FNAGame : Game
     {
@@ -23,13 +24,17 @@ namespace CSharpCraft
             g.Run();
         }
 
+#nullable enable
+
         private SpriteBatch batch;
         private GraphicsDeviceManager graphics;
-        private PcraftCode Pcraft;
+        private List<SoundEffect> music;
         private Pico8Functions p8;
+        private PcraftCode pcraft;
         private Texture2D pixel;
         private List<SoundEffect> soundEffects;
-        private Texture2D SpriteSheet1;
+
+#nullable disable
 
         private int frameCounter = 0;
         double elapsedSeconds = 0.0;
@@ -67,7 +72,7 @@ namespace CSharpCraft
 
             p8.Palt();
 
-            Pcraft.Init();
+            pcraft.Init();
 
         }
 
@@ -90,7 +95,7 @@ namespace CSharpCraft
             //
             //if (state.IsKeyDown(Keys.E)) p8.Sfx(12, 3);
 
-            Pcraft.Update();
+            pcraft.Update();
 
             p8.prev0 = state.IsKeyDown(Keys.A);
             p8.prev1 = state.IsKeyDown(Keys.D);
@@ -122,7 +127,7 @@ namespace CSharpCraft
             p8.Pal();
             p8.Palt();
 
-            Pcraft.Draw();
+            pcraft.Draw();
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)
@@ -148,8 +153,15 @@ namespace CSharpCraft
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
 
-            // ... then load a texture from ./Content/FNATexture.png
-            //SpriteSheet1 = Content.Load<Texture2D>("SpriteSheet1");
+            List<SoundEffect> music = [];
+            for (int i = 0; i <= 6; i++)
+            {
+                string fileName = $"Content/Music/music_{i}.wav";
+                using var stream = TitleContainer.OpenStream(fileName);
+                {
+                    music.Add(SoundEffect.FromStream(stream));
+                }
+            }
 
             List<SoundEffect> soundEffects = [];
             for (int i = 0; i <= 21; i++)
@@ -160,23 +172,30 @@ namespace CSharpCraft
                     soundEffects.Add(SoundEffect.FromStream(stream));
                 }
             }
-            p8 = new Pico8Functions(soundEffects, pixel, batch, GraphicsDevice);
-            Pcraft = new PcraftCode(p8);
+
+            p8 = new Pico8Functions(soundEffects, music, pixel, batch, GraphicsDevice);
+            pcraft = new PcraftCode(p8);
         }
 
 
         protected override void UnloadContent()
         {
             batch.Dispose();
-            //SpriteSheet1.Dispose();
             pixel.Dispose();
             p8.Dispose();
-            Pcraft.Dispose();
+            pcraft.Dispose();
             if (soundEffects != null)
             {
                 foreach (var soundEffect in soundEffects)
                 {
-                    soundEffect.Dispose();
+                    soundEffect?.Dispose();
+                }
+            }
+            if (music != null)
+            {
+                foreach (var song in music)
+                {
+                    song?.Dispose();
                 }
             }
         }

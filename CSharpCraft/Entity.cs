@@ -10,13 +10,13 @@ namespace CSharpCraft
     public class Entity
     {
         public double Banim { get; set; }
-        public double C { get; set; }
+        public int C { get; set; }
         public int? Count { get; set; }
         public double Dtim { get; set; }
         public double Dx { get; set; }
         public double Dy { get; set; }
-        public Material? Giveitem { get; set; }
-        public bool Hascol { get; set; }
+        public Material? GiveItem { get; set; }
+        public bool HasCol { get; set; }
         public double Life { get; set; }
         public List<Entity>? List { get; set; }
         public double Lrot { get; set; }
@@ -29,7 +29,7 @@ namespace CSharpCraft
         public List<Entity>? Req { get; set; }
         public int Sel { get; set; }
         public int? Spr { get; set; }
-        public double Step { get; set; }
+        public int Step { get; set; }
         public string? Text { get; set; }
         public string? Text2 { get; set; }
         public double? Timer { get; set; }

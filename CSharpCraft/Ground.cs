@@ -9,10 +9,10 @@ namespace CSharpCraft
 
     public class Ground
     {
-        public double Gr { get; set; }
-        public double Id { get; set; }
-        public bool Istree { get; set; }
-        public double Life { get; set; }
+        public int Gr { get; set; }
+        public int Id { get; set; }
+        public bool IsTree { get; set; }
+        public int Life { get; set; }
         public Material? Mat { get; set; }
         public int[]? Pal { get; set; }
         public Ground? Tile { get; set; }

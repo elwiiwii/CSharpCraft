@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -12,13 +13,14 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions(List<SoundEffect> soundEffects, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
+    public class Pico8Functions(List<SoundEffect> soundEffects, List<SoundEffect> music, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
     {
         private readonly SpriteBatch batch = batch;
         private readonly GraphicsDevice graphicsDevice = graphicsDevice;
+        private readonly List<SoundEffect> music = music;
         private readonly Texture2D pixel = pixel;
         private readonly List<SoundEffect> soundEffects = soundEffects;
-        private readonly Dictionary<int, Texture2D> spriteTextures = new();
+        private readonly Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
@@ -343,6 +345,20 @@ namespace CSharpCraft
 
         public void Music(double n, double fadems = 0, double channelmask = 0) // https://pico-8.fandom.com/wiki/Music
         {
+            int nFlr = (int)Math.Floor(n);
+
+            if (nFlr == 1)
+            {
+                music[1].Play();
+            }
+            else if (nFlr == 4)
+            {
+                music[4].Play();
+            }
+            else
+            {
+                return;
+            }
 
         }
 
@@ -502,7 +518,7 @@ namespace CSharpCraft
         }
 
 
-        public void Sfx(double n, double channel = 0, double? offset = null, double? length = null) // https://pico-8.fandom.com/wiki/Sfx
+        public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
         {
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
@@ -522,13 +538,18 @@ namespace CSharpCraft
                 {
                     sfxInstance.Dispose();
                 }
+
+                SoundEffectInstance instance = soundEffects[nFlr].CreateInstance();
+
+                c.Add(instance);
+
+                instance.Play();
             }
-
-            SoundEffectInstance instance = soundEffects[nFlr].CreateInstance();
-
-            c.Add(instance);
-
-            instance.Play();
+            else
+            {
+                return;
+            }
+            
         }
 
 

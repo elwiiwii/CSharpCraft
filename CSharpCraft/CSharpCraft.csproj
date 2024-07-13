@@ -12,8 +12,13 @@
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
+		<None Remove="Content\Music\music_0.wav" />
 		<None Remove="Content\Music\music_1.wav" />
+		<None Remove="Content\Music\music_2.wav" />
+		<None Remove="Content\Music\music_3.wav" />
 		<None Remove="Content\Music\music_4.wav" />
+		<None Remove="Content\Music\music_5.wav" />
+		<None Remove="Content\Music\music_6.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
 	</ItemGroup>
@@ -28,10 +33,25 @@
 		<Content Include="Content\Graphics\font2.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Music\music_0.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Music\music_1.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Music\music_2.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_3.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Music\music_4.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_5.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_6.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\sfx_0.wav">

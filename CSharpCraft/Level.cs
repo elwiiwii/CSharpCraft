@@ -12,13 +12,13 @@ namespace CSharpCraft
         public double[]? Dat { get; set; }
         public List<Entity>? Ene { get; set; }
         public List<Entity>? Ent { get; set; }
-        public bool Isunder { get; set; }
+        public bool IsUnder { get; set; }
         public double Stx { get; set; }
         public double Sty { get; set; }
-        public double Sx { get; set; }
-        public double Sy { get; set; }
-        public double X { get; set; }
-        public double Y { get; set; }
+        public int Sx { get; set; }
+        public int Sy { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
     }
 
 }

@@ -9,10 +9,10 @@ namespace CSharpCraft
     
     public class Material
     {
-        public bool? Becraft { get; set; }
-        public int? Bigspr { get; set; }
+        public bool? BeCraft { get; set; }
+        public int? BigSpr { get; set; }
         public bool Drop { get; set; }
-        public int? Givelife { get; set; }
+        public int? GiveLife { get; set; }
         public string? Name { get; set; }
         public int[]? Pal { get; set; }
         public int Spr { get; set; }
