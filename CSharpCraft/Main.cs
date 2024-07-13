@@ -183,7 +183,6 @@ namespace CSharpCraft
             batch.Dispose();
             pixel.Dispose();
             p8.Dispose();
-            pcraft.Dispose();
             if (soundEffects != null)
             {
                 foreach (var soundEffect in soundEffects)

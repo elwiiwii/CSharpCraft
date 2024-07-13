@@ -711,8 +711,6 @@ namespace CSharpCraft
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-
             foreach (var texture in spriteTextures.Values)
             {
                 texture.Dispose();

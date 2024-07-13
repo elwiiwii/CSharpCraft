@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace CSharpCraft
 {
 
-    public class PcraftCode(Pico8Functions p8) : IDisposable
+    public class PcraftCode(Pico8Functions p8)
     {
         
         private readonly Pico8Functions p8 = p8;
@@ -25,7 +25,7 @@ namespace CSharpCraft
     
         private double banim;
     
-        private bool canswitchLevel = false;
+        private bool canSwitchLevel = false;
         private Level? cave;
         private List<Entity>? chemRecipe;
         private double clx;
@@ -96,13 +96,13 @@ namespace CSharpCraft
         private bool lb5 = false;
         private bool block5 = false;
     
-        private readonly int enstep_wait = 0;
-        private readonly int enstep_walk = 1;
-        private readonly int enstep_chase = 2;
-        private readonly int enstep_patrol = 3;
+        private readonly int enstep_Wait = 0;
+        private readonly int enstep_Walk = 1;
+        private readonly int enstep_Chase = 2;
+        private readonly int enstep_Patrol = 3;
     
-        static readonly string[] pwrnames = ["wood", "stone", "iron", "gold", "gem"];
-        static readonly int[][] pwrpal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
+        static readonly string[] pwrNames = ["wood", "stone", "iron", "gold", "gem"];
+        static readonly int[][] pwrPal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
     
         static readonly Material haxe = Item("haxe", 98);
         static readonly Material sword = Item("sword", 99);
@@ -165,14 +165,14 @@ namespace CSharpCraft
         static readonly Ground grgem = new() { Id = 10, Gr = 1, Mat = gem, Tile = grsand, Life = 160, IsTree = true, Pal = [1, 2, 14, 12] };
         static readonly Ground grhole = new() { Id = 11, Gr = 1 };
     
-        private Ground lastground = grsand;
+        private Ground lastGround = grsand;
     
         private readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
     
-        private Entity mainmenu = Cmenu(inventary, null, 128, "by nusan", "2016");
-        private Entity intromenu = Cmenu(inventary, null, 136, "a storm leaved you", "on a deserted island");
-        private Entity deathmenu = Cmenu(inventary, null, 128, "you died", "alone ...");
-        private Entity winmenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
+        private Entity mainMenu = Cmenu(inventary, null, 128, "by nusan", "2016");
+        private Entity introMenu = Cmenu(inventary, null, 136, "a storm leaved you", "on a deserted island");
+        private Entity deathMenu = Cmenu(inventary, null, 128, "you died", "alone ...");
+        private Entity winMenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
     
         static PcraftCode()
         {
@@ -183,7 +183,7 @@ namespace CSharpCraft
             bread.GiveLife = 40;
         }
     
-        private static Material Item(string n, int s, int[] p = null, bool? bc = null)
+        private static Material Item(string n, int s, int[] p = null, bool bc = false)
         {
             return new() { Name = n, Spr = s, Pal = p, BeCraft = bc };
         }
@@ -463,7 +463,7 @@ namespace CSharpCraft
             invent = [];
             curItem = null;
             switchLevel = false;
-            canswitchLevel = false;
+            canSwitchLevel = false;
             menuInvent = Cmenu(inventary, invent);
     
             for (int i = 0; i <= 15; i++)
@@ -488,7 +488,7 @@ namespace CSharpCraft
     
         public void Init()
         {
-            //p8.Music(4, 10000);
+            p8.Music(4, 10000);
 
             furnaceRecipe = [];
             workbenchRecipe = [];
@@ -531,7 +531,7 @@ namespace CSharpCraft
             p8.Add(stonebenchRecipe, Recipe(Instc(anvil, null, anvilRecipe), [Instc(iron, 25), Instc(wood, 10), Instc(stone, 25)]));
             p8.Add(stonebenchRecipe, Recipe(Instc(furnace, null, furnaceRecipe), [Instc(wood, 10), Instc(stone, 15)]));
     
-            curMenu = mainmenu;
+            curMenu = mainMenu;
         }
     
         private (int, int) GetMcoord(double x, double y)
@@ -580,12 +580,12 @@ namespace CSharpCraft
             return data[g - 1];
         }
     
-        private void Dirsetdata(double i, double j, double v)
+        private void DirSetData(int i, int j, double v)
         {
-            data[(int)(i + j * levelsx) - 1] = v;
+            data[i + j * levelsx - 1] = v;
         }
     
-        private double Getdata(double x, double y, int @default)
+        private double GetData(double x, double y, int @default)
         {
             var (i, j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
@@ -595,14 +595,14 @@ namespace CSharpCraft
             return DirGetData(i, j, @default);
         }
     
-        private void Setdata(double x, double y, double v)
+        private void SetData(double x, double y, double v)
         {
             var (i, j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
             {
                 return;
             }
-            Dirsetdata(i, j, v);
+            DirSetData(i, j, v);
         }
     
         private void Cleardata(double x, double y)
@@ -612,7 +612,7 @@ namespace CSharpCraft
             {
                 return;
             }
-            data[(int)(i + j * levelsx) - 1] = 0; // original code has null
+            data[i + j * levelsx - 1] = 0;
         }
     
         private int Loop(int sel, List<Entity> l)
@@ -621,12 +621,12 @@ namespace CSharpCraft
             return ((sel % lp) + lp) % lp;
         }
     
-        private bool Entcolfree(double x, double y, Entity e)
+        private bool EntColFree(double x, double y, Entity e)
         {
             return Math.Max(Math.Abs(e.X - x), Math.Abs(e.Y - y)) > 8;
         }
     
-        private (double, double) Reflectcol(double x, double y, double dx, double dy, Func<double, double, Entity, bool> checkfun, double dp, Entity e = null)
+        private (double, double) ReflectCol(double x, double y, double dx, double dy, Func<double, double, Entity, bool> checkfun, double dp, Entity e = null)
         {
             var newx = x + dx;
             var newy = y + dy;
@@ -662,7 +662,7 @@ namespace CSharpCraft
             return (dx, dy);
         }
         
-        private void Additem(Material mat, double count, double hitx, double hity)
+        private void AddItem(Material mat, double count, double hitx, double hity)
         {
             var countFlr = (int)Math.Floor(count);
         
@@ -676,7 +676,7 @@ namespace CSharpCraft
             }
         }
         
-        private void Upground()
+        private void UpGround()
         {
             var ci = (int)Math.Floor((clx - 64) / 16);
             var cj = (int)Math.Floor((cly - 64) / 16);
@@ -697,7 +697,7 @@ namespace CSharpCraft
             }
         }
         
-        private double Uprot(double grot, double rot)
+        private double UpRot(double grot, double rot)
         {
             if (Math.Abs(rot - grot) > 0.5)
             {
@@ -721,15 +721,15 @@ namespace CSharpCraft
                 {
                     if (p8.Btnp(4) && !lb4)
                     {
-                        if (curMenu == mainmenu)
+                        if (curMenu == mainMenu)
                         {
-                            curMenu = intromenu;
+                            curMenu = introMenu;
                         }
                         else
                         {
                             ResetLevel();
                             curMenu = null;
-                            //p8.Music(1);
+                            p8.Music(1);
                         }
                     }
                     lb4 = p8.Btn(4);
@@ -737,44 +737,44 @@ namespace CSharpCraft
                 }
                 else
                 {
-                    var intmenu = curMenu;
-                    var othmenu = menuInvent;
+                    var intMenu = curMenu;
+                    var othMenu = menuInvent;
                     if (curMenu.Type == chest)
                     {
                         if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
                         if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
-                        toogleMenu = (toogleMenu % 2 + 2) & 2;
+                        toogleMenu = (toogleMenu % 2 + 2) % 2;
                         if (toogleMenu == 1)
                         {
-                            intmenu = menuInvent;
-                            othmenu = curMenu;
+                            intMenu = menuInvent;
+                            othMenu = curMenu;
                         }
                     }
         
-                    if (intmenu.List.Count > 0)
+                    if (intMenu.List.Count > 0)
                     {
-                        if (p8.Btnp(2)) { intmenu.Sel -= 1; p8.Sfx(18, 3); }
-                        if (p8.Btnp(3)) { intmenu.Sel += 1; p8.Sfx(18, 3); }
+                        if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
+                        if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
         
-                        intmenu.Sel = Loop(intmenu.Sel, intmenu.List);
+                        intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
         
                         if (p8.Btnp(5) && !lb5)
                         {
                             if (curMenu.Type == chest)
                             {
                                 p8.Sfx(16, 3);
-                                var el = intmenu.List[intmenu.Sel];
-                                p8.Del(intmenu.List, el);
-                                AddItemInList(othmenu.List, el, othmenu.Sel);
-                                if (intmenu.List.Count > 0 && intmenu.Sel > (intmenu.List.Count - 1)) { intmenu.Sel -= 1; }
-                                if (intmenu == menuInvent && curItem == el)
+                                var el = intMenu.List[intMenu.Sel];
+                                p8.Del(intMenu.List, el);
+                                AddItemInList(othMenu.List, el, othMenu.Sel);
+                                if (intMenu.List.Count > 0 && intMenu.Sel > (intMenu.List.Count - 1)) { intMenu.Sel -= 1; }
+                                if (intMenu == menuInvent && curItem == el)
                                 {
                                     curItem = null;
                                 }
                             }
-                            else if (curMenu.Type.BeCraft == true)
+                            else if (curMenu.Type.BeCraft)
                             {
-                                if (curMenu.Sel >= 0 && curMenu.Sel < intmenu.List.Count)
+                                if (curMenu.Sel >= 0 && curMenu.Sel < intMenu.List.Count)
                                 {
                                     var rec = curMenu.List[curMenu.Sel];
                                     if (CanCraft(rec))
@@ -819,8 +819,8 @@ namespace CSharpCraft
                 ply = currentLevel.Sty;
                 FillEne(currentLevel);
                 switchLevel = false;
-                canswitchLevel = false;
-                //p8.Music(currentLevel == cave ? 4 : 1);
+                canSwitchLevel = false;
+                p8.Music(currentLevel == cave ? 4 : 1);
             }
         
             if (curItem != null)
@@ -828,30 +828,30 @@ namespace CSharpCraft
                 if (HowMany(invent, curItem) <= 0) { curItem = null; }
             }
         
-            Upground();
+            UpGround();
         
-            var playhit = GetGr(plx, ply);
-            if (playhit != lastground && playhit == grwater) { p8.Sfx(11, 3); }
-            lastground = playhit;
-            var s = (playhit == grwater || pstam <= 0) ? 1 : 2;
-            if (playhit == grhole)
+            var playHit = GetGr(plx, ply);
+            if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
+            lastGround = playHit;
+            var s = (playHit == grwater || pstam <= 0) ? 1 : 2;
+            if (playHit == grhole)
             {
-                switchLevel = switchLevel || canswitchLevel;
+                switchLevel = switchLevel || canSwitchLevel;
             }
             else
             {
-                canswitchLevel = true;
+                canSwitchLevel = true;
             }
         
-            double dx = 0.0;
-            double dy = 0.0;
+            var dx = 0.0;
+            var dy = 0.0;
         
             if (p8.Btn(0)) dx -= 1.0;
             if (p8.Btn(1)) dx += 1.0;
             if (p8.Btn(2)) dy -= 1.0;
             if (p8.Btn(3)) dy += 1.0;
         
-            double dl = GetInvLen(dx, dy);
+            var dl = GetInvLen(dx, dy);
         
             dx *= dl;
             dy *= dl;
@@ -866,17 +866,12 @@ namespace CSharpCraft
                 panim = 0;
             }
         
-            if (s == 1)
-            {
-        
-            }
-        
             dx *= s;
             dy *= s;
         
-            (dx, dy) = Reflectcol(plx, ply, dx, dy, IsFree, 0);
+            (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, 0);
         
-            var canact = true;
+            var canAct = true;
         
             var fin = entities.Count;
             for (int i = fin - 1; i >= 0; i--)
@@ -884,7 +879,7 @@ namespace CSharpCraft
                 var e = entities[i];
                 if (e.HasCol)
                 {
-                    (e.Vx, e.Vy) = Reflectcol(e.X, e.Y, e.Vx, e.Vy, IsFree, 0.9);
+                    (e.Vx, e.Vy) = ReflectCol(e.X, e.Y, e.Vx, e.Vy, IsFree, 0.9);
                 }
                 e.X += e.Vx;
                 e.Y += e.Vy;
@@ -906,10 +901,10 @@ namespace CSharpCraft
                         {
                             if (e.Timer == null || e.Timer < 115)
                             {
-                                var newit = Instc(e.GiveItem, 1);
-                                AddItemInList(invent, newit, -1);
+                                var newIt = Instc(e.GiveItem, 1);
+                                AddItemInList(invent, newIt, -1);
                                 p8.Del(entities, e);
-                                p8.Add(entities, SetText(HowMany(invent, newit).ToString(), 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
+                                p8.Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, 20, Entity(etext, e.X, e.Y - 5, 0, -1)));
                                 p8.Sfx(18, 3);
                             }
                         }
@@ -918,29 +913,29 @@ namespace CSharpCraft
                     {
                         if (e.HasCol)
                         {
-                            (dx, dy) = Reflectcol(plx, ply, dx, dy, Entcolfree, 0, e);
+                            (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, 0, e);
                         }
                         if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
                         {
                             if (curItem != null && curItem.Type == pickuptool)
                             {
-                                if (e.Type == chest || e.Type.BeCraft == true)
+                                if (e.Type == chest || e.Type.BeCraft)
                                 {
                                     AddItemInList(invent, e, -1);
                                     curItem = e;
                                     p8.Del(entities, e);
                                 }
-                                canact = false;
+                                canAct = false;
                             }
                             else
                             {
-                                if (e.Type == chest || e.Type.BeCraft == true)
+                                if (e.Type == chest || e.Type.BeCraft)
                                 {
                                     toogleMenu = 0;
                                     curMenu = Cmenu(e.Type, e.List);
                                     p8.Sfx(13, 3);
                                 }
-                                canact = false;
+                                canAct = false;
                             }
                         }
                     }
@@ -980,16 +975,16 @@ namespace CSharpCraft
         
                         if (e.Dtim <= 0)
                         {
-                            if (e.Step == enstep_wait || e.Step == enstep_patrol)
+                            if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
                             {
-                                e.Step = enstep_walk;
+                                e.Step = enstep_Walk;
                                 e.Dx = p8.Rnd(2) - 1;
                                 e.Dy = p8.Rnd(2) - 1;
                                 e.Dtim = 30 + p8.Rnd(60);
                             }
-                            else if (e.Step == enstep_walk)
+                            else if (e.Step == enstep_Walk)
                             {
-                                e.Step = enstep_wait;
+                                e.Step = enstep_Wait;
                                 e.Dx = 0;
                                 e.Dy = 0;
                                 e.Dtim = 30 + p8.Rnd(60);
@@ -1001,7 +996,7 @@ namespace CSharpCraft
                         }
                         else
                         {
-                            if (e.Step == enstep_chase)
+                            if (e.Step == enstep_Chase)
                             {
                                 if (distp > 10)
                                 {
@@ -1027,7 +1022,7 @@ namespace CSharpCraft
                                 mspeed = 1.4;
                                 if (distp > 70)
                                 {
-                                    e.Step = enstep_patrol;
+                                    e.Step = enstep_Patrol;
                                     e.Dtim = 30 + p8.Rnd(60);
                                 }
                             }
@@ -1035,7 +1030,7 @@ namespace CSharpCraft
                             {
                                 if (distp < 40)
                                 {
-                                    e.Step = enstep_chase;
+                                    e.Step = enstep_Chase;
                                     e.Dtim = 10 + p8.Rnd(60);
                                 }
                             }
@@ -1048,7 +1043,7 @@ namespace CSharpCraft
         
                         var fx = e.Dx + e.Ox;
                         var fy = e.Dy + e.Oy;
-                        (fx, fy) = Reflectcol(e.X, e.Y, fx, fy, IsFreeEnem, 0);
+                        (fx, fy) = ReflectCol(e.X, e.Y, fx, fy, IsFreeEnem, 0);
         
                         if (Math.Abs(e.Dx) > 0 || Math.Abs(e.Dy) > 0)
                         {
@@ -1066,22 +1061,22 @@ namespace CSharpCraft
                         e.Ox *= 0.9;
                         e.Oy *= 0.9;
         
-                        e.Prot = Uprot(e.Lrot, e.Prot);
+                        e.Prot = UpRot(e.Lrot, e.Prot);
                     }
                 }
             }
         
-            (dx, dy) = Reflectcol(plx, ply, dx, dy, IsFree, 0);
+            (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, 0);
         
             plx += dx;
             ply += dy;
         
-            prot = Uprot(lrot, prot);
+            prot = UpRot(lrot, prot);
         
             llife += Math.Max(-1, Math.Min(1, plife - llife));
             lstam += Math.Max(-1, Math.Min(1, pstam - lstam));
         
-            if (p8.Btn(5) && !block5 && canact)
+            if (p8.Btn(5) && !block5 && canAct)
             {
                 var bx = p8.Cos(prot);
                 var by = p8.Sin(prot);
@@ -1102,10 +1097,10 @@ namespace CSharpCraft
                         curItem.Vy = 0;
                         p8.Add(entities, curItem);
                         RemInList(invent, curItem);
-                        canact = false;
+                        canAct = false;
                     }
                 }
-                if (banim == 0 && pstam > 0 && canact)
+                if (banim == 0 && pstam > 0 && canAct)
                 {
                     banim = 8;
                     stamCost = 20;
@@ -1130,8 +1125,8 @@ namespace CSharpCraft
                             if (e.Life <= 0)
                             {
                                 p8.Del(enemies, e);
-                                Additem(ichor, p8.Rnd(3), e.X, e.Y);
-                                Additem(fabric, p8.Rnd(3), e.X, e.Y);
+                                AddItem(ichor, p8.Rnd(3), e.X, e.Y);
+                                AddItem(fabric, p8.Rnd(3), e.X, e.Y);
                             }
                             p8.Add(entities, SetText(pow.ToString(), 9, 20, Entity(etext, e.X, e.Y - 10, 0, -1)));
                         }
@@ -1160,20 +1155,20 @@ namespace CSharpCraft
                         }
                         pow = Math.Floor(pow);
         
-                        var d = Getdata(hitx, hity, hit.Life);
+                        var d = GetData(hitx, hity, hit.Life);
                         if (d - pow <= 0)
                         {
                             SetGr(hitx, hity, hit.Tile);
                             Cleardata(hitx, hity);
-                            Additem(hit.Mat, p8.Rnd(3) + 2, hitx, hity);
+                            AddItem(hit.Mat, p8.Rnd(3) + 2, hitx, hity);
                             if (hit == grtree && p8.Rnd() > 0.7)
                             {
-                                Additem(apple, 1, hitx, hity);
+                                AddItem(apple, 1, hitx, hity);
                             }
                         }
                         else
                         {
-                            Setdata(hitx, hity, d - pow);
+                            SetData(hitx, hity, d - pow);
                         }
                         p8.Add(entities, SetText(pow.ToString(), 10, 20, Entity(etext, hitx, hity, 0, -1)));
                     }
@@ -1195,20 +1190,20 @@ namespace CSharpCraft
                             if (hit == grgrass && curItem.Type == scythe)
                             {
                                 SetGr(hitx, hity, grsand);
-                                if (p8.Rnd() > 0.4) { Additem(seed, 1, hitx, hity); }
+                                if (p8.Rnd() > 0.4) { AddItem(seed, 1, hitx, hity); }
                             }
                             if (hit == grsand && curItem.Type == shovel)
                             {
                                 if (curItem.Power > 3)
                                 {
                                     SetGr(hitx, hity, grwater);
-                                    Additem(sand, 2, hitx, hity);
+                                    AddItem(sand, 2, hitx, hity);
                                 }
                                 else
                                 {
                                     SetGr(hitx, hity, grfarm);
-                                    Setdata(hitx, hity, time + 15 + p8.Rnd(5));
-                                    Additem(sand, p8.Rnd(2), hitx, hity);
+                                    SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                                    AddItem(sand, p8.Rnd(2), hitx, hity);
                                 }
                             }
                             if (hit == grwater && curItem.Type == sand)
@@ -1218,21 +1213,21 @@ namespace CSharpCraft
                             }
                             if (hit == grwater && curItem.Type == boat)
                             {
-                                curMenu = winmenu;
-                                //p8.Music(4);
+                                curMenu = winMenu;
+                                p8.Music(4);
                             }
                             if (hit == grfarm && curItem.Type == seed)
                             {
                                 SetGr(hitx, hity, grwheat);
-                                Setdata(hitx, hity, time + 15 + p8.Rnd(5));
+                                SetData(hitx, hity, time + 15 + p8.Rnd(5));
                                 RemInList(invent, Instc(seed, 1));
                             }
                             if (hit == grwheat && curItem.Type == scythe)
                             {
                                 SetGr(hitx, hity, grsand);
-                                var d = Math.Max(0, Math.Min(4, 4 - (Getdata(hitx, hity, 0) - time)));
-                                Additem(wheat, d / 2 + p8.Rnd(d / 2), hitx, hity);
-                                Additem(seed, 1, hitx, hity);
+                                var d = Math.Max(0, Math.Min(4, 4 - (GetData(hitx, hity, 0) - time)));
+                                AddItem(wheat, d / 2 + p8.Rnd(d / 2), hitx, hity);
+                                AddItem(seed, 1, hitx, hity);
                             }
                         }
                     }
@@ -1297,8 +1292,8 @@ namespace CSharpCraft
         
             if (plife <= 0)
             {
-                curMenu = deathmenu;
-                //p8.Music(4);
+                curMenu = deathMenu;
+                p8.Music(4);
             }
         }
     
@@ -1376,7 +1371,7 @@ namespace CSharpCraft
                 weap = curItem.Type.Spr;
                 if (curItem.Power != null)
                 {
-                    SetPal(pwrpal[(int)curItem.Power - 1]);
+                    SetPal(pwrPal[(int)curItem.Power - 1]);
                 }
                 if (curItem.Type != null && curItem.Type.Pal != null)
                 {
@@ -1751,10 +1746,10 @@ namespace CSharpCraft
             var px = x;
             if (it.Power != null)
             {
-                var pwn = pwrnames[(int)it.Power - 1];
+                var pwn = pwrNames[(int)it.Power - 1];
                 p8.Print(pwn, x + 10, y, col);
                 px += pwn.Length * 4 + 4;
-                SetPal(pwrpal[(int)it.Power - 1]);
+                SetPal(pwrPal[(int)it.Power - 1]);
             }
             if (ty.Pal != null) { SetPal(ty.Pal); }
             p8.Spr(ty.Spr, x, y - 2);
@@ -2010,11 +2005,6 @@ namespace CSharpCraft
                     List(curMenu, 4, 24, 84, 96, 10);
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
 
     }
