@@ -494,7 +494,7 @@ namespace CSharpCraft
         }
 
 
-        public void Sfx(double n, double channel = 0, double? offset = null, double? length = null) // https://pico-8.fandom.com/wiki/Sfx
+        public void Sfx(double n, double channel = -1, double offset = 0, double length = 31) // https://pico-8.fandom.com/wiki/Sfx
         {
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
