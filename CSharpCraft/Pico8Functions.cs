@@ -25,7 +25,7 @@ namespace CSharpCraft
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
 
-        private List<SoundEffectInstance>? channelMusic = [];
+        public List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
@@ -569,6 +569,37 @@ namespace CSharpCraft
         public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
             return Math.Sin(-angle * 2 * Math.PI);
+        }
+
+
+        public void SoundDispose()
+        {
+            if (channelMusic != null)
+            {
+                foreach (var song in channelMusic)
+                {
+                    song.Dispose();
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                List<SoundEffectInstance>? c = i switch
+                {
+                    0 => channel0,
+                    1 => channel1,
+                    2 => channel2,
+                    3 => channel3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(i)),
+                };
+                if (c != null)
+                {
+                    foreach (var sfxInstance in c)
+                    {
+                        sfxInstance.Dispose();
+                    }
+                }
+            }
         }
 
 

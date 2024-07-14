@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CSharpCraft
 {
-    interface IGameMode
+    public interface IGameMode
     {
         string GameModeName { get; }
         void Init();
