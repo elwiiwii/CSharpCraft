@@ -14,9 +14,11 @@ using Microsoft.Xna.Framework.Graphics;
 namespace CSharpCraft
 {
 
-    public class PcraftCode(Pico8Functions p8)
+    public class PcraftCode(Pico8Functions p8) : IGameMode
     {
-        
+
+        public string GameModeName { get => "pcraft"; }
+
         private readonly Pico8Functions p8 = p8;
 
 #nullable enable
@@ -1388,9 +1390,9 @@ namespace CSharpCraft
                 p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
                 p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-                Console.WriteLine(rot + 0.25);
+                Console.WriteLine(-rot + 0.75);
 
-                (int mx2, int my2) = Mirror((rot + 0.75) % 1);
+                (int mx2, int my2) = Mirror(p8.Mod((-rot + 0.75), 1)); // changed from (rot + 0.75) % 1
                 p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
             }
 
@@ -1577,7 +1579,7 @@ namespace CSharpCraft
     
         private double WatVal(double i, double j)
         {
-            return Rndwat[(int)Math.Floor((i * 2) % 16)][(int)Math.Floor((j * 2) % 16)];
+            return Rndwat[(int)Math.Floor(Math.Abs(i * 2) % 16)][(int)Math.Floor(Math.Abs(j * 2) % 16)];
         }
     
         private void WatAnim(double i, double j)

@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
@@ -24,6 +25,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Include="Content\Graphics\CSharpCraftLogo.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Graphics\SpriteSheet1.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>

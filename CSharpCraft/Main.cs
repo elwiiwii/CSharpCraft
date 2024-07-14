@@ -27,7 +27,9 @@ namespace CSharpCraft
 #nullable enable
 
         private SpriteBatch batch;
+        private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
+        private Texture2D logo;
         private List<SoundEffect> music;
         private Pico8Functions p8;
         private PcraftCode pcraft;
@@ -37,7 +39,9 @@ namespace CSharpCraft
 #nullable disable
 
         private int frameCounter = 0;
-        double elapsedSeconds = 0.0;
+        private double elapsedSeconds = 0.0;
+        private int menuSelected = 0;
+        private int playing = -1;
 
         private FNAGame()
         {
@@ -57,6 +61,7 @@ namespace CSharpCraft
             this.IsFixedTimeStep = true;
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30));
             graphics.SynchronizeWithVerticalRetrace = true;
+
         }
 
 
@@ -72,8 +77,7 @@ namespace CSharpCraft
 
             p8.Palt();
 
-            pcraft.Init();
-
+            gameModes.Add(pcraft);
         }
 
 
@@ -89,9 +93,19 @@ namespace CSharpCraft
 
             KeyboardState state = Keyboard.GetState();
 
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) pcraft.Init();
-
-            pcraft.Update();
+            if (playing < 0)
+            {
+                if (state.IsKeyDown(Keys.Enter))
+                {
+                    gameModes[menuSelected].Init();
+                    playing = menuSelected;
+                }
+            }
+            if (playing > -1 && playing < gameModes.Count)
+            {
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) gameModes[menuSelected].Init();
+                gameModes[menuSelected].Update();
+            }
 
             p8.prev0 = state.IsKeyDown(Keys.A);
             p8.prev1 = state.IsKeyDown(Keys.D);
@@ -123,7 +137,35 @@ namespace CSharpCraft
             p8.Pal();
             p8.Palt();
 
-            pcraft.Draw();
+            if (playing < 0)
+            {
+                Vector2 position = new(1 * cellWidth, 1 * cellHeight);
+                Vector2 size = new(cellWidth, cellHeight);
+
+                batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+
+                p8.Print("c# craft 0.0.1", 0, 18, 6);
+                p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6);
+
+                //p8.Print("musicNote", 3, 36, 14);
+                //p8.Print("musicNote", 11, 38, 14);
+                //p8.Print("musicNote", 19, 36, 14);
+                //p8.Print("musicNote", 27, 34, 14);
+
+                p8.Print("choose a game mode", 0, 50, 6);
+                p8.Print(">", 0, 62, 7);
+
+                int i = 0;
+                foreach (var gameMode in gameModes)
+                {
+                    p8.Print(gameMode.GameModeName, 8, 62 + i, 7);
+                    i += 6;
+                }
+            }
+            if (playing > -1 && playing < gameModes.Count)
+            {
+                gameModes[menuSelected].Draw();
+            }
 
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)
@@ -148,6 +190,8 @@ namespace CSharpCraft
             // Create a 1x1 white pixel texture for drawing lines
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
+
+            logo = Content.Load<Texture2D>("Graphics/CSharpCraftLogo.png");
 
             List<SoundEffect> music = [];
             for (int i = 0; i <= 6; i++)
@@ -179,6 +223,7 @@ namespace CSharpCraft
             batch.Dispose();
             pixel.Dispose();
             p8.Dispose();
+            logo.Dispose();
             if (soundEffects != null)
             {
                 foreach (var soundEffect in soundEffects)
