@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace CSharpCraft
 {
 
-    public class PcraftCode(Pico8Functions p8) : IGameMode
+    public class Pcraft(Pico8Functions p8) : IGameMode
     {
 
         public string GameModeName { get => "pcraft"; }
@@ -176,7 +176,7 @@ namespace CSharpCraft
         private Entity deathMenu = Cmenu(inventary, null, 128, "you died", "alone ...");
         private Entity winMenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
     
-        static PcraftCode()
+        static Pcraft()
         {
             apple.GiveLife = 20;
     
@@ -1934,7 +1934,7 @@ namespace CSharpCraft
                 p8.Palt(0, false);
                 p8.Rectfill(0, 0, 128, 46, 12);
                 p8.Rectfill(0, 46, 128, 128, 1);
-                p8.Spr((double)curMenu.Spr, 32, 14, 8, 8);
+                p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
                 Printc(curMenu.Text, 64, 80, 6);
                 Printc(curMenu.Text2, 64, 90, 6);
                 Printc("press button 1", 64, 112, 6 + time % 2);
@@ -1942,7 +1942,7 @@ namespace CSharpCraft
                 return;
             }
 
-            //p8.Cls
+            p8.Cls();
     
             p8.Camera(clx - 64, cly - 64);
     

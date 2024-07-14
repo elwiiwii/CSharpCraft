@@ -729,6 +729,33 @@ namespace CSharpCraft
                 texture.Dispose();
             }
             spriteTextures.Clear();
+            
+            //if (channelMusic != null)
+            //{
+            //    foreach (var song in channelMusic)
+            //    {
+            //        song.Dispose();
+            //    }
+            //    channelMusic.Clear();
+            //}
+            //if (soundEffects != null)
+            //{
+            //    foreach (var soundEffect in soundEffects)
+            //    {
+            //        soundEffect?.Dispose();
+            //    }
+            //}
+            //if (music != null)
+            //{
+            //    foreach (var song in music)
+            //    {
+            //        song?.Dispose();
+            //    }
+            //}
+            //pixel.Dispose();
+            //batch.Dispose();
+            //graphicsDevice.Dispose();
+
         }
 
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
@@ -31,17 +32,23 @@ namespace CSharpCraft
         private GraphicsDeviceManager graphics;
         private Texture2D logo;
         private List<SoundEffect> music;
+        private Options options;
         private Pico8Functions p8;
-        private PcraftCode pcraft;
+        private Pcraft pcraft;
         private Texture2D pixel;
         private List<SoundEffect> soundEffects;
+
+
+        private int menuSelected;
+        private int currentGameMode;
 
 #nullable disable
 
         private int frameCounter = 0;
         private double elapsedSeconds = 0.0;
-        private int menuSelected = 0;
-        private int playing = -1;
+
+        private int titleScreen = -1;
+        private int paused = -2;
 
         private FNAGame()
         {
@@ -64,6 +71,11 @@ namespace CSharpCraft
 
         }
 
+        private int Loop<T>(int sel, List<T> l)
+        {
+            var lp = l.Count;
+            return ((sel % lp) + lp) % lp;
+        }
 
         protected override void Initialize()
         {
@@ -77,9 +89,14 @@ namespace CSharpCraft
 
             p8.Palt();
 
-            gameModes.Add(pcraft);
-        }
+            gameModes.Clear();
 
+            gameModes.Add(pcraft);
+            gameModes.Add(options);
+
+            menuSelected = 0;
+            currentGameMode = -1;
+        }
 
         protected override void Update(GameTime gameTime)
         {
@@ -93,20 +110,32 @@ namespace CSharpCraft
 
             KeyboardState state = Keyboard.GetState();
 
-            if (playing < 0)
+            if (currentGameMode == -1) // titlescreen
             {
+                if (p8.Btnp(2)) { menuSelected -= 1; }
+                if (p8.Btnp(3)) { menuSelected += 1; }
+
+                menuSelected = Loop(menuSelected, gameModes);
+
                 if (state.IsKeyDown(Keys.Enter))
                 {
                     gameModes[menuSelected].Init();
-                    playing = menuSelected;
+                    currentGameMode = menuSelected;
                 }
             }
-            if (playing > -1 && playing < gameModes.Count)
+
+            if (currentGameMode > -1 && currentGameMode < gameModes.Count)
             {
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) gameModes[menuSelected].Init();
+                if (state.IsKeyDown(Keys.Escape))
+                {
+                    //Initialize();
+                    return;
+                }
+
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) { gameModes[menuSelected].Init(); }
                 gameModes[menuSelected].Update();
             }
-
+            
             p8.prev0 = state.IsKeyDown(Keys.A);
             p8.prev1 = state.IsKeyDown(Keys.D);
             p8.prev2 = state.IsKeyDown(Keys.W);
@@ -122,8 +151,6 @@ namespace CSharpCraft
         {
             frameCounter++;
 
-            GraphicsDevice.Clear(Color.Black);
-
             batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
 
             // Get the size of the viewport
@@ -137,8 +164,10 @@ namespace CSharpCraft
             p8.Pal();
             p8.Palt();
 
-            if (playing < 0)
+            if (currentGameMode == -1)
             {
+                GraphicsDevice.Clear(Color.Black);
+
                 Vector2 position = new(1 * cellWidth, 1 * cellHeight);
                 Vector2 size = new(cellWidth, cellHeight);
 
@@ -153,7 +182,7 @@ namespace CSharpCraft
                 //p8.Print("musicNote", 27, 34, 14);
 
                 p8.Print("choose a game mode", 0, 50, 6);
-                p8.Print(">", 0, 62, 7);
+                p8.Print(">", 0, 62 + (menuSelected * 6), 7);
 
                 int i = 0;
                 foreach (var gameMode in gameModes)
@@ -162,7 +191,8 @@ namespace CSharpCraft
                     i += 6;
                 }
             }
-            if (playing > -1 && playing < gameModes.Count)
+
+            if (currentGameMode > -1 && currentGameMode < gameModes.Count)
             {
                 gameModes[menuSelected].Draw();
             }
@@ -214,7 +244,8 @@ namespace CSharpCraft
             }
 
             p8 = new Pico8Functions(soundEffects, music, pixel, batch, GraphicsDevice);
-            pcraft = new PcraftCode(p8);
+            pcraft = new Pcraft(p8);
+            options = new Options(p8);
         }
 
 
