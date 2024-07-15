@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 namespace CSharpCraft
 {
@@ -31,12 +23,13 @@ namespace CSharpCraft
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
         private Texture2D logo;
-        private List<SoundEffect> music;
+        private List<SoundEffect> music = [];
         private Options options;
+        private OptionsFile optionsFile;
         private Pico8Functions p8;
         private Pcraft pcraft;
         private Texture2D pixel;
-        private List<SoundEffect> soundEffects;
+        private List<SoundEffect> soundEffects = [];
         private TitleScreen titleScreen;
 
         private int currentGameMode;
@@ -44,7 +37,6 @@ namespace CSharpCraft
 #nullable disable
 
         private double elapsedSeconds = 0.0;
-
 
         private FNAGame()
         {
@@ -65,12 +57,16 @@ namespace CSharpCraft
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30));
             graphics.SynchronizeWithVerticalRetrace = true;
 
+            optionsFile = OptionsFile.Initialize();
+
         }
 
-
+        
         protected override void Initialize()
         {
             base.Initialize();
+
+            //optionsFile = OptionsFile.Initialize();
 
             UpdateViewport();
 
@@ -102,6 +98,12 @@ namespace CSharpCraft
             }
 
             KeyboardState state = Keyboard.GetState();
+            GamePadState gamepadState = GamePad.GetState(PlayerIndex.One);
+
+            if (state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right)))
+            {
+
+            }
 
             currentGameMode = titleScreen.currentGameMode;
 
@@ -121,15 +123,20 @@ namespace CSharpCraft
             }
             else if (currentGameMode == -1)
             {
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
+                {
+                    Environment.Exit(0);
+                }
+
                 titleScreen.Update();
             }
-            
-            p8.prev0 = state.IsKeyDown(Keys.A);
-            p8.prev1 = state.IsKeyDown(Keys.D);
-            p8.prev2 = state.IsKeyDown(Keys.W);
-            p8.prev3 = state.IsKeyDown(Keys.S);
-            p8.prev4 = state.IsKeyDown(Keys.M);
-            p8.prev5 = state.IsKeyDown(Keys.N);
+
+            p8.prev0 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Left));
+            p8.prev1 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right));
+            p8.prev2 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up));
+            p8.prev3 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down));
+            p8.prev4 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu));
+            p8.prev5 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Interact));
 
             base.Update(gameTime);
         }
@@ -176,8 +183,7 @@ namespace CSharpCraft
             pixel.SetData(new[] { Color.White });
 
             logo = Content.Load<Texture2D>("Graphics/CSharpCraftLogo.png");
-
-            List<SoundEffect> music = [];
+            
             for (int i = 0; i <= 6; i++)
             {
                 string fileName = $"Content/Music/music_{i}.wav";
@@ -187,7 +193,6 @@ namespace CSharpCraft
                 }
             }
 
-            List<SoundEffect> soundEffects = [];
             for (int i = 0; i <= 21; i++)
             {
                 string fileName = $"Content/Sfx/sfx_{i}.wav";
@@ -197,7 +202,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(soundEffects, music, pixel, batch, GraphicsDevice);
+            p8 = new Pico8Functions(soundEffects, music, pixel, batch, GraphicsDevice, optionsFile);
             pcraft = new Pcraft(p8);
             options = new Options(p8);
             titleScreen = new TitleScreen(p8, logo, batch, GraphicsDevice, gameModes);

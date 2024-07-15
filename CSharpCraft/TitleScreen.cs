@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -45,12 +37,12 @@ namespace CSharpCraft
 
             if (currentGameMode == -1) // titlescreen
             {
-                if (p8.Btnp(2)) { menuSelected -= 1; }
+                if (p8.Btnp(2)){ menuSelected -= 1; }
                 if (p8.Btnp(3)) { menuSelected += 1; }
 
                 menuSelected = Loop(menuSelected, gameModes);
 
-                if (state.IsKeyDown(Keys.Enter))
+                if (state.IsKeyDown(Keys.Enter) || p8.Btnp(4) || p8.Btnp(5))
                 {
                     gameModes[menuSelected].Init();
                     currentGameMode = menuSelected;

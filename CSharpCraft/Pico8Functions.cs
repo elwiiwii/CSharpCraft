@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -13,11 +6,12 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions(List<SoundEffect> soundEffects, List<SoundEffect> music, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
+    public class Pico8Functions(List<SoundEffect> soundEffects, List<SoundEffect> music, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, OptionsFile optionsFile) : IDisposable
     {
         private readonly SpriteBatch batch = batch;
         private readonly GraphicsDevice graphicsDevice = graphicsDevice;
         private readonly List<SoundEffect> music = music;
+        private readonly OptionsFile optionsFile = optionsFile;
         private readonly Texture2D pixel = pixel;
         private readonly List<SoundEffect> soundEffects = soundEffects;
         private readonly Dictionary<int, Texture2D> spriteTextures = [];
@@ -37,8 +31,7 @@ namespace CSharpCraft
         public bool prev3 = false;
         public bool prev4 = false;
         public bool prev5 = false;
-
-
+        
         private static Color HexToColor(string hex)
         {
             hex = hex.TrimStart('#');
@@ -133,12 +126,12 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (i == 0) { return state.IsKeyDown(Keys.A); }
-            if (i == 1) { return state.IsKeyDown(Keys.D); }
-            if (i == 2) { return state.IsKeyDown(Keys.W); }
-            if (i == 3) { return state.IsKeyDown(Keys.S); }
-            if (i == 4) { return state.IsKeyDown(Keys.M); }
-            if (i == 5) { return state.IsKeyDown(Keys.N); }
+            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Left)); }
+            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right)); }
+            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up)); }
+            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down)); }
+            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu)); }
+            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Interact)); }
             else { return false; }
         }
 

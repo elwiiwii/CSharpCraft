@@ -1,16 +1,4 @@
-﻿using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Reflection.Emit;
-using System.Numerics;
-using Microsoft.Xna.Framework.Graphics;
-
+﻿
 namespace CSharpCraft
 {
 
