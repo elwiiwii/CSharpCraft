@@ -21,21 +21,21 @@ namespace CSharpCraft
 
         private int Loop<T>(int sel, List<T> l)
         {
-            var lp = l.Count;
+            var lp = l.Count - 1;
             return ((sel % lp) + lp) % lp;
         }
 
         public void Init()
         {
             menuSelected = 0;
-            currentGameMode = -1;
+            currentGameMode = 0;
         }
 
         public void Update()
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (currentGameMode == -1) // titlescreen
+            if (currentGameMode == 0) // titlescreen
             {
                 if (p8.Btnp(2)){ menuSelected -= 1; }
                 if (p8.Btnp(3)) { menuSelected += 1; }
@@ -44,8 +44,8 @@ namespace CSharpCraft
 
                 if (state.IsKeyDown(Keys.Enter) || p8.Btnp(4) || p8.Btnp(5))
                 {
-                    gameModes[menuSelected].Init();
-                    currentGameMode = menuSelected;
+                    gameModes[menuSelected + 1].Init();
+                    currentGameMode = menuSelected + 1;
                 }
             }
         }
@@ -81,8 +81,15 @@ namespace CSharpCraft
             int i = 0;
             foreach (var gameMode in gameModes)
             {
-                p8.Print(gameMode.GameModeName, 8, 62 + i, 7);
-                i += 6;
+                if (gameMode == gameModes[0])
+                {
+                    continue;
+                }
+                else
+                {
+                    p8.Print(gameMode.GameModeName, 8, 62 + i, 7);
+                    i += 6;
+                }
             }
         }
 

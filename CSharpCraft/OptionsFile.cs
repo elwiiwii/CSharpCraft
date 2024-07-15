@@ -36,5 +36,45 @@ namespace CSharpCraft
 
     }
 
+    public class KeyboardOptions
+    {
+        public string Left1 { get; set; } = "Left";
+        public string Left2 { get; set; } = "NumPad4";
+        public string Right1 { get; set; } = "Right";
+        public string Right2 { get; set; } = "NumPad6";
+        public string Up1 { get; set; } = "Up";
+        public string Up2 { get; set; } = "NumPad8";
+        public string Down1 { get; set; } = "Down";
+        public string Down2 { get; set; } = "NumPad5";
+        public string Interact1 { get; set; } = "X";
+        public string Interact2 { get; set; } = "V;";
+        public string Interact3 { get; set; } = "M";
+        public string Menu1 { get; set; } = "Z";
+        public string Menu2 { get; set; } = "C";
+        public string Menu3{ get; set; } = "N";
+        public string Pause1 { get; set; } = "Escape";
+        public string Pause2 { get; set; } = "Enter";
+    }
+
+    public class ControllerOptions
+    {
+        public string Left1 { get; set; } = "DPadLeft";
+        public string Left2 { get; set; } = "LeftStickLeft";
+        public string Right1 { get; set; } = "DPadRight";
+        public string Right2 { get; set; } = "LeftStickRight";
+        public string Up1 { get; set; } = "DPadUp";
+        public string Up2 { get; set; } = "LeftStickUp";
+        public string Down1 { get; set; } = "DPadDown";
+        public string Down2 { get; set; } = "LeftStickDown";
+        public string Interact1 { get; set; } = "A";
+        public string Interact2 { get; set; } = "X";
+        public string Interact3 { get; set; } = "LeftShoulder";
+        public string Menu1 { get; set; } = "B";
+        public string Menu2 { get; set; } = "Y";
+        public string Menu3 { get; set; } = "RightShoulder";
+        public string Pause { get; set; } = "Start";
+    }
+
+
 
 }

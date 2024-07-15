@@ -81,11 +81,15 @@ namespace CSharpCraft
                 HexToColor("FF9D81"), // 31 peach
                 */
         ];
-        public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
         public Color[] resetSprColors = new Color[16];
         public Color[] sprColors = new Color[16];
 
+
+        //private Pico8Functions(Color[] resetColors)
+        //{
+        //    this.resetColors = colors;
+        //}
 
         private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
@@ -262,6 +266,14 @@ namespace CSharpCraft
         public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
         {
             table.Remove(value);
+        }
+
+
+        public void Init()
+        {
+            Array.Copy(colors, resetColors, colors.Length);
+            Array.Copy(colors, sprColors, colors.Length);
+            Array.Copy(colors, resetSprColors, colors.Length);
         }
 
 
@@ -745,6 +757,18 @@ namespace CSharpCraft
 
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
+
+
+        public void Update()
+        {
+            prev0 = Btn(0);
+            prev1 = Btn(1);
+            prev2 = Btn(2);
+            prev3 = Btn(3);
+            prev4 = Btn(4);
+            prev5 = Btn(5);
+        }
+
 
         public void Dispose()
         {

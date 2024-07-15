@@ -32,9 +32,9 @@ namespace CSharpCraft
         private List<SoundEffect> soundEffects = [];
         private TitleScreen titleScreen;
 
-        private int currentGameMode;
-
 #nullable disable
+
+        private int currentGameMode = 0;
 
         private double elapsedSeconds = 0.0;
 
@@ -70,18 +70,11 @@ namespace CSharpCraft
 
             UpdateViewport();
 
-            Array.Copy(p8.colors, p8.resetColors, p8.colors.Length);
-            Array.Copy(p8.colors, p8.sprColors, p8.colors.Length);
-            Array.Copy(p8.colors, p8.resetSprColors, p8.colors.Length);
+            p8.Init();
 
-            p8.Palt();
-
-            gameModes.Clear();
-
+            gameModes.Add(titleScreen);
             gameModes.Add(pcraft);
             gameModes.Add(options);
-
-            currentGameMode = -1;
 
             titleScreen.Init();
         }
@@ -100,14 +93,9 @@ namespace CSharpCraft
             KeyboardState state = Keyboard.GetState();
             GamePadState gamepadState = GamePad.GetState(PlayerIndex.One);
 
-            if (state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right)))
-            {
-
-            }
-
             currentGameMode = titleScreen.currentGameMode;
 
-            if (currentGameMode > -1 && currentGameMode < gameModes.Count)
+            if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
             {
                 gameModes[currentGameMode].Update();
 
@@ -115,28 +103,27 @@ namespace CSharpCraft
 
                 if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
                 {
-                    p8.SoundDispose();
-                    currentGameMode = -1;
-                    titleScreen.Init();
+                    if (currentGameMode > 0)
+                    {
+                        p8.SoundDispose();
+                        currentGameMode = 0;
+                        titleScreen.Init();
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                    }
                 }
 
             }
-            else if (currentGameMode == -1)
-            {
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
-                {
-                    Environment.Exit(0);
-                }
 
-                titleScreen.Update();
-            }
+            //var keybinds = new List<string>();
+            //foreach (var keybind in keybinds)
+            //{
+            //    (p8)Enum.Parse(typeof(p8), $"prev{keybind}") = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keybind));
+            //}
 
-            p8.prev0 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Left));
-            p8.prev1 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right));
-            p8.prev2 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up));
-            p8.prev3 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down));
-            p8.prev4 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu));
-            p8.prev5 = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Interact));
+            p8.Update();
 
             base.Update(gameTime);
         }
@@ -149,13 +136,9 @@ namespace CSharpCraft
             p8.Pal();
             p8.Palt();
 
-            if (currentGameMode > -1 && currentGameMode < gameModes.Count)
+            if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
             {
                 gameModes[currentGameMode].Draw();
-            }
-            else if (currentGameMode == -1)
-            {
-                titleScreen.Draw();
             }
 
             // Draw the grid
