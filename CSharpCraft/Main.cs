@@ -22,21 +22,33 @@ namespace CSharpCraft
         private SpriteBatch batch;
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
-        private Texture2D logo;
-        private List<SoundEffect> music = [];
         private Options options;
         private OptionsFile optionsFile;
         private Pico8Functions p8;
         private Pcraft pcraft;
-        private Texture2D pixel;
-        private List<SoundEffect> soundEffects = [];
         private TitleScreen titleScreen;
+
+        //private List<Texture2D> textures = [];
+        //private List<SoundEffect> music = [];
+        //private List<SoundEffect> soundEffects = [];
+
+        private Dictionary<string, Texture2D> textureDictionary = new();
+        private Dictionary<string, SoundEffect> musicDictionary = new();
+        private Dictionary<string, SoundEffect> soundEffectDictionary = new();
+
+        //private Texture2D logo;
+        //private Texture2D optionsMenuBackground;
+        //private Texture2D optionsMenuTab;
+        private Texture2D pixel;
+        //private Texture2D selectorHalf;
 
 #nullable disable
 
         private int currentGameMode = 0;
-
         private double elapsedSeconds = 0.0;
+        string graphicsFolderPath = "Content/Graphics";
+        string musicFolderPath = "Content/Music";
+        string sfxFolderPath = "Content/Sfx";
 
         private FNAGame()
         {
@@ -61,7 +73,7 @@ namespace CSharpCraft
 
         }
 
-        
+
         protected override void Initialize()
         {
             base.Initialize();
@@ -165,30 +177,66 @@ namespace CSharpCraft
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
 
-            logo = Content.Load<Texture2D>("Graphics/CSharpCraftLogo.png");
-            
-            for (int i = 0; i <= 6; i++)
+            //logo = Content.Load<Texture2D>("Graphics/CSharpCraftLogo.png");
+            //optionsMenuBackground = Content.Load<Texture2D>("Graphics/OptionsMenuBackground.png");
+            //optionsMenuTab = Content.Load<Texture2D>("Graphics/OptionsMenuTab.png");
+            //selectorHalf = Content.Load<Texture2D>("Graphics/SelectorHalf.png");
+
+            //for (int i = 0; i <= 6; i++)
+            //{
+            //    string fileName = $"Content/Music/music_{i}.wav";
+            //    using var stream = TitleContainer.OpenStream(fileName);
+            //    {
+            //        music.Add(SoundEffect.FromStream(stream));
+            //    }
+            //}
+
+            //for (int i = 0; i <= 21; i++)
+            //{
+            //    string fileName = $"Content/Sfx/sfx_{i}.wav";
+            //    using var stream = TitleContainer.OpenStream(fileName);
+            //    {
+            //        soundEffects.Add(SoundEffect.FromStream(stream));
+            //    }
+            //}
+
+            string[] graphicsFiles = Directory.GetFiles(graphicsFolderPath, "*.png");
+            foreach (var file in graphicsFiles)
             {
-                string fileName = $"Content/Music/music_{i}.wav";
-                using var stream = TitleContainer.OpenStream(fileName);
+                using var stream = TitleContainer.OpenStream(file);
                 {
-                    music.Add(SoundEffect.FromStream(stream));
+                    Texture2D texture = Texture2D.FromStream(GraphicsDevice, stream);
+                    string textureName = Path.GetFileNameWithoutExtension(file);
+                    textureDictionary.Add(textureName, texture);
                 }
             }
 
-            for (int i = 0; i <= 21; i++)
+            string[] musicFiles = Directory.GetFiles(musicFolderPath, "*.wav");
+            foreach (var file in musicFiles)
             {
-                string fileName = $"Content/Sfx/sfx_{i}.wav";
-                using var stream = TitleContainer.OpenStream(fileName);
+                using var stream = TitleContainer.OpenStream(file);
                 {
-                    soundEffects.Add(SoundEffect.FromStream(stream));
+                    SoundEffect music = SoundEffect.FromStream(stream);
+                    string musicName = Path.GetFileNameWithoutExtension(file);
+                    musicDictionary.Add(musicName, music);
                 }
             }
 
-            p8 = new Pico8Functions(soundEffects, music, pixel, batch, GraphicsDevice, optionsFile);
+            string[] sfxFiles = Directory.GetFiles(sfxFolderPath, "*.wav");
+            foreach (var file in sfxFiles)
+            {
+                using var stream = TitleContainer.OpenStream(file);
+                {
+                    SoundEffect soundEffect = SoundEffect.FromStream(stream);
+                    string soundEffectName = Path.GetFileNameWithoutExtension(file);
+                    soundEffectDictionary.Add(soundEffectName, soundEffect);
+                }
+            }
+
+            p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
             pcraft = new Pcraft(p8);
-            options = new Options(p8);
-            titleScreen = new TitleScreen(p8, logo, batch, GraphicsDevice, gameModes);
+            options = new Options(p8, textureDictionary, batch, GraphicsDevice, optionsFile);
+            titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
         }
 
 
@@ -197,21 +245,22 @@ namespace CSharpCraft
             batch.Dispose();
             pixel.Dispose();
             p8.Dispose();
-            logo.Dispose();
-            if (soundEffects != null)
+
+            foreach (var texture in textureDictionary.Values)
             {
-                foreach (var soundEffect in soundEffects)
-                {
-                    soundEffect?.Dispose();
-                }
+                texture.Dispose();
             }
-            if (music != null)
+            foreach (var music in musicDictionary.Values)
             {
-                foreach (var song in music)
-                {
-                    song?.Dispose();
-                }
+                music.Dispose();
             }
+            foreach (var soundEffect in soundEffectDictionary.Values)
+            {
+                soundEffect.Dispose();
+            }
+
+            base.UnloadContent();
+
         }
 
 

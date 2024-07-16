@@ -6,14 +6,8 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions(List<SoundEffect> soundEffects, List<SoundEffect> music, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, OptionsFile optionsFile) : IDisposable
+    public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, OptionsFile optionsFile) : IDisposable
     {
-        private readonly SpriteBatch batch = batch;
-        private readonly GraphicsDevice graphicsDevice = graphicsDevice;
-        private readonly List<SoundEffect> music = music;
-        private readonly OptionsFile optionsFile = optionsFile;
-        private readonly Texture2D pixel = pixel;
-        private readonly List<SoundEffect> soundEffects = soundEffects;
         private readonly Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
@@ -363,13 +357,13 @@ namespace CSharpCraft
 
             if (nFlr == 1)
             {
-                SoundEffectInstance instance = music[1].CreateInstance();
+                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
                 channelMusic.Add(instance);
                 instance.Play();
             }
             else if (nFlr == 4)
             {
-                SoundEffectInstance instance = music[4].CreateInstance();
+                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
                 channelMusic.Add(instance);
                 instance.Play();
             }
@@ -557,10 +551,10 @@ namespace CSharpCraft
                     sfxInstance.Dispose();
                 }
 
-                SoundEffectInstance instance = soundEffects[nFlr].CreateInstance();
-
+                SoundEffectInstance instance = soundEffectDictionary[$"sfx_{nFlr}"].CreateInstance();
+                
                 c.Add(instance);
-
+                
                 instance.Play();
             }
             else

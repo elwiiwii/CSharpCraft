@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Reflection;
 
 namespace CSharpCraft
 {
@@ -13,6 +14,16 @@ namespace CSharpCraft
         public string Pause { get; set; } = "Enter";
         
         private static readonly string optionsFileName = "settings.json";
+
+        public List<FieldInfo> GetAllFields()
+        {
+            List<FieldInfo> fields = [];
+            foreach (var fieldInfo in GetType().GetFields())
+            {
+                fields.Add(fieldInfo);
+            }
+            return fields;
+        }
 
         public static OptionsFile Initialize()
         {
@@ -48,10 +59,8 @@ namespace CSharpCraft
         public string Down2 { get; set; } = "NumPad5";
         public string Interact1 { get; set; } = "X";
         public string Interact2 { get; set; } = "V;";
-        public string Interact3 { get; set; } = "M";
         public string Menu1 { get; set; } = "Z";
         public string Menu2 { get; set; } = "C";
-        public string Menu3{ get; set; } = "N";
         public string Pause1 { get; set; } = "Escape";
         public string Pause2 { get; set; } = "Enter";
     }
@@ -67,11 +76,9 @@ namespace CSharpCraft
         public string Down1 { get; set; } = "DPadDown";
         public string Down2 { get; set; } = "LeftStickDown";
         public string Interact1 { get; set; } = "A";
-        public string Interact2 { get; set; } = "X";
-        public string Interact3 { get; set; } = "LeftShoulder";
+        public string Interact2 { get; set; } = "LeftShoulder";
         public string Menu1 { get; set; } = "B";
-        public string Menu2 { get; set; } = "Y";
-        public string Menu3 { get; set; } = "RightShoulder";
+        public string Menu2 { get; set; } = "RightShoulder";
         public string Pause { get; set; } = "Start";
     }
 

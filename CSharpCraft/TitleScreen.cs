@@ -5,16 +5,10 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class TitleScreen(Pico8Functions p8, Texture2D logo, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
+    public class TitleScreen(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
     {
 
         public string GameModeName { get => "TitleScreen"; }
-
-        private readonly SpriteBatch batch = batch;
-        private readonly GraphicsDevice graphicsDevice = graphicsDevice;
-        private readonly Texture2D logo = logo;
-        private readonly Pico8Functions p8 = p8;
-        private readonly List<IGameMode> gameModes = gameModes;
 
         private int menuSelected;
         public int currentGameMode;
@@ -65,6 +59,7 @@ namespace CSharpCraft
             Vector2 position = new(1 * cellWidth, 1 * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
 
+            Texture2D logo = textureDictionary["CSharpCraftLogo"];
             batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             p8.Print("c# craft 0.0.1", 0, 18, 6);
