@@ -129,7 +129,7 @@ namespace CSharpCraft
             if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up)); }
             if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down)); }
             if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu)); }
-            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Interact)); }
+            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Use)); }
             else { return false; }
         }
 

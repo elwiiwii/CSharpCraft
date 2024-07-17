@@ -15,7 +15,7 @@ namespace CSharpCraft
 
         public string GameModeName { get => "options"; }
 
-        List<FieldInfo> keys = [];
+        OptionsFile keys;
         private bool menuSelectedX;
         private int menuSelectedY;
         private int currentMenuOption;
@@ -66,8 +66,7 @@ namespace CSharpCraft
 
         public void Init()
         {
-            //keys = [];
-            //keys = optionsFile.GetAllFields();
+            keys = optionsFile;
 
             //menuSelectedX = false;
             //menuSelectedY = 0;
@@ -103,44 +102,41 @@ namespace CSharpCraft
             batch.Draw(textureDictionary["OptionsMenuBackground"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             batch.Draw(textureDictionary["Arrow"], new Vector2(0 * cellW, 1 * cellH), null, p8.colors[currentMenuOption == 0 ? 7 : 5], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             p8.Print("back", 5, 1, currentMenuOption == 0 ? 7 : 5);
-            //batch.Draw(textureDictionary["OptionsMenuTab"], new Vector2(15 * cellW, 22 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-            //batch.Draw(textureDictionary["SelectorHalf"], new Vector2(16 * cellW, 31 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            //batch.Draw(textureDictionary["SelectorHalf"], new Vector2(31 * cellW, 31 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-
-            //p8.Print("controls", 19, 19, 7);
-            //p8.Print("graphics", 77, 18, 7);
-            //p8.Print("keyboard", 19, 33, 7);
-            //p8.Print("controller", 73, 33, 7);
+            for (int i = 0; i <= 1; i++)
+            {
+                var position2 = new Vector2((15 + (58 * i)) * cellW, 16 * cellH);
+                var position3 = new Vector2((16 + (58 * i)) * cellW, 17 * cellH);
+                batch.Draw(textureDictionary["SelectorBorder"], position2, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                batch.Draw(textureDictionary["SelectorCenter"], position3, null, p8.colors[currentMenuOption == 1 ? 2 : 0], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            }
 
             var position = new Vector2((15 + Math.Abs(58 * menuOptions[1])) * cellW, 22 * cellH);
             batch.Draw(textureDictionary["OptionsMenuTab"], position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            
+
+            p8.Rectfill(15 + Math.Abs(58 * menuOptions[1]), 22, 53 + Math.Abs(58 * menuOptions[1]), 27, 7);
+            p8.Rectfill(16 + Math.Abs(58 * menuOptions[1]), 22, 52 + Math.Abs(58 * menuOptions[1]), 27, currentMenuOption == 1 ? 2 : 0);
+
             for (int i = 0; i <= 1; i++)
             {
                 p8.Print(options.Keys.ElementAt(i), 19 + 58 * i, 19 - Math.Abs(i + menuOptions[1]), 7);
             }
 
-            //if (currentMenuOption == 1)
-            //{
-            //    if (menuOptions[1] == 0)
-            //    {
-            //        batch.Draw(textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            //        batch.Draw(textureDictionary["SelectorHalf"], new Vector2(16 * cellW, 31 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            //        batch.Draw(textureDictionary["SelectorHalf"], new Vector2(31 * cellW, 31 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-            //
-            //        for (int i = 0; i <= 1; i++)
-            //        {
-            //            p8.Print(controlsOptions.Keys.ElementAt(i), 19 + 54 * i, 33, 7);
-            //        }
-            //    }
-            //}
-            
+            if (currentMenuOption < 2)
+            {
+                p8.Rectfill(6, 27, 6 + 115, 27, 7);
+            }
+
+
             if (currentMenuOption == 2)
             {
                 if (menuOptions[2] == 0)
                 {
-                    //p8.Rectfill(17, 32, 51, 38, 13);
+                    p8.Rectfill(17, 32, 51, 38, 13);
+                }
+                else if (menuOptions[2] == -1)
+                {
+                    p8.Rectfill(71, 32, 113, 38, 13);
                 }
             }
             if (menuOptions[1] == 0)

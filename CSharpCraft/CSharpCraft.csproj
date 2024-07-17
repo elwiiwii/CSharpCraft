@@ -16,6 +16,8 @@
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
 		<None Remove="Content\Graphics\OptionsMenuTab.png" />
+		<None Remove="Content\Graphics\SelectorBorder.png" />
+		<None Remove="Content\Graphics\SelectorCenter.png" />
 		<None Remove="Content\Graphics\SelectorHalf.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
 		<None Remove="Content\Music\music_0.wav" />
@@ -43,6 +45,12 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\OptionsMenuTab.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SelectorBorder.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SelectorCenter.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SelectorHalf.png">

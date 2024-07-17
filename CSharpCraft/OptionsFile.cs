@@ -9,7 +9,7 @@ namespace CSharpCraft
         public string Right { get; set; } = "Right";
         public string Up { get; set; } = "Up";
         public string Down { get; set; } = "Down";
-        public string Interact { get; set; } = "X";
+        public string Use { get; set; } = "X";
         public string Menu { get; set; } = "Z";
         public string Pause { get; set; } = "Enter";
         
@@ -49,20 +49,13 @@ namespace CSharpCraft
 
     public class KeyboardOptions
     {
-        public string Left1 { get; set; } = "Left";
-        public string Left2 { get; set; } = "NumPad4";
-        public string Right1 { get; set; } = "Right";
-        public string Right2 { get; set; } = "NumPad6";
-        public string Up1 { get; set; } = "Up";
-        public string Up2 { get; set; } = "NumPad8";
-        public string Down1 { get; set; } = "Down";
-        public string Down2 { get; set; } = "NumPad5";
-        public string Interact1 { get; set; } = "X";
-        public string Interact2 { get; set; } = "V;";
-        public string Menu1 { get; set; } = "Z";
-        public string Menu2 { get; set; } = "C";
-        public string Pause1 { get; set; } = "Escape";
-        public string Pause2 { get; set; } = "Enter";
+        public (string, string) Left { get; set; } = ("Left", "NumPad4");
+        public (string, string) Right { get; set; } = ("Right", "NumPad6");
+        public (string, string) Up { get; set; } = ("Up", "NumPad8");
+        public (string, string) Down { get; set; } = ("Down", "NumPad5");
+        public (string, string) Use { get; set; } = ("X", "V");
+        public (string, string) Menu { get; set; } = ("Z", "C");
+        public (string, string) Pause { get; set; } = ("Escape", "Enter");
     }
 
     public class ControllerOptions
