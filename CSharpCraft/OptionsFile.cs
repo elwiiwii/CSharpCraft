@@ -3,16 +3,19 @@ using System.Reflection;
 
 namespace CSharpCraft
 {
+    public record Binding(string Bind1, string Bind2);
+
+
     public class OptionsFile
     {
-        public string Left { get; set; } = "Left";
-        public string Right { get; set; } = "Right";
-        public string Up { get; set; } = "Up";
-        public string Down { get; set; } = "Down";
-        public string Use { get; set; } = "X";
-        public string Menu { get; set; } = "Z";
-        public string Pause { get; set; } = "Enter";
-        
+        public Binding Left { get; set; } = new Binding("Left", "NumPad4");
+        public Binding Right { get; set; } = new Binding("Right", "NumPad6");
+        public Binding Up { get; set; } = new Binding("Up", "NumPad8");
+        public Binding Down { get; set; } = new Binding("Down", "NumPad5");
+        public Binding Use { get; set; } = new Binding("X", "V");
+        public Binding Menu { get; set; } = new Binding("Z", "C");
+        public Binding Pause { get; set; } = new Binding("Escape", "Enter");
+
         private static readonly string optionsFileName = "settings.json";
 
         public List<FieldInfo> GetAllFields()
@@ -37,8 +40,8 @@ namespace CSharpCraft
             else
             {
                 var optionsFile = new OptionsFile();
-                var writeIndented = new JsonSerializerOptions { WriteIndented = true };
-                string jsonString = JsonSerializer.Serialize(optionsFile, writeIndented);
+                var jsonOptions = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
+                string jsonString = JsonSerializer.Serialize(optionsFile, jsonOptions);
                 File.WriteAllText(optionsFileName, jsonString);
                 return optionsFile;
             }

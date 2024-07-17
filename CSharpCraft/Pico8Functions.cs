@@ -124,12 +124,12 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Left)); }
-            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right)); }
-            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up)); }
-            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down)); }
-            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu)); }
-            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Use)); }
+            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Left.Bind1)); }
+            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right.Bind1)); }
+            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up.Bind1)); }
+            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down.Bind1)); }
+            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu.Bind1)); }
+            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Use.Bind1)); }
             else { return false; }
         }
 

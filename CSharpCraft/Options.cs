@@ -66,13 +66,17 @@ namespace CSharpCraft
 
         public void Init()
         {
-            keys = optionsFile;
+            //keys = optionsFile;
 
             //menuSelectedX = false;
             //menuSelectedY = 0;
 
             currentMenuOption = 1;
-            menuOptions[currentMenuOption] = 0;
+            for (int i = 0; i < menuOptions.Length; i++)
+            {
+                menuOptions[i] = 0;
+            }
+            
         }
 
         public void Update()
@@ -128,19 +132,21 @@ namespace CSharpCraft
             }
 
 
-            if (currentMenuOption == 2)
-            {
-                if (menuOptions[2] == 0)
-                {
-                    p8.Rectfill(17, 32, 51, 38, 13);
-                }
-                else if (menuOptions[2] == -1)
-                {
-                    p8.Rectfill(71, 32, 113, 38, 13);
-                }
-            }
+            
             if (menuOptions[1] == 0)
             {
+                if (currentMenuOption == 2)
+                {
+                    if (menuOptions[2] == 0)
+                    {
+                        p8.Rectfill(17, 32, 51, 38, 13);
+                    }
+                    else if (menuOptions[2] == -1)
+                    {
+                        p8.Rectfill(71, 32, 113, 38, 13);
+                    }
+                }
+
                 var position2 = new Vector2((16 + Math.Abs(54 * menuOptions[2])) * cellW, 31 * cellH);
                 var position3 = new Vector2((30 + Math.Abs(62 * menuOptions[2])) * cellW, 31 * cellH);
 
@@ -152,9 +158,23 @@ namespace CSharpCraft
                 {
                     p8.Print(controlsOptions.Keys.ElementAt(i), 19 + 54 * i, 33, 7);
                 }
+
+                var properties = typeof(OptionsFile).GetProperties();
+                int j = 0;
+                foreach (var property in properties)
+                {
+                    p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
+                    var val = (Binding)property.GetValue(optionsFile);
+                    p8.Print(val.Bind1.ToLower(), 51, 55 + j, 7);
+                    p8.Print(val.Bind2.ToLower(), 87, 55 + j, 7);
+                    j += 6;
+                }
+
             }
 
+            //p8.Print(nameof(optionsFile.Left).ToLower(), 8, 55, 7);
 
+            
 
             //int i = 0;
             //foreach (var key in keys)
