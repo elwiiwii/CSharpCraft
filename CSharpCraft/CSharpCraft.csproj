@@ -20,6 +20,7 @@
 		<None Remove="Content\Graphics\SelectorCenter.png" />
 		<None Remove="Content\Graphics\SelectorHalf.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
+		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Music\music_0.wav" />
 		<None Remove="Content\Music\music_1.wav" />
 		<None Remove="Content\Music\music_2.wav" />
@@ -64,6 +65,9 @@
 		</Content>
 		<Content Include="Content\Graphics\font2.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\WaitingForInput.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Music\music_0.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>

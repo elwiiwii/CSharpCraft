@@ -20,6 +20,7 @@ namespace CSharpCraft
         private int menuSelectedY;
         private int currentMenuOption;
         private int[] menuOptions = new int[4];
+        private bool waitingForInput;
 
         private static string[] keyboardBinds1 = ["left"];
         private static string[] keyboardBinds2 = ["left"];
@@ -68,6 +69,8 @@ namespace CSharpCraft
             //menuSelectedX = false;
             //menuSelectedY = 0;
 
+            waitingForInput = false;
+
             currentMenuOption = 1;
             for (int i = 0; i < menuOptions.Length; i++)
             {
@@ -78,12 +81,14 @@ namespace CSharpCraft
 
         public void Update()
         {
+            KeyboardState state = Keyboard.GetState();
+
             if (p8.Btnp(0)) { menuOptions[currentMenuOption] += 1; }
             if (p8.Btnp(1)) { menuOptions[currentMenuOption] -= 1; }
             if (p8.Btnp(2)) { currentMenuOption -= 1; }
             if (p8.Btnp(3)) { currentMenuOption += 1; }
 
-            Console.WriteLine(Keyboard.GetState());
+            //Console.WriteLine(Keyboard.GetState());
 
             menuOptions[currentMenuOption] = Loop(menuOptions[currentMenuOption]);
 
@@ -104,8 +109,21 @@ namespace CSharpCraft
                         //    bindings[0].Bind1 = "Left";
                         //}
 
-                        optionsFile.Left = new Binding("Left", optionsFile.Left.Bind1);
-                        OptionsFile.JsonWrite(optionsFile);
+                        waitingForInput = true;
+
+                        //optionsFile.Left = new Binding("Left", optionsFile.Left.Bind1);
+                        //OptionsFile.JsonWrite(optionsFile);
+                        Keyboard.GetState().GetPressedKeys();
+
+
+                        //foreach (Keys key in Enum.GetValues(typeof(Keys)))
+                        //{
+                        //    if (state.IsKeyDown(key))
+                        //    {
+                        //
+                        //        break;
+                        //    }
+                        //}
 
                     }
                 }
@@ -172,30 +190,41 @@ namespace CSharpCraft
                     }
                 }
 
-                var position2 = new Vector2((16 + Math.Abs(54 * menuOptions[2])) * cellW, 31 * cellH);
-                var position3 = new Vector2((30 + Math.Abs(62 * menuOptions[2])) * cellW, 31 * cellH);
-
-                batch.Draw(textureDictionary["SelectorHalf"], position2, null, p8.colors[currentMenuOption == 2 ? 7 : 5], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary["SelectorHalf"], position3, null, p8.colors[currentMenuOption == 2 ? 7 : 5], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-                batch.Draw(textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-
-                for (int i = 0; i <= 1; i++)
+                if (waitingForInput)
                 {
-                    p8.Print(controlsOptions.Keys.ElementAt(i), 19 + 54 * i, 33, 7);
+                    batch.Draw(textureDictionary["WaitingForInput"], new Vector2(20 * cellW, 51 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                }
+                else
+                {
+                    var position2 = new Vector2((16 + Math.Abs(54 * menuOptions[2])) * cellW, 31 * cellH);
+                    var position3 = new Vector2((30 + Math.Abs(62 * menuOptions[2])) * cellW, 31 * cellH);
+
+                    batch.Draw(textureDictionary["SelectorHalf"], position2, null, p8.colors[currentMenuOption == 2 ? 7 : 5], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    batch.Draw(textureDictionary["SelectorHalf"], position3, null, p8.colors[currentMenuOption == 2 ? 7 : 5], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+
+                    batch.Draw(textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+
+                    for (int i = 0; i <= 1; i++)
+                    {
+                        p8.Print(controlsOptions.Keys.ElementAt(i), 19 + 54 * i, 33, 7);
+                    }
+
+                    var properties = typeof(OptionsFile).GetProperties();
+                    int j = 0;
+                    foreach (var property in properties)
+                    {
+                        p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
+                        var val = (Binding)property.GetValue(optionsFile);
+                        p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 7);
+                        p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 7);
+                        j += 6;
+                    }
                 }
 
-                var properties = typeof(OptionsFile).GetProperties();
-                int j = 0;
-                foreach (var property in properties)
-                {
-                    p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
-                    var val = (Binding)property.GetValue(optionsFile);
-                    p8.Print(val.Bind1.ToLower(), 51, 55 + j, 7);
-                    p8.Print(val.Bind2.ToLower(), 87, 55 + j, 7);
-                    j += 6;
-                }
 
-                
+
+
+
                 //p8.Print(nameof(optionsFile.Left).ToLower(), 8, 55, 7);
 
 
