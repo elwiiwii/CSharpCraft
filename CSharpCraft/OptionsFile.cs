@@ -28,6 +28,14 @@ namespace CSharpCraft
             return fields;
         }
 
+        public static OptionsFile JsonWrite(OptionsFile file)
+        {
+            var jsonOptions = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
+            string jsonString = JsonSerializer.Serialize(file, jsonOptions);
+            File.WriteAllText(optionsFileName, jsonString);
+            return file;
+        }
+
         public static OptionsFile Initialize()
         {
 
@@ -40,10 +48,7 @@ namespace CSharpCraft
             else
             {
                 var optionsFile = new OptionsFile();
-                var jsonOptions = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
-                string jsonString = JsonSerializer.Serialize(optionsFile, jsonOptions);
-                File.WriteAllText(optionsFileName, jsonString);
-                return optionsFile;
+                return JsonWrite(optionsFile);
             }
         }
 

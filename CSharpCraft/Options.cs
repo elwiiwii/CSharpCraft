@@ -50,15 +50,12 @@ namespace CSharpCraft
             { "graphics", controlsOptions }
         };
 
-        
-
-
 
         private int Loop(int sel)
         {
             return sel < -1 ? -1 : sel > 0 ? 0 : sel;
         }
-        
+
         private void Printc(string t, int x, int y, double c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
@@ -76,7 +73,7 @@ namespace CSharpCraft
             {
                 menuOptions[i] = 0;
             }
-            
+
         }
 
         public void Update()
@@ -85,8 +82,36 @@ namespace CSharpCraft
             if (p8.Btnp(1)) { menuOptions[currentMenuOption] -= 1; }
             if (p8.Btnp(2)) { currentMenuOption -= 1; }
             if (p8.Btnp(3)) { currentMenuOption += 1; }
-            
+
+            Console.WriteLine(Keyboard.GetState());
+
             menuOptions[currentMenuOption] = Loop(menuOptions[currentMenuOption]);
+
+            if (currentMenuOption == 3)
+            {
+                if (menuOptions[3] == 0)
+                {
+                    if (p8.Btnp(5))
+                    {
+                        //var properties = typeof(OptionsFile).GetProperties();
+                        //List<Binding> bindings = [];
+                        //foreach (var property in properties)
+                        //{
+                        //    bindings.Add((Binding)property.GetValue(optionsFile));
+                        //}
+                        //if (bindings[0].Bind1 != null)
+                        //{
+                        //    bindings[0].Bind1 = "Left";
+                        //}
+
+                        optionsFile.Left = new Binding("Left", optionsFile.Left.Bind1);
+                        OptionsFile.JsonWrite(optionsFile);
+
+                    }
+                }
+
+            }
+
         }
 
         public void Draw()
@@ -132,7 +157,7 @@ namespace CSharpCraft
             }
 
 
-            
+
             if (menuOptions[1] == 0)
             {
                 if (currentMenuOption == 2)
@@ -170,21 +195,21 @@ namespace CSharpCraft
                     j += 6;
                 }
 
+                
+                //p8.Print(nameof(optionsFile.Left).ToLower(), 8, 55, 7);
+
+
+
+                //int i = 0;
+                //foreach (var key in keys)
+                //{
+                //    p8.Print($"{key}", 8, 62 + i, 7);
+                //    i += 6;
+                //}
             }
 
-            //p8.Print(nameof(optionsFile.Left).ToLower(), 8, 55, 7);
-
-            
-
-            //int i = 0;
-            //foreach (var key in keys)
-            //{
-            //    p8.Print($"{key}", 8, 62 + i, 7);
-            //    i += 6;
-            //}
         }
 
+
     }
-
-
 }
