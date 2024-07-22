@@ -22,7 +22,7 @@ namespace CSharpCraft
         private SpriteBatch batch;
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
-        private Options options;
+        private KeyboardOptions options;
         private OptionsFile optionsFile;
         private Pico8Functions p8;
         private Pcraft pcraft;
@@ -110,7 +110,7 @@ namespace CSharpCraft
             if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
             {
                 gameModes[currentGameMode].Update();
-
+                
                 if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) { gameModes[currentGameMode].Init(); }
 
                 if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
@@ -235,7 +235,7 @@ namespace CSharpCraft
 
             p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
             pcraft = new Pcraft(p8);
-            options = new Options(p8, textureDictionary, batch, GraphicsDevice, optionsFile);
+            options = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, optionsFile);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
         }
 

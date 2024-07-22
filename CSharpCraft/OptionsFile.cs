@@ -55,7 +55,7 @@ namespace CSharpCraft
 
     }
 
-    public class KeyboardOptions
+    public class KeyboardOptionsFile
     {
         public (string, string) Left { get; set; } = ("Left", "NumPad4");
         public (string, string) Right { get; set; } = ("Right", "NumPad6");
@@ -66,7 +66,7 @@ namespace CSharpCraft
         public (string, string) Pause { get; set; } = ("Escape", "Enter");
     }
 
-    public class ControllerOptions
+    public class ControllerOptionsFile
     {
         public string Left1 { get; set; } = "DPadLeft";
         public string Left2 { get; set; } = "LeftStickLeft";

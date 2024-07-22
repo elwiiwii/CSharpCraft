@@ -25,14 +25,14 @@ namespace CSharpCraft
 
         private static Dictionary<string, string[]> keyboardControls = new()
         {
-            { "binds-1", keyboardBinds1 },
-            { "binds-2", keyboardBinds2 }
+            { "bind-1", keyboardBinds1 },
+            { "bind-2", keyboardBinds2 }
         };
 
         private static Dictionary<string, string[]> controllerControls = new()
         {
-            { "binds-1", controllerBinds1 },
-            { "binds-2", controllerBinds2 }
+            { "bind-1", controllerBinds1 },
+            { "bind-2", controllerBinds2 }
         };
 
         private static Dictionary<string, Dictionary<string, string[]>> controlsOptions = new()
