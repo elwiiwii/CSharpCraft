@@ -13,9 +13,6 @@ namespace CSharpCraft
 
         public string GameModeName { get => "options"; }
 
-        OptionsFile keys;
-        private bool menuSelectedX;
-        private int menuSelectedY;
         private int currentMenuOption;
         private int[] menuOptions = new int[3 + typeof(OptionsFile).GetProperties().Length];
         private bool waitingForInput;
@@ -56,6 +53,12 @@ namespace CSharpCraft
             return sel < -1 ? -1 : sel > 0 ? 0 : sel;
         }
 
+        //private int Loop(int sel, int[] l)
+        //{
+        //    var lp = l.Length;
+        //    return ((sel % lp) + lp) % lp;
+        //}
+
         private void Printc(string t, int x, int y, double c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
@@ -89,12 +92,12 @@ namespace CSharpCraft
             if (p8.Btnp(3)) { currentMenuOption += 1; }
 
             //Console.WriteLine(Keyboard.GetState());
-
+            
             menuOptions[currentMenuOption] = Loop(menuOptions[currentMenuOption]);
 
             if (menuOptions[1] == 0)
             {
-                if (currentMenuOption > 2)
+                if (currentMenuOption > 2 && menuOptions[currentMenuOption] == 0)
                 {
                     if (p8.Btnp(5))
                     {
@@ -105,17 +108,22 @@ namespace CSharpCraft
                     {
                         if (delay > 5)
                         {
-                            //optionsFile.Left = new Binding("Left", optionsFile.Left.Bind1);
-                            //OptionsFile.JsonWrite(optionsFile);
                             var key = Keyboard.GetState().GetPressedKeys();
                             if (key.Length == 1)
                             {
                                 var properties = typeof(OptionsFile).GetProperties();
                                 var currentProperty = properties[currentMenuOption - 3];
                                 var propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
-                                var newBinding = new Binding(KeysToString.keysToString[key[0]], "None");
-                                if (propertyName != null)
+                                var binding = (Binding)propertyName.GetValue(optionsFile);
+                                if (menuOptions[currentMenuOption] == 0 && propertyName != null)
                                 {
+                                    var newBinding = new Binding(KeysToString.keysToString[key[0]], binding.Bind2);
+                                    propertyName.SetValue(optionsFile, newBinding);
+                                    OptionsFile.JsonWrite(optionsFile);
+                                }
+                                else
+                                {
+                                    var newBinding = new Binding(binding.Bind1, KeysToString.keysToString[key[0]]);
                                     propertyName.SetValue(optionsFile, newBinding);
                                     OptionsFile.JsonWrite(optionsFile);
                                 }
@@ -129,7 +137,46 @@ namespace CSharpCraft
                         }
                     }
                 }
-
+                //else if (currentMenuOption > 2 && menuOptions[currentMenuOption] != 0)
+                //{
+                //    if (p8.Btnp(5))
+                //    {
+                //        waitingForInput = true;
+                //    }
+                //
+                //    if (waitingForInput)
+                //    {
+                //        if (delay > 5)
+                //        {
+                //            var button = GamePad.GetState(PlayerIndex.One).Buttons;
+                //            if (button != null)
+                //            {
+                //                var properties = typeof(OptionsFile).GetProperties();
+                //                var currentProperty = properties[currentMenuOption - 3];
+                //                var propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
+                //                var binding = (Binding)propertyName.GetValue(optionsFile);
+                //                if (menuOptions[currentMenuOption] == 0 && propertyName != null)
+                //                {
+                //                    var newBinding = new Binding(KeysToString.keysToString[button], binding.Bind2);
+                //                    propertyName.SetValue(optionsFile, newBinding);
+                //                    OptionsFile.JsonWrite(optionsFile);
+                //                }
+                //                else
+                //                {
+                //                    var newBinding = new Binding(binding.Bind1, KeysToString.keysToString[button]);
+                //                    propertyName.SetValue(optionsFile, newBinding);
+                //                    OptionsFile.JsonWrite(optionsFile);
+                //                }
+                //                delay = 0;
+                //                waitingForInput = false;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            delay++;
+                //        }
+                //    }
+                //}
 
             }
 
@@ -225,7 +272,9 @@ namespace CSharpCraft
 
                     if (currentMenuOption > 2)
                     {
-                        batch.Draw(textureDictionary["Arrow"], new Vector2(46 * cellW, (((currentMenuOption - 3) * 6) + 55) * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                        var position4 = new Vector2((46 + Math.Abs(36 * menuOptions[currentMenuOption])) * cellW, (((currentMenuOption - 3) * 6) + 55) * cellH);
+
+                        batch.Draw(textureDictionary["Arrow"], position4, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                     }
                 }
 
