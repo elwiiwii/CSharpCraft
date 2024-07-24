@@ -22,8 +22,10 @@ namespace CSharpCraft
         private SpriteBatch batch;
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
-        private KeyboardOptions options;
-        private OptionsFile optionsFile;
+        private KeyboardOptions keyboardOptions;
+        private Options options;
+        private KeyboardOptionsFile keyboardOptionsFile;
+        private List<IGameMode> optionsModes = [];
         private Pico8Functions p8;
         private Pcraft pcraft;
         private TitleScreen titleScreen;
@@ -69,7 +71,7 @@ namespace CSharpCraft
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30));
             graphics.SynchronizeWithVerticalRetrace = true;
 
-            optionsFile = OptionsFile.Initialize();
+            keyboardOptionsFile = KeyboardOptionsFile.Initialize();
 
         }
 
@@ -87,6 +89,9 @@ namespace CSharpCraft
             gameModes.Add(titleScreen);
             gameModes.Add(pcraft);
             gameModes.Add(options);
+
+            optionsModes.Add(options);
+            optionsModes.Add(keyboardOptions);
 
             titleScreen.Init();
         }
@@ -233,9 +238,10 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
+            p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
             pcraft = new Pcraft(p8);
-            options = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, optionsFile);
+            options = new Options(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
         }
 

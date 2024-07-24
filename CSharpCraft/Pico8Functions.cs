@@ -6,7 +6,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, OptionsFile optionsFile) : IDisposable
+    public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile) : IDisposable
     {
         private readonly Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
@@ -124,12 +124,12 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Left.Bind1)); }
-            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Right.Bind1)); }
-            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Up.Bind1)); }
-            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Down.Bind1)); }
-            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Menu.Bind1)); }
-            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Use.Bind1)); }
+            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Left.Bind1)); }
+            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Right.Bind1)); }
+            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Up.Bind1)); }
+            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Down.Bind1)); }
+            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Menu.Bind1)); }
+            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Use.Bind1)); }
             else { return false; }
         }
 

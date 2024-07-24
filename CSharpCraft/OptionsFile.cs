@@ -6,7 +6,7 @@ namespace CSharpCraft
     public record Binding(string Bind1, string Bind2);
 
 
-    public class OptionsFile
+    public class KeyboardOptionsFile
     {
         public Binding Left { get; set; } = new Binding("Left", "NumPad4");
         public Binding Right { get; set; } = new Binding("Right", "NumPad6");
@@ -28,7 +28,7 @@ namespace CSharpCraft
             return fields;
         }
 
-        public static OptionsFile JsonWrite(OptionsFile file)
+        public static KeyboardOptionsFile JsonWrite(KeyboardOptionsFile file)
         {
             var jsonOptions = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
             string jsonString = JsonSerializer.Serialize(file, jsonOptions);
@@ -36,34 +36,23 @@ namespace CSharpCraft
             return file;
         }
 
-        public static OptionsFile Initialize()
+        public static KeyboardOptionsFile Initialize()
         {
 
             if (File.Exists(optionsFileName))
             {
                 string jsonString = File.ReadAllText(optionsFileName);
                 //need to handle bad quality json
-                return JsonSerializer.Deserialize<OptionsFile>(jsonString);
+                return JsonSerializer.Deserialize<KeyboardOptionsFile>(jsonString);
             }
             else
             {
-                var optionsFile = new OptionsFile();
+                var optionsFile = new KeyboardOptionsFile();
                 return JsonWrite(optionsFile);
             }
         }
 
 
-    }
-
-    public class KeyboardOptionsFile
-    {
-        public (string, string) Left { get; set; } = ("Left", "NumPad4");
-        public (string, string) Right { get; set; } = ("Right", "NumPad6");
-        public (string, string) Up { get; set; } = ("Up", "NumPad8");
-        public (string, string) Down { get; set; } = ("Down", "NumPad5");
-        public (string, string) Use { get; set; } = ("X", "V");
-        public (string, string) Menu { get; set; } = ("Z", "C");
-        public (string, string) Pause { get; set; } = ("Escape", "Enter");
     }
 
     public class ControllerOptionsFile
