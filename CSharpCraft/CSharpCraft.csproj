@@ -14,6 +14,13 @@
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
+		<None Remove="Content\Graphics\OptionsBackground0.png" />
+		<None Remove="Content\Graphics\OptionsBackground1.png" />
+		<None Remove="Content\Graphics\OptionsBackground2.png" />
+		<None Remove="Content\Graphics\OptionsBackground3.png" />
+		<None Remove="Content\Graphics\OptionsBackground4.png" />
+		<None Remove="Content\Graphics\OptionsBackground5.png" />
+		<None Remove="Content\Graphics\OptionsBackground6.png" />
 		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
 		<None Remove="Content\Graphics\OptionsMenuTab.png" />
 		<None Remove="Content\Graphics\SelectorBorder.png" />
@@ -33,6 +40,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\OptionsBackground0.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\OptionsBackground5.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<Content Include="Content\Graphics\Arrow.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -40,6 +56,18 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\KeybindsMenu.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground1.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground2.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground3.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground4.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\OptionsMenuBackground.png">

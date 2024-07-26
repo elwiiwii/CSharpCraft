@@ -23,7 +23,7 @@ namespace CSharpCraft
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
         private KeyboardOptions keyboardOptions;
-        private Options options;
+        private ControllerOptions options;
         private KeyboardOptionsFile keyboardOptionsFile;
         private List<IGameMode> optionsModes = [];
         private Pico8Functions p8;
@@ -240,7 +240,7 @@ namespace CSharpCraft
 
             p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
             pcraft = new Pcraft(p8);
-            options = new Options(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            options = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
         }

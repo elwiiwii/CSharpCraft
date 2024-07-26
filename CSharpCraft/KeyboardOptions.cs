@@ -28,12 +28,11 @@ namespace CSharpCraft
         public void Init()
         {
             menuX = 0;
-            menuY = 0;
+            menuY = -2;
             menuWidth = 2;
             menuLength = typeof(KeyboardOptionsFile).GetProperties().Length;
             waitingForInput = false;
             delay = 0;
-
         }
 
         public void Update()
@@ -78,8 +77,21 @@ namespace CSharpCraft
             if (p8.Btnp(1)) { menuX += 1; }
             if (p8.Btnp(2)) { menuY -= 1; }
             if (p8.Btnp(3)) { menuY += 1; }
-
-            if (menuY == -1) { optionsModes[0].Init(); return; }
+            
+            if (menuY == -1)
+            {
+                if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
+                if (p8.Btnp(2)) { menuY -= 1; }
+                if (p8.Btnp(3)) { menuY += 1; }
+                return;
+            }
+            else if (menuY == -2)
+            {
+                if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
+                if (p8.Btnp(2)) { optionsModes[2].Init(); return; }
+                if (p8.Btnp(3)) { menuY += 1; }
+                return;
+            }
 
             menuX = Loop(menuX, menuWidth);
             menuY = Loop(menuY, menuLength);
@@ -97,6 +109,8 @@ namespace CSharpCraft
             int cellH = viewportHeight / 128;
 
             Vector2 size = new(cellW, cellH);
+
+            batch.Draw(textureDictionary["OptionsBackground2"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             if (waitingForInput)
             {
@@ -127,8 +141,12 @@ namespace CSharpCraft
                     j += 6;
                 }
 
-                var position5 = new Vector2((46 + (36 * menuX)) * cellW, ((menuY * 6) + 55) * cellH);
-                batch.Draw(textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                if (menuY >= 0)
+                {
+                    var position5 = new Vector2((46 + (36 * menuX)) * cellW, ((menuY * 6) + 55) * cellH);
+                    batch.Draw(textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                }
+                
             }
             
         }
