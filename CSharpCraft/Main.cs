@@ -22,13 +22,18 @@ namespace CSharpCraft
         private SpriteBatch batch;
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
-        private KeyboardOptions keyboardOptions;
-        private ControllerOptions options;
         private KeyboardOptionsFile keyboardOptionsFile;
         private List<IGameMode> optionsModes = [];
         private Pico8Functions p8;
         private Pcraft pcraft;
         private TitleScreen titleScreen;
+
+        private BackOptions1 backOptions1;
+        private BackOptions2 backOptions2;
+        private ControlsOptions controlsOptions;
+        private GraphicsOptions graphicsOptions;
+        private KeyboardOptions keyboardOptions;
+        private ControllerOptions controllerOptions;
 
         //private List<Texture2D> textures = [];
         //private List<SoundEffect> music = [];
@@ -88,10 +93,14 @@ namespace CSharpCraft
 
             gameModes.Add(titleScreen);
             gameModes.Add(pcraft);
-            gameModes.Add(options);
+            gameModes.Add(controlsOptions);
 
-            optionsModes.Add(options);
+            optionsModes.Add(backOptions1);
+            optionsModes.Add(backOptions2);
+            optionsModes.Add(controlsOptions);
+            optionsModes.Add(graphicsOptions);
             optionsModes.Add(keyboardOptions);
+            optionsModes.Add(controllerOptions);
 
             titleScreen.Init();
         }
@@ -240,9 +249,14 @@ namespace CSharpCraft
 
             p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
             pcraft = new Pcraft(p8);
-            options = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
+
+            backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            backOptions2 = new BackOptions2(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            graphicsOptions = new GraphicsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            controllerOptions = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
         }
 
 

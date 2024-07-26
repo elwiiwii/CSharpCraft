@@ -11,7 +11,7 @@ namespace CSharpCraft
     public class KeyboardOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
     {
 
-        public string GameModeName { get => "keyboard"; }
+        public string GameModeName { get => "options"; }
 
         private int menuX;
         private int menuY;
@@ -28,7 +28,7 @@ namespace CSharpCraft
         public void Init()
         {
             menuX = 0;
-            menuY = -2;
+            menuY = -1;
             menuWidth = 2;
             menuLength = typeof(KeyboardOptionsFile).GetProperties().Length;
             waitingForInput = false;
@@ -81,13 +81,6 @@ namespace CSharpCraft
             if (menuY == -1)
             {
                 if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
-                if (p8.Btnp(2)) { menuY -= 1; }
-                if (p8.Btnp(3)) { menuY += 1; }
-                return;
-            }
-            else if (menuY == -2)
-            {
-                if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
                 if (p8.Btnp(2)) { optionsModes[2].Init(); return; }
                 if (p8.Btnp(3)) { menuY += 1; }
                 return;
@@ -110,7 +103,7 @@ namespace CSharpCraft
 
             Vector2 size = new(cellW, cellH);
 
-            batch.Draw(textureDictionary["OptionsBackground2"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            batch.Draw(textureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             if (waitingForInput)
             {

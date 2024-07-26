@@ -9,7 +9,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class ControllerOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
+    public class GraphicsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
     {
 
         public string GameModeName { get => "options"; }
@@ -18,8 +18,6 @@ namespace CSharpCraft
         private int menuY;
         private int menuWidth;
         private int menuLength;
-        private bool waitingForInput;
-        private int delay;
 
         private int Loop(int sel, int size)
         {
@@ -31,9 +29,7 @@ namespace CSharpCraft
             menuX = 0;
             menuY = -1;
             menuWidth = 2;
-            menuLength = typeof(KeyboardOptionsFile).GetProperties().Length;
-            waitingForInput = false;
-            delay = 0;
+            menuLength = 100;
         }
 
         public void Update()
@@ -45,8 +41,8 @@ namespace CSharpCraft
 
             if (menuY == -1)
             {
-                if (p8.Btnp(0)) { optionsModes[4].Init(); return; }
-                if (p8.Btnp(2)) { optionsModes[2].Init(); return; }
+                if (p8.Btnp(0)) { optionsModes[2].Init(); return; }
+                if (p8.Btnp(2)) { optionsModes[1].Init(); return; }
                 if (p8.Btnp(3)) { menuY += 1; }
                 return;
             }
@@ -68,7 +64,7 @@ namespace CSharpCraft
 
             Vector2 size = new(cellW, cellH);
 
-            batch.Draw(textureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            batch.Draw(textureDictionary["OptionsBackground3"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         }
 
