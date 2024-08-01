@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -12,17 +6,14 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class Pico8Functions(List<SoundEffect> soundEffects, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice) : IDisposable
+    public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile) : IDisposable
     {
-        private readonly SpriteBatch batch = batch;
-        private readonly GraphicsDevice graphicsDevice = graphicsDevice;
-        private readonly Texture2D pixel = pixel;
-        private readonly List<SoundEffect> soundEffects = soundEffects;
-        private readonly Dictionary<int, Texture2D> spriteTextures = new();
+        private readonly Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
         private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
 
+        public List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
@@ -34,8 +25,7 @@ namespace CSharpCraft
         public bool prev3 = false;
         public bool prev4 = false;
         public bool prev5 = false;
-
-
+        
         private static Color HexToColor(string hex)
         {
             hex = hex.TrimStart('#');
@@ -85,11 +75,15 @@ namespace CSharpCraft
                 HexToColor("FF9D81"), // 31 peach
                 */
         ];
-        public Dictionary<Color, int> paletteSwap = new();
         public Color[] resetColors = new Color[16];
         public Color[] resetSprColors = new Color[16];
         public Color[] sprColors = new Color[16];
 
+
+        //private Pico8Functions(Color[] resetColors)
+        //{
+        //    this.resetColors = colors;
+        //}
 
         private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
@@ -130,12 +124,12 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (i == 0) { return state.IsKeyDown(Keys.A); }
-            if (i == 1) { return state.IsKeyDown(Keys.D); }
-            if (i == 2) { return state.IsKeyDown(Keys.W); }
-            if (i == 3) { return state.IsKeyDown(Keys.S); }
-            if (i == 4) { return state.IsKeyDown(Keys.M); }
-            if (i == 5) { return state.IsKeyDown(Keys.N); }
+            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Left.Bind1)); }
+            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Right.Bind1)); }
+            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Up.Bind1)); }
+            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Down.Bind1)); }
+            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Menu.Bind1)); }
+            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Use.Bind1)); }
             else { return false; }
         }
 
@@ -249,6 +243,14 @@ namespace CSharpCraft
         }
 
 
+        public void Cls(double color = 0) // https://pico-8.fandom.com/wiki/Cls
+        {
+            int colorFlr = (int)Math.Floor(color);
+
+            graphicsDevice.Clear(resetColors[colorFlr]);
+        }
+
+
         public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
             return Math.Cos(-angle * 2 * Math.PI);
@@ -258,6 +260,14 @@ namespace CSharpCraft
         public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
         {
             table.Remove(value);
+        }
+
+
+        public void Init()
+        {
+            Array.Copy(colors, resetColors, colors.Length);
+            Array.Copy(colors, sprColors, colors.Length);
+            Array.Copy(colors, resetSprColors, colors.Length);
         }
 
 
@@ -335,6 +345,32 @@ namespace CSharpCraft
 
         public void Music(double n, double fadems = 0, double channelmask = 0) // https://pico-8.fandom.com/wiki/Music
         {
+            int nFlr = (int)Math.Floor(n);
+
+            if (channelMusic != null)
+            {
+                foreach (var song in channelMusic)
+                {
+                    song.Dispose();
+                }
+            }
+
+            if (nFlr == 1)
+            {
+                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+                channelMusic.Add(instance);
+                instance.Play();
+            }
+            else if (nFlr == 4)
+            {
+                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+                channelMusic.Add(instance);
+                instance.Play();
+            }
+            else
+            {
+                return;
+            }
 
         }
 
@@ -494,7 +530,7 @@ namespace CSharpCraft
         }
 
 
-        public void Sfx(double n, double channel = -1, double offset = 0, double length = 31) // https://pico-8.fandom.com/wiki/Sfx
+        public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
         {
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
@@ -514,19 +550,55 @@ namespace CSharpCraft
                 {
                     sfxInstance.Dispose();
                 }
+
+                SoundEffectInstance instance = soundEffectDictionary[$"sfx_{nFlr}"].CreateInstance();
+                
+                c.Add(instance);
+                
+                instance.Play();
             }
-
-            SoundEffectInstance instance = soundEffects[nFlr].CreateInstance();
-
-            c.Add(instance);
-
-            instance.Play();
+            else
+            {
+                return;
+            }
+            
         }
 
 
         public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
             return Math.Sin(-angle * 2 * Math.PI);
+        }
+
+
+        public void SoundDispose()
+        {
+            if (channelMusic != null)
+            {
+                foreach (var song in channelMusic)
+                {
+                    song.Dispose();
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                List<SoundEffectInstance>? c = i switch
+                {
+                    0 => channel0,
+                    1 => channel1,
+                    2 => channel2,
+                    3 => channel3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(i)),
+                };
+                if (c != null)
+                {
+                    foreach (var sfxInstance in c)
+                    {
+                        sfxInstance.Dispose();
+                    }
+                }
+            }
         }
 
 
@@ -680,15 +752,52 @@ namespace CSharpCraft
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
 
+
+        public void Update()
+        {
+            prev0 = Btn(0);
+            prev1 = Btn(1);
+            prev2 = Btn(2);
+            prev3 = Btn(3);
+            prev4 = Btn(4);
+            prev5 = Btn(5);
+        }
+
+
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-
             foreach (var texture in spriteTextures.Values)
             {
                 texture.Dispose();
             }
             spriteTextures.Clear();
+            
+            //if (channelMusic != null)
+            //{
+            //    foreach (var song in channelMusic)
+            //    {
+            //        song.Dispose();
+            //    }
+            //    channelMusic.Clear();
+            //}
+            //if (soundEffects != null)
+            //{
+            //    foreach (var soundEffect in soundEffects)
+            //    {
+            //        soundEffect?.Dispose();
+            //    }
+            //}
+            //if (music != null)
+            //{
+            //    foreach (var song in music)
+            //    {
+            //        song?.Dispose();
+            //    }
+            //}
+            //pixel.Dispose();
+            //batch.Dispose();
+            //graphicsDevice.Dispose();
+
         }
 
     }

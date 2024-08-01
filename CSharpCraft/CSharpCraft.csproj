@@ -9,16 +9,82 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Content\Graphics\Arrow.png" />
+		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
+		<None Remove="Content\Graphics\KeybindsMenu.png" />
+		<None Remove="Content\Graphics\OptionsBackground0.png" />
+		<None Remove="Content\Graphics\OptionsBackground1.png" />
+		<None Remove="Content\Graphics\OptionsBackground2.png" />
+		<None Remove="Content\Graphics\OptionsBackground3.png" />
+		<None Remove="Content\Graphics\OptionsBackground4.png" />
+		<None Remove="Content\Graphics\OptionsBackground5.png" />
+		<None Remove="Content\Graphics\OptionsBackground6.png" />
+		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
+		<None Remove="Content\Graphics\OptionsMenuTab.png" />
+		<None Remove="Content\Graphics\SelectorBorder.png" />
+		<None Remove="Content\Graphics\SelectorCenter.png" />
+		<None Remove="Content\Graphics\SelectorHalf.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
+		<None Remove="Content\Graphics\WaitingForInput.png" />
+		<None Remove="Content\Music\music_0.wav" />
 		<None Remove="Content\Music\music_1.wav" />
+		<None Remove="Content\Music\music_2.wav" />
+		<None Remove="Content\Music\music_3.wav" />
 		<None Remove="Content\Music\music_4.wav" />
+		<None Remove="Content\Music\music_5.wav" />
+		<None Remove="Content\Music\music_6.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\OptionsBackground0.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\OptionsBackground5.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Content\Graphics\Arrow.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\CSharpCraftLogo.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\KeybindsMenu.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground1.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground2.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground3.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsBackground4.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsMenuBackground.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\OptionsMenuTab.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SelectorBorder.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SelectorCenter.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SelectorHalf.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Graphics\SpriteSheet1.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -28,10 +94,28 @@
 		<Content Include="Content\Graphics\font2.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Graphics\WaitingForInput.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_0.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Music\music_1.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Music\music_2.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_3.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Music\music_4.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_5.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_6.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\sfx_0.wav">
