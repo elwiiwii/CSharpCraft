@@ -27,6 +27,7 @@ namespace CSharpCraft
         private Pico8Functions p8;
         private Pcraft pcraft;
         private TitleScreen titleScreen;
+        private MainOptions mainOptions;
 
         private BackOptions1 backOptions1;
         private BackOptions2 backOptions2;
@@ -93,7 +94,7 @@ namespace CSharpCraft
 
             gameModes.Add(titleScreen);
             gameModes.Add(pcraft);
-            gameModes.Add(controlsOptions);
+            gameModes.Add(mainOptions);
 
             optionsModes.Add(backOptions1);
             optionsModes.Add(backOptions2);
@@ -251,9 +252,10 @@ namespace CSharpCraft
             pcraft = new Pcraft(p8);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
 
+            mainOptions = new MainOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             backOptions2 = new BackOptions2(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, optionsModes, mainOptions);
             graphicsOptions = new GraphicsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             controllerOptions = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);

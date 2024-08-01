@@ -9,10 +9,10 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class ControlsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
+    public class ControlsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
     {
 
-        public string GameModeName { get => "options"; }
+        public string GameModeName { get => "2"; }
 
         public void Init()
         {
@@ -21,7 +21,7 @@ namespace CSharpCraft
 
         public void Update()
         {
-            if (p8.Btnp(1)) { optionsModes[3].Init(); return; }
+            if (p8.Btnp(1)) { mainOptions.currentOptionsMode = 3; optionsModes[3].Init(); return; }
             if (p8.Btnp(2)) { optionsModes[0].Init(); return; }
             if (p8.Btnp(3)) { optionsModes[4].Init(); return; }
         }

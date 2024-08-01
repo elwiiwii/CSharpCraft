@@ -19,16 +19,18 @@ namespace CSharpCraft
         public void Init()
         {
             currentOptionsMode = 2;
+            optionsModes[currentOptionsMode].Init();
         }
 
         public void Update()
         {
-
+            currentOptionsMode = Int32.Parse(optionsModes[currentOptionsMode].GameModeName);
+            optionsModes[currentOptionsMode].Update();
         }
 
         public void Draw()
         {
-            
+            optionsModes[currentOptionsMode].Draw();
         }
 
     }
