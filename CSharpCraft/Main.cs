@@ -253,12 +253,12 @@ namespace CSharpCraft
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
 
             mainOptions = new MainOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            backOptions2 = new BackOptions2(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, optionsModes, mainOptions);
-            graphicsOptions = new GraphicsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
-            controllerOptions = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
+            backOptions2 = new BackOptions2(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
+            controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
+            graphicsOptions = new GraphicsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
+            keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
+            controllerOptions = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
         }
 
 

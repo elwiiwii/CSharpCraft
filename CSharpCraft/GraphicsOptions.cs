@@ -9,10 +9,10 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class GraphicsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
+    public class GraphicsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
     {
 
-        public string GameModeName { get => "options"; }
+        public string GameModeName { get => "3"; }
 
         private int menuX;
         private int menuY;
@@ -30,6 +30,7 @@ namespace CSharpCraft
             menuY = -1;
             menuWidth = 2;
             menuLength = 100;
+            mainOptions.currentOptionsMode = 3;
         }
 
         public void Update()

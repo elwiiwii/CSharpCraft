@@ -8,10 +8,10 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class KeyboardOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
+    public class KeyboardOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
     {
 
-        public string GameModeName { get => "options"; }
+        public string GameModeName { get => "4"; }
 
         private int menuX;
         private int menuY;
@@ -20,9 +20,14 @@ namespace CSharpCraft
         private bool waitingForInput;
         private int delay;
 
-        private int Loop(int sel, int size)
+        private int LoopX(int sel, int size)
         {
             return ((sel % size) + size) % size;
+        }
+
+        private int LoopY(int sel, int size)
+        {
+            return sel > size - 1 ? 0 : sel < -1 ? -1 : sel;
         }
 
         public void Init()
@@ -33,10 +38,19 @@ namespace CSharpCraft
             menuLength = typeof(KeyboardOptionsFile).GetProperties().Length;
             waitingForInput = false;
             delay = 0;
+            mainOptions.currentOptionsMode = 4;
         }
 
         public void Update()
         {
+            if (menuY == -1)
+            {
+                if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
+                if (p8.Btnp(2)) { optionsModes[2].Init(); return; }
+                if (p8.Btnp(3)) { menuY += 1; }
+                return;
+            }
+
             if (p8.Btnp(5)) { waitingForInput = true; }
 
             if (waitingForInput)
@@ -78,16 +92,8 @@ namespace CSharpCraft
             if (p8.Btnp(2)) { menuY -= 1; }
             if (p8.Btnp(3)) { menuY += 1; }
             
-            if (menuY == -1)
-            {
-                if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
-                if (p8.Btnp(2)) { optionsModes[2].Init(); return; }
-                if (p8.Btnp(3)) { menuY += 1; }
-                return;
-            }
-
-            menuX = Loop(menuX, menuWidth);
-            menuY = Loop(menuY, menuLength);
+            menuX = LoopX(menuX, menuWidth);
+            menuY = LoopY(menuY, menuLength);
 
         }
 
@@ -111,14 +117,22 @@ namespace CSharpCraft
             }
             else
             {
-                //p8.Rectfill(17, 32, 51, 38, 13);
+                batch.Draw(textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
+                if (menuY >= 0)
+                {
+                    var position5 = new Vector2((46 + (36 * menuX)) * cellW, ((menuY * 6) + 55) * cellH);
+                    batch.Draw(textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                }
+                else
+                {
+                    p8.Rectfill(17, 32, 51, 38, 13);
+                }
+                
                 var position3 = new Vector2(16 * cellW, 31 * cellH);
                 var position4 = new Vector2(30 * cellW, 31 * cellH);
                 batch.Draw(textureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 batch.Draw(textureDictionary["SelectorHalf"], position4, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-
-                batch.Draw(textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
                 p8.Print("keyboard", 19, 33, 7);
                 p8.Print("controller", 19 + 54, 33, 7);
@@ -134,12 +148,6 @@ namespace CSharpCraft
                     j += 6;
                 }
 
-                if (menuY >= 0)
-                {
-                    var position5 = new Vector2((46 + (36 * menuX)) * cellW, ((menuY * 6) + 55) * cellH);
-                    batch.Draw(textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-                }
-                
             }
             
         }

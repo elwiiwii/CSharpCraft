@@ -9,19 +9,20 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class BackOptions1(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes) : IGameMode
+    public class BackOptions1(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions, TitleScreen titleScreen) : IGameMode
     {
 
-        public string GameModeName { get => "options"; }
+        public string GameModeName { get => "0"; }
 
         public void Init()
         {
-
+            mainOptions.currentOptionsMode = 0;
         }
 
         public void Update()
         {
             if (p8.Btnp(3)) { optionsModes[2].Init(); return; }
+            if (p8.Btnp(4) || p8.Btnp(5)) { titleScreen.currentGameMode = 0; return; }
         }
 
         public void Draw()
