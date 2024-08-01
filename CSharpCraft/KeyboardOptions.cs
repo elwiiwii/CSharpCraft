@@ -20,7 +20,7 @@ namespace CSharpCraft
         private bool waitingForInput;
         private int delay;
 
-        private int LoopX(int sel, int size)
+        private int Loop(int sel, int size)
         {
             return ((sel % size) + size) % size;
         }
@@ -92,7 +92,7 @@ namespace CSharpCraft
             if (p8.Btnp(2)) { menuY -= 1; }
             if (p8.Btnp(3)) { menuY += 1; }
             
-            menuX = LoopX(menuX, menuWidth);
+            menuX = Loop(menuX, menuWidth);
             menuY = LoopY(menuY, menuLength);
 
         }
