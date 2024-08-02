@@ -290,7 +290,13 @@ namespace CSharpCraft
         }
 
 
-        public int MgetOld(double celx, double cely)
+        public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
+        {
+
+        }
+
+
+            public int MgetOld(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
