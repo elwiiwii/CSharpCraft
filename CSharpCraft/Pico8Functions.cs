@@ -292,7 +292,16 @@ namespace CSharpCraft
 
         public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
         {
+            if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
+            {
+                var var1 = spriteSheet1.ToCharArray((spriteSheet1.Length / 2) - 1, len);
 
+                for (int i = 0; i < 64; i++)
+                {
+
+                    if (i % var1.Length == var1.Length - 1) { i += 128 - var1.Length; }
+                }
+            }
         }
 
 
