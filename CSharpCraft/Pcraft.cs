@@ -429,8 +429,8 @@ namespace CSharpCraft
     
         private void ResetLevel()
         {
-            //p8.Reload();
-            //p8.Memcpy(0x1000, 0x2000, 0x1000);
+            p8.Reload();
+            p8.Memcpy(0x1000, 0x2000, 0x1000);
 
             prot = 0.0;
             lrot = 0.0;
@@ -1203,8 +1203,8 @@ namespace CSharpCraft
                             }
                             if (hit == grwater && curItem.Type == boat)
                             {
-                                //p8.Reload();
-                                //p8.Memcpy(0x1000,0x2000,0x1000);
+                                p8.Reload();
+                                p8.Memcpy(0x1000,0x2000,0x1000);
                                 curMenu = winMenu;
                                 p8.Music(4);
                             }
@@ -1284,8 +1284,8 @@ namespace CSharpCraft
         
             if (plife <= 0)
             {
-                //p8.Reload();
-                //p8.Memcpy(0x1000, 0x2000, 0x1000);
+                p8.Reload();
+                p8.Memcpy(0x1000, 0x2000, 0x1000);
                 curMenu = deathMenu;
                 p8.Music(4);
             }

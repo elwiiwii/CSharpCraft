@@ -8,10 +8,11 @@ namespace CSharpCraft
 {
     public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile) : IDisposable
     {
-        private readonly Dictionary<int, Texture2D> spriteTextures = [];
+        private Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
-        private int[] Map2 = new int[32 * 32];
         private (int, int) CameraOffset = (0, 0);
+        private char[] spriteSheet1 = new char[128 * 128];
+        private SpriteSheets spriteSheets = new();
 
         public List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
@@ -25,7 +26,7 @@ namespace CSharpCraft
         public bool prev3 = false;
         public bool prev4 = false;
         public bool prev5 = false;
-        
+
         private static Color HexToColor(string hex)
         {
             hex = hex.TrimStart('#');
@@ -268,6 +269,8 @@ namespace CSharpCraft
             Array.Copy(colors, resetColors, colors.Length);
             Array.Copy(colors, sprColors, colors.Length);
             Array.Copy(colors, resetSprColors, colors.Length);
+
+            spriteSheet1 = spriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
         }
 
 
@@ -294,18 +297,13 @@ namespace CSharpCraft
         {
             if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
             {
-                var var1 = spriteSheet1.ToCharArray((spriteSheet1.Length / 2) - 1, len);
-
-                for (int i = 0; i < 64; i++)
-                {
-
-                    if (i % var1.Length == var1.Length - 1) { i += 128 - var1.Length; }
-                }
+                var secondHalf = spriteSheets.SpriteSheet2.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+                secondHalf.CopyTo(spriteSheet1, secondHalf.Length);
             }
         }
 
 
-            public int MgetOld(double celx, double cely)
+        public int MgetOld(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
@@ -422,7 +420,7 @@ namespace CSharpCraft
         public void Palt(double col, bool t) // https://pico-8.fandom.com/wiki/Palt
         {
             int colFlr = (int)Math.Floor(col);
-            
+
             if (t)
             {
                 sprColors[colFlr] = sprColors[0];
@@ -498,7 +496,7 @@ namespace CSharpCraft
             // Calculate the position and size of the line
             Vector2 position = new((xFlr - CameraOffset.Item1) * cellWidth, (yFlr - CameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
-            
+
             // Draw the line
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
@@ -537,6 +535,14 @@ namespace CSharpCraft
         }
 
 
+        public void Reload() // https://pico-8.fandom.com/wiki/Reload
+        {
+            spriteSheet1 = spriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+            Map1 = new int[128 * 64];
+            spriteTextures = [];
+        }
+
+
         public double Rnd(double limit = 1.0) // https://pico-8.fandom.com/wiki/Rnd
         {
             Random random = new();
@@ -567,16 +573,16 @@ namespace CSharpCraft
                 }
 
                 SoundEffectInstance instance = soundEffectDictionary[$"sfx_{nFlr}"].CreateInstance();
-                
+
                 c.Add(instance);
-                
+
                 instance.Play();
             }
             else
             {
                 return;
             }
-            
+
         }
 
 
@@ -670,7 +676,7 @@ namespace CSharpCraft
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = CreateTextureFromSpriteData(spriteSheets.SpriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -748,7 +754,7 @@ namespace CSharpCraft
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr, shFlr);
+                texture = CreateTextureFromSpriteData(spriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr, shFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -786,7 +792,7 @@ namespace CSharpCraft
                 texture.Dispose();
             }
             spriteTextures.Clear();
-            
+
             //if (channelMusic != null)
             //{
             //    foreach (var song in channelMusic)
