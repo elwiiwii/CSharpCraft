@@ -10,8 +10,10 @@ namespace CSharpCraft
     {
         private readonly Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
-        private int[] Map2 = new int[32 * 32];
-        private (int, int) CameraOffset = (0, 0);
+        private (int, int) cameraOffset = (0, 0);
+        private string spriteSheet1 = new(SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+        private string map1 = new(MapFiles.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+        private char[] map1Array = [];
 
         public List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
@@ -151,7 +153,7 @@ namespace CSharpCraft
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
 
-            CameraOffset = (xFlr, yFlr);
+            cameraOffset = (xFlr, yFlr);
         }
 
 
@@ -192,7 +194,7 @@ namespace CSharpCraft
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
                         // Calculate the position and size of the line
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 position = new((i - cameraOffset.Item1) * cellWidth, (j - cameraOffset.Item2) * cellHeight);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
@@ -232,7 +234,7 @@ namespace CSharpCraft
                     if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                     {
                         // Calculate the position and size
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 position = new((i - cameraOffset.Item1) * cellWidth, (j - cameraOffset.Item2) * cellHeight);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
@@ -268,6 +270,8 @@ namespace CSharpCraft
             Array.Copy(colors, resetColors, colors.Length);
             Array.Copy(colors, sprColors, colors.Length);
             Array.Copy(colors, resetSprColors, colors.Length);
+            
+            map1Array = map1.ToCharArray();
         }
 
 
@@ -290,12 +294,28 @@ namespace CSharpCraft
         }
 
 
+        public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
+        {
+            return;
+            if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
+            {
+                var var1 = spriteSheet1.ToCharArray((spriteSheet1.Length / 2) - 1, len);
+
+                for (int i = 0; i < 64; i++)
+                {
+
+                    if (i % var1.Length == var1.Length - 1) { i += 128 - var1.Length; }
+                }
+            }
+        }
+
+
         public int MgetOld(double celx, double cely)
         {
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
 
-            string MapData = new(MapFile.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+            string MapData = new(MapFiles.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
             char c = MapData[xFlr + (yFlr * 128)];
 
@@ -317,10 +337,20 @@ namespace CSharpCraft
 
         public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
         {
-            int xFlr = (int)Math.Floor(celx);
-            int yFlr = (int)Math.Floor(cely);
+            int celxFlr = (int)Math.Floor(celx);
+            int celyFlr = (int)Math.Floor(cely);
 
-            int mval = Map1[xFlr + (yFlr * 128)];
+            char schar = map1Array[celxFlr + (celyFlr * 128)];
+            int mval = 0;
+
+            if (schar >= 48 && schar <= 57)
+            {
+                mval = schar - '0';
+            }
+            else if (schar >= 97 && schar <= 102)
+            {
+                mval = 10 + schar - 'a';
+            }
 
             return mval;
         }
@@ -335,11 +365,21 @@ namespace CSharpCraft
 
         public void Mset(double celx, double cely, double snum = 0) // https://pico-8.fandom.com/wiki/Mset
         {
-            int xFlr = (int)Math.Floor(celx);
-            int yFlr = (int)Math.Floor(cely);
-            int sFlr = (int)Math.Floor(snum);
+            int celxFlr = (int)Math.Floor(celx);
+            int celyFlr = (int)Math.Floor(cely);
+            int snumFlr = (int)Math.Floor(snum);
+            char schar = '0';
 
-            Map1[xFlr + (yFlr * 128)] = sFlr;
+            if (snumFlr >= 0 && snumFlr <= 9)
+            {
+                schar = Convert.ToChar(snumFlr + '0');
+            }
+            else if (snumFlr >= 10 && snumFlr <= 15)
+            {
+                schar = Convert.ToChar(snumFlr + 'a');
+            }
+
+            map1Array[celxFlr + (celyFlr * 128)] = schar;
         }
 
 
@@ -450,9 +490,9 @@ namespace CSharpCraft
                     {
                         if (Font.chars[letter][i, j] == 1)
                         {
-                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
-                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
+                            var charStartX = (s * charWidth + xFlr + j - cameraOffset.Item1) * cellWidth;
+                            //var charEndX = charStartX + cellWidth - cameraOffset.Item1;
+                            var charStartY = (yFlr + i - cameraOffset.Item2) * cellHeight;
 
                             Vector2 position = new Vector2(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
@@ -481,7 +521,7 @@ namespace CSharpCraft
             int cellHeight = viewportHeight / 128;
 
             // Calculate the position and size of the line
-            Vector2 position = new((xFlr - CameraOffset.Item1) * cellWidth, (yFlr - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new((xFlr - cameraOffset.Item1) * cellWidth, (yFlr - cameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             
             // Draw the line
@@ -505,13 +545,13 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
+            var rectStartX = (x1Flr - cameraOffset.Item1) * cellWidth;
+            var rectStartY = (y1Flr - cameraOffset.Item2) * cellHeight;
 
             var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
             var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
 
-            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            //var rectEndX = (x2Flr - cameraOffset.Item1) * cellWidth;
             //var rectThickness = (y2Flr - y1Flr) * cellHeight;
             //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
 
@@ -519,6 +559,13 @@ namespace CSharpCraft
             Vector2 size = new(rectSizeX, rectSizeY);
 
             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        }
+
+
+        public void Reload() // https://pico-8.fandom.com/wiki/Reload
+        {
+            spriteSheet1 = new(SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+            map1Array = map1.ToCharArray();
         }
 
 
@@ -655,7 +702,7 @@ namespace CSharpCraft
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(SpriteSheets.SpriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -667,7 +714,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? xFlr + (2 * spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (2 * spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? xFlr + (2 * spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) - cameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (2 * spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) - cameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
@@ -745,7 +792,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? dxFlr + (2 * spriteWidth * swFlr) - spriteWidth : dxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + (2 * spriteHeight * shFlr) - spriteHeight : dyFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? dxFlr + (2 * spriteWidth * swFlr) - spriteWidth : dxFlr + spriteWidth) - cameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + (2 * spriteHeight * shFlr) - spriteHeight : dyFlr + spriteHeight) - cameraOffset.Item2) * cellHeight);
             Vector2 size = new(dwFlr * cellWidth, dhFlr * cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
