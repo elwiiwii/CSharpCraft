@@ -141,7 +141,7 @@ namespace CSharpCraft
         11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
         ";
 
-        public static readonly string SpriteSheet2 = @"
+        public static string SpriteSheet2 = @"
         cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfcccccccccccccccccccccccccccc
         ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccf4cccccccccccccccccccccccccccc
         cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccf44cccccccccccccccccccccccccccc
