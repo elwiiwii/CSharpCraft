@@ -430,7 +430,7 @@ namespace CSharpCraft
         private void ResetLevel()
         {
             p8.Reload();
-            p8.Memcpy(0x1000, 0x2000, 0x1000);
+            //p8.Memcpy(0x1000, 0x2000, 0x1000);
 
             prot = 0.0;
             lrot = 0.0;

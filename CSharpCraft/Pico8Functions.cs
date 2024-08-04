@@ -12,7 +12,6 @@ namespace CSharpCraft
         private int[] Map1 = new int[128 * 64];
         private (int, int) CameraOffset = (0, 0);
         private char[] spriteSheet1 = new char[128 * 128];
-        private SpriteSheets spriteSheets = new();
 
         public List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
@@ -86,9 +85,9 @@ namespace CSharpCraft
         //    this.resetColors = colors;
         //}
 
-        private Texture2D CreateTextureFromSpriteData(string spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
+        private Texture2D CreateTextureFromSpriteData(char[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
-            spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
+            //spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
             Texture2D texture = new(graphicsDevice, spriteWidth, spriteHeight);
 
@@ -270,7 +269,7 @@ namespace CSharpCraft
             Array.Copy(colors, sprColors, colors.Length);
             Array.Copy(colors, resetSprColors, colors.Length);
 
-            spriteSheet1 = spriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
         }
 
 
@@ -297,7 +296,7 @@ namespace CSharpCraft
         {
             if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
             {
-                var secondHalf = spriteSheets.SpriteSheet2.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+                var secondHalf = SpriteSheets.SpriteSheet2.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
                 secondHalf.CopyTo(spriteSheet1, secondHalf.Length);
             }
         }
@@ -537,7 +536,7 @@ namespace CSharpCraft
 
         public void Reload() // https://pico-8.fandom.com/wiki/Reload
         {
-            spriteSheet1 = spriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
             Map1 = new int[128 * 64];
             spriteTextures = [];
         }
@@ -676,7 +675,7 @@ namespace CSharpCraft
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(spriteSheets.SpriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -754,7 +753,7 @@ namespace CSharpCraft
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(spriteSheets.SpriteSheet1, sxFlr, syFlr, swFlr, shFlr);
+                texture = CreateTextureFromSpriteData(spriteSheet1, sxFlr, syFlr, swFlr, shFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
