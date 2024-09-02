@@ -28,6 +28,7 @@ namespace CSharpCraft
         private Pcraft pcraft;
         private TitleScreen titleScreen;
         private MainOptions mainOptions;
+        private MainRace mainRace;
 
         private BackOptions1 backOptions1;
         private BackOptions2 backOptions2;
@@ -94,6 +95,7 @@ namespace CSharpCraft
 
             gameModes.Add(titleScreen);
             gameModes.Add(pcraft);
+            gameModes.Add(mainRace);
             gameModes.Add(mainOptions);
 
             optionsModes.Add(backOptions1);
@@ -251,6 +253,8 @@ namespace CSharpCraft
             p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
             pcraft = new Pcraft(p8);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
+
+            mainRace = new MainRace(p8, textureDictionary, batch, GraphicsDevice);
 
             mainOptions = new MainOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
             backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
