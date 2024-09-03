@@ -23,9 +23,9 @@ namespace CSharpCraft
         {
             // The port number must match the port of the gRPC server.
             using var channel = GrpcChannel.ForAddress("http://localhost:5072");
-            var client = new Greeter.GreeterClient(channel);
-            var reply = client.SayHello(
-                              new HelloRequest { Name = "GreeterClient" });
+            var client = new RoomHandler.RoomHandlerClient(channel);
+            var reply = client.JoinRoom(
+                              new JoinRequest { Name = "Client" });
             greeting = reply.Message;
             //Console.WriteLine("Greeting: " + reply.Message);
             //Console.WriteLine("Press any key to exit...");
