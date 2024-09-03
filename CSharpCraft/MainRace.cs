@@ -6,6 +6,9 @@ using System;
 using System.Drawing;
 using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
+using System.Threading.Tasks;
+using Grpc.Net.Client;
+using RaceServer;
 
 namespace CSharpCraft
 {
@@ -14,9 +17,19 @@ namespace CSharpCraft
 
         public string GameModeName { get => "race"; }
 
+        private string greeting;
+
         public void Init()
         {
-            
+            // The port number must match the port of the gRPC server.
+            using var channel = GrpcChannel.ForAddress("http://localhost:5072");
+            var client = new Greeter.GreeterClient(channel);
+            var reply = client.SayHello(
+                              new HelloRequest { Name = "GreeterClient" });
+            greeting = reply.Message;
+            //Console.WriteLine("Greeting: " + reply.Message);
+            //Console.WriteLine("Press any key to exit...");
+            //Console.ReadKey();
         }
 
         public void Update()
@@ -26,7 +39,8 @@ namespace CSharpCraft
 
         public void Draw()
         {
-            
+            p8.Cls();
+            p8.Print(greeting, 1, 1, 8);
         }
 
     }
