@@ -11,14 +11,20 @@ service RoomHandler
     rpc JoinRoom (JoinRequest) returns (JoinResponse);
 }
 
+message PlayerInfo
+{
+    string name = 1;
+    string type = 2;
+}
+
 // The request message containing the user's name.
 message JoinRequest
 {
-    string name = 1;
+    PlayerInfo player_info = 1;
 }
 
 // The response message containing the greetings.
 message JoinResponse
 {
-    string message = 1;
+    repeated PlayerInfo player_list = 1;
 }

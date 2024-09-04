@@ -2,6 +2,11 @@
 {
     public class Room
     {
-        public List<string> PlayerList { get; set; }
+        public Room()
+        {
+            PlayerList = new List<Player>();
+        }
+
+        public List<Player> PlayerList { get; set; }
     }
 }
