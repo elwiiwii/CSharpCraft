@@ -11,6 +11,11 @@ service RoomHandler
     rpc JoinRoom (JoinRequest) returns (JoinResponse);
 }
 
+service StreamTest
+{
+    rpc SendMessage (stream ClientToServerMessage) returns (stream ServerToClientMessage);
+}
+
 message PlayerInfo
 {
     string name = 1;
@@ -27,4 +32,14 @@ message JoinRequest
 message JoinResponse
 {
     repeated PlayerInfo player_list = 1;
+}
+
+message ClientToServerMessage
+{
+    string text = 1;
+}
+
+message ServerToClientMessage
+{
+    string text = 1;
 }

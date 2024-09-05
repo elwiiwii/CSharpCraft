@@ -18,6 +18,7 @@ namespace CSharpCraft
         public string GameModeName { get => "race"; }
 
         private List<PlayerInfo> playerList;
+        private string ping;
         //private Player playerInfo = new();
 
         public void Init()
@@ -37,19 +38,27 @@ namespace CSharpCraft
 
         public void Update()
         {
-            
+            if (p8.Btnp(5))
+            {
+                using var channel = GrpcChannel.ForAddress("http://localhost:5072");
+                var client = new StreamTest.StreamTestClient(channel);
+                var reply = client.SendMessage(
+                                  new ClientToServerMessage { Text = "buh" });
+                ping = reply.Text;
+            }
         }
 
         public void Draw()
         {
             p8.Cls();
             //p8.Print(playerList, 1, 1, 8);
-            int i = 0;
-            foreach (var player in playerList)
-            {
-                p8.Print(player.Name, 1, 1 + (i*6), 8);
-                i++;
-            }
+            //int i = 0;
+            //foreach (var player in playerList)
+            //{
+            //    p8.Print(player.Name, 1, 1 + (i*6), 8);
+            //    i++;
+            //}
+            p8.Print(ping, 1, 1, 8);
         }
 
     }
