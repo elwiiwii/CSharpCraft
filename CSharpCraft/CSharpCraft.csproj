@@ -204,8 +204,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Protobuf Include="..\RaceServer\Protos\greet.proto">
-	    <Link>Protos\greet.proto</Link>
+	  <Protobuf Include="..\RaceServer\Protos\gameservice.proto">
+	    <Link>Protos\gameservice.proto</Link>
 	  </Protobuf>
 	</ItemGroup>
 
