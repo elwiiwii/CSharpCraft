@@ -28,6 +28,7 @@ namespace CSharpCraft
         private static ConcurrentDictionary<int, string> playerDictionary = new();
 
         private static bool joinedRoom;
+        private KeyboardState prevState;
 
         public string GameModeName { get => "race"; }
 
@@ -35,16 +36,22 @@ namespace CSharpCraft
         {
             channel = GrpcChannel.ForAddress("https://localhost:5072");
             service = new GameService.GameServiceClient(channel);
+            prevState = Keyboard.GetState();
         }
 
         public async void Update()
         {
             KeyboardState state = Keyboard.GetState();
-            if (state.IsKeyDown(Keys.Q))
+
+            if (state.IsKeyDown(Keys.LeftShift) && state.IsKeyDown(Keys.Q))
             {
                 CancellationTokenSource.Cancel(); // Cancel the listening task
                 RoomJoiningStream?.Dispose(); // Dispose of the stream
             }
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) => {
+                CancellationTokenSource.Cancel(); // Cancel the listening task
+                RoomJoiningStream?.Dispose(); // Dispose of the stream
+            };
 
             foreach (var key in state.GetPressedKeys())
             {
@@ -58,34 +65,71 @@ namespace CSharpCraft
                 {
                     userName.Value = userName.Value.Substring(0, userName.Value.Length - 1);
                 }
-                else if (key != Keys.Back)
+                else if (key.ToString().Length == 1 && userName.Value.Length < 15)
                 {
-                    userName.Value += key.ToString();
+                    var keyMatch = false;
+                    foreach (var prevKey in prevState.GetPressedKeys())
+                    {
+                        if (key == prevKey) { keyMatch = true; break; }
+                    }
+                    if (!keyMatch) { userName.Value += key.ToString().ToLower(); }
                 }
             }
 
-
+            prevState = state;
         }
 
         public void Draw()
         {
             p8.Cls();
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellW = viewportWidth / 128;
+            int cellH = viewportHeight / 128;
+
+            Vector2 size = new(cellW, cellH);
+            Vector2 halfSize = new(cellW / 2, cellH / 2);
+
             if (!joinedRoom)
             {
-                p8.Print("enter your name", 1, 1, 8);
-                p8.Print(userName.Value, 1, 6, 8);
+                batch.Draw(textureDictionary["SelectorHalf"], new Vector2(31 * cellW, 59 * cellH), null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                batch.Draw(textureDictionary["SelectorHalf"], new Vector2(73 * cellW, 59 * cellH), null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                p8.Rectfill(54, 59, 72, 67, 7);
+                p8.Rectfill(54, 60, 72, 66, 0);
+                Printc("enter your name", 64, 53, 7);
+                Printc(userName.Value, 64, 61, 13);
+
+                batch.Draw(textureDictionary["SmallSelector"], new Vector2(24 * cellW, 69 * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Print("back", 27, 71, 6);
+
+                batch.Draw(textureDictionary["SelectorHalf"], new Vector2(47 * cellW, 69 * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                batch.Draw(textureDictionary["SelectorHalf"], new Vector2(57 * cellW, 69 * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                p8.Print("join as", 50, 71, 6);
+
+                batch.Draw(textureDictionary["SmallSelector"], new Vector2(82 * cellW, 69 * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                batch.Draw(textureDictionary["SpectatorIcon"], new Vector2(85 * cellW, 71 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                batch.Draw(textureDictionary["Arrow"], new Vector2(95 * cellW, 75 * cellH), null, p8.colors[6], -1.57f, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {
-                p8.Print("players in room", 1, 1, 8);
+                Printc("players in room", 64, 5, 8);
                 int i = 0;
                 foreach (var player in playerDictionary.Values)
                 {
-                    p8.Print(player, 1, 6 + (i * 6), 8);
+                    p8.Print(player, 34, 13 + (i * 6), 8);
                     i++;
                 }
             }
             
+        }
+
+        private void Printc(string t, int x, int y, int c)
+        {
+            p8.Print(t, x - t.Length * 2, y, c);
         }
 
         private static async Task JoinRoom()

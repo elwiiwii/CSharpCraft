@@ -23,9 +23,12 @@
 		<None Remove="Content\Graphics\OptionsBackground6.png" />
 		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
 		<None Remove="Content\Graphics\OptionsMenuTab.png" />
+		<None Remove="Content\Graphics\PlayerIcon.png" />
 		<None Remove="Content\Graphics\SelectorBorder.png" />
 		<None Remove="Content\Graphics\SelectorCenter.png" />
 		<None Remove="Content\Graphics\SelectorHalf.png" />
+		<None Remove="Content\Graphics\SmallSelector.png" />
+		<None Remove="Content\Graphics\SpectatorIcon.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Music\music_0.wav" />
@@ -76,6 +79,9 @@
 		<Content Include="Content\Graphics\OptionsMenuTab.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Graphics\PlayerIcon.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Graphics\SelectorBorder.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -83,6 +89,12 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SelectorHalf.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SmallSelector.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SpectatorIcon.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SpriteSheet1.png">
