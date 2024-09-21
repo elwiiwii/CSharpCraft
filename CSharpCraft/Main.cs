@@ -25,7 +25,7 @@ namespace CSharpCraft
         private KeyboardOptionsFile keyboardOptionsFile;
         private List<IGameMode> optionsModes = [];
         private Pico8Functions p8;
-        private Pcraft pcraft;
+        private PcraftSingleplayer pcraftSingleplayer;
         private TitleScreen titleScreen;
         private MainOptions mainOptions;
         private MainRace mainRace;
@@ -50,6 +50,7 @@ namespace CSharpCraft
         //private Texture2D optionsMenuTab;
         private Texture2D pixel;
         //private Texture2D selectorHalf;
+        private KeyboardState prevState;
 
 #nullable disable
 
@@ -79,7 +80,7 @@ namespace CSharpCraft
             graphics.SynchronizeWithVerticalRetrace = true;
 
             keyboardOptionsFile = KeyboardOptionsFile.Initialize();
-
+            prevState = Keyboard.GetState();
         }
 
 
@@ -94,7 +95,7 @@ namespace CSharpCraft
             p8.Init();
 
             gameModes.Add(titleScreen);
-            gameModes.Add(pcraft);
+            gameModes.Add(pcraftSingleplayer);
             gameModes.Add(mainRace);
             gameModes.Add(mainOptions);
 
@@ -128,9 +129,9 @@ namespace CSharpCraft
             {
                 gameModes[currentGameMode].Update();
                 
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R)) { gameModes[currentGameMode].Init(); }
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R)) { gameModes[currentGameMode].Init(); }
 
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
                 {
                     if (currentGameMode > 0)
                     {
@@ -153,6 +154,8 @@ namespace CSharpCraft
             //}
 
             p8.Update();
+
+            prevState = state;
 
             base.Update(gameTime);
         }
@@ -251,12 +254,12 @@ namespace CSharpCraft
             }
 
             p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
-            pcraft = new Pcraft(p8);
+            pcraftSingleplayer = new PcraftSingleplayer(p8);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
 
             mainRace = new MainRace(p8, textureDictionary, batch, GraphicsDevice);
 
-            mainOptions = new MainOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes);
+            mainOptions = new MainOptions(optionsModes);
             backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
             backOptions2 = new BackOptions2(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
             controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);

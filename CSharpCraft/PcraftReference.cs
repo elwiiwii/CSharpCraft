@@ -2,11 +2,8 @@
 namespace CSharpCraft
 {
 
-    public class Pcraft(Pico8Functions p8) : IGameMode
+    public class PcraftReference(Pico8Functions p8)
     {
-
-        public string GameModeName { get => "pcraft"; }
-
         private readonly Pico8Functions p8 = p8;
 
 #nullable enable
@@ -164,7 +161,7 @@ namespace CSharpCraft
         private Entity deathMenu = Cmenu(inventary, null, 128, "you died", "alone ...");
         private Entity winMenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
     
-        static Pcraft()
+        static PcraftReference()
         {
             apple.GiveLife = 20;
     
@@ -476,7 +473,7 @@ namespace CSharpCraft
             p8.Add(invent, Inst(pickuptool));
         }
     
-        public void Init()
+        private void Init()
         {
             p8.Music(4, 10000);
 
@@ -703,7 +700,7 @@ namespace CSharpCraft
             return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
         }
         
-        public void Update()
+        private void Update()
         {
             if (curMenu != null)
             {
@@ -1914,7 +1911,7 @@ namespace CSharpCraft
             if (m > v) { p8.Rectfill(pe, py, pe2 - 1, py + 3, 10); }
         }
     
-        public void Draw()
+        private void Draw()
         {
             if (curMenu != null && curMenu.Spr != null)
             {
