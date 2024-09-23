@@ -12,11 +12,13 @@ using Grpc.Net.Client;
 using RaceServer;
 using System.Threading.Channels;
 using System.Collections.Concurrent;
+using System.Security.Principal;
 
 namespace CSharpCraft
 {
     public class MainRace(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice) : IGameMode
     {
+#nullable enable
         private static CancellationTokenSource CancellationTokenSource = new();
         private static AsyncServerStreamingCall<JoinRoomResponse> RoomJoiningStream;
         //TODO channel is disposable
@@ -24,30 +26,32 @@ namespace CSharpCraft
         private static GameService.GameServiceClient service;
 
         private static ConcurrentString userName = new();
-        private static ConcurrentString joinMessage = new();
+        private static ConcurrentString role = new();
+        //private static ConcurrentString joinMessage = new();
         private static ConcurrentDictionary<int, string> playerDictionary = new();
 
         private static bool joinedRoom;
         private KeyboardState prevState;
         private int menuState;
         private string prompt;
-        private string role;
+#nullable disable
 
         public string GameModeName { get => "race"; }
 
-        public async void Init()
+        public void Init()
         {
             CancellationTokenSource = new();
             channel = GrpcChannel.ForAddress("https://localhost:5072");
             service = new GameService.GameServiceClient(channel);
             userName = new();
-            joinMessage = new();
+            role = new();
+            role.Value = "Player";
+            //joinMessage = new();
             playerDictionary = new();
             joinedRoom = false;
             prevState = Keyboard.GetState();
             menuState = 0;
             prompt = "";
-            role = "Player";
         }
 
         private void TypingHandling(Keys key, ConcurrentString @string)
@@ -112,7 +116,7 @@ namespace CSharpCraft
                         prompt = "choose your role";
                         if (p8.Btnp(2) || p8.Btnp(3))
                         {
-                            role = role == "Player" ? "Spectator" : "Player";
+                            role.Value = role.Value == "Player" ? "Spectator" : "Player";
                         }
                         else if (state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter))
                         {
@@ -205,7 +209,7 @@ namespace CSharpCraft
             //Console.WriteLine("Join as (1) Player or (2) Spectator?");
             //var role = Console.ReadKey().KeyChar == '1' ? "Player" : "Spectator";
 
-            RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { UserName = userName.Value });
+            RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { UserName = userName.Value, Role = role.Value });
 
             // Run the listening logic in a separate task
 
@@ -217,7 +221,7 @@ namespace CSharpCraft
             await foreach (var response in RoomJoiningStream.ResponseStream.ReadAllAsync(CancellationTokenSource.Token))
             {
                 // response.Message needs to be written to a ConcurrentString (see ConcurrentString.cs), which the draw method can draw from
-                joinMessage.Value = response.Message; // roomJoiningMessage is displayed later in 'draw'
+                //joinMessage.Value = response.Message; // roomJoiningMessage is displayed later in 'draw'
                 //Console.WriteLine(response.Message);
 
                 // this would be in 'draw'
@@ -226,7 +230,7 @@ namespace CSharpCraft
                 // this would write to a ConcurrentDictionary of players, which the draw method can draw from
                 playerDictionary.Clear();
                 var dummyIndex = 1;
-                foreach (var player in response.Players)
+                foreach (var player in response.Users)
                 {
                     Console.WriteLine(player);
                     playerDictionary.TryAdd(dummyIndex, player);

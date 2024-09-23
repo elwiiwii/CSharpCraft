@@ -6,40 +6,37 @@ namespace RaceServer
     public class Room(string name)
     {
         public string Name { get; } = name;
-        private readonly List<Player> players = new();
-        private readonly List<Spectator> spectators = new();
+        private readonly List<User> users = new();
 
-        public IReadOnlyList<Player> Players => players;
-        public IReadOnlyList<Spectator> Spectators => spectators;
+        public IReadOnlyList<User> Users => users;
 
-        public void AddPlayer(Player player)
+        public int bestOf { get; set; } = 5;
+        public string category { get; set; } = "any%";
+        public int finishers { get; set; } = 1;
+        public bool unbans { get; set; } = true;
+        public int seedType { get; set; } = 0;
+        public (int, int) advantage { get; set; } = (0, 0);
+
+        public void AddPlayer(User user)
         {
-            players.Add(player);
-        }
-
-        public void AddSpectator(Spectator spectator)
-        {
-            spectators.Add(spectator);
+            users.Add(user);
         }
 
         public void RemovePlayer(string name)
         {
-            var player = players.FirstOrDefault(p => p.Name == name);
+            var user = users.FirstOrDefault(p => p.Name == name);
 
-            if (player != null)
+            if (user != null)
             {
-                players.Remove(player);
+                users.Remove(user);
             }
         }
     }
 
-    public class Player
+    public class User
     {
         public string Name { get; init; }
-    }
-
-    public class Spectator
-    {
-        public string Name { get; init; }
+        public string Role { get; set; }
+        public bool Host { get; set; }
     }
 }

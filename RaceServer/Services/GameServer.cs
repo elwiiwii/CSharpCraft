@@ -14,17 +14,16 @@ public class GameServer : GameService.GameServiceBase
 
     public override async Task JoinRoom(JoinRoomRequest request, IServerStreamWriter<JoinRoomResponse> responseStream, ServerCallContext context)
     {
-        //todo add as player or user depending on what's in the request
+        //todo add as player or spectator depending on what's in the request
         //todo modify return message depending on whether the user is a player or a spectator
 
         clients.Add(responseStream);
-        room.AddPlayer(new Player { Name = request.UserName });
+        room.AddPlayer(new User { Name = request.UserName, Role = request.Role, Host = room.Users.Count == 0 ? true : false });
 
         var joinMessage = new JoinRoomResponse
         {
             Message = $"{request.UserName} has joined the room.",
-            Players = { room.Players.Select(p => p.Name) },
-            Spectators = { room.Spectators.Select(s => s.Name) }
+            Users = { room.Users.Select(p => p.Name) }
         };
 
         foreach (var client in clients)
@@ -48,8 +47,7 @@ public class GameServer : GameService.GameServiceBase
         joinMessage = new JoinRoomResponse
         {
             Message = $"{request.UserName} has left the room.",
-            Players = { room.Players.Select(p => p.Name) },
-            Spectators = { room.Spectators.Select(s => s.Name) }
+            Users = { room.Users.Select(p => p.Name) }
         };
 
         foreach (var client in clients)
