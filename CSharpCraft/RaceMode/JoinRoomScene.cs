@@ -1,23 +1,16 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Drawing;
-using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
-using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Net.Client;
 using RaceServer;
-using System.Threading.Channels;
 using System.Collections.Concurrent;
-using System.Security.Principal;
 using CSharpCraft.Pico8;
 
-namespace CSharpCraft
+namespace CSharpCraft.RaceMode
 {
-    public class MainRace(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice) : IGameMode
+    public class JoinRoomScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice) : IGameMode
     {
 #nullable enable
         private static CancellationTokenSource CancellationTokenSource = new();
@@ -193,7 +186,7 @@ namespace CSharpCraft
                 int i = 0;
                 foreach (var player in playerDictionary.Values)
                 {
-                    p8.Print(player, 34, 13 + (i * 6), 8);
+                    p8.Print(player, 34, 13 + i * 6, 8);
                     i++;
                 }
             }

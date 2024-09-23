@@ -1,6 +1,7 @@
 ﻿using CSharpCraft.OptionsMenu;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
+using CSharpCraft.RaceMode;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,20 +26,23 @@ namespace CSharpCraft
         private SpriteBatch batch;
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
-        private KeyboardOptionsFile keyboardOptionsFile;
-        private List<IGameMode> optionsModes = [];
         private Pico8Functions p8;
         private PcraftSingleplayer pcraftSingleplayer;
         private TitleScreen titleScreen;
-        private MainOptions mainOptions;
-        private MainRace mainRace;
 
+        private MainRace mainRace;
+        private List<IGameMode> raceModes = [];
+        private JoinRoomScene joinRoomScene;
+
+        private MainOptions mainOptions;
+        private List<IGameMode> optionsModes = [];
         private BackOptions1 backOptions1;
         private BackOptions2 backOptions2;
         private ControlsOptions controlsOptions;
         private GraphicsOptions graphicsOptions;
         private KeyboardOptions keyboardOptions;
         private ControllerOptions controllerOptions;
+        private KeyboardOptionsFile keyboardOptionsFile;
 
         //private List<Texture2D> textures = [];
         //private List<SoundEffect> music = [];
@@ -101,6 +105,8 @@ namespace CSharpCraft
             gameModes.Add(pcraftSingleplayer);
             gameModes.Add(mainRace);
             gameModes.Add(mainOptions);
+
+            raceModes.Add(joinRoomScene);
 
             optionsModes.Add(backOptions1);
             optionsModes.Add(backOptions2);
@@ -261,6 +267,7 @@ namespace CSharpCraft
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
 
             mainRace = new MainRace(p8, textureDictionary, batch, GraphicsDevice);
+            joinRoomScene = new JoinRoomScene(p8, textureDictionary, batch, GraphicsDevice);
 
             mainOptions = new MainOptions(optionsModes);
             backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
