@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using CSharpCraft.Pico8;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -7,7 +8,7 @@ using System.Drawing;
 using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace CSharpCraft
+namespace CSharpCraft.OptionsMenu
 {
     public class GraphicsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
     {
@@ -21,7 +22,7 @@ namespace CSharpCraft
 
         private int Loop(int sel, int size)
         {
-            return ((sel % size) + size) % size;
+            return (sel % size + size) % size;
         }
 
         public void Init()

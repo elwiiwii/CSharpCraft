@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Reflection;
 
-namespace CSharpCraft
+namespace CSharpCraft.OptionsMenu
 {
     public record Binding(string Bind1, string Bind2);
 

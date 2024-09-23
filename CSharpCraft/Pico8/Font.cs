@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace CSharpCraft
+namespace CSharpCraft.Pico8
 {
     public static class Font
     {

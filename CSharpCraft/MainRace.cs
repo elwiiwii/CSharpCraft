@@ -13,6 +13,7 @@ using RaceServer;
 using System.Threading.Channels;
 using System.Collections.Concurrent;
 using System.Security.Principal;
+using CSharpCraft.Pico8;
 
 namespace CSharpCraft
 {

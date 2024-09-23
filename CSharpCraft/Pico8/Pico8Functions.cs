@@ -1,10 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using CSharpCraft.OptionsMenu;
+using CSharpCraft.Pcraft;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace CSharpCraft
+namespace CSharpCraft.Pico8
 {
     public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile) : IDisposable
     {
@@ -95,7 +97,7 @@ namespace CSharpCraft
 
             //int j = 0;
 
-            for (int i = spriteX + (spriteY * 128), j = 0; j < (spriteWidth * spriteHeight); i++, j++)
+            for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
             {
                 char c = spriteData[i];
                 int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
@@ -176,8 +178,8 @@ namespace CSharpCraft
                 for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < xFlr) ? 0.35D : -0.35D;
-                    double offsetY = (j < yFlr) ? 0.35D : -0.35D;
+                    double offsetX = i < xFlr ? 0.35D : -0.35D;
+                    double offsetY = j < yFlr ? 0.35D : -0.35D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
@@ -219,13 +221,13 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            for (int i = (xFlr - rFlr); i <= xFlr + rFlr; i++)
+            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
             {
-                for (int j = (yFlr - rFlr); j <= yFlr + rFlr; j++)
+                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
                 {
                     // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = (i < xFlr) ? 0.35D : -0.35D;
-                    double offsetY = (j < yFlr) ? 0.35D : -0.35D;
+                    double offsetX = i < xFlr ? 0.35D : -0.35D;
+                    double offsetY = j < yFlr ? 0.35D : -0.35D;
                     double gridCenterX = i + offsetX;
                     double gridCenterY = j + offsetY;
 
@@ -269,7 +271,7 @@ namespace CSharpCraft
             Array.Copy(colors, sprColors, colors.Length);
             Array.Copy(colors, resetSprColors, colors.Length);
 
-            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
         }
 
 
@@ -296,35 +298,35 @@ namespace CSharpCraft
         {
             if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
             {
-                var secondHalf = SpriteSheets.SpriteSheet2.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+                var secondHalf = SpriteSheets.SpriteSheet2.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
                 secondHalf.CopyTo(spriteSheet1, secondHalf.Length);
             }
         }
 
 
-        public int MgetOld(double celx, double cely)
-        {
-            int xFlr = (int)Math.Floor(celx);
-            int yFlr = (int)Math.Floor(cely);
-
-            string MapData = new(MapFile.Map1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
-
-            char c = MapData[xFlr + (yFlr * 128)];
-
-            int IntC = 0;
-
-            if (c >= 48 && c <= 57)
-            {
-                IntC = c - '0';
-            }
-            else if (c >= 97 && c <= 102)
-            {
-                IntC = 10 + c - 'a';
-            }
-
-            return IntC;
-
-        }
+        //public int MgetOld(double celx, double cely)
+        //{
+        //    int xFlr = (int)Math.Floor(celx);
+        //    int yFlr = (int)Math.Floor(cely);
+        //
+        //    string MapData = new(MapFile.Map1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray());
+        //
+        //    char c = MapData[xFlr + yFlr * 128];
+        //
+        //    int IntC = 0;
+        //
+        //    if (c >= 48 && c <= 57)
+        //    {
+        //        IntC = c - '0';
+        //    }
+        //    else if (c >= 97 && c <= 102)
+        //    {
+        //        IntC = 10 + c - 'a';
+        //    }
+        //
+        //    return IntC;
+        //
+        //}
 
 
         public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
@@ -332,7 +334,7 @@ namespace CSharpCraft
             int xFlr = (int)Math.Floor(celx);
             int yFlr = (int)Math.Floor(cely);
 
-            int mval = Map1[xFlr + (yFlr * 128)];
+            int mval = Map1[xFlr + yFlr * 128];
 
             return mval;
         }
@@ -351,7 +353,7 @@ namespace CSharpCraft
             int yFlr = (int)Math.Floor(cely);
             int sFlr = (int)Math.Floor(snum);
 
-            Map1[xFlr + (yFlr * 128)] = sFlr;
+            Map1[xFlr + yFlr * 128] = sFlr;
         }
 
 
@@ -536,7 +538,7 @@ namespace CSharpCraft
 
         public void Reload() // https://pico-8.fandom.com/wiki/Reload
         {
-            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
             Map1 = new int[128 * 64];
             spriteTextures = [];
         }
@@ -687,7 +689,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? xFlr + (2 * spriteWidth * wFlr) - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + (2 * spriteHeight * hFlr) - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
@@ -749,7 +751,7 @@ namespace CSharpCraft
                 }
             }
 
-            var spriteNumberFlr = (sxFlr * 100) + (syFlr * 100) + (swFlr * 100) + (shFlr * 100);
+            var spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
@@ -765,7 +767,7 @@ namespace CSharpCraft
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? dxFlr + (2 * spriteWidth * swFlr) - spriteWidth : dxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + (2 * spriteHeight * shFlr) - spriteHeight : dyFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? dxFlr + 2 * spriteWidth * swFlr - spriteWidth : dxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + 2 * spriteHeight * shFlr - spriteHeight : dyFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
             Vector2 size = new(dwFlr * cellWidth, dhFlr * cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 

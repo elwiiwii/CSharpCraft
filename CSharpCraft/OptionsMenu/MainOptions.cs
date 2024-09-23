@@ -7,13 +7,13 @@ using System.Drawing;
 using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace CSharpCraft
+namespace CSharpCraft.OptionsMenu
 {
     public class MainOptions(List<IGameMode> optionsModes) : IGameMode
     {
         //public MainOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes)
         //{
-            
+
         //}
         public string GameModeName { get => "options"; }
 
@@ -27,7 +27,7 @@ namespace CSharpCraft
 
         public void Update()
         {
-            currentOptionsMode = Int32.Parse(optionsModes[currentOptionsMode].GameModeName);
+            currentOptionsMode = int.Parse(optionsModes[currentOptionsMode].GameModeName);
             optionsModes[currentOptionsMode].Update();
         }
 

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CSharpCraft
+namespace CSharpCraft.Pcraft
 {
-    
+
     public class Level
     {
         public double[]? Dat { get; set; }

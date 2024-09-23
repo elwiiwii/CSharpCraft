@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using CSharpCraft.Pico8;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -6,7 +7,7 @@ using System;
 using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace CSharpCraft
+namespace CSharpCraft.OptionsMenu
 {
     public class KeyboardOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
     {
@@ -22,7 +23,7 @@ namespace CSharpCraft
 
         private int Loop(int sel, int size)
         {
-            return ((sel % size) + size) % size;
+            return (sel % size + size) % size;
         }
 
         private int LoopY(int sel, int size)
@@ -91,7 +92,7 @@ namespace CSharpCraft
             if (p8.Btnp(1)) { menuX += 1; }
             if (p8.Btnp(2)) { menuY -= 1; }
             if (p8.Btnp(3)) { menuY += 1; }
-            
+
             menuX = Loop(menuX, menuWidth);
             menuY = LoopY(menuY, menuLength);
 
@@ -121,14 +122,14 @@ namespace CSharpCraft
 
                 if (menuY >= 0)
                 {
-                    var position5 = new Vector2((46 + (36 * menuX)) * cellW, ((menuY * 6) + 55) * cellH);
+                    var position5 = new Vector2((46 + 36 * menuX) * cellW, (menuY * 6 + 55) * cellH);
                     batch.Draw(textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 }
                 else
                 {
                     p8.Rectfill(17, 32, 51, 38, 13);
                 }
-                
+
                 var position3 = new Vector2(16 * cellW, 31 * cellH);
                 var position4 = new Vector2(30 * cellW, 31 * cellH);
                 batch.Draw(textureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -149,7 +150,7 @@ namespace CSharpCraft
                 }
 
             }
-            
+
         }
 
     }

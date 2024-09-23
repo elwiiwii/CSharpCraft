@@ -1,5 +1,6 @@
-﻿
-namespace CSharpCraft
+﻿using CSharpCraft.Pico8;
+
+namespace CSharpCraft.Pcraft
 {
 
     public class PcraftReference(Pico8Functions p8)
@@ -9,9 +10,9 @@ namespace CSharpCraft
 #nullable enable
 
         private List<Entity>? anvilRecipe;
-    
+
         private double banim;
-    
+
         private bool canSwitchLevel = false;
         private Level? cave;
         private List<Entity>? chemRecipe;
@@ -24,22 +25,22 @@ namespace CSharpCraft
         private Entity? curItem;
         private Entity? curMenu;
         private Level? currentLevel;
-    
+
         private double[] data = new double[8192];
-    
+
         private List<Entity> enemies = [];
         private List<Entity> entities = [];
-    
+
         private List<Entity>? factoryRecipe;
-    
+
         private List<Entity>? furnaceRecipe;
-    
+
         private int holex;
         private int holey;
-    
+
         private List<Entity> invent = [];
         private Level? island;
-    
+
         private double[][]? level;
         private int levelsx;
         private int levelsy;
@@ -49,29 +50,29 @@ namespace CSharpCraft
         private double llife;
         private double lrot;
         private double lstam;
-    
+
         private Entity? menuInvent;
-    
+
         private List<Entity>? nearEnemies;
-    
+
         private double panim;
-    
+
         private double plife;
         private double plx;
         private double ply;
         private double prot;
         private double pstam;
-    
+
         private double[][] Rndwat = new double[16][];
-    
+
         private int stamCost;
         private List<Entity>? stonebenchRecipe;
         private bool switchLevel = false;
-    
+
         private double time;
         private int toogleMenu;
         readonly int[] typeCount = new int[11];
-    
+
         private List<Entity>? workbenchRecipe;
 
 #nullable disable
@@ -82,48 +83,48 @@ namespace CSharpCraft
         private bool lb4 = false;
         private bool lb5 = false;
         private bool block5 = false;
-    
+
         private readonly int enstep_Wait = 0;
         private readonly int enstep_Walk = 1;
         private readonly int enstep_Chase = 2;
         private readonly int enstep_Patrol = 3;
-    
+
         static readonly string[] pwrNames = ["wood", "stone", "iron", "gold", "gem"];
         static readonly int[][] pwrPal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
-    
+
         static readonly Material haxe = Item("haxe", 98);
         static readonly Material sword = Item("sword", 99);
         static readonly Material scythe = Item("scythe", 100);
         static readonly Material shovel = Item("shovel", 101);
         static readonly Material pick = Item("pick", 102);
-    
+
         static readonly int[] pstone = [0, 1, 5, 13];
         static readonly int[] piron = [1, 5, 13, 6];
         static readonly int[] pgold = [1, 9, 10, 7];
-    
+
         static readonly Material wood = Item("wood", 103);
         static readonly Material sand = Item("sand", 114, [15]);
         static readonly Material seed = Item("seed", 115);
         static readonly Material wheat = Item("wheat", 118, [4, 9, 10, 9]);
         static readonly Material apple = Item("apple", 116);
-    
+
         static readonly Material glass = Item("glass", 117);
         static readonly Material stone = Item("stone", 118, pstone);
         static readonly Material iron = Item("iron", 118, piron);
         static readonly Material gold = Item("gold", 118, pgold);
         static readonly Material gem = Item("gem", 118, [1, 2, 14, 12]);
-    
+
         static readonly Material fabric = Item("fabric", 69);
         static readonly Material sail = Item("sail", 70);
         static readonly Material glue = Item("glue", 85, [1, 13, 12, 7]);
         static readonly Material boat = Item("boat", 86);
         static readonly Material ichor = Item("ichor", 114, [11]);
         static readonly Material potion = Item("potion", 85, [1, 2, 8, 14]);
-    
+
         static readonly Material ironbar = Item("iron bar", 119, piron);
         static readonly Material goldbar = Item("gold bar", 119, pgold);
         static readonly Material bread = Item("bread", 119, [1, 4, 15, 7]);
-    
+
         static readonly Material workbench = BigSpr(104, Item("workbench", 89, [1, 4, 9], true));
         static readonly Material stonebench = BigSpr(104, Item("stonebench", 89, [1, 6, 13], true));
         static readonly Material furnace = BigSpr(106, Item("furnace", 90, null, true));
@@ -131,14 +132,14 @@ namespace CSharpCraft
         static readonly Material factory = BigSpr(71, Item("factory", 74, null, true));
         static readonly Material chem = BigSpr(78, Item("chem lab", 76, null, true));
         static readonly Material chest = BigSpr(110, Item("chest", 92));
-    
+
         static readonly Material inventary = Item("inventory", 89);
         static readonly Material pickuptool = Item("pickup tool", 73);
-    
+
         static readonly Material etext = Item("text", 103);
         static readonly Material player = Item(null, 1);
         static readonly Material zombi = Item(null, 2);
-    
+
         static readonly Ground grwater = new() { Id = 0, Gr = 0 };
         static readonly Ground grsand = new() { Id = 1, Gr = 1 };
         static readonly Ground grgrass = new() { Id = 2, Gr = 2 };
@@ -151,56 +152,56 @@ namespace CSharpCraft
         static readonly Ground grgold = new() { Id = 9, Gr = 1, Mat = gold, Tile = grsand, Life = 80, IsTree = true, Pal = [1, 2, 9, 10] };
         static readonly Ground grgem = new() { Id = 10, Gr = 1, Mat = gem, Tile = grsand, Life = 160, IsTree = true, Pal = [1, 2, 14, 12] };
         static readonly Ground grhole = new() { Id = 11, Gr = 1 };
-    
+
         private Ground lastGround = grsand;
-    
+
         private readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
-    
+
         private Entity mainMenu = Cmenu(inventary, null, 128, "by nusan", "2016");
         private Entity introMenu = Cmenu(inventary, null, 136, "a storm leaved you", "on a deserted island");
         private Entity deathMenu = Cmenu(inventary, null, 128, "you died", "alone ...");
         private Entity winMenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
-    
+
         static PcraftReference()
         {
             apple.GiveLife = 20;
-    
+
             potion.GiveLife = 100;
-    
+
             bread.GiveLife = 40;
         }
-    
+
         private static Material Item(string n, int s, int[] p = null, bool bc = false)
         {
             return new() { Name = n, Spr = s, Pal = p, BeCraft = bc };
         }
-    
+
         private Entity Inst(Material it)
         {
             return new() { Type = it };
         }
-    
+
         private Entity Instc(Material it, int? c = null, List<Entity> l = null)
         {
             return new() { Type = it, Count = c, List = l };
         }
-    
+
         private Entity SetPower(int? v, Entity i)
         {
             i.Power = v;
             return i;
         }
-    
+
         private Entity Entity(Material it, double xx, double yy, double vxx, double vyy)
         {
             return new() { Type = it, X = xx, Y = yy, Vx = vxx, Vy = vyy };
         }
-    
+
         private Entity Rentity(Material it, double xx, double yy)
         {
             return Entity(it, xx, yy, p8.Rnd(3) - 1.5, p8.Rnd(3) - 1.5);
         }
-    
+
         private Entity SetText(string t, int c, int time, Entity e)
         {
             e.Text = t;
@@ -208,19 +209,19 @@ namespace CSharpCraft
             e.C = c;
             return e;
         }
-    
+
         private static Material BigSpr(int spr, Material ent)
         {
             ent.BigSpr = spr;
             ent.Drop = true;
             return ent;
         }
-    
+
         private Entity Recipe(Entity m, List<Entity> require)
         {
             return new() { Type = m.Type, Power = m.Power, Count = m.Count, Req = require, List = m.List };
         }
-    
+
         private bool CanCraft(Entity req)
         {
             var can = true;
@@ -234,7 +235,7 @@ namespace CSharpCraft
             }
             return can;
         }
-    
+
         private void Craft(Entity req)
         {
             for (int i = 0; i < req.Req.Count; i++)
@@ -243,7 +244,7 @@ namespace CSharpCraft
             }
             AddItemInList(invent, SetPower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
         }
-    
+
         private void SetPal(int[] l)
         {
             for (int i = 0; i < l.Length; i++)
@@ -251,12 +252,12 @@ namespace CSharpCraft
                 p8.Pal(i + 1, l[i]);
             }
         }
-    
+
         private static Entity Cmenu(Material t, List<Entity> l = null, int? s = null, string te1 = null, string te2 = null)
         {
             return new() { List = l, Type = t, Sel = 0, Off = 0, Spr = s, Text = te1, Text2 = te2 };
         }
-    
+
         private int HowMany(List<Entity> list, Entity it)
         {
             var count = 0;
@@ -279,7 +280,7 @@ namespace CSharpCraft
             }
             return count;
         }
-    
+
         private Entity IsInList(List<Entity> list, Entity it)
         {
             for (int i = 0; i < list.Count; i++)
@@ -294,7 +295,7 @@ namespace CSharpCraft
             }
             return null;
         }
-    
+
         private void RemInList(List<Entity> list, Entity elem)
         {
             var it = IsInList(list, elem);
@@ -315,7 +316,7 @@ namespace CSharpCraft
                 p8.Del(list, it);
             }
         }
-    
+
         private void AddItemInList(List<Entity> list, Entity it, int p)
         {
             var it2 = IsInList(list, it);
@@ -328,7 +329,7 @@ namespace CSharpCraft
                 it2.Count += it.Count;
             }
         }
-    
+
         private void AddPlace(List<Entity> l, Entity e, int p)
         {
             if (p < l.Count - 1 && p >= 0)
@@ -340,32 +341,32 @@ namespace CSharpCraft
                 p8.Add(l, e);
             }
         }
-    
+
         private bool IsIn(Entity e, int size)
         {
-            return (e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size);
+            return e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size;
         }
-    
+
         private double Lerp(double a, double b, double alpha)
         {
             return a * (1.0 - alpha) + b * alpha;
         }
-    
+
         private double GetInvLen(double x, double y)
         {
             return 1 / GetLen(x, y);
         }
-    
+
         private double GetLen(double x, double y)
         {
             return Math.Sqrt(x * x + y * y + 0.001);
         }
-    
+
         private double GetRot(double dx, double dy)
         {
             return dy >= 0 ? (dx + 3) * 0.25 : (1 - dx) * 0.25;
         }
-    
+
         private void FillEne(Level l)
         {
             l.Ene = [Entity(player, 0, 0, 0, 0)];
@@ -396,7 +397,7 @@ namespace CSharpCraft
                 }
             }
         }
-    
+
         private Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
         {
             var l = new Level { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new double[8192] };
@@ -408,7 +409,7 @@ namespace CSharpCraft
             l.Sty = (holey - levely) * 16 + 8;
             return l;
         }
-    
+
         private void SetLevel(Level l)
         {
             currentLevel = l;
@@ -423,7 +424,7 @@ namespace CSharpCraft
             plx = l.Stx;
             ply = l.Sty;
         }
-    
+
         private void ResetLevel()
         {
             p8.Reload();
@@ -431,28 +432,28 @@ namespace CSharpCraft
 
             prot = 0.0;
             lrot = 0.0;
-    
+
             panim = 0.0;
-    
+
             pstam = 100.0;
             lstam = pstam;
             plife = 100.0;
             llife = plife;
-    
+
             banim = 0.0;
-    
+
             coffx = 0.0;
             coffy = 0.0;
-    
+
             time = 0.0;
-    
+
             toogleMenu = 0;
             invent = [];
             curItem = null;
             switchLevel = false;
             canSwitchLevel = false;
             menuInvent = Cmenu(inventary, invent);
-    
+
             for (int i = 0; i <= 15; i++)
             {
                 Rndwat[i] = new double[16];
@@ -461,18 +462,18 @@ namespace CSharpCraft
                     Rndwat[i][j] = p8.Rnd(100);
                 }
             }
-    
+
             cave = CreateLevel(64, 0, 32, 32, true);
             island = CreateLevel(0, 0, 64, 64, false);
-    
+
             var tmpworkbench = Entity(workbench, plx, ply, 0, 0);
             tmpworkbench.HasCol = true;
             tmpworkbench.List = workbenchRecipe;
-    
+
             p8.Add(invent, tmpworkbench);
             p8.Add(invent, Inst(pickuptool));
         }
-    
+
         private void Init()
         {
             p8.Music(4, 10000);
@@ -483,18 +484,18 @@ namespace CSharpCraft
             anvilRecipe = [];
             factoryRecipe = [];
             chemRecipe = [];
-    
+
             p8.Add(factoryRecipe, Recipe(Instc(sail, 1), [Instc(fabric, 3), Instc(glue, 1)]));
             p8.Add(factoryRecipe, Recipe(Instc(boat), [Instc(wood, 30), Instc(ironbar, 8), Instc(glue, 5), Instc(sail, 4)]));
-    
+
             p8.Add(chemRecipe, Recipe(Instc(glue, 1), [Instc(glass, 1), Instc(ichor, 3)]));
             p8.Add(chemRecipe, Recipe(Instc(potion, 1), [Instc(glass, 1), Instc(ichor, 1)]));
-    
+
             p8.Add(furnaceRecipe, Recipe(Instc(ironbar, 1), [Instc(iron, 3)]));
             p8.Add(furnaceRecipe, Recipe(Instc(goldbar, 1), [Instc(gold, 3)]));
             p8.Add(furnaceRecipe, Recipe(Instc(glass, 1), [Instc(sand, 3)]));
             p8.Add(furnaceRecipe, Recipe(Instc(bread, 1), [Instc(wheat, 5)]));
-    
+
             Material[] tooltypes = [haxe, pick, sword, shovel, scythe];
             int[] quant = [5, 5, 7, 7, 7];
             int[] pows = [1, 2, 3, 4, 5];
@@ -508,55 +509,55 @@ namespace CSharpCraft
                     p8.Add(crafter[j], Recipe(SetPower(pows[j], Instc(tooltypes[i])), [Instc(materials[j], quant[i] * mult[j])]));
                 }
             }
-    
+
             p8.Add(workbenchRecipe, Recipe(Instc(workbench, null, workbenchRecipe), [Instc(wood, 15)]));
             p8.Add(workbenchRecipe, Recipe(Instc(stonebench, null, stonebenchRecipe), [Instc(stone, 15)]));
             p8.Add(workbenchRecipe, Recipe(Instc(factory, null, factoryRecipe), [Instc(wood, 15), Instc(stone, 15)]));
             p8.Add(workbenchRecipe, Recipe(Instc(chem, null, chemRecipe), [Instc(wood, 10), Instc(glass, 3), Instc(gem, 10)]));
             p8.Add(workbenchRecipe, Recipe(Instc(chest), [Instc(wood, 15), Instc(stone, 10)]));
-    
+
             p8.Add(stonebenchRecipe, Recipe(Instc(anvil, null, anvilRecipe), [Instc(iron, 25), Instc(wood, 10), Instc(stone, 25)]));
             p8.Add(stonebenchRecipe, Recipe(Instc(furnace, null, furnaceRecipe), [Instc(wood, 10), Instc(stone, 15)]));
-    
+
             curMenu = mainMenu;
         }
-    
+
         private (int, int) GetMcoord(double x, double y)
         {
             return ((int)Math.Floor(x / 16), (int)Math.Floor(y / 16));
         }
-    
+
         private bool IsFree(double x, double y, Entity e = null)
         {
             var gr = GetGr(x, y);
             return !(gr.IsTree || gr == grrock);
         }
-    
+
         private bool IsFreeEnem(double x, double y, Entity e = null)
         {
             var gr = GetGr(x, y);
             return !(gr.IsTree || gr == grrock || gr == grwater);
         }
-    
+
         private Ground GetGr(double x, double y)
         {
             var (i, j) = GetMcoord(x, y);
             return GetDirectGr(i, j);
         }
-    
+
         private Ground GetDirectGr(double i, double j)
         {
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
             return grounds[p8.Mget(i + levelx, j)];
         }
-    
+
         private void SetGr(double x, double y, Ground v)
         {
             var (i, j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
             p8.Mset(i + levelx, j, v.Id);
         }
-    
+
         private double DirGetData(int i, int j, int @default)
         {
             int g = i + j * levelsx;
@@ -566,12 +567,12 @@ namespace CSharpCraft
             }
             return data[g - 1];
         }
-    
+
         private void DirSetData(int i, int j, double v)
         {
             data[i + j * levelsx - 1] = v;
         }
-    
+
         private double GetData(double x, double y, int @default)
         {
             var (i, j) = GetMcoord(x, y);
@@ -581,7 +582,7 @@ namespace CSharpCraft
             }
             return DirGetData(i, j, @default);
         }
-    
+
         private void SetData(double x, double y, double v)
         {
             var (i, j) = GetMcoord(x, y);
@@ -591,7 +592,7 @@ namespace CSharpCraft
             }
             DirSetData(i, j, v);
         }
-    
+
         private void Cleardata(double x, double y)
         {
             var (i, j) = GetMcoord(x, y);
@@ -601,28 +602,28 @@ namespace CSharpCraft
             }
             data[i + j * levelsx - 1] = 0;
         }
-    
+
         private int Loop(int sel, List<Entity> l)
         {
             var lp = l.Count;
-            return ((sel % lp) + lp) % lp;
+            return (sel % lp + lp) % lp;
         }
-    
+
         private bool EntColFree(double x, double y, Entity e)
         {
             return Math.Max(Math.Abs(e.X - x), Math.Abs(e.Y - y)) > 8;
         }
-    
+
         private (double, double) ReflectCol(double x, double y, double dx, double dy, Func<double, double, Entity, bool> checkfun, double dp, Entity e = null)
         {
             var newx = x + dx;
             var newy = y + dy;
-        
+
             var ccur = checkfun(x, y, e);
             var ctotal = checkfun(newx, newy, e);
             var chor = checkfun(newx, y, e);
             var cver = checkfun(x, newy, e);
-        
+
             if (ccur)
             {
                 if (chor || cver)
@@ -645,14 +646,14 @@ namespace CSharpCraft
                     dy = -dy * dp;
                 }
             }
-        
+
             return (dx, dy);
         }
-        
+
         private void AddItem(Material mat, double count, double hitx, double hity)
         {
             var countFlr = (int)Math.Floor(count);
-        
+
             for (int i = 0; i < countFlr; i++)
             {
                 var gi = Rentity(mat, Math.Floor(hitx / 16) * 16 + p8.Rnd(14) + 1, Math.Floor(hity / 16) * 16 + p8.Rnd(14) + 1);
@@ -662,7 +663,7 @@ namespace CSharpCraft
                 p8.Add(entities, gi);
             }
         }
-        
+
         private void UpGround()
         {
             var ci = (int)Math.Floor((clx - 64) / 16);
@@ -683,7 +684,7 @@ namespace CSharpCraft
                 }
             }
         }
-        
+
         private double UpRot(double grot, double rot)
         {
             if (Math.Abs(rot - grot) > 0.5)
@@ -699,7 +700,7 @@ namespace CSharpCraft
             }
             return (Lerp(rot, grot, 0.4) % 1 + 1) % 1;
         }
-        
+
         private void Update()
         {
             if (curMenu != null)
@@ -737,14 +738,14 @@ namespace CSharpCraft
                             othMenu = curMenu;
                         }
                     }
-        
+
                     if (intMenu.List.Count > 0)
                     {
                         if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
                         if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
-        
+
                         intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
-        
+
                         if (p8.Btnp(5) && !lb5)
                         {
                             if (curMenu.Type == chest)
@@ -753,7 +754,7 @@ namespace CSharpCraft
                                 var el = intMenu.List[intMenu.Sel];
                                 p8.Del(intMenu.List, el);
                                 AddItemInList(othMenu.List, el, othMenu.Sel);
-                                if (intMenu.List.Count > 0 && intMenu.Sel > (intMenu.List.Count - 1)) { intMenu.Sel -= 1; }
+                                if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
                                 if (intMenu == menuInvent && curItem == el)
                                 {
                                     curItem = null;
@@ -797,7 +798,7 @@ namespace CSharpCraft
                 lb5 = p8.Btn(5);
                 return;
             }
-        
+
             if (switchLevel)
             {
                 if (currentLevel == cave) { SetLevel(island); }
@@ -809,18 +810,18 @@ namespace CSharpCraft
                 canSwitchLevel = false;
                 p8.Music(currentLevel == cave ? 4 : 1);
             }
-        
+
             if (curItem != null)
             {
                 if (HowMany(invent, curItem) <= 0) { curItem = null; }
             }
-        
+
             UpGround();
-        
+
             var playHit = GetGr(plx, ply);
             if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
             lastGround = playHit;
-            var s = (playHit == grwater || pstam <= 0) ? 1 : 2;
+            var s = playHit == grwater || pstam <= 0 ? 1 : 2;
             if (playHit == grhole)
             {
                 switchLevel = switchLevel || canSwitchLevel;
@@ -829,20 +830,20 @@ namespace CSharpCraft
             {
                 canSwitchLevel = true;
             }
-        
+
             var dx = 0.0;
             var dy = 0.0;
-        
+
             if (p8.Btn(0)) dx -= 1.0;
             if (p8.Btn(1)) dx += 1.0;
             if (p8.Btn(2)) dy -= 1.0;
             if (p8.Btn(3)) dy += 1.0;
-        
+
             var dl = GetInvLen(dx, dy);
-        
+
             dx *= dl;
             dy *= dl;
-        
+
             if (Math.Abs(dx) > 0 || Math.Abs(dy) > 0)
             {
                 lrot = GetRot(dx, dy);
@@ -852,14 +853,14 @@ namespace CSharpCraft
             {
                 panim = 0;
             }
-        
+
             dx *= s;
             dy *= s;
-        
+
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, 0);
-        
+
             var canAct = true;
-        
+
             var fin = entities.Count;
             for (int i = fin - 1; i >= 0; i--)
             {
@@ -872,7 +873,7 @@ namespace CSharpCraft
                 e.Y += e.Vy;
                 e.Vx *= 0.95;
                 e.Vy *= 0.95;
-        
+
                 if (e.Timer != null && e.Timer < 1)
                 {
                     p8.Del(entities, e);
@@ -880,7 +881,7 @@ namespace CSharpCraft
                 else
                 {
                     if (e.Timer != null) { e.Timer -= 1; }
-        
+
                     var dist = Math.Max(Math.Abs(e.X - plx), Math.Abs(e.Y - ply));
                     if (e.GiveItem != null)
                     {
@@ -928,12 +929,12 @@ namespace CSharpCraft
                     }
                 }
             }
-        
+
             nearEnemies = [];
-        
+
             var ebx = p8.Cos(prot);
             var eby = p8.Sin(prot);
-        
+
             for (int i = 0; i < enemies.Count; i++)
             {
                 var e = enemies[i];
@@ -948,7 +949,7 @@ namespace CSharpCraft
                     {
                         var distp = GetLen(e.X - plx, e.Y - ply);
                         var mspeed = 0.8;
-        
+
                         var disten = GetLen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
                         if (disten < 10)
                         {
@@ -959,7 +960,7 @@ namespace CSharpCraft
                             e.Ox += Math.Max(-0.4, Math.Min(0.4, e.X - plx));
                             e.Oy += Math.Max(-0.4, Math.Min(0.4, e.Y - ply));
                         }
-        
+
                         if (e.Dtim <= 0)
                         {
                             if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
@@ -1023,15 +1024,15 @@ namespace CSharpCraft
                             }
                             e.Dtim -= 1;
                         }
-        
+
                         var dl2 = mspeed * GetInvLen(e.Dx, e.Dy);
                         e.Dx *= dl2;
                         e.Dy *= dl2;
-        
+
                         var fx = e.Dx + e.Ox;
                         var fy = e.Dy + e.Oy;
                         (fx, fy) = ReflectCol(e.X, e.Y, fx, fy, IsFreeEnem, 0);
-        
+
                         if (Math.Abs(e.Dx) > 0 || Math.Abs(e.Dy) > 0)
                         {
                             e.Lrot = GetRot(e.Dx, e.Dy);
@@ -1041,28 +1042,28 @@ namespace CSharpCraft
                         {
                             e.Panim = 0;
                         }
-        
+
                         e.X += fx;
                         e.Y += fy;
-        
+
                         e.Ox *= 0.9;
                         e.Oy *= 0.9;
-        
+
                         e.Prot = UpRot(e.Lrot, e.Prot);
                     }
                 }
             }
-        
+
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, 0);
-        
+
             plx += dx;
             ply += dy;
-        
+
             prot = UpRot(lrot, prot);
-        
-            llife += Math.Max(-1, Math.Min(1, (plife - llife)));
-            lstam += Math.Max(-1, Math.Min(1, (pstam - lstam)));
-        
+
+            llife += Math.Max(-1, Math.Min(1, plife - llife));
+            lstam += Math.Max(-1, Math.Min(1, pstam - lstam));
+
             if (p8.Btn(5) && !block5 && canAct)
             {
                 var bx = p8.Cos(prot);
@@ -1070,14 +1071,14 @@ namespace CSharpCraft
                 var hitx = plx + bx * 8;
                 var hity = ply + by * 8;
                 var hit = GetGr(hitx, hity);
-        
+
                 if (!lb5 && curItem != null && curItem.Type.Drop)
                 {
                     if (hit == grsand || hit == grgrass)
                     {
                         if (curItem.List == null) { curItem.List = []; }
                         curItem.HasCol = true;
-        
+
                         curItem.X = Math.Floor(hitx / 16) * 16 + 8;
                         curItem.Y = Math.Floor(hity / 16) * 16 + 8;
                         curItem.Vx = 0;
@@ -1141,7 +1142,7 @@ namespace CSharpCraft
                             }
                         }
                         pow = Math.Floor(pow);
-        
+
                         var d = GetData(hitx, hity, hit.Life);
                         if (d - pow <= 0)
                         {
@@ -1201,7 +1202,7 @@ namespace CSharpCraft
                             if (hit == grwater && curItem.Type == boat)
                             {
                                 p8.Reload();
-                                p8.Memcpy(0x1000,0x2000,0x1000);
+                                p8.Memcpy(0x1000, 0x2000, 0x1000);
                                 curMenu = winMenu;
                                 p8.Music(4);
                             }
@@ -1223,20 +1224,20 @@ namespace CSharpCraft
                     pstam -= stamCost;
                 }
             }
-        
+
             if (banim > 0)
             {
                 banim -= 1;
             }
-        
+
             if (pstam < 100)
             {
                 pstam = Math.Min(100, pstam + 1);
             }
-        
+
             var m = 16;
             var msp = 4;
-        
+
             if (Math.Abs(cmx - plx) > m)
             {
                 coffx += dx * 0.4;
@@ -1245,40 +1246,40 @@ namespace CSharpCraft
             {
                 coffy += dy * 0.4;
             }
-        
+
             cmx = Math.Max(plx - m, cmx);
             cmx = Math.Min(plx + m, cmx);
             cmy = Math.Max(ply - m, cmy);
             cmy = Math.Min(ply + m, cmy);
-        
+
             coffx *= 0.9;
             coffy *= 0.9;
             coffx = Math.Min(msp, Math.Max(-msp, coffx));
             coffy = Math.Min(msp, Math.Max(-msp, coffy));
-        
+
             clx += coffx;
             cly += coffy;
-        
+
             clx = Math.Max(cmx - m, clx);
             clx = Math.Min(cmx + m, clx);
             cly = Math.Max(cmy - m, cly);
             cly = Math.Min(cmy + m, cly);
-        
+
             if (p8.Btnp(4) && !lb4)
             {
                 curMenu = menuInvent;
                 p8.Sfx(13, 3);
             }
-        
+
             lb4 = p8.Btn(4);
             lb5 = p8.Btn(5);
             if (!p8.Btn(5))
             {
                 block5 = false;
             }
-        
+
             time += 1.0 / 30.0;
-        
+
             if (plife <= 0)
             {
                 p8.Reload();
@@ -1287,7 +1288,7 @@ namespace CSharpCraft
                 p8.Music(4);
             }
         }
-    
+
         private (int, int) Mirror(double rot)
         {
             if (rot < 0.125)
@@ -1311,7 +1312,7 @@ namespace CSharpCraft
                 return (0, 1);
             }
         }
-        
+
         private void Dplayer(double x, double y, double rot, double anim, double subanim, bool isplayer)
         {
             var cr = p8.Cos(rot);
@@ -1331,7 +1332,7 @@ namespace CSharpCraft
                 p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 6);
                 p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
 
-                var anc = 3 + ((time * 3) % 1) * 3;
+                var anc = 3 + time * 3 % 1 * 3;
                 p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc, 6);
                 p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc, 6);
             }
@@ -1377,7 +1378,7 @@ namespace CSharpCraft
 
                 Console.WriteLine(-rot + 0.75);
 
-                (int mx2, int my2) = Mirror(p8.Mod((-rot + 0.75), 1)); // changed from (rot + 0.75) % 1
+                (int mx2, int my2) = Mirror(p8.Mod(-rot + 0.75, 1)); // changed from (rot + 0.75) % 1
                 p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
             }
 
@@ -1387,7 +1388,7 @@ namespace CSharpCraft
             p8.Circfill(x - cr, y - sr - 3, 3, 4);
 
         }
-        
+
         private double[][] Noise(int sx, int sy, double startscale, double scalemod, int featstep)
         {
             var n = new double[sx + 1][];
@@ -1439,19 +1440,19 @@ namespace CSharpCraft
 
             return n;
         }
-    
+
         private double[][] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
         {
             var cur = Noise(sx, sy, 0.9, 0.2, sx);
             var cur2 = Noise(sx, sy, 0.9, 0.4, 8);
             var cur3 = Noise(sx, sy, 0.9, 0.3, 8);
             var cur4 = Noise(sx, sy, 0.8, 1.1, 4);
-    
+
             for (int i = 0; i < 11; i++)
             {
                 typeCount[i] = 0;
             }
-    
+
             for (int i = 0; i <= sx; i++)
             {
                 for (int j = 0; j <= sy; j++)
@@ -1459,37 +1460,37 @@ namespace CSharpCraft
                     var v = Math.Abs(cur[i][j] - cur2[i][j]);
                     var v2 = Math.Abs(cur[i][j] - cur3[i][j]);
                     var v3 = Math.Abs(cur[i][j] - cur4[i][j]);
-                    var dist = Math.Max((Math.Abs((double)i / sx - 0.5) * 2), (Math.Abs((double)j / sy - 0.5) * 2));
+                    var dist = Math.Max(Math.Abs((double)i / sx - 0.5) * 2, Math.Abs((double)j / sy - 0.5) * 2);
                     dist = dist * dist * dist * dist;
                     var coast = v * 4 - dist * 4;
-    
+
                     var id = a;
                     if (coast > 0.3) { id = b; } // sand
                     if (coast > 0.6) { id = c; } // grass
                     if (coast > 0.3 && v2 > 0.5) { id = d; } // stone
                     if (id == c && v3 > 0.5) { id = e; } // tree
-    
+
                     typeCount[id] += 1;
-    
+
                     cur[i][j] = id;
                 }
             }
-    
+
             return cur;
         }
-    
+
         private void CreateMap()
         {
             var needmap = true;
-    
+
             while (needmap)
             {
                 needmap = false;
-    
+
                 if (levelUnder)
                 {
                     level = CreateMapStep(levelsx, levelsy, 3, 8, 1, 9, 10);
-    
+
                     if (typeCount[8] < 30) { needmap = true; }
                     if (typeCount[9] < 20) { needmap = true; }
                     if (typeCount[10] < 15) { needmap = true; }
@@ -1497,22 +1498,22 @@ namespace CSharpCraft
                 else
                 {
                     level = CreateMapStep(levelsx, levelsy, 0, 1, 2, 3, 4);
-    
+
                     if (typeCount[3] < 30) { needmap = true; }
                     if (typeCount[4] < 30) { needmap = true; }
                 }
-    
+
                 if (!needmap)
                 {
                     plx = -1;
                     ply = -1;
-    
+
                     for (int i = 0; i <= 500; i++)
                     {
                         var depx = (int)Math.Floor(levelsx / 8 + p8.Rnd(levelsx * 6 / 8));
                         var depy = (int)Math.Floor(levelsy / 8 + p8.Rnd(levelsy * 6 / 8));
                         var c = level[depx][depy];
-    
+
                         if (c == 1 || c == 2)
                         {
                             plx = depx * 16 + 8;
@@ -1520,14 +1521,14 @@ namespace CSharpCraft
                             break;
                         }
                     }
-    
+
                     if (plx < 0)
                     {
                         needmap = true;
                     }
                 }
             }
-    
+
             for (int i = 0; i < levelsx; i++)
             {
                 for (int j = 0; j < levelsy; j++)
@@ -1535,59 +1536,59 @@ namespace CSharpCraft
                     p8.Mset(i + levelx, j + levely, level[i][j]);
                 }
             }
-    
+
             holex = levelsx / 2 + levelx;
             holey = levelsy / 2 + levely;
-    
+
             for (int i = -1; i <= 1; i++)
             {
                 for (int j = -1; j <= 1; j++)
                 {
-                    p8.Mset(holex + i, holey + j, ((levelUnder) ? 1 : 3));
+                    p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
                 }
             }
-    
+
             p8.Mset(holex, holey, 11);
-    
+
             clx = plx;
             cly = ply;
-    
+
             cmx = plx;
             cmy = ply;
         }
-    
+
         private bool Comp(int i, int j, Ground gr)
         {
             var gr2 = GetDirectGr(i, j);
             return gr != null && gr2 != null && gr.Gr == gr2.Gr;
         }
-    
+
         private double WatVal(double i, double j)
         {
             return Rndwat[(int)Math.Floor(Math.Abs(i * 2) % 16)][(int)Math.Floor(Math.Abs(j * 2) % 16)];
         }
-    
+
         private void WatAnim(double i, double j)
         {
-            var a = ((time * 0.6 + WatVal(i, j) / 100) % 1) * 19;
+            var a = (time * 0.6 + WatVal(i, j) / 100) % 1 * 19;
             if (a > 16) { p8.Spr(13 + a - 16, i * 16, j * 16); }
         }
-    
+
         private double RndCenter(double i, double j)
         {
             return (Math.Floor(WatVal(i, j) / 34) + 18) % 20;
         }
-    
+
         private int RndSand(double i, double j)
         {
             return (int)Math.Floor(WatVal(i, j) / 34) + 1;
         }
-    
+
         private int RndTree(double i, double j)
         {
             return (int)Math.Floor(WatVal(i, j) / 51) * 32;
         }
-    
+
         private void Spr4(int i, int j, int gi, int gj, int a, int b, int c, int d, int off, Func<double, double, int> f)
         {
             p8.Spr(f(i, j + off) + a, gi, gj + 2 * off);
@@ -1595,21 +1596,21 @@ namespace CSharpCraft
             p8.Spr(f(i, j + 0.5 + off) + c, gi, gj + 8 + 2 * off);
             p8.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + 2 * off);
         }
-    
+
         private void DrawBack()
         {
             var ci = (int)Math.Floor((clx - 64) / 16);
             var cj = (int)Math.Floor((cly - 64) / 16);
-    
+
             for (int i = ci; i <= ci + 8; i++)
             {
                 for (int j = cj; j <= cj + 8; j++)
                 {
                     var gr = GetDirectGr(i, j);
-    
+
                     var gi = (i - ci) * 2 + 64;
                     var gj = (j - cj) * 2 + 32;
-    
+
                     if (gr != null && gr.Gr == 1) // sand
                     {
                         var sv = 0;
@@ -1625,18 +1626,18 @@ namespace CSharpCraft
                         var d = Comp(i, j + 1, gr);
                         var l = Comp(i - 1, j, gr);
                         var r = Comp(i + 1, j, gr);
-    
+
                         var b = gr == grrock ? 21 : gr == grwater ? 26 : 16;
-    
-                        p8.Mset(gi, gj, b + (l ? (u ? (Comp(i - 1, j - 1, gr) ? 17 + RndCenter(i, j) : 20) : 1) : (u ? 16 : 0)));
-                        p8.Mset(gi + 1, gj, b + (r ? (u ? (Comp(i + 1, j - 1, gr) ? 17 + RndCenter(i + 0.5, j) : 19) : 1) : (u ? 18 : 2)));
-                        p8.Mset(gi, gj + 1, b + (l ? (d ? (Comp(i - 1, j + 1, gr) ? 17 + RndCenter(i, j + 0.5) : 4) : 33) : (d ? 16 : 32)));
-                        p8.Mset(gi + 1, gj + 1, b + (r ? (d ? (Comp(i + 1, j + 1, gr) ? 17 + RndCenter(i + 0.5, j + 0.5) : 3) : 33) : (d ? 18 : 34)));
-    
+
+                        p8.Mset(gi, gj, b + (l ? u ? Comp(i - 1, j - 1, gr) ? 17 + RndCenter(i, j) : 20 : 1 : u ? 16 : 0));
+                        p8.Mset(gi + 1, gj, b + (r ? u ? Comp(i + 1, j - 1, gr) ? 17 + RndCenter(i + 0.5, j) : 19 : 1 : u ? 18 : 2));
+                        p8.Mset(gi, gj + 1, b + (l ? d ? Comp(i - 1, j + 1, gr) ? 17 + RndCenter(i, j + 0.5) : 4 : 33 : d ? 16 : 32));
+                        p8.Mset(gi + 1, gj + 1, b + (r ? d ? Comp(i + 1, j + 1, gr) ? 17 + RndCenter(i + 0.5, j + 0.5) : 3 : 33 : d ? 18 : 34));
+
                     }
                 }
             }
-    
+
             p8.Pal();
             if (levelUnder)
             {
@@ -1644,7 +1645,7 @@ namespace CSharpCraft
                 p8.Pal(4, 1);
             }
             p8.Map(64, 32, ci * 16, cj * 16, 18, 18);
-    
+
             for (int i = ci - 1; i <= ci + 8; i++)
             {
                 for (int j = cj - 1; j <= cj + 8; j++)
@@ -1654,9 +1655,9 @@ namespace CSharpCraft
                     {
                         var gi = i * 16;
                         var gj = j * 16;
-    
+
                         p8.Pal();
-    
+
                         if (gr == grwater)
                         {
                             WatAnim(i, j);
@@ -1664,26 +1665,26 @@ namespace CSharpCraft
                             WatAnim(i, j + 0.5);
                             WatAnim(i + 0.5, j + 0.5);
                         }
-    
+
                         if (gr == grwheat)
                         {
                             var d = DirGetData(i, j, 0) - time;
                             for (int pp = 2; pp <= 4; pp++)
                             {
                                 p8.Pal(pp, 3);
-                                if (d > (10 - pp * 2)) { p8.Palt(pp, true); }
+                                if (d > 10 - pp * 2) { p8.Palt(pp, true); }
                             }
                             if (d < 0) { p8.Pal(4, 9); }
                             Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, RndSand);
                         }
-    
+
                         if (gr.IsTree)
                         {
                             SetPal(gr.Pal);
-    
+
                             Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, RndTree);
                         }
-    
+
                         if (gr == grhole)
                         {
                             p8.Pal();
@@ -1700,7 +1701,7 @@ namespace CSharpCraft
                 }
             }
         }
-    
+
         private void Panel(string name, int x, int y, int sx, int sy)
         {
             p8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
@@ -1712,12 +1713,12 @@ namespace CSharpCraft
             p8.Sspr(24, 40, 4, 8, x + 8, y + sy - 8, sx - 16, 8);
             p8.Sspr(16, 36, 8, 4, x, y + 8, 8, sy - 16);
             p8.Sspr(24, 36, 8, 4, x + sx - 8, y + 8, 8, sy - 16);
-    
+
             var hx = x + (sx - name.Length * 4) / 2;
             p8.Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
             p8.Print(name, hx + 1, y + 2, 7);
         }
-    
+
         private void ItemName(double x, double y, Entity it, int col)
         {
             var ty = it.Type;
@@ -1735,55 +1736,55 @@ namespace CSharpCraft
             p8.Pal();
             p8.Print(ty.Name, px + 10, y, col);
         }
-    
+
         private void List(Entity menu, int x, int y, int sx, int sy, int my)
         {
             Panel(menu.Type.Name, x, y, sx, sy);
-    
+
             var tlist = menu.List.Count;
             if (tlist < 1)
             {
                 return;
             }
-    
+
             var sel = menu.Sel;
             if (menu.Off > Math.Max(0, sel - 4)) { menu.Off = Math.Max(0, sel - 4); }
             if (menu.Off < Math.Min(tlist, sel + 3) - my) { menu.Off = Math.Min(tlist, sel + 3) - my; }
-    
+
             sel -= menu.Off;
-    
+
             var debut = menu.Off + 1;
             var fin = Math.Min(menu.Off + my, tlist);
-    
+
             var sely = y + 3 + (sel + 1) * 8;
             p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
-    
+
             x += 5;
             y += 12;
-    
+
             for (int i = debut - 1; i < fin; i++)
             {
                 var it = menu.List[i];
                 var py = y + (i - menu.Off) * 8;
                 var col = 7;
-                if ((it.Req != null) && !CanCraft(it))
+                if (it.Req != null && !CanCraft(it))
                 {
                     col = 0;
                 }
-    
+
                 ItemName(x, py, it, col);
-    
+
                 if (it.Count != null)
                 {
                     var c = $"{it.Count}";
                     p8.Print(c, x + sx - c.Length * 4 - 10, py, col);
                 }
             }
-    
+
             p8.Spr(68, x - 8, sely);
             p8.Spr(68, x + sx - 10, sely, 1, 1, true);
         }
-    
+
         private void RequireList(Entity recip, int x, int y, int sx, int sy)
         {
             Panel("require", x, y, sx, sy);
@@ -1792,16 +1793,16 @@ namespace CSharpCraft
             {
                 return;
             }
-    
+
             x += 5;
             y += 12;
-    
+
             for (int i = 0; i < tlist; i++)
             {
                 var it = recip.Req[i];
                 var py = y + i * 8;
                 ItemName(x, py, it, 7);
-    
+
                 if (it.Count != null)
                 {
                     var h = HowMany(invent, it);
@@ -1810,7 +1811,7 @@ namespace CSharpCraft
                 }
             }
         }
-    
+
         public void Printb(string t, double x, double y, int c)
         {
             p8.Print(t, x + 1, y, 1);
@@ -1819,12 +1820,12 @@ namespace CSharpCraft
             p8.Print(t, x, y - 1, 1);
             p8.Print(t, x, y, c);
         }
-    
+
         private void Printc(string t, int x, int y, double c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
         }
-    
+
         private void Dent()
         {
             for (int i = 0; i < entities.Count; i++)
@@ -1856,7 +1857,7 @@ namespace CSharpCraft
                 }
             }
         }
-    
+
         private void Sorty(List<Entity> t)
         {
             var tv = t.Count - 1;
@@ -1871,11 +1872,11 @@ namespace CSharpCraft
                 }
             }
         }
-    
+
         private void Denemies()
         {
             Sorty(enemies);
-    
+
             for (int i = 0; i < enemies.Count; i++)
             {
                 var e = enemies[i];
@@ -1893,13 +1894,13 @@ namespace CSharpCraft
                         p8.Pal(4, 1);
                         p8.Pal(2, 8);
                         p8.Pal(1, 1);
-    
+
                         Dplayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, false);
                     }
                 }
             }
         }
-    
+
         private void Dbar(int px, int py, double v, double m, int c, int c2)
         {
             p8.Pal();
@@ -1910,7 +1911,7 @@ namespace CSharpCraft
             p8.Rectfill(px, py, Math.Max(px, pe - 2), py + 2, c);
             if (m > v) { p8.Rectfill(pe, py, pe2 - 1, py + 3, 10); }
         }
-    
+
         private void Draw()
         {
             if (curMenu != null && curMenu.Spr != null)
@@ -1928,19 +1929,19 @@ namespace CSharpCraft
             }
 
             p8.Cls();
-    
+
             p8.Camera(clx - 64, cly - 64);
-    
+
             DrawBack();
-    
+
             Dent();
-    
+
             Denemies();
-    
+
             p8.Camera();
             Dbar(4, 4, plife, llife, 8, 2);
             Dbar(4, 9, Math.Max(0, pstam), lstam, 11, 3);
-    
+
             if (curItem != null)
             {
                 var ix = 35;
