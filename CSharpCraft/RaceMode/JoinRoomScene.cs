@@ -10,7 +10,7 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode
 {
-    public class JoinRoomScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice) : IGameMode
+    public class JoinRoomScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
     {
 #nullable enable
         private static CancellationTokenSource CancellationTokenSource = new();
@@ -30,7 +30,7 @@ namespace CSharpCraft.RaceMode
         private string prompt;
 #nullable disable
 
-        public string GameModeName { get => "race"; }
+        public string GameModeName { get => "0"; }
 
         public void Init()
         {
@@ -127,6 +127,7 @@ namespace CSharpCraft.RaceMode
                         {
                             joinedRoom = true;
                             await JoinRoom();
+                            mainRace.currentScene = 1;
                         }
                         break;
                     case 3:
@@ -137,7 +138,10 @@ namespace CSharpCraft.RaceMode
                         }
                         else if (state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter))
                         {
-                            //quit to main menu
+                            CancellationTokenSource.Cancel(); // Cancel the listening task
+                            RoomJoiningStream?.Dispose(); // Dispose of the stream
+                            titleScreen.currentGameMode = 0;
+                            return;
                         }
                         break;
                 }
@@ -177,7 +181,7 @@ namespace CSharpCraft.RaceMode
                 p8.Print("join", 68, 72, menuState == 2 ? 7 : 6);
 
                 batch.Draw(textureDictionary["SmallSelector"], new Vector2(88 * cellW, 59 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary[$"{role}Icon"], new Vector2(91 * cellW, 61 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                batch.Draw(textureDictionary[$"{role.Value}Icon"], new Vector2(91 * cellW, 61 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
                 batch.Draw(textureDictionary["Arrow"], new Vector2(101 * cellW, 65 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], -1.57f, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else

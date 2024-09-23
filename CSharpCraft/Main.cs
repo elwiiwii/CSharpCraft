@@ -31,8 +31,9 @@ namespace CSharpCraft
         private TitleScreen titleScreen;
 
         private MainRace mainRace;
-        private List<IGameMode> raceModes = [];
+        private List<IGameMode> raceScenes = [];
         private JoinRoomScene joinRoomScene;
+        private LobbyScene lobbyScene;
 
         private MainOptions mainOptions;
         private List<IGameMode> optionsModes = [];
@@ -106,7 +107,8 @@ namespace CSharpCraft
             gameModes.Add(mainRace);
             gameModes.Add(mainOptions);
 
-            raceModes.Add(joinRoomScene);
+            raceScenes.Add(joinRoomScene);
+            raceScenes.Add(lobbyScene);
 
             optionsModes.Add(backOptions1);
             optionsModes.Add(backOptions2);
@@ -266,8 +268,9 @@ namespace CSharpCraft
             pcraftSingleplayer = new PcraftSingleplayer(p8);
             titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
 
-            mainRace = new MainRace(p8, textureDictionary, batch, GraphicsDevice);
-            joinRoomScene = new JoinRoomScene(p8, textureDictionary, batch, GraphicsDevice);
+            mainRace = new MainRace(raceScenes);
+            joinRoomScene = new JoinRoomScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
+            lobbyScene = new LobbyScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
 
             mainOptions = new MainOptions(optionsModes);
             backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);

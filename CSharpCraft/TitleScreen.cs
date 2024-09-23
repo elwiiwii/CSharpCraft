@@ -13,6 +13,7 @@ namespace CSharpCraft
 
         private int menuSelected;
         public int currentGameMode;
+        private KeyboardState prevState;
 
         private int Loop<T>(int sel, List<T> l)
         {
@@ -24,6 +25,7 @@ namespace CSharpCraft
         {
             menuSelected = 0;
             currentGameMode = 0;
+            prevState = Keyboard.GetState();
         }
 
         public void Update()
@@ -37,12 +39,14 @@ namespace CSharpCraft
 
                 menuSelected = Loop(menuSelected, gameModes);
 
-                if (state.IsKeyDown(Keys.Enter) || p8.Btnp(4) || p8.Btnp(5))
+                if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
                 {
                     gameModes[menuSelected + 1].Init();
                     currentGameMode = menuSelected + 1;
                 }
             }
+
+            prevState = state;
         }
 
         public void Draw()
