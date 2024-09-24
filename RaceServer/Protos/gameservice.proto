@@ -8,13 +8,19 @@ service GameService {
 	rpc JoinRoom (JoinRoomRequest) returns (stream JoinRoomResponse);
 }
 
+message RoomUser {
+	string name = 1;
+	string role = 2;
+	bool host = 3;
+}
+
 message JoinRoomRequest {
-	string user_name = 1;
+	string name = 1;
 	string role = 2;
 	bool host = 3;
 }
 
 message JoinRoomResponse {
 	string message = 1;
-	repeated string users = 2;
+	repeated RoomUser users = 2;
 }

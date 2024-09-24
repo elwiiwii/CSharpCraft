@@ -7,6 +7,7 @@ using Grpc.Net.Client;
 using RaceServer;
 using System.Collections.Concurrent;
 using CSharpCraft.Pico8;
+using System.Collections.Generic;
 
 namespace CSharpCraft.RaceMode
 {
@@ -187,7 +188,7 @@ namespace CSharpCraft.RaceMode
                 int i = 0;
                 foreach (var player in mainRace.playerDictionary.Values)
                 {
-                    p8.Print(player, 34, 13 + i * 6, 8);
+                    p8.Print(player.Name, 34, 13 + i * 6, 8);
                     i++;
                 }
             }
@@ -204,7 +205,7 @@ namespace CSharpCraft.RaceMode
             //Console.WriteLine("Join as (1) Player or (2) Spectator?");
             //var role = Console.ReadKey().KeyChar == '1' ? "Player" : "Spectator";
 
-            mainRace.RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { UserName = userName.Value, Role = role.Value });
+            mainRace.RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { Name = userName.Value, Role = role.Value });
 
             // Run the listening logic in a separate task
 

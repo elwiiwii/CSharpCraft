@@ -52,7 +52,7 @@ namespace CSharpCraft.RaceMode
             int i = 0;
             foreach (var player in mainRace.playerDictionary.Values)
             {
-                p8.Print(player, 34, 13 + i * 6, 8);
+                p8.Print(player.Name, 34, 13 + i * 6, 8);
                 i++;
             }
         }
