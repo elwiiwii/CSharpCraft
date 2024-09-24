@@ -21,6 +21,10 @@ namespace CSharpCraft.RaceMode
     {
         public string GameModeName { get => "race"; }
 
+        public CancellationTokenSource CancellationTokenSource = new();
+        public AsyncServerStreamingCall<JoinRoomResponse> RoomJoiningStream;
+        public ConcurrentDictionary<int, string> playerDictionary = new();
+
         public int currentScene;
 
         public void Init()

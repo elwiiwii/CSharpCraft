@@ -50,7 +50,7 @@ namespace CSharpCraft.RaceMode
 
             Printc("players in room", 64, 5, 8);
             int i = 0;
-            foreach (var player in playerDictionary.Values)
+            foreach (var player in mainRace.playerDictionary.Values)
             {
                 p8.Print(player, 34, 13 + i * 6, 8);
                 i++;

@@ -13,8 +13,6 @@ namespace CSharpCraft.RaceMode
     public class JoinRoomScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
     {
 #nullable enable
-        private static CancellationTokenSource CancellationTokenSource = new();
-        private static AsyncServerStreamingCall<JoinRoomResponse> RoomJoiningStream;
         //TODO channel is disposable
         private static GrpcChannel channel;
         private static GameService.GameServiceClient service;
@@ -22,8 +20,7 @@ namespace CSharpCraft.RaceMode
         private static ConcurrentString userName = new();
         private static ConcurrentString role = new();
         //private static ConcurrentString joinMessage = new();
-        private static ConcurrentDictionary<int, string> playerDictionary = new();
-
+        
         private static bool joinedRoom;
         private KeyboardState prevState;
         private int menuState;
@@ -34,14 +31,14 @@ namespace CSharpCraft.RaceMode
 
         public void Init()
         {
-            CancellationTokenSource = new();
+            mainRace.CancellationTokenSource = new();
             channel = GrpcChannel.ForAddress("https://localhost:5072");
             service = new GameService.GameServiceClient(channel);
             userName = new();
             role = new();
             role.Value = "Player";
             //joinMessage = new();
-            playerDictionary = new();
+            mainRace.playerDictionary = new();
             joinedRoom = false;
             prevState = Keyboard.GetState();
             menuState = 0;
@@ -81,13 +78,13 @@ namespace CSharpCraft.RaceMode
 
             if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
             {
-                CancellationTokenSource.Cancel(); // Cancel the listening task
-                RoomJoiningStream?.Dispose(); // Dispose of the stream
+                mainRace.CancellationTokenSource.Cancel(); // Cancel the listening task
+                mainRace.RoomJoiningStream?.Dispose(); // Dispose of the stream
             }
             AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
             {
-                CancellationTokenSource.Cancel(); // Cancel the listening task
-                RoomJoiningStream?.Dispose(); // Dispose of the stream
+                mainRace.CancellationTokenSource.Cancel(); // Cancel the listening task
+                mainRace.RoomJoiningStream?.Dispose(); // Dispose of the stream
             };
 
             if (!joinedRoom)
@@ -138,8 +135,8 @@ namespace CSharpCraft.RaceMode
                         }
                         else if (state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter))
                         {
-                            CancellationTokenSource.Cancel(); // Cancel the listening task
-                            RoomJoiningStream?.Dispose(); // Dispose of the stream
+                            mainRace.CancellationTokenSource.Cancel(); // Cancel the listening task
+                            mainRace.RoomJoiningStream?.Dispose(); // Dispose of the stream
                             titleScreen.currentGameMode = 0;
                             return;
                         }
@@ -188,7 +185,7 @@ namespace CSharpCraft.RaceMode
             {
                 Printc("players in room", 64, 5, 8);
                 int i = 0;
-                foreach (var player in playerDictionary.Values)
+                foreach (var player in mainRace.playerDictionary.Values)
                 {
                     p8.Print(player, 34, 13 + i * 6, 8);
                     i++;
@@ -202,21 +199,21 @@ namespace CSharpCraft.RaceMode
             p8.Print(t, x - t.Length * 2, y, c);
         }
 
-        private static async Task JoinRoom()
+        private async Task JoinRoom()
         {
             //Console.WriteLine("Join as (1) Player or (2) Spectator?");
             //var role = Console.ReadKey().KeyChar == '1' ? "Player" : "Spectator";
 
-            RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { UserName = userName.Value, Role = role.Value });
+            mainRace.RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { UserName = userName.Value, Role = role.Value });
 
             // Run the listening logic in a separate task
 
-            _ = Task.Run(ReadRoomJoiningStream, CancellationTokenSource.Token);
+            _ = Task.Run(ReadRoomJoiningStream, mainRace.CancellationTokenSource.Token);
         }
 
-        private static async Task ReadRoomJoiningStream()
+        private async Task ReadRoomJoiningStream()
         {
-            await foreach (var response in RoomJoiningStream.ResponseStream.ReadAllAsync(CancellationTokenSource.Token))
+            await foreach (var response in mainRace.RoomJoiningStream.ResponseStream.ReadAllAsync(mainRace.CancellationTokenSource.Token))
             {
                 // response.Message needs to be written to a ConcurrentString (see ConcurrentString.cs), which the draw method can draw from
                 //joinMessage.Value = response.Message; // roomJoiningMessage is displayed later in 'draw'
@@ -226,12 +223,12 @@ namespace CSharpCraft.RaceMode
                 //Console.WriteLine("Players in the room:");
 
                 // this would write to a ConcurrentDictionary of players, which the draw method can draw from
-                playerDictionary.Clear();
+                mainRace.playerDictionary.Clear();
                 var dummyIndex = 1;
                 foreach (var player in response.Users)
                 {
-                    Console.WriteLine(player);
-                    playerDictionary.TryAdd(dummyIndex, player);
+                    //Console.WriteLine(player);
+                    mainRace.playerDictionary.TryAdd(dummyIndex, player);
                     dummyIndex++;
                 }
 
