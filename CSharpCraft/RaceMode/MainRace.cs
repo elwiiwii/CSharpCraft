@@ -35,6 +35,19 @@ namespace CSharpCraft.RaceMode
 
         public void Update()
         {
+            KeyboardState state = Keyboard.GetState();
+
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
+            {
+                CancellationTokenSource.Cancel(); // Cancel the listening task
+                RoomJoiningStream?.Dispose(); // Dispose of the stream
+            }
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                CancellationTokenSource.Cancel(); // Cancel the listening task
+                RoomJoiningStream?.Dispose(); // Dispose of the stream
+            };
+
             currentScene = int.Parse(raceScenes[currentScene].GameModeName);
             raceScenes[currentScene].Update();
         }

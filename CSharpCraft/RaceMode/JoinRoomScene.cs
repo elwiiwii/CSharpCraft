@@ -52,7 +52,7 @@ namespace CSharpCraft.RaceMode
             {
                 @string.Value = @string.Value.Substring(0, @string.Value.Length - 1);
             }
-            else if ((KeyNames.keyNames[key.ToString()].Length == 1 || key == Keys.Space) && @string.Value.Length < 15)
+            else if ((KeyNames.keyNames[key.ToString()].Length == 1 || key == Keys.Space) && @string.Value.Length < 10)
             {
                 var keyMatch = false;
                 foreach (var prevKey in prevState.GetPressedKeys())
@@ -76,17 +76,6 @@ namespace CSharpCraft.RaceMode
         public async void Update()
         {
             KeyboardState state = Keyboard.GetState();
-
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
-            {
-                mainRace.CancellationTokenSource.Cancel(); // Cancel the listening task
-                mainRace.RoomJoiningStream?.Dispose(); // Dispose of the stream
-            }
-            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
-            {
-                mainRace.CancellationTokenSource.Cancel(); // Cancel the listening task
-                mainRace.RoomJoiningStream?.Dispose(); // Dispose of the stream
-            };
 
             if (!joinedRoom)
             {
