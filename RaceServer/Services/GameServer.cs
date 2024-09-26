@@ -24,6 +24,7 @@ public class GameServer : GameService.GameServiceBase
         var joinMessage = new JoinRoomResponse
         {
             Message = $"{request.Name} has joined the room.",
+            Myself = { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false }
         };
 
         var users = new List<RoomUser>();

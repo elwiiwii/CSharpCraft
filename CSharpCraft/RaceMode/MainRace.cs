@@ -24,6 +24,7 @@ namespace CSharpCraft.RaceMode
         public CancellationTokenSource CancellationTokenSource = new();
         public AsyncServerStreamingCall<JoinRoomResponse> RoomJoiningStream;
         public ConcurrentDictionary<int, RoomUser> playerDictionary = new();
+        public RoomUser myself = new();
 
         public int currentScene;
 

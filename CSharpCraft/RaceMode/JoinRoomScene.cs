@@ -114,7 +114,7 @@ namespace CSharpCraft.RaceMode
                         {
                             joinedRoom = true;
                             await JoinRoom();
-                            mainRace.currentScene = 1;
+                            raceScenes[1].Init();
                         }
                         break;
                     case 3:
@@ -211,6 +211,9 @@ namespace CSharpCraft.RaceMode
 
                 // this would be in 'draw'
                 //Console.WriteLine("Players in the room:");
+
+
+                mainRace.myself = response.Myself;
 
                 // this would write to a ConcurrentDictionary of players, which the draw method can draw from
                 mainRace.playerDictionary.Clear();

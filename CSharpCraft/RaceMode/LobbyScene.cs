@@ -16,14 +16,20 @@ namespace CSharpCraft.RaceMode
     public class LobbyScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
     {
 #nullable enable
-
+        private Menu actionsMenu = new();
+        private List<Item> actionsItems = new();
 #nullable disable
 
         public string GameModeName { get => "1"; }
 
         public void Init()
         {
-
+            mainRace.currentScene = 1;
+            actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41 };
+            actionsItems.Clear();
+            actionsItems.Add(new Item { Name = "ready", Active = mainRace.myself.Role == "Player" });
+            actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
+            actionsItems.Add(new Item { Name = "leave room", Active = true });
         }
 
         public async void Update()
@@ -36,10 +42,17 @@ namespace CSharpCraft.RaceMode
             p8.Print(t, x - t.Length * 2, y, c);
         }
 
-        private void DrawMenu(string title, string[] list, int xpos, int ypos, int width, int height)
+        private void DrawMenu(Menu menu)
         {
-            p8.Rectfill(xpos + (width - title.Length * 4) / 2, ypos + 1, xpos - 1 + width - (width - title.Length * 4) / 2, ypos + 7, 13);
-            p8.Print(title, xpos + 1 + (width - title.Length * 4) / 2, ypos + 2, 7);
+            p8.Rectfill(menu.Xpos + (menu.Width - menu.Name.Length * 4) / 2, menu.Ypos + 1, menu.Xpos - 1 + menu.Width - (menu.Width - menu.Name.Length * 4) / 2, menu.Ypos + 7, 13);
+            p8.Print(menu.Name, menu.Xpos + 1 + (menu.Width - menu.Name.Length * 4) / 2, menu.Ypos + 2, 7);
+
+            int i = 0;
+            foreach (var item in menu.Items)
+            {
+                p8.Print(item.Name, menu.Xpos + 5, menu.Ypos + 11 + i * 7, item.Active ? 7 : 0);
+                i++;
+            }
         }
 
         public void Draw()
@@ -64,13 +77,14 @@ namespace CSharpCraft.RaceMode
             Printc(roomName, 65, 7, 7);
             Printc("password-????", 65, 17, 7);
 
-            string[] placeholder = [];
-            DrawMenu("actions", placeholder, 5, 82, 53, 41);
+            //string[] actionsList = ["ready", "start game", "leave room"];
+            DrawMenu(actionsMenu);
             //var actions = "actions";
             //p8.Rectfill(17, 83, 17 + actions.Length * 4, 83 + 6, 13);
             //p8.Print(actions, 18, 84, 7);
 
-            DrawMenu("rules", placeholder, 62, 82, 61, 41);
+            //string[] rulesList = ["best of:5", "mode:any%", "finishers:1"];
+            //DrawMenu("rules", rulesList, 62, 82, 61, 41);
             //var rules = "rules";
             //p8.Rectfill(82, 83, 82 + rules.Length * 4, 83 + 6, 13);
             //p8.Print(rules, 83, 84, 7);

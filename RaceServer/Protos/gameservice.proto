@@ -23,4 +23,5 @@ message JoinRoomRequest {
 message JoinRoomResponse {
 	string message = 1;
 	repeated RoomUser users = 2;
+	RoomUser myself = 3;
 }
