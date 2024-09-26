@@ -8,11 +8,11 @@ namespace RaceServer.Services;
 
 public class GameServer : GameService.GameServiceBase
 {
-    private readonly List<IServerStreamWriter<JoinRoomResponse>> clients = new();
+    private readonly List<IServerStreamWriter<RoomStreamResponse>> clients = new();
 
     private readonly Room room = new("TestRoom");
 
-    public override async Task JoinRoom(JoinRoomRequest request, IServerStreamWriter<JoinRoomResponse> responseStream, ServerCallContext context)
+    public override async Task RoomStream(RoomStreamRequest request, IServerStreamWriter<RoomStreamResponse> responseStream, ServerCallContext context)
     {
         //todo add as player or spectator depending on what's in the request
         //todo modify return message depending on whether the user is a player or a spectator
@@ -21,10 +21,9 @@ public class GameServer : GameService.GameServiceBase
         var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false };
         room.AddPlayer(newUser);
 
-        var joinMessage = new JoinRoomResponse
+        var joinMessage = new RoomStreamResponse
         {
             Message = $"{request.Name} has joined the room.",
-            Myself = { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false }
         };
 
         var users = new List<RoomUser>();
@@ -63,12 +62,12 @@ public class GameServer : GameService.GameServiceBase
             userNames.Add(user.Name);
         }
 
-        joinMessage = new JoinRoomResponse
+        joinMessage = new RoomStreamResponse
         {
             Message = $"{request.Name} has left the room.",
         };
         users = new List<RoomUser>();
-        foreach (var user in room.Users) 
+        foreach (var user in room.Users)
         {
             var roomUser = new RoomUser
             {
@@ -84,4 +83,16 @@ public class GameServer : GameService.GameServiceBase
             await client.WriteAsync(joinMessage);
         }
     }
+
+    public override Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
+    {
+        var newRoomUser = new RoomUser { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false };
+
+        return Task.FromResult(new JoinRoomResponse
+        {
+            Message = $"{request.Name} has joined the room.",
+            Myself = newRoomUser
+        });
+    }
+
 }

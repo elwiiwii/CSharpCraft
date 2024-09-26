@@ -113,7 +113,7 @@ namespace CSharpCraft.RaceMode
                         else if (state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter))
                         {
                             joinedRoom = true;
-                            await JoinRoom();
+                            await RoomStream();
                             raceScenes[1].Init();
                         }
                         break;
@@ -189,21 +189,21 @@ namespace CSharpCraft.RaceMode
             p8.Print(t, x - t.Length * 2, y, c);
         }
 
-        private async Task JoinRoom()
+        private async Task RoomStream()
         {
             //Console.WriteLine("Join as (1) Player or (2) Spectator?");
             //var role = Console.ReadKey().KeyChar == '1' ? "Player" : "Spectator";
 
-            mainRace.RoomJoiningStream = service.JoinRoom(new JoinRoomRequest { Name = userName.Value, Role = role.Value });
+            mainRace.RoomStream = service.RoomStream(new RoomStreamRequest { Name = userName.Value, Role = role.Value });
 
             // Run the listening logic in a separate task
 
-            _ = Task.Run(ReadRoomJoiningStream, mainRace.CancellationTokenSource.Token);
+            _ = Task.Run(ReadRoomStream, mainRace.CancellationTokenSource.Token);
         }
 
-        private async Task ReadRoomJoiningStream()
+        private async Task ReadRoomStream()
         {
-            await foreach (var response in mainRace.RoomJoiningStream.ResponseStream.ReadAllAsync(mainRace.CancellationTokenSource.Token))
+            await foreach (var response in mainRace.RoomStream.ResponseStream.ReadAllAsync(mainRace.CancellationTokenSource.Token))
             {
                 // response.Message needs to be written to a ConcurrentString (see ConcurrentString.cs), which the draw method can draw from
                 //joinMessage.Value = response.Message; // roomJoiningMessage is displayed later in 'draw'
@@ -213,7 +213,7 @@ namespace CSharpCraft.RaceMode
                 //Console.WriteLine("Players in the room:");
 
 
-                mainRace.myself = response.Myself;
+                //mainRace.myself = response.Myself;
 
                 // this would write to a ConcurrentDictionary of players, which the draw method can draw from
                 mainRace.playerDictionary.Clear();

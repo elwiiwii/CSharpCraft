@@ -5,7 +5,8 @@ option csharp_namespace = "RaceServer";
 package race;
 
 service GameService {
-	rpc JoinRoom (JoinRoomRequest) returns (stream JoinRoomResponse);
+	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
+	rpc RoomStream (RoomStreamRequest) returns (stream RoomStreamResponse);
 }
 
 message RoomUser {
@@ -22,6 +23,16 @@ message JoinRoomRequest {
 
 message JoinRoomResponse {
 	string message = 1;
+	RoomUser myself = 2;
+}
+
+message RoomStreamRequest {
+	string name = 1;
+	string role = 2;
+	bool host = 3;
+}
+
+message RoomStreamResponse {
+	string message = 1;
 	repeated RoomUser users = 2;
-	RoomUser myself = 3;
 }

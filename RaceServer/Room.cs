@@ -38,5 +38,6 @@ namespace RaceServer
         public string Name { get; set; }
         public string Role { get; set; } = "Player";
         public bool Host { get; set; }
+        public bool Ready { get; set; } = true;
     }
 }

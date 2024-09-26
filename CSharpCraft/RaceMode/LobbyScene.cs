@@ -18,6 +18,8 @@ namespace CSharpCraft.RaceMode
 #nullable enable
         private Menu actionsMenu = new();
         private List<Item> actionsItems = new();
+        private Menu rulesMenu = new();
+        private List<Item> rulesItems = new();
 #nullable disable
 
         public string GameModeName { get => "1"; }
@@ -26,15 +28,20 @@ namespace CSharpCraft.RaceMode
         {
             mainRace.currentScene = 1;
             actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41 };
-            actionsItems.Clear();
-            actionsItems.Add(new Item { Name = "ready", Active = mainRace.myself.Role == "Player" });
-            actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
-            actionsItems.Add(new Item { Name = "leave room", Active = true });
+            rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41 };
         }
 
         public async void Update()
         {
-            
+            actionsItems.Clear();
+            actionsItems.Add(new Item { Name = "ready", Active = mainRace.myself.Role == "Player" });
+            actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
+            actionsItems.Add(new Item { Name = "leave room", Active = true });
+
+            rulesItems.Clear();
+            rulesItems.Add(new Item { Name = "best of:5", Active = mainRace.myself.Host });
+            rulesItems.Add(new Item { Name = "mode:any%", Active = mainRace.myself.Host });
+            rulesItems.Add(new Item { Name = "finishers:1", Active = mainRace.myself.Host });
         }
 
         private void Printc(string t, int x, int y, int c)
@@ -77,8 +84,11 @@ namespace CSharpCraft.RaceMode
             Printc(roomName, 65, 7, 7);
             Printc("password-????", 65, 17, 7);
 
-            //string[] actionsList = ["ready", "start game", "leave room"];
             DrawMenu(actionsMenu);
+            DrawMenu(rulesMenu);
+
+            //string[] actionsList = ["ready", "start game", "leave room"];
+            //DrawMenu(actionsMenu);
             //var actions = "actions";
             //p8.Rectfill(17, 83, 17 + actions.Length * 4, 83 + 6, 13);
             //p8.Print(actions, 18, 84, 7);
