@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RaceServer
@@ -30,6 +31,18 @@ namespace RaceServer
             {
                 users.Remove(user);
             }
+        }
+
+        public void SetPlayerReady(string name)
+        {
+            var player = users.FirstOrDefault(p => p.Name == name);
+            if (player is not null)
+                player.Ready = true;
+        }
+
+        public bool AllPlayersReady()
+        {
+            return users.All(p => p.Ready);
         }
     }
 

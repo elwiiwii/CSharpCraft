@@ -31,6 +31,7 @@
 		<None Remove="Content\Graphics\SmallSelector.png" />
 		<None Remove="Content\Graphics\SpectatorIcon.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
+		<None Remove="Content\Graphics\Tick.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Music\music_0.wav" />
 		<None Remove="Content\Music\music_1.wav" />
@@ -109,6 +110,9 @@
 		</Content>
 		<Content Include="Content\Graphics\font2.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\Tick.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\WaitingForInput.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>

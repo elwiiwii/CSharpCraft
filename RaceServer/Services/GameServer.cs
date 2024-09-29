@@ -11,6 +11,12 @@ public class GameServer : GameService.GameServiceBase
     private readonly List<IServerStreamWriter<RoomStreamResponse>> clients = new();
 
     private readonly Room room = new("TestRoom");
+    private readonly ILogger<GameServer> logger;
+
+    public GameServer(ILogger<GameServer> logger)
+    {
+        this.logger = logger;
+    }
 
     public override async Task RoomStream(RoomStreamRequest request, IServerStreamWriter<RoomStreamResponse> responseStream, ServerCallContext context)
     {
@@ -18,7 +24,7 @@ public class GameServer : GameService.GameServiceBase
         //todo modify return message depending on whether the user is a player or a spectator
 
         clients.Add(responseStream);
-        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false };
+        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
         room.AddPlayer(newUser);
 
         var joinMessage = new RoomStreamResponse
@@ -33,7 +39,8 @@ public class GameServer : GameService.GameServiceBase
             {
                 Name = user.Name,
                 Role = user.Role,
-                Host = user.Host
+                Host = user.Host,
+                Ready = user.Ready
             };
             joinMessage.Users.Add(roomUser);
         }
@@ -84,15 +91,36 @@ public class GameServer : GameService.GameServiceBase
         }
     }
 
-    public override Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
+    public override async Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
     {
-        var newRoomUser = new RoomUser { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false };
-
-        return Task.FromResult(new JoinRoomResponse
+        return new JoinRoomResponse
         {
             Message = $"{request.Name} has joined the room.",
-            Myself = newRoomUser
-        });
+            Name = request.Name,
+            Role = request.Role,
+            Host = room.Users.Count == 0 ? true : false
+        };
+    }
+
+    public override async Task<PlayerReadyResponse> PlayerReady(PlayerReadyRequest request, ServerCallContext context)
+    {
+        try
+        {
+            room.SetPlayerReady(request.Name);
+            return new PlayerReadyResponse
+            {
+                Ready = true
+            };
+        }
+        catch (Exception ex)
+        {
+            const string message = "Error in PlayerReady";
+            logger.LogError(ex, message);
+            return new PlayerReadyResponse
+            {
+                Ready = false
+            };
+        }
     }
 
 }

@@ -5,25 +5,16 @@ option csharp_namespace = "RaceServer";
 package race;
 
 service GameService {
-	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
 	rpc RoomStream (RoomStreamRequest) returns (stream RoomStreamResponse);
+	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
+	rpc PlayerReady (PlayerReadyRequest) returns (PlayerReadyResponse);
 }
 
 message RoomUser {
 	string name = 1;
 	string role = 2;
 	bool host = 3;
-}
-
-message JoinRoomRequest {
-	string name = 1;
-	string role = 2;
-	bool host = 3;
-}
-
-message JoinRoomResponse {
-	string message = 1;
-	RoomUser myself = 2;
+	bool ready = 4;
 }
 
 message RoomStreamRequest {
@@ -33,6 +24,36 @@ message RoomStreamRequest {
 }
 
 message RoomStreamResponse {
-	string message = 1;
+	oneof message {
+		JoinRoomNotification join_room_notification = 1;
+		PlayerReadyNotification player_ready_notification = 2;
+	}
+}
+
+message JoinRoomRequest {
+	string name = 1;
+	string role = 2;
+}
+
+message JoinRoomResponse {
+	string name = 1;
+	string role = 2;
+	bool host = 3;
+	bool ready = 4;
+}
+
+message JoinRoomNotification {
 	repeated RoomUser users = 2;
+}
+
+message PlayerReadyRequest {
+	string name = 1;
+}
+
+message PlayerReadyResponse {
+	bool ready = 1;
+}
+
+message PlayerReadyNotification {
+	bool ready = 1;
 }

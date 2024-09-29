@@ -34,7 +34,7 @@ namespace CSharpCraft.RaceMode
         public async void Update()
         {
             actionsItems.Clear();
-            actionsItems.Add(new Item { Name = "ready", Active = mainRace.myself.Role == "Player" });
+            actionsItems.Add(new Item { Name = "ready", Active = !mainRace.myself.Ready });
             actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
             actionsItems.Add(new Item { Name = "leave room", Active = true });
 
@@ -42,6 +42,11 @@ namespace CSharpCraft.RaceMode
             rulesItems.Add(new Item { Name = "best of:5", Active = mainRace.myself.Host });
             rulesItems.Add(new Item { Name = "mode:any%", Active = mainRace.myself.Host });
             rulesItems.Add(new Item { Name = "finishers:1", Active = mainRace.myself.Host });
+
+            if (p8.Btnp(5))
+            {
+                await PlayerReady();
+            }
         }
 
         private void Printc(string t, int x, int y, int c)
@@ -104,6 +109,10 @@ namespace CSharpCraft.RaceMode
             {
                 batch.Draw(textureDictionary[$"{player.Role}Icon"], new Vector2(25 * cellW, (26 + i * 7) * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
                 p8.Print(player.Name, 36, 26 + i * 7, 7);
+                if (player.Role == "Player" && player.Ready)
+                {
+                    batch.Draw(textureDictionary["Tick"], new Vector2((36 + player.Name.Length * 4) * cellW, (26 + i * 7) * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                }
                 if (player.Host)
                 {
                     p8.Print("[", 81, 26 + i * 7, 5);
@@ -114,6 +123,11 @@ namespace CSharpCraft.RaceMode
                 //p8.Print("0", 89, 118, 13);
                 i++;
             }
+        }
+
+        private async Task PlayerReady()
+        {
+            mainRace.myself.Ready = mainRace.service.PlayerReady(new PlayerReadyRequest { Name = mainRace.myself.Name }).Ready;
         }
 
     }

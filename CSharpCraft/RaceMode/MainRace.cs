@@ -21,8 +21,12 @@ namespace CSharpCraft.RaceMode
     {
         public string GameModeName { get => "race"; }
 
-        public CancellationTokenSource CancellationTokenSource = new();
-        public AsyncServerStreamingCall<RoomStreamResponse> RoomStream;
+        //TODO channel is disposable
+        public GrpcChannel channel;
+        public GameService.GameServiceClient service;
+
+        public CancellationTokenSource cancellationTokenSource = new();
+        public AsyncServerStreamingCall<RoomStreamResponse> roomStream;
         public ConcurrentDictionary<int, RoomUser> playerDictionary = new();
         public RoomUser myself = new();
 
@@ -30,6 +34,9 @@ namespace CSharpCraft.RaceMode
 
         public void Init()
         {
+            channel = GrpcChannel.ForAddress("https://localhost:5072");
+            service = new GameService.GameServiceClient(channel);
+
             currentScene = 0;
             raceScenes[currentScene].Init();
         }
@@ -40,13 +47,13 @@ namespace CSharpCraft.RaceMode
 
             if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q))
             {
-                CancellationTokenSource.Cancel(); // Cancel the listening task
-                RoomJoiningStream?.Dispose(); // Dispose of the stream
+                cancellationTokenSource.Cancel(); // Cancel the listening task
+                roomStream?.Dispose(); // Dispose of the stream
             }
             AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
             {
-                CancellationTokenSource.Cancel(); // Cancel the listening task
-                RoomJoiningStream?.Dispose(); // Dispose of the stream
+                cancellationTokenSource.Cancel(); // Cancel the listening task
+                roomStream?.Dispose(); // Dispose of the stream
             };
 
             currentScene = int.Parse(raceScenes[currentScene].GameModeName);
