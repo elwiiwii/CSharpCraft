@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
-using RaceServer;
+using Microsoft.Extensions.Logging;
 
 namespace RaceServer.Services;
 
@@ -24,31 +25,31 @@ public class GameServer : GameService.GameServiceBase
         //todo modify return message depending on whether the user is a player or a spectator
 
         clients.Add(responseStream);
-        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
-        room.AddPlayer(newUser);
-
-        var joinMessage = new RoomStreamResponse
-        {
-            Message = $"{request.Name} has joined the room.",
-        };
-
-        var users = new List<RoomUser>();
-        foreach (var user in room.Users)
-        {
-            var roomUser = new RoomUser
-            {
-                Name = user.Name,
-                Role = user.Role,
-                Host = user.Host,
-                Ready = user.Ready
-            };
-            joinMessage.Users.Add(roomUser);
-        }
-
-        foreach (var client in clients)
-        {
-            await client.WriteAsync(joinMessage);
-        }
+        //var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
+        //room.AddPlayer(newUser);
+        //
+        //var joinMessage = new RoomStreamResponse
+        //{
+        //    Message = $"{request.Name} has joined the room.",
+        //};
+        //
+        //var users = new List<RoomUser>();
+        //foreach (var user in room.Users)
+        //{
+        //    var roomUser = new RoomUser
+        //    {
+        //        Name = user.Name,
+        //        Role = user.Role,
+        //        Host = user.Host,
+        //        Ready = user.Ready
+        //    };
+        //    joinMessage.Users.Add(roomUser);
+        //}
+        //
+        //foreach (var client in clients)
+        //{
+        //    await client.WriteAsync(joinMessage);
+        //}
 
         // Keep the stream open
         while (!context.CancellationToken.IsCancellationRequested)
@@ -63,27 +64,36 @@ public class GameServer : GameService.GameServiceBase
         clients.Remove(responseStream);
 
         // notify the player has left the room
-        List<string> userNames = new List<string>();
-        foreach (var user in room.Users)
-        {
-            userNames.Add(user.Name);
-        }
 
-        joinMessage = new RoomStreamResponse
+        var notification = new RoomStreamRequest
         {
-            Message = $"{request.Name} has left the room.",
-        };
-        users = new List<RoomUser>();
-        foreach (var user in room.Users)
-        {
-            var roomUser = new RoomUser
+            JoinRoomNotification = new JoinRoomNotification
             {
-                Name = user.Name,
-                Role = user.Role,
-                Host = user.Host
-            };
-            joinMessage.Users.Add(roomUser);
-        }
+                Users = { room.Users.Select(u => u.Name) },
+            }
+        };
+
+        //List<string> userNames = new List<string>();
+        //foreach (var user in room.Users)
+        //{
+        //    userNames.Add(user.Name);
+        //}
+        //
+        //joinMessage = new RoomStreamResponse
+        //{
+        //    Message = $"{request.Name} has left the room.",
+        //};
+        //users = new List<RoomUser>();
+        //foreach (var user in room.Users)
+        //{
+        //    var roomUser = new RoomUser
+        //    {
+        //        Name = user.Name,
+        //        Role = user.Role,
+        //        Host = user.Host
+        //    };
+        //    joinMessage.Users.Add(roomUser);
+        //}
 
         foreach (var client in clients)
         {
@@ -95,10 +105,10 @@ public class GameServer : GameService.GameServiceBase
     {
         return new JoinRoomResponse
         {
-            Message = $"{request.Name} has joined the room.",
             Name = request.Name,
             Role = request.Role,
-            Host = room.Users.Count == 0 ? true : false
+            Host = room.Users.Count == 0 ? true : false,
+            Ready = request.Role == "Player" ? false : true
         };
     }
 
