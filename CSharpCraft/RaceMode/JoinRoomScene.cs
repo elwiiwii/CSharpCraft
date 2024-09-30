@@ -108,8 +108,8 @@ namespace CSharpCraft.RaceMode
                         else if (state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter))
                         {
                             joinedRoom = true;
-                            await JoinRoom();
                             await RoomStream();
+                            await JoinRoom();
                             raceScenes[1].Init();
                         }
                         break;
@@ -207,6 +207,19 @@ namespace CSharpCraft.RaceMode
         {
             await foreach (var response in mainRace.roomStream.ResponseStream.ReadAllAsync(mainRace.cancellationTokenSource.Token))
             {
+                switch (response.MessageCase)
+                {
+                    case RoomStreamResponse.MessageOneofCase.JoinRoomNotification:
+                        HandleJoinRoomNotification(response.JoinRoomNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.PlayerReadyNotification:
+                        HandlePlayerReadyNotification(response.PlayerReadyNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.None:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
                 // response.Message needs to be written to a ConcurrentString (see ConcurrentString.cs), which the draw method can draw from
                 //joinMessage.Value = response.Message; // roomJoiningMessage is displayed later in 'draw'
                 //Console.WriteLine(response.Message);
@@ -218,14 +231,14 @@ namespace CSharpCraft.RaceMode
                 //mainRace.myself = response.Myself;
 
                 // this would write to a ConcurrentDictionary of players, which the draw method can draw from
-                mainRace.playerDictionary.Clear();
-                var dummyIndex = 1;
-                foreach (var player in response.Users)
-                {
-                    //Console.WriteLine(player);
-                    mainRace.playerDictionary.TryAdd(dummyIndex, player);
-                    dummyIndex++;
-                }
+                //mainRace.playerDictionary.Clear();
+                //var dummyIndex = 1;
+                //foreach (var player in response.Users)
+                //{
+                //    //Console.WriteLine(player);
+                //    mainRace.playerDictionary.TryAdd(dummyIndex, player);
+                //    dummyIndex++;
+                //}
 
                 //Console.WriteLine("Spectators in the room:");
                 //foreach (var spectator in response.Spectators)
@@ -235,16 +248,31 @@ namespace CSharpCraft.RaceMode
             }
         }
 
-        private static async Task StartGame(GameService.GameServiceClient client)
+        private void HandleJoinRoomNotification(JoinRoomNotification notification)
         {
-            throw new NotImplementedException();
+            mainRace.playerDictionary.Clear();
+            var dummyIndex = 1;
+            foreach (var player in notification.Users)
+            {
+                //Console.WriteLine(player);
+                mainRace.playerDictionary.TryAdd(dummyIndex, player);
+                dummyIndex++;
+            }
         }
 
-        private static async Task QuitGame(GameService.GameServiceClient client)
+        private void HandlePlayerReadyNotification(PlayerReadyNotification notification)
         {
-            throw new NotImplementedException();
+            mainRace.playerDictionary.Clear();
+            var dummyIndex = 1;
+            foreach (var player in notification.Users)
+            {
+                //Console.WriteLine(player);
+                mainRace.playerDictionary.TryAdd(dummyIndex, player);
+                dummyIndex++;
+            }
         }
 
+        
     }
 
 }

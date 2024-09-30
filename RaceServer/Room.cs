@@ -7,7 +7,7 @@ namespace RaceServer
     public class Room(string name)
     {
         public string Name { get; } = name;
-        private readonly List<User> users = new();
+        public readonly List<User> users = new();
 
         public IReadOnlyList<User> Users => users;
 
@@ -33,11 +33,11 @@ namespace RaceServer
             }
         }
 
-        public void SetPlayerReady(string name)
+        public void TogglePlayerReady(string name)
         {
             var player = users.FirstOrDefault(p => p.Name == name);
             if (player is not null)
-                player.Ready = true;
+                player.Ready = !player.Ready;
         }
 
         public bool AllPlayersReady()

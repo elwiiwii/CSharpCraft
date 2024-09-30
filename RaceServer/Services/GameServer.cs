@@ -65,13 +65,21 @@ public class GameServer : GameService.GameServiceBase
 
         // notify the player has left the room
 
-        var notification = new RoomStreamRequest
+        var notification = new RoomStreamResponse
         {
-            JoinRoomNotification = new JoinRoomNotification
-            {
-                Users = { room.Users.Select(u => u.Name) },
-            }
+            JoinRoomNotification = new JoinRoomNotification { }
         };
+        foreach (var user in room.Users)
+        {
+            var roomUser = new RoomUser
+            {
+                Name = user.Name,
+                Role = user.Role,
+                Host = user.Host,
+                Ready = user.Ready
+            };
+            notification.JoinRoomNotification.Users.Add(roomUser);
+        }
 
         //List<string> userNames = new List<string>();
         //foreach (var user in room.Users)
@@ -97,40 +105,75 @@ public class GameServer : GameService.GameServiceBase
 
         foreach (var client in clients)
         {
-            await client.WriteAsync(joinMessage);
+            await client.WriteAsync(notification);
         }
     }
 
     public override async Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
     {
+        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
+        room.AddPlayer(newUser);
+
+        var notification = new RoomStreamResponse
+        {
+            JoinRoomNotification = new JoinRoomNotification { }
+        };
+        foreach (var user in room.Users)
+        {
+            var roomUser = new RoomUser
+            {
+                Name = user.Name,
+                Role = user.Role,
+                Host = user.Host,
+                Ready = user.Ready
+            };
+            notification.JoinRoomNotification.Users.Add(roomUser);
+        }
+
+        foreach (var client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
+
         return new JoinRoomResponse
         {
-            Name = request.Name,
-            Role = request.Role,
-            Host = room.Users.Count == 0 ? true : false,
-            Ready = request.Role == "Player" ? false : true
+            Name = newUser.Name,
+            Role = newUser.Role,
+            Host = newUser.Host,
+            Ready = newUser.Ready
         };
     }
 
     public override async Task<PlayerReadyResponse> PlayerReady(PlayerReadyRequest request, ServerCallContext context)
     {
-        try
+        room.TogglePlayerReady(request.Name);
+
+        var notification = new RoomStreamResponse
         {
-            room.SetPlayerReady(request.Name);
-            return new PlayerReadyResponse
-            {
-                Ready = true
-            };
-        }
-        catch (Exception ex)
+            PlayerReadyNotification = new PlayerReadyNotification { }
+        };
+        foreach (var user in room.Users)
         {
-            const string message = "Error in PlayerReady";
-            logger.LogError(ex, message);
-            return new PlayerReadyResponse
+            var roomUser = new RoomUser
             {
-                Ready = false
+                Name = user.Name,
+                Role = user.Role,
+                Host = user.Host,
+                Ready = user.Ready
             };
+            notification.PlayerReadyNotification.Users.Add(roomUser);
         }
+
+        foreach (var client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
+
+        var myself = room.users.FirstOrDefault(p => p.Name == request.Name);
+        return new PlayerReadyResponse
+        {
+            Ready = myself.Ready
+        };
     }
 
 }

@@ -55,5 +55,5 @@ message PlayerReadyResponse {
 }
 
 message PlayerReadyNotification {
-	bool ready = 1;
+	repeated RoomUser users = 2;
 }

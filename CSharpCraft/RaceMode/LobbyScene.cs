@@ -34,7 +34,7 @@ namespace CSharpCraft.RaceMode
         public async void Update()
         {
             actionsItems.Clear();
-            actionsItems.Add(new Item { Name = "ready", Active = !mainRace.myself.Ready });
+            actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player" });
             actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
             actionsItems.Add(new Item { Name = "leave room", Active = true });
 
@@ -43,7 +43,7 @@ namespace CSharpCraft.RaceMode
             rulesItems.Add(new Item { Name = "mode:any%", Active = mainRace.myself.Host });
             rulesItems.Add(new Item { Name = "finishers:1", Active = mainRace.myself.Host });
 
-            if (p8.Btnp(5))
+            if (p8.Btnp(5) && mainRace.myself.Role == "Player")
             {
                 await PlayerReady();
             }
@@ -54,16 +54,21 @@ namespace CSharpCraft.RaceMode
             p8.Print(t, x - t.Length * 2, y, c);
         }
 
-        private void DrawMenu(Menu menu)
+        private void DrawMenu(Menu menu, int sel, bool active)
         {
             p8.Rectfill(menu.Xpos + (menu.Width - menu.Name.Length * 4) / 2, menu.Ypos + 1, menu.Xpos - 1 + menu.Width - (menu.Width - menu.Name.Length * 4) / 2, menu.Ypos + 7, 13);
             p8.Print(menu.Name, menu.Xpos + 1 + (menu.Width - menu.Name.Length * 4) / 2, menu.Ypos + 2, 7);
 
-            int i = 0;
-            foreach (var item in menu.Items)
+            if (active)
             {
-                p8.Print(item.Name, menu.Xpos + 5, menu.Ypos + 11 + i * 7, item.Active ? 7 : 0);
-                i++;
+                p8.Rectfill(menu.Xpos, menu.Ypos + 10, menu.Xpos + menu.Width - 1, menu.Ypos + 16, 13);
+                p8.Spr(68, menu.Xpos - 3, menu.Ypos + 10);
+                p8.Spr(68, menu.Xpos + menu.Width - 5, menu.Ypos + 10, 1, 1, true);
+            }
+
+            for (int i = sel; i <= sel + 2; i++)
+            {
+                p8.Print(menu.Items[i].Name, menu.Xpos + 5, menu.Ypos + 11 + i * 7, menu.Items[i].Active ? 7 : 0);
             }
         }
 
@@ -89,8 +94,8 @@ namespace CSharpCraft.RaceMode
             Printc(roomName, 65, 7, 7);
             Printc("password-????", 65, 17, 7);
 
-            DrawMenu(actionsMenu);
-            DrawMenu(rulesMenu);
+            DrawMenu(actionsMenu, 1, true);
+            DrawMenu(rulesMenu, 1, false);
 
             //string[] actionsList = ["ready", "start game", "leave room"];
             //DrawMenu(actionsMenu);
@@ -111,7 +116,7 @@ namespace CSharpCraft.RaceMode
                 p8.Print(player.Name, 36, 26 + i * 7, 7);
                 if (player.Role == "Player" && player.Ready)
                 {
-                    batch.Draw(textureDictionary["Tick"], new Vector2((36 + player.Name.Length * 4) * cellW, (26 + i * 7) * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    batch.Draw(textureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * cellW, (26 + i * 7) * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 }
                 if (player.Host)
                 {
