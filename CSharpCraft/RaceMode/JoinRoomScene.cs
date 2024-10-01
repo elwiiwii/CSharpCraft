@@ -43,7 +43,7 @@ namespace CSharpCraft.RaceMode
 
         private void TypingHandling(Keys key, ConcurrentString @string)
         {
-            if (key == Keys.Back && @string.Value.Length > 0)
+            if (key == Keys.Back && !prevState.IsKeyDown(Keys.Back) && @string.Value.Length > 0)
             {
                 @string.Value = @string.Value.Substring(0, @string.Value.Length - 1);
             }

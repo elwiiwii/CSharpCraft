@@ -18,10 +18,14 @@ namespace CSharpCraft.RaceMode
     public class LobbyScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
     {
 #nullable enable
+        private Menu roomMenu = new();
+        private List<Item> roomItems = new();
         private Menu actionsMenu = new();
         private List<Item> actionsItems = new();
         private Menu rulesMenu = new();
         private List<Item> rulesItems = new();
+        private string roomName;
+        private string roomPassword;
 #nullable disable
 
         public string GameModeName { get => "1"; }
@@ -29,12 +33,18 @@ namespace CSharpCraft.RaceMode
         public void Init()
         {
             mainRace.currentScene = 1;
+            roomName = "????";
+            roomPassword = "????";
+            roomMenu = new Menu { Name = $"room name-{roomName}", Items = roomItems, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };
             actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41 };
             rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41 };
         }
 
         public async void Update()
         {
+            roomItems.Clear();
+            roomItems.Add(new Item { Name = $"password-{roomPassword}", Active = true });
+
             actionsItems.Clear();
             actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player" });
             actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
@@ -104,6 +114,13 @@ namespace CSharpCraft.RaceMode
             p8.Print(name, hx + 1, y + 2, 7);
         }
 
+        private void Selector(int x, int y, int width)
+        {
+            p8.Rectfill(x, y, x + width - 1, y + 6, 13);
+            p8.Spr(68, x - 3, y);
+            p8.Spr(68, x + width - 5, y, 1, 1, true);
+        }
+
         private void List(Menu menu, int x, int y, int width, int height, int displayed)
         {
             Panel(menu.Name, x, y, width, height);
@@ -151,10 +168,12 @@ namespace CSharpCraft.RaceMode
             }
 
             var sely = y + offset + 4 + (sel + 1) * 7;
+            Selector(x, sely, width);
+
             //p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
-            p8.Rectfill(menu.Xpos, sely, menu.Xpos + menu.Width - 1, sely + 6, 13);
-            p8.Spr(68, menu.Xpos - 3, sely);
-            p8.Spr(68, menu.Xpos + menu.Width - 5, sely, 1, 1, true);
+            //p8.Rectfill(menu.Xpos, sely, menu.Xpos + menu.Width - 1, sely + 6, 13);
+            //p8.Spr(68, menu.Xpos - 3, sely);
+            //p8.Spr(68, menu.Xpos + menu.Width - 5, sely, 1, 1, true);
 
             x += 5;
             y += 12;
@@ -187,15 +206,19 @@ namespace CSharpCraft.RaceMode
             Vector2 size = new(cellW, cellH);
             Vector2 halfSize = new(cellW / 2, cellH / 2);
 
-            batch.Draw(textureDictionary["LobbyBackground"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            //batch.Draw(textureDictionary["LobbyBackground"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-            var roomName = "room name-????";
-            p8.Rectfill(64 - roomName.Length * 2, 6, 64 + roomName.Length * 2, 6 + 6, 13);
-            Printc(roomName, 65, 7, 7);
-            Printc("password-????", 65, 17, 7);
+            //var roomName = "room name-????";
+            //p8.Rectfill(64 - roomName.Length * 2, 6, 64 + roomName.Length * 2, 6 + 6, 13);
+            //Printc(roomName, 65, 7, 7);
+            //Printc("password-????", 65, 17, 7);
 
             //DrawMenu(actionsMenu, 1, true);
             //DrawMenu(rulesMenu, 1, false);
+
+            Panel($"room name-{roomName}", 20, 5, 88, 73);
+            Selector(roomMenu.Xpos, roomMenu.Ypos + 11, roomMenu.Width);
+            Printc($"password-{roomPassword}", 65, roomMenu.Ypos + 12, 7);
             List(actionsMenu, actionsMenu.Xpos, actionsMenu.Ypos, actionsMenu.Width, actionsMenu.Height, 3);
             List(rulesMenu, rulesMenu.Xpos, rulesMenu.Ypos, rulesMenu.Width, rulesMenu.Height, 3);
 

@@ -138,7 +138,7 @@ public class GameServer : GameService.GameServiceBase
         {
             Name = request.Name,
             Role = request.Role,
-            Host = room.Users.Count == 0 ? true : false,
+            Host = room.Users.Count <2 ? true : false, //todo this is jank
             Ready = request.Role == "Player" ? false : true
         };
     }
