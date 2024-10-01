@@ -184,13 +184,21 @@ namespace CSharpCraft
                 gameModes[currentGameMode].Draw();
             }
 
+            // Get the size of the viewport
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellW = viewportWidth / 128;
+            int cellH = viewportHeight / 128;
+
             // Draw the grid
             /*for (int i = 0; i <= 128; i++)
             {
                 // Draw vertical lines
-                batch.DrawLine(pixel, new Vector2(i * cellWidth, 0), new Vector2(i * cellWidth, viewportHeight), Color.White, 1);
+                batch.DrawLine(pixel, new Vector2(i * cellW, 0), new Vector2(i * cellW, viewportHeight), Color.White, 1);
                 // Draw horizontal lines
-                batch.DrawLine(pixel, new Vector2(0, i * cellHeight), new Vector2(viewportWidth, i * cellHeight), Color.White, 1);
+                batch.DrawLine(pixel, new Vector2(0, i * cellH), new Vector2(viewportWidth, i * cellH), Color.White, 1);
             }*/
 
             batch.End();

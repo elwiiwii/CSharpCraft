@@ -10,6 +10,8 @@ namespace CSharpCraft.RaceMode
     {
         public string Name { get; set; }
         public List<Item> Items { get; set; }
+        public int Sel { get; set; }
+        public int Off { get; set; }
         public int Xpos { get; set; }
         public int Ypos { get; set; }
         public int Width { get; set; }

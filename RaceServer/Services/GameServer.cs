@@ -25,31 +25,30 @@ public class GameServer : GameService.GameServiceBase
         //todo modify return message depending on whether the user is a player or a spectator
 
         clients.Add(responseStream);
-        //var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
-        //room.AddPlayer(newUser);
-        //
-        //var joinMessage = new RoomStreamResponse
-        //{
-        //    Message = $"{request.Name} has joined the room.",
-        //};
-        //
-        //var users = new List<RoomUser>();
-        //foreach (var user in room.Users)
-        //{
-        //    var roomUser = new RoomUser
-        //    {
-        //        Name = user.Name,
-        //        Role = user.Role,
-        //        Host = user.Host,
-        //        Ready = user.Ready
-        //    };
-        //    joinMessage.Users.Add(roomUser);
-        //}
-        //
-        //foreach (var client in clients)
-        //{
-        //    await client.WriteAsync(joinMessage);
-        //}
+
+        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
+        room.AddPlayer(newUser);
+
+        var notification = new RoomStreamResponse
+        {
+            JoinRoomNotification = new JoinRoomNotification { }
+        };
+        foreach (var user in room.Users)
+        {
+            var roomUser = new RoomUser
+            {
+                Name = user.Name,
+                Role = user.Role,
+                Host = user.Host,
+                Ready = user.Ready
+            };
+            notification.JoinRoomNotification.Users.Add(roomUser);
+        }
+
+        foreach (var client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
 
         // Keep the stream open
         while (!context.CancellationToken.IsCancellationRequested)
@@ -65,7 +64,7 @@ public class GameServer : GameService.GameServiceBase
 
         // notify the player has left the room
 
-        var notification = new RoomStreamResponse
+        notification = new RoomStreamResponse
         {
             JoinRoomNotification = new JoinRoomNotification { }
         };
@@ -111,36 +110,36 @@ public class GameServer : GameService.GameServiceBase
 
     public override async Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
     {
-        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
-        room.AddPlayer(newUser);
-
-        var notification = new RoomStreamResponse
-        {
-            JoinRoomNotification = new JoinRoomNotification { }
-        };
-        foreach (var user in room.Users)
-        {
-            var roomUser = new RoomUser
-            {
-                Name = user.Name,
-                Role = user.Role,
-                Host = user.Host,
-                Ready = user.Ready
-            };
-            notification.JoinRoomNotification.Users.Add(roomUser);
-        }
-
-        foreach (var client in clients)
-        {
-            await client.WriteAsync(notification);
-        }
+        //var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
+        //room.AddPlayer(newUser);
+        //
+        //var notification = new RoomStreamResponse
+        //{
+        //    JoinRoomNotification = new JoinRoomNotification { }
+        //};
+        //foreach (var user in room.Users)
+        //{
+        //    var roomUser = new RoomUser
+        //    {
+        //        Name = user.Name,
+        //        Role = user.Role,
+        //        Host = user.Host,
+        //        Ready = user.Ready
+        //    };
+        //    notification.JoinRoomNotification.Users.Add(roomUser);
+        //}
+        //
+        //foreach (var client in clients)
+        //{
+        //    await client.WriteAsync(notification);
+        //}
 
         return new JoinRoomResponse
         {
-            Name = newUser.Name,
-            Role = newUser.Role,
-            Host = newUser.Host,
-            Ready = newUser.Ready
+            Name = request.Name,
+            Role = request.Role,
+            Host = room.Users.Count == 0 ? true : false,
+            Ready = request.Role == "Player" ? false : true
         };
     }
 
