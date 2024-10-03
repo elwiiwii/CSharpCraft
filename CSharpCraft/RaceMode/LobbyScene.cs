@@ -19,7 +19,6 @@ namespace CSharpCraft.RaceMode
     {
 #nullable enable
         private Menu roomMenu = new();
-        private List<Item> roomItems = new();
         private Menu actionsMenu = new();
         private List<Item> actionsItems = new();
         private Menu rulesMenu = new();
@@ -35,15 +34,14 @@ namespace CSharpCraft.RaceMode
             mainRace.currentScene = 1;
             roomName = "????";
             roomPassword = "????";
-            roomMenu = new Menu { Name = $"room name-{roomName}", Items = roomItems, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };
+            roomMenu = new Menu { Name = $"room name-{roomName}", Items = null, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };
             actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41 };
             rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41 };
         }
 
         public async void Update()
         {
-            roomItems.Clear();
-            roomItems.Add(new Item { Name = $"password-{roomPassword}", Active = true });
+            
 
             actionsItems.Clear();
             actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player" });
@@ -87,9 +85,6 @@ namespace CSharpCraft.RaceMode
                 p8.Spr(68, menu.Xpos - 3, menu.Ypos + 10);
                 p8.Spr(68, menu.Xpos + menu.Width - 5, menu.Ypos + 10, 1, 1, true);
             }
-
-            var offset = 0;
-            
 
             for (int i = sel; i <= sel + 2; i++)
             {
@@ -216,7 +211,7 @@ namespace CSharpCraft.RaceMode
             //DrawMenu(actionsMenu, 1, true);
             //DrawMenu(rulesMenu, 1, false);
 
-            Panel($"room name-{roomName}", 20, 5, 88, 73);
+            Panel($"room name-{roomName}", roomMenu.Xpos, roomMenu.Ypos, roomMenu.Width, roomMenu.Height);
             Selector(roomMenu.Xpos, roomMenu.Ypos + 11, roomMenu.Width);
             Printc($"password-{roomPassword}", 65, roomMenu.Ypos + 12, 7);
             List(actionsMenu, actionsMenu.Xpos, actionsMenu.Ypos, actionsMenu.Width, actionsMenu.Height, 3);

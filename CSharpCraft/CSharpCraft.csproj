@@ -9,6 +9,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="Content\Graphics\0.png" />
+		<None Remove="Content\Graphics\1.png" />
+		<None Remove="Content\Graphics\2.png" />
+		<None Remove="Content\Graphics\3.png" />
+		<None Remove="Content\Graphics\4.png" />
+		<None Remove="Content\Graphics\5.png" />
+		<None Remove="Content\Graphics\6.png" />
+		<None Remove="Content\Graphics\7.png" />
+		<None Remove="Content\Graphics\8.png" />
+		<None Remove="Content\Graphics\9.png" />
 		<None Remove="Content\Graphics\Arrow.png" />
 		<None Remove="Content\Graphics\Arrow5.png" />
 		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
@@ -26,9 +36,22 @@
 		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
 		<None Remove="Content\Graphics\OptionsMenuTab.png" />
 		<None Remove="Content\Graphics\PlayerIcon.png" />
+		<None Remove="Content\Graphics\SeedQuestion.png" />
+		<None Remove="Content\Graphics\SeedSelector.png" />
+		<None Remove="Content\Graphics\SeedType1.png" />
+		<None Remove="Content\Graphics\SeedType2.png" />
+		<None Remove="Content\Graphics\SeedType3.png" />
+		<None Remove="Content\Graphics\SeedType4.png" />
+		<None Remove="Content\Graphics\SeedType51.png" />
+		<None Remove="Content\Graphics\SeedType52.png" />
+		<None Remove="Content\Graphics\SeedType53.png" />
+		<None Remove="Content\Graphics\SeedType54.png" />
+		<None Remove="Content\Graphics\SeedType6.png" />
+		<None Remove="Content\Graphics\SeedType7.png" />
 		<None Remove="Content\Graphics\SelectorBorder.png" />
 		<None Remove="Content\Graphics\SelectorCenter.png" />
 		<None Remove="Content\Graphics\SelectorHalf.png" />
+		<None Remove="Content\Graphics\SmallNameBanner.png" />
 		<None Remove="Content\Graphics\SmallSelector.png" />
 		<None Remove="Content\Graphics\SpectatorIcon.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
@@ -46,6 +69,42 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\SeedType2.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Content\Graphics\0.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\1.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\2.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\3.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\4.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\5.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\6.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\7.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\8.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\9.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\Arrow5.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -91,6 +150,39 @@
 		<Content Include="Content\Graphics\PlayerIcon.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Graphics\SeedQuestion.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedSelector.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType1.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType3.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType4.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType51.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType52.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType53.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType54.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType6.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType7.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Graphics\SelectorBorder.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -98,6 +190,9 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SelectorHalf.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SmallNameBanner.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SmallSelector.png">
