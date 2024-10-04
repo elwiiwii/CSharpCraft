@@ -34,6 +34,7 @@ namespace CSharpCraft
         private List<IGameMode> raceScenes = [];
         private JoinRoomScene joinRoomScene;
         private LobbyScene lobbyScene;
+        private PickBanScene pickBanScene;
 
         private MainOptions mainOptions;
         private List<IGameMode> optionsModes = [];
@@ -109,6 +110,7 @@ namespace CSharpCraft
 
             raceScenes.Add(joinRoomScene);
             raceScenes.Add(lobbyScene);
+            raceScenes.Add(pickBanScene);
 
             optionsModes.Add(backOptions1);
             optionsModes.Add(backOptions2);
@@ -279,6 +281,7 @@ namespace CSharpCraft
             mainRace = new MainRace(raceScenes);
             joinRoomScene = new JoinRoomScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
             lobbyScene = new LobbyScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
+            pickBanScene = new PickBanScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
 
             mainOptions = new MainOptions(optionsModes);
             backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);

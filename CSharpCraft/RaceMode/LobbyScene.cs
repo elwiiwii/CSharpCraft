@@ -63,6 +63,8 @@ namespace CSharpCraft.RaceMode
             if (p8.Btnp(2)) { actionsMenu.Sel -= 1; }
             if (p8.Btnp(3)) { actionsMenu.Sel += 1; }
 
+            if (p8.Btnp(4)) { raceScenes[2].Init(); }
+
             if (p8.Btnp(5) && mainRace.myself.Role == "Player")
             {
                 await PlayerReady();

@@ -24,6 +24,7 @@
 		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
+		<None Remove="Content\Graphics\Game.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\LobbyBackground.png" />
 		<None Remove="Content\Graphics\OptionsBackground0.png" />
@@ -36,8 +37,11 @@
 		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
 		<None Remove="Content\Graphics\OptionsMenuTab.png" />
 		<None Remove="Content\Graphics\PlayerIcon.png" />
+		<None Remove="Content\Graphics\SeedCross.png" />
+		<None Remove="Content\Graphics\SeedGreyOut.png" />
 		<None Remove="Content\Graphics\SeedQuestion.png" />
 		<None Remove="Content\Graphics\SeedSelector.png" />
+		<None Remove="Content\Graphics\SeedSelectorArrow.png" />
 		<None Remove="Content\Graphics\SeedType1.png" />
 		<None Remove="Content\Graphics\SeedType2.png" />
 		<None Remove="Content\Graphics\SeedType3.png" />
@@ -69,6 +73,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\Game.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedCross.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedGreyOut.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedSelectorArrow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\SeedType2.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
