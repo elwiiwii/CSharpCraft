@@ -72,7 +72,7 @@ namespace CSharpCraft.Pcraft
         private List<Entity>? stonebenchRecipe;
         private bool switchLevel = false;
 
-        private double time;
+        private float time;
         private int toogleMenu;
         readonly int[] typeCount = new int[11];
 
@@ -448,7 +448,7 @@ namespace CSharpCraft.Pcraft
             coffx = 0.0;
             coffy = 0.0;
 
-            time = 0.0;
+            time = 0.0f;
 
             toogleMenu = 0;
             invent = [];
@@ -1281,7 +1281,7 @@ namespace CSharpCraft.Pcraft
                 block5 = false;
             }
 
-            time += 1.0 / 30.0;
+            time += 1.0f / 30.0f;
 
             if (plife <= 0)
             {
@@ -1927,7 +1927,7 @@ namespace CSharpCraft.Pcraft
                 Printc(curMenu.Text, 64, 80, 6);
                 Printc(curMenu.Text2, 64, 90, 6);
                 Printc("press button 1", 64, 112, 6 + time % 2);
-                time += 0.1;
+                time += 0.1f;
                 return;
             }
 

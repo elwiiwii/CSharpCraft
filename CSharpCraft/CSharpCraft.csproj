@@ -42,10 +42,13 @@
 		<None Remove="Content\Graphics\SeedQuestion.png" />
 		<None Remove="Content\Graphics\SeedSelector.png" />
 		<None Remove="Content\Graphics\SeedSelectorArrow.png" />
+		<None Remove="Content\Graphics\SeedType0.png" />
 		<None Remove="Content\Graphics\SeedType1.png" />
 		<None Remove="Content\Graphics\SeedType2.png" />
 		<None Remove="Content\Graphics\SeedType3.png" />
 		<None Remove="Content\Graphics\SeedType4.png" />
+		<None Remove="Content\Graphics\SeedType5.png" />
+		<None Remove="Content\Graphics\SeedType50.png" />
 		<None Remove="Content\Graphics\SeedType51.png" />
 		<None Remove="Content\Graphics\SeedType52.png" />
 		<None Remove="Content\Graphics\SeedType53.png" />
@@ -83,6 +86,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SeedSelectorArrow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedType0.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SeedType2.png">
@@ -181,6 +187,12 @@
 		<Content Include="Content\Graphics\SeedType4.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Graphics\SeedType5.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Graphics\SeedType50.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Graphics\SeedType51.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -188,9 +200,6 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SeedType53.png">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Content\Graphics\SeedType54.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Graphics\SeedType6.png">
