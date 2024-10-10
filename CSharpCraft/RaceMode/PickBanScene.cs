@@ -12,10 +12,11 @@ using System.Data;
 using System;
 using CSharpCraft.Pcraft;
 using System.Drawing;
+using CSharpCraft.OptionsMenu;
 
 namespace CSharpCraft.RaceMode
 {
-    public class PickBanScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
+    public class PickBanScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen, KeyboardOptionsFile keyboardOptionsFile) : IGameMode
     {
 #nullable enable
         private float animationTimer;
@@ -101,7 +102,10 @@ namespace CSharpCraft.RaceMode
             {
                 foreach (var seedType in seedTypes)
                 {
-                    seedType.Status = "UNBANNED";
+                    if (seedType.Name != "SeedType0")
+                    {
+                        seedType.Status = "UNBANNED";
+                    }
                 }
             }
 
@@ -110,13 +114,20 @@ namespace CSharpCraft.RaceMode
                 seedTypes[5].Unavailable = false;
                 seedTypes[6].Unavailable = false;
                 seedTypes[7].Unavailable = false;
-                if (p8.Btnp(5) && !selectedSeedType.Unavailable && selectedSeedType.Status == "UNBANNED")
+                if (p8.Btnp(5) && !selectedSeedType.Unavailable)
                 {
-                    gameType.Name = $"SeedType{selectedType}";
-                    selectedSeedType.Status = gameType.Status;
-                    if (gameCount < 5)
+                    if (selectedSeedType.Status == "UNBANNED")
                     {
-                        gameCount++; //testing
+                        gameType.Name = $"SeedType{selectedType}";
+                        selectedSeedType.Status = gameType.Status;
+                        if (gameCount < 5)
+                        {
+                            gameCount++; //testing
+                        }
+                    }
+                    else if (selectedSeedType.Status == "BANNED")
+                    {
+                        selectedSeedType.Status = "UNBANNED";
                     }
                 }
             }
@@ -138,7 +149,7 @@ namespace CSharpCraft.RaceMode
                 }
                 else
                 {
-                    if (p8.Btnp(5) && !turnType.Unavailable && selectedSeedType.Status == "UNBANNED")
+                    if (p8.Btnp(5) && selectedSeedType.Status == "UNBANNED")
                     {
                         turnType.Name = $"SeedType{selectedType}";
                         seedTypes[selectedType].Status = turnType.Status;
@@ -241,6 +252,7 @@ namespace CSharpCraft.RaceMode
             else if (order < gameCount)
             {
                 color = 1;
+                Printc("lost", seedType.Xpos + 12, seedType.Ypos - 6, 6);
             }
             else
             {
@@ -292,6 +304,11 @@ namespace CSharpCraft.RaceMode
 
             batch.Draw(textureDictionary["Game"], new Vector2(56 * cellW, 6 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
             batch.Draw(textureDictionary[$"{gameCount}"], new Vector2(62 * cellW, 12 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+
+            var s1 = $"{player1Name}'s turn";
+            var s2 = $"[{KeyNames.keyNames[keyboardOptionsFile.Menu.Bind1]}] for random action";
+            //Printc(Math.Floor(animationTimer) % 2 == 0 ? s1 : s2, 64, 29, 7);
+            Printc(s1, 64, 29, 7);
 
             DrawSeedType(seedTypes[1], false);
             DrawSeedType(seedTypes[2], false);

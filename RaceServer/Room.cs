@@ -11,12 +11,7 @@ namespace RaceServer
 
         public IReadOnlyList<User> Users => users;
 
-        public int bestOf { get; set; } = 5;
-        public string category { get; set; } = "any%";
-        public int finishers { get; set; } = 1;
-        public bool unbans { get; set; } = true;
-        public int seedType { get; set; } = 0;
-        public (int, int) advantage { get; set; } = (0, 0);
+        public string[] SeedTypes { get; set; } = { "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED" };
 
         public void AddPlayer(User user)
         {
@@ -53,4 +48,28 @@ namespace RaceServer
         public bool Host { get; set; }
         public bool Ready { get; set; } = true;
     }
+
+    public class DuelMatch
+    {
+        public int currentGame { get; set; } = 1;
+        public int bestOf { get; set; } = 5;
+        public string category { get; set; } = "any%";
+        public int finishers { get; set; } = 1;
+        public bool unbans { get; set; } = true;
+        public (int, int) advantage { get; set; } = (0, 0);
+    }
+
+    public class GroupMatch
+    {
+        public string category { get; set; } = "any%";
+        public int finishers { get; set; } = 1;
+    }
+
+    public class GameReport
+    {
+        public string Player1Status { get; set; }
+        public string Player2Status { get; set; }
+        public double FinishTime { get; set; }
+    }
+
 }

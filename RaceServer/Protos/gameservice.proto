@@ -8,7 +8,13 @@ service GameService {
 	rpc RoomStream (RoomStreamRequest) returns (stream RoomStreamResponse);
 	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
 	rpc PlayerReady (PlayerReadyRequest) returns (PlayerReadyResponse);
+	rpc StartMatch (StartMatchRequest) returns (StartMatchResponse);
+	rpc UpdateSeeds (UpdateSeedsRequest) returns (UpdateSeedsResponse);
+	rpc EndGame (EndGameRequest) returns (EndGameResponse);
+	rpc EndMatch (EndMatchRequest) returns (EndMatchResponse);
 }
+
+
 
 message RoomUser {
 	string name = 1;
@@ -16,6 +22,8 @@ message RoomUser {
 	bool host = 3;
 	bool ready = 4;
 }
+
+
 
 message RoomStreamRequest {
 	string name = 1;
@@ -27,8 +35,14 @@ message RoomStreamResponse {
 	oneof message {
 		JoinRoomNotification join_room_notification = 1;
 		PlayerReadyNotification player_ready_notification = 2;
+		StartMatchNotification start_match_notification = 3;
+		UpdateSeedsNotification update_seeds_notification = 4;
+		EndGameNotification end_game_notification = 5;
+		EndMatchNotification end_match_notification = 6;
 	}
 }
+
+
 
 message JoinRoomRequest {
 	string name = 1;
@@ -43,8 +57,11 @@ message JoinRoomResponse {
 }
 
 message JoinRoomNotification {
-	repeated RoomUser users = 2;
+	repeated RoomUser users = 1;
+	bool all_ready = 2;
 }
+
+
 
 message PlayerReadyRequest {
 	string name = 1;
@@ -55,5 +72,62 @@ message PlayerReadyResponse {
 }
 
 message PlayerReadyNotification {
-	repeated RoomUser users = 2;
+	repeated RoomUser users = 1;
+	bool all_ready = 2;
+}
+
+
+
+message StartMatchRequest {
+	
+}
+
+message StartMatchResponse {
+	
+}
+
+message StartMatchNotification {
+	
+}
+
+
+
+message UpdateSeedsRequest {
+	
+}
+
+message UpdateSeedsResponse {
+	
+}
+
+message UpdateSeedsNotification {
+	
+}
+
+
+
+message EndGameRequest {
+	
+}
+
+message EndGameResponse {
+	
+}
+
+message EndGameNotification {
+	
+}
+
+
+
+message EndMatchRequest {
+	
+}
+
+message EndMatchResponse {
+	
+}
+
+message EndMatchNotification {
+	
 }
