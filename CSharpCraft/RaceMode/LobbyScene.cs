@@ -42,8 +42,8 @@ namespace CSharpCraft.RaceMode
         public async void Update()
         {
             actionsItems.Clear();
-            actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player", Task = PlayerReady() });
-            actionsItems.Add(new Item { Name = "start match", Active = mainRace.myself.Host, Task = StartMatch() });
+            actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player", Method = PlayerReady });
+            actionsItems.Add(new Item { Name = "start match", Active = mainRace.myself.Host, Method = StartMatch });
             actionsItems.Add(new Item { Name = "leave room", Active = true });
             actionsItems.Add(new Item { Name = "change role", Active = true });
             actionsItems.Add(new Item { Name = "change host", Active = mainRace.myself.Host });
@@ -67,7 +67,7 @@ namespace CSharpCraft.RaceMode
                 if (p8.Btnp(3)) { actionsMenu.Sel += 1; }
                 actionsMenu.Sel = actionsMenu.Sel < 0 ? 0 : actionsMenu.Sel >= actionsMenu.Items.Count ? actionsMenu.Items.Count - 1 : actionsMenu.Sel;
 
-                if (p8.Btnp(5) && actionsMenu.Items[actionsMenu.Sel].Active) { await actionsMenu.Items[actionsMenu.Sel].Task; }
+                if (p8.Btnp(5) && actionsMenu.Items[actionsMenu.Sel].Active) { await actionsMenu.Items[actionsMenu.Sel].Method(); }
             }
             else if (rulesMenu.Active)
             {
@@ -75,7 +75,7 @@ namespace CSharpCraft.RaceMode
                 if (p8.Btnp(3)) { rulesMenu.Sel += 1; }
                 rulesMenu.Sel = rulesMenu.Sel < 0 ? 0 : rulesMenu.Sel >= rulesMenu.Items.Count ? rulesMenu.Items.Count - 1 : rulesMenu.Sel;
 
-                if (p8.Btnp(5) && rulesMenu.Items[rulesMenu.Sel].Active) { await rulesMenu.Items[rulesMenu.Sel].Task; }
+                if (p8.Btnp(5) && rulesMenu.Items[rulesMenu.Sel].Active) { await rulesMenu.Items[rulesMenu.Sel].Method(); }
             }
 
 

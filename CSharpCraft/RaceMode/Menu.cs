@@ -23,6 +23,6 @@ namespace CSharpCraft.RaceMode
     {
         public string Name { get; set; }
         public bool Active { get; set; }
-        public Task Task { get; set; }
+        public Func<Task> Method { get; set; }
     }
 }
