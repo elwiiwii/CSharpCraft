@@ -175,4 +175,22 @@ public class GameServer : GameService.GameServiceBase
         };
     }
 
+    public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
+    {
+        var notification = new RoomStreamResponse
+        {
+            StartMatchNotification = new StartMatchNotification { MatchStarted = room.AllPlayersReady() }
+        };
+
+        foreach (var client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
+
+        return new StartMatchResponse
+        {
+
+        };
+    }
+
 }

@@ -16,11 +16,13 @@ namespace CSharpCraft.RaceMode
         public int Ypos { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
+        public bool Active { get; set; }
     }
 
     public class Item
     {
         public string Name { get; set; }
         public bool Active { get; set; }
+        public Task Task { get; set; }
     }
 }

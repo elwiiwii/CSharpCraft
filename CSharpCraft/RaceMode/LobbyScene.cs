@@ -35,17 +35,15 @@ namespace CSharpCraft.RaceMode
             roomName = "????";
             roomPassword = "????";
             roomMenu = new Menu { Name = $"room name-{roomName}", Items = null, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };
-            actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41 };
-            rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41 };
+            actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41, Active = true };
+            rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41, Active = false };
         }
 
         public async void Update()
         {
-            
-
             actionsItems.Clear();
-            actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player" });
-            actionsItems.Add(new Item { Name = "start game", Active = mainRace.myself.Host });
+            actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player", Task = PlayerReady() });
+            actionsItems.Add(new Item { Name = "start match", Active = mainRace.myself.Host, Task = StartMatch() });
             actionsItems.Add(new Item { Name = "leave room", Active = true });
             actionsItems.Add(new Item { Name = "change role", Active = true });
             actionsItems.Add(new Item { Name = "change host", Active = mainRace.myself.Host });
@@ -60,15 +58,33 @@ namespace CSharpCraft.RaceMode
             rulesItems.Add(new Item { Name = "unbans:on", Active = mainRace.myself.Host });
             rulesItems.Add(new Item { Name = "adv:0-0", Active = mainRace.myself.Host });
 
-            if (p8.Btnp(2)) { actionsMenu.Sel -= 1; }
-            if (p8.Btnp(3)) { actionsMenu.Sel += 1; }
+            if (p8.Btnp(0)) { actionsMenu.Active = true; rulesMenu.Active = false; }
+            if (p8.Btnp(1)) { rulesMenu.Active = true; actionsMenu.Active = false; }
+
+            if (actionsMenu.Active)
+            {
+                if (p8.Btnp(2)) { actionsMenu.Sel -= 1; }
+                if (p8.Btnp(3)) { actionsMenu.Sel += 1; }
+                actionsMenu.Sel = actionsMenu.Sel < 0 ? 0 : actionsMenu.Sel >= actionsMenu.Items.Count ? actionsMenu.Items.Count - 1 : actionsMenu.Sel;
+
+                if (p8.Btnp(5) && actionsMenu.Items[actionsMenu.Sel].Active) { await actionsMenu.Items[actionsMenu.Sel].Task; }
+            }
+            else if (rulesMenu.Active)
+            {
+                if (p8.Btnp(2)) { rulesMenu.Sel -= 1; }
+                if (p8.Btnp(3)) { rulesMenu.Sel += 1; }
+                rulesMenu.Sel = rulesMenu.Sel < 0 ? 0 : rulesMenu.Sel >= rulesMenu.Items.Count ? rulesMenu.Items.Count - 1 : rulesMenu.Sel;
+
+                if (p8.Btnp(5) && rulesMenu.Items[rulesMenu.Sel].Active) { await rulesMenu.Items[rulesMenu.Sel].Task; }
+            }
+
 
             if (p8.Btnp(4)) { raceScenes[2].Init(); }
 
-            if (p8.Btnp(5) && mainRace.myself.Role == "Player")
-            {
-                await PlayerReady();
-            }
+            //if (p8.Btnp(5) && mainRace.myself.Role == "Player")
+            //{
+            //    await PlayerReady();
+            //}
         }
 
         private void Printc(string t, int x, int y, int c)
@@ -165,7 +181,7 @@ namespace CSharpCraft.RaceMode
             }
 
             var sely = y + offset + 4 + (sel + 1) * 7;
-            Selector(x, sely, width);
+            if (menu.Active) { Selector(x, sely, width); }
 
             //p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
             //p8.Rectfill(menu.Xpos, sely, menu.Xpos + menu.Width - 1, sely + 6, 13);
@@ -256,6 +272,12 @@ namespace CSharpCraft.RaceMode
         {
             mainRace.myself.Ready = mainRace.service.PlayerReady(new PlayerReadyRequest { Name = mainRace.myself.Name }).Ready;
         }
+
+        private async Task StartMatch()
+        {
+            mainRace.service.StartMatch(new StartMatchRequest { Name = mainRace.myself.Name });
+        }
+
 
     }
 

@@ -79,7 +79,7 @@ message PlayerReadyNotification {
 
 
 message StartMatchRequest {
-	
+	string name = 1;
 }
 
 message StartMatchResponse {
@@ -87,7 +87,7 @@ message StartMatchResponse {
 }
 
 message StartMatchNotification {
-	
+	bool match_started = 1;
 }
 
 

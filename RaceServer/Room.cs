@@ -11,8 +11,6 @@ namespace RaceServer
 
         public IReadOnlyList<User> Users => users;
 
-        public string[] SeedTypes { get; set; } = { "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED", "UNBANNED" };
-
         public void AddPlayer(User user)
         {
             users.Add(user);
@@ -27,11 +25,11 @@ namespace RaceServer
                 users.Remove(user);
             }
         }
-
+        
         public void TogglePlayerReady(string name)
         {
             var player = users.FirstOrDefault(p => p.Name == name);
-            if (player is not null)
+            if (player is not null && player.Role == "Player")
                 player.Ready = !player.Ready;
         }
 
@@ -65,7 +63,18 @@ namespace RaceServer
         public int finishers { get; set; } = 1;
     }
 
-    public class GameReport
+    public class SeedTypes
+    {
+        public string Type1Status { get; set; } = "UNBANNED";
+        public string Type2Status { get; set; } = "UNBANNED";
+        public string Type3Status { get; set; } = "UNBANNED";
+        public string Type4Status { get; set; } = "UNBANNED";
+        public string Type5Status { get; set; } = "UNBANNED";
+        public string Type6Status { get; set; } = "UNBANNED";
+        public string Type7Status { get; set; } = "UNBANNED";
+    }
+
+        public class GameReport
     {
         public string Player1Status { get; set; }
         public string Player2Status { get; set; }
