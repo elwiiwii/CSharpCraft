@@ -146,7 +146,7 @@ namespace CSharpCraft.RaceMode
             int cellH = viewportHeight / 128;
 
             Vector2 size = new(cellW, cellH);
-            Vector2 halfSize = new(cellW / 2, cellH / 2);
+            Vector2 halfSize = new(cellW / 2f, cellH / 2f);
 
             if (!joinedRoom)
             {

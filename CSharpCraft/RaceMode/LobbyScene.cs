@@ -41,15 +41,21 @@ namespace CSharpCraft.RaceMode
 
         public async void Update()
         {
+            var allReady = true;
+            foreach (var player in mainRace.playerDictionary)
+            {
+                if (!player.Value.Ready) { allReady = false; }
+            }
+
             actionsItems.Clear();
             actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player", Method = PlayerReady });
-            actionsItems.Add(new Item { Name = "start match", Active = mainRace.myself.Host, Method = StartMatch });
-            actionsItems.Add(new Item { Name = "leave room", Active = true });
-            actionsItems.Add(new Item { Name = "change role", Active = true });
-            actionsItems.Add(new Item { Name = "change host", Active = mainRace.myself.Host });
-            actionsItems.Add(new Item { Name = "seeding", Active = mainRace.myself.Host });
-            actionsItems.Add(new Item { Name = "settings", Active = true });
-            actionsItems.Add(new Item { Name = "password", Active = true });
+            actionsItems.Add(new Item { Name = "start match", Active = mainRace.myself.Host && allReady, Method = StartMatch });
+            actionsItems.Add(new Item { Name = "leave room", Active = true, Method = LeaveRoom });
+            actionsItems.Add(new Item { Name = "change role", Active = true, Method = ChangeRole });
+            actionsItems.Add(new Item { Name = "change host", Active = mainRace.myself.Host, Method = ChangeHost });
+            actionsItems.Add(new Item { Name = "seeding", Active = mainRace.myself.Host, Method = Seeding });
+            actionsItems.Add(new Item { Name = "settings", Active = true, Method = Settings });
+            actionsItems.Add(new Item { Name = "password", Active = true, Method = Password });
 
             rulesItems.Clear();
             rulesItems.Add(new Item { Name = "best of:5", Active = mainRace.myself.Host });
@@ -217,7 +223,7 @@ namespace CSharpCraft.RaceMode
             int cellH = viewportHeight / 128;
 
             Vector2 size = new(cellW, cellH);
-            Vector2 halfSize = new(cellW / 2, cellH / 2);
+            Vector2 halfSize = new(cellW / 2f, cellH / 2f);
 
             //batch.Draw(textureDictionary["LobbyBackground"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
@@ -268,14 +274,44 @@ namespace CSharpCraft.RaceMode
             }
         }
 
-        private async Task PlayerReady()
+        private async Task Password()
         {
-            mainRace.myself.Ready = mainRace.service.PlayerReady(new PlayerReadyRequest { Name = mainRace.myself.Name }).Ready;
+            throw new NotImplementedException();
+        }
+
+        private async Task Settings()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task Seeding()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task ChangeHost()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task ChangeRole()
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task LeaveRoom()
+        {
+            throw new NotImplementedException();
         }
 
         private async Task StartMatch()
         {
             mainRace.service.StartMatch(new StartMatchRequest { Name = mainRace.myself.Name });
+        }
+
+        private async Task PlayerReady()
+        {
+            mainRace.myself.Ready = mainRace.service.PlayerReady(new PlayerReadyRequest { Name = mainRace.myself.Name }).Ready;
         }
 
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Grpc.Net.Client;
+using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +9,7 @@ namespace RaceServer
     {
         public string Name { get; } = name;
         public readonly List<User> users = new();
+        public DuelMatch 
 
         public IReadOnlyList<User> Users => users;
 
@@ -37,11 +39,17 @@ namespace RaceServer
         {
             return users.All(p => p.Ready);
         }
+
+        public void NewDuelMatch()
+        {
+
+        }
     }
 
     public class User
     {
         public string Name { get; set; }
+        public GrpcChannel Channel { get; set; }
         public string Role { get; set; } = "Player";
         public bool Host { get; set; }
         public bool Ready { get; set; } = true;
@@ -49,18 +57,21 @@ namespace RaceServer
 
     public class DuelMatch
     {
-        public int currentGame { get; set; } = 1;
-        public int bestOf { get; set; } = 5;
-        public string category { get; set; } = "any%";
-        public int finishers { get; set; } = 1;
-        public bool unbans { get; set; } = true;
-        public (int, int) advantage { get; set; } = (0, 0);
+        public User HigherSeed { get; set; }
+        public User LowerSeed { get; set; }
+        public SeedTypes SeedTypes { get; set; }
+        public int CurrentGame { get; set; } = 1;
+        public int BestOf { get; set; } = 5;
+        public string Category { get; set; } = "any%";
+        public int Finishers { get; set; } = 1;
+        public bool Unbans { get; set; } = true;
+        public (int, int) Advantage { get; set; } = (0, 0);
     }
 
     public class GroupMatch
     {
-        public string category { get; set; } = "any%";
-        public int finishers { get; set; } = 1;
+        public string Category { get; set; } = "any%";
+        public int Finishers { get; set; } = 1;
     }
 
     public class SeedTypes
@@ -74,7 +85,7 @@ namespace RaceServer
         public string Type7Status { get; set; } = "UNBANNED";
     }
 
-        public class GameReport
+    public class GameReport
     {
         public string Player1Status { get; set; }
         public string Player2Status { get; set; }
