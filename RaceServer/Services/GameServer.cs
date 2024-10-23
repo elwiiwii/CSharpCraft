@@ -177,6 +177,13 @@ public class GameServer : GameService.GameServiceBase
 
     public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
     {
+        room.AssignSeedingTemp();
+        room.CurrentMatch = new();
+        room.CurrentMatch.HigherSeed = room.users.FirstOrDefault(p => p.Seed == 1);
+        room.CurrentMatch.LowerSeed = room.users.FirstOrDefault(p => p.Seed == 2);
+
+
+
         var notification = new RoomStreamResponse
         {
             StartMatchNotification = new StartMatchNotification { MatchStarted = room.AllPlayersReady() }

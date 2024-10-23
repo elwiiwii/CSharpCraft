@@ -9,7 +9,7 @@ namespace RaceServer
     {
         public string Name { get; } = name;
         public readonly List<User> users = new();
-        public DuelMatch 
+        public DuelMatch CurrentMatch = new();
 
         public IReadOnlyList<User> Users => users;
 
@@ -35,24 +35,38 @@ namespace RaceServer
                 player.Ready = !player.Ready;
         }
 
+        public void AssignSeedingTemp()
+        {
+            int seed = 1;
+            foreach (var user in users)
+            { 
+                if (user.Role == "Player")
+                {
+                    user.Seed = seed;
+                    seed++;
+                }
+            }
+        }
+
         public bool AllPlayersReady()
         {
             return users.All(p => p.Ready);
         }
 
-        public void NewDuelMatch()
+        public DuelMatch NewDuelMatch()
         {
 
+            return new DuelMatch();
         }
     }
 
     public class User
     {
         public string Name { get; set; }
-        public GrpcChannel Channel { get; set; }
         public string Role { get; set; } = "Player";
         public bool Host { get; set; }
         public bool Ready { get; set; } = true;
+        public int? Seed { get; set; } = null;
     }
 
     public class DuelMatch
