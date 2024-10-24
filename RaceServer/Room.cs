@@ -53,10 +53,9 @@ namespace RaceServer
             return users.All(p => p.Ready);
         }
 
-        public DuelMatch NewDuelMatch()
+        public DuelMatch NewDuelMatch(User higherSeed, User lowerSeed)
         {
-
-            return new DuelMatch();
+            return new DuelMatch{ HigherSeed = higherSeed, LowerSeed = lowerSeed };
         }
     }
 
@@ -73,7 +72,7 @@ namespace RaceServer
     {
         public User HigherSeed { get; set; }
         public User LowerSeed { get; set; }
-        public SeedTypes SeedTypes { get; set; }
+        public SeedTypes SeedTypes { get; set; } = new();
         public int CurrentGame { get; set; } = 1;
         public int BestOf { get; set; } = 5;
         public string Category { get; set; } = "any%";
