@@ -270,6 +270,18 @@ namespace CSharpCraft
             Array.Copy(colors, resetSprColors, colors.Length);
 
             spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray();
+
+            SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
+            channelMusic.Add(instance1);
+            instance1.IsLooped = true;
+            instance1.Play();
+            instance1.Volume = 0.0f;
+            
+            SoundEffectInstance instance4 = musicDictionary[$"music_4"].CreateInstance();
+            channelMusic.Add(instance4);
+            instance4.IsLooped = true;
+            instance4.Play();
+            instance4.Volume = 0.0f;
         }
 
 
@@ -363,21 +375,24 @@ namespace CSharpCraft
             {
                 foreach (var song in channelMusic)
                 {
-                    song.Dispose();
+                    //song.Dispose();
+                    song.Volume = 0.0f;
                 }
             }
 
             if (nFlr == 1)
             {
-                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-                channelMusic.Add(instance);
-                instance.Play();
+                //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+                //channelMusic.Add(instance);
+                //instance.Play();
+                channelMusic[0].Volume = 1.0f;
             }
             else if (nFlr == 4)
             {
-                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-                channelMusic.Add(instance);
-                instance.Play();
+                //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+                //channelMusic.Add(instance);
+                //instance.Play();
+                channelMusic[1].Volume = 1.0f;
             }
             else
             {

@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>AnyCPU;x64</Platforms>
@@ -29,12 +29,21 @@
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Music\music_0.wav" />
+		<None Remove="Content\Music\music_0p8.wav" />
+		<None Remove="Content\Music\music_1.mp3" />
 		<None Remove="Content\Music\music_1.wav" />
+		<None Remove="Content\Music\music_1p8.wav" />
 		<None Remove="Content\Music\music_2.wav" />
+		<None Remove="Content\Music\music_2p8.wav" />
 		<None Remove="Content\Music\music_3.wav" />
+		<None Remove="Content\Music\music_3p8.wav" />
+		<None Remove="Content\Music\music_4.mp3" />
 		<None Remove="Content\Music\music_4.wav" />
+		<None Remove="Content\Music\music_4p8.wav" />
 		<None Remove="Content\Music\music_5.wav" />
+		<None Remove="Content\Music\music_5p8.wav" />
 		<None Remove="Content\Music\music_6.wav" />
+		<None Remove="Content\Music\music_6p8.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
 	</ItemGroup>
@@ -97,25 +106,31 @@
 		<Content Include="Content\Graphics\WaitingForInput.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_0.wav">
+		<Content Include="Content\Music\music_0p8.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Music\music_1.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_2.wav">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Content\Music\music_3.wav">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
 		<Content Include="Content\Music\music_4.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_5.wav">
+		<Content Include="Content\Music\music_1p8.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_6.wav">
+		<Content Include="Content\Music\music_2p8.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_3p8.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_4p8.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_5p8.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_6p8.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\sfx_0.wav">
@@ -184,6 +199,17 @@
 		<Content Include="Content\Sfx\sfx_21.wav">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="bin\Debug\net8.0\FAudio.dll" />
+	  <None Include="bin\Debug\net8.0\FNA3D.dll" />
+	  <None Include="bin\Debug\net8.0\libtheorafile.dll" />
+	  <None Include="bin\Debug\net8.0\SDL3.dll" />
+	  <None Include="bin\Debug\net9.0\FAudio.dll" />
+	  <None Include="bin\Debug\net9.0\FNA3D.dll" />
+	  <None Include="bin\Debug\net9.0\libtheorafile.dll" />
+	  <None Include="bin\Debug\net9.0\SDL3.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
