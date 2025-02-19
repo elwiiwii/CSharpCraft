@@ -21,7 +21,7 @@ message RoomUser {
 	string role = 2;
 	bool host = 3;
 	bool ready = 4;
-	int seed = 5;
+	int32 seed = 5;
 }
 
 

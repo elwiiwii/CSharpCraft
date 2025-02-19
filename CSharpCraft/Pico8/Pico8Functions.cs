@@ -272,6 +272,17 @@ namespace CSharpCraft.Pico8
             Array.Copy(colors, resetSprColors, colors.Length);
 
             spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
+
+            SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
+            SoundEffectInstance instance4 = musicDictionary[$"music_4"].CreateInstance();
+            channelMusic.Add(instance1);
+            channelMusic.Add(instance4);
+            instance1.IsLooped = true;
+            instance4.IsLooped = true;
+            instance1.Play();
+            instance4.Play();
+            instance1.Volume = 0.0f;
+            instance4.Volume = 0.0f;
         }
 
 
