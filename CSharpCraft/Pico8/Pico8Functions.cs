@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
+using System.Xml.Linq;
 
 namespace CSharpCraft.Pico8
 {
@@ -294,15 +295,21 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
+        public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
-            return Math.Cos(-angle * 2 * Math.PI);
+            return F32.Cos(-angle * 2 * F32.Pi);
         }
 
 
         public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
         {
             table.Remove(value);
+        }
+
+
+        public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
+        {
+            return _flags[n];
         }
 
 
@@ -327,13 +334,11 @@ namespace CSharpCraft.Pico8
             fade1 = false;
             fade4 = false;
 
-            _sprites = DataToArray(_game.SpriteData, 1);
-            _flags = DataToArray(_game.FlagData, 2);
-            _map = DataToArray(_game.MapData, 2);
+            Reload();
         }
 
 
-        public void Map(double celx, double cely, double sx, double sy, double celw, double celh) // https://pico-8.fandom.com/wiki/Map
+        public void Map(double celx, double cely, double sx, double sy, double celw, double celh, int flags = 0) // https://pico-8.fandom.com/wiki/Map
         {
             int cxFlr = (int)Math.Floor(celx);
             int cyFlr = (int)Math.Floor(cely);
@@ -346,7 +351,10 @@ namespace CSharpCraft.Pico8
             {
                 for (int j = 0; j <= chFlr; j++)
                 {
-                    Spr(Mget(i + cxFlr, j + cyFlr), sxFlr + i * 8, syFlr + j * 8);
+                    if (flags == 0 || flags == Fget(Mget(celx + i, cely + j)))
+                    {
+                        Spr(Mget(i + celx, j + cely), sx + i * 8, sy + j * 8);
+                    }
                 }
             }
         }
@@ -599,9 +607,13 @@ namespace CSharpCraft.Pico8
 
         public void Reload() // https://pico-8.fandom.com/wiki/Reload
         {
-            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
-            Map1 = new int[128 * 64];
-            spriteTextures = [];
+            //spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
+            //Map1 = new int[128 * 64];
+            //spriteTextures = [];
+
+            _sprites = DataToArray(_game.SpriteData, 1);
+            _flags = DataToArray(_game.FlagData, 2);
+            _map = DataToArray(_game.MapData, 2);
         }
 
 
@@ -609,6 +621,22 @@ namespace CSharpCraft.Pico8
         {
             Random random = new();
             double n = random.NextDouble() * limit;
+            return n;
+        }
+
+
+        public F32 Rnd() // https://pico-8.fandom.com/wiki/Rnd
+        {
+            Random random = new();
+            F32 n = F32.FromDouble(random.NextDouble());
+            return n;
+        }
+
+
+        public F32 Rnd(F32 limit) // https://pico-8.fandom.com/wiki/Rnd
+        {
+            Random random = new();
+            F32 n = F32.FromDouble(random.NextDouble()) * limit;
             return n;
         }
 
@@ -648,16 +676,16 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
+        public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
-            return Math.Sin(-angle * 2 * Math.PI);
+            return F32.Sin(-angle * 2 * F32.Pi);
         }
 
 
-        public int Sget(F32 x, F32 y, int? idk = null)
+        public int Sget(double x, double y)
         {
-            int xFlr = F32.FloorToInt(x);
-            int yFlr = F32.FloorToInt(y);
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
 
             if (xFlr < 0 || yFlr < 0 || xFlr > 127 || yFlr > 127)
             {
@@ -668,36 +696,17 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void SoundDispose()
+        public void Sset(double x, double y, double col)
         {
-            if (channelMusic != null)
-            {
-                foreach (var song in channelMusic)
-                {
-                    song.Dispose();
-                }
-            }
+            int xFlr = (int)Math.Floor(x);
+            int yFlr = (int)Math.Floor(y);
+            int colFlr = (int)Math.Floor(col);
 
-            for (int i = 0; i < 4; i++)
+            if (xFlr < 0 || yFlr < 0 || xFlr > 127 || yFlr > 127)
             {
-                List<SoundEffectInstance>? c = i switch
-                {
-                    0 => channel0,
-                    1 => channel1,
-                    2 => channel2,
-                    3 => channel3,
-                    _ => throw new ArgumentOutOfRangeException(nameof(i)),
-                };
-                if (c != null)
-                {
-                    foreach (var sfxInstance in c)
-                    {
-                        sfxInstance.Dispose();
-                    }
-                }
+                _sprites[xFlr + yFlr * 128] = colFlr;
             }
         }
-
 
         public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
         {
@@ -927,6 +936,39 @@ namespace CSharpCraft.Pico8
             //graphicsDevice.Dispose();
 
         }
+
+
+        public void SoundDispose()
+        {
+            if (channelMusic != null)
+            {
+                foreach (var song in channelMusic)
+                {
+                    song.Dispose();
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                List<SoundEffectInstance>? c = i switch
+                {
+                    0 => channel0,
+                    1 => channel1,
+                    2 => channel2,
+                    3 => channel3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(i)),
+                };
+                if (c != null)
+                {
+                    foreach (var sfxInstance in c)
+                    {
+                        sfxInstance.Dispose();
+                    }
+                }
+            }
+        }
+
+
 
     }
 }
