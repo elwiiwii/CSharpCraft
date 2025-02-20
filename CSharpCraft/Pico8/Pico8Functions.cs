@@ -5,10 +5,11 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
+using FixMath;
 
 namespace CSharpCraft.Pico8
 {
-    public class Pico8Functions(Dictionary<string, SoundEffect> soundEffectDictionary, Dictionary<string, SoundEffect> musicDictionary, Texture2D pixel, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile) : IDisposable
+    public class Pico8Functions : IDisposable
     {
         private Dictionary<int, Texture2D> spriteTextures = [];
         private int[] Map1 = new int[128 * 64];
@@ -28,6 +29,46 @@ namespace CSharpCraft.Pico8
         public bool prev4 = false;
         public bool prev5 = false;
 
+        private float musicFade;
+        private bool fade1;
+        private bool fade4;
+
+        Dictionary<string, SoundEffect> soundEffectDictionary;
+        Dictionary<string, SoundEffect> musicDictionary;
+        Texture2D pixel;
+        SpriteBatch batch;
+        GraphicsDevice graphicsDevice;
+        KeyboardOptionsFile keyboardOptionsFile;
+
+        private int[] _sprites;
+        private int[] _flags;
+        private int[] _map;
+
+        public Pico8Functions(Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
+        {
+            soundEffectDictionary = _soundEffectDictionary;
+            musicDictionary = _musicDictionary;
+            pixel = _pixel;
+            batch = _batch;
+            graphicsDevice = _graphicsDevice;
+            keyboardOptionsFile = _keyboardOptionsFile;
+
+            _sprites = [];
+            _flags = [];
+            _map = [];
+        }
+
+        private static int[] DataToArray(string s, int n)
+        {
+            int[] val = new int[s.Length / n];
+            for (int i = 0; i < s.Length / n; i++)
+            {
+                val[i] = Convert.ToInt32($"0x{s.Substring(i * n, n)}", 16);
+            }
+
+            return val;
+        }
+
         private static Color HexToColor(string hex)
         {
             hex = hex.TrimStart('#');
@@ -41,41 +82,41 @@ namespace CSharpCraft.Pico8
         // pico-8 colors https://pico-8.fandom.com/wiki/Palette
         public Color[] colors =
         [
-                HexToColor("000000"), // 00 black
-                HexToColor("1D2B53"), // 01 dark-blue
-                HexToColor("7E2553"), // 02 dark-purple
-                HexToColor("008751"), // 03 dark-green
-                HexToColor("AB5236"), // 04 brown
-                HexToColor("5F574F"), // 05 dark-grey
-                HexToColor("C2C3C7"), // 06 light-grey
-                HexToColor("FFF1E8"), // 07 white
-                HexToColor("FF004D"), // 08 red
-                HexToColor("FFA300"), // 09 orange
-                HexToColor("FFEC27"), // 10 yellow
-                HexToColor("00E436"), // 11 green
-                HexToColor("29ADFF"), // 12 blue
-                HexToColor("83769C"), // 13 lavender
-                HexToColor("FF77A8"), // 14 pink
-                HexToColor("FFCCAA"), // 15 light-peach
-                
-                /*
-                HexToColor("291814"), // 16 brownish-black
-                HexToColor("111D35"), // 17 darker-blue
-                HexToColor("422136"), // 18 darker-purple
-                HexToColor("125359"), // 19 blue-green
-                HexToColor("742F29"), // 20 dark-brown
-                HexToColor("49333B"), // 21 darker-grey
-                HexToColor("A28879"), // 22 medium-grey
-                HexToColor("F3EF7D"), // 23 light-yellow
-                HexToColor("BE1250"), // 24 dark-red
-                HexToColor("FF6C24"), // 25 dark-orange
-                HexToColor("A8E72E"), // 26 lime-green
-                HexToColor("00B543"), // 27 medium-green
-                HexToColor("065AB5"), // 28 true-blue
-                HexToColor("754665"), // 29 mauve
-                HexToColor("FF6E59"), // 30 dark-peach
-                HexToColor("FF9D81"), // 31 peach
-                */
+            HexToColor("000000"), // 00 black
+            HexToColor("1D2B53"), // 01 dark-blue
+            HexToColor("7E2553"), // 02 dark-purple
+            HexToColor("008751"), // 03 dark-green
+            HexToColor("AB5236"), // 04 brown
+            HexToColor("5F574F"), // 05 dark-grey
+            HexToColor("C2C3C7"), // 06 light-grey
+            HexToColor("FFF1E8"), // 07 white
+            HexToColor("FF004D"), // 08 red
+            HexToColor("FFA300"), // 09 orange
+            HexToColor("FFEC27"), // 10 yellow
+            HexToColor("00E436"), // 11 green
+            HexToColor("29ADFF"), // 12 blue
+            HexToColor("83769C"), // 13 lavender
+            HexToColor("FF77A8"), // 14 pink
+            HexToColor("FFCCAA"), // 15 light-peach
+            
+            /*
+            HexToColor("291814"), // 16 brownish-black
+            HexToColor("111D35"), // 17 darker-blue
+            HexToColor("422136"), // 18 darker-purple
+            HexToColor("125359"), // 19 blue-green
+            HexToColor("742F29"), // 20 dark-brown
+            HexToColor("49333B"), // 21 darker-grey
+            HexToColor("A28879"), // 22 medium-grey
+            HexToColor("F3EF7D"), // 23 light-yellow
+            HexToColor("BE1250"), // 24 dark-red
+            HexToColor("FF6C24"), // 25 dark-orange
+            HexToColor("A8E72E"), // 26 lime-green
+            HexToColor("00B543"), // 27 medium-green
+            HexToColor("065AB5"), // 28 true-blue
+            HexToColor("754665"), // 29 mauve
+            HexToColor("FF6E59"), // 30 dark-peach
+            HexToColor("FF9D81"), // 31 peach
+            */
         ];
         public Color[] resetColors = new Color[16];
         public Color[] resetSprColors = new Color[16];
@@ -283,6 +324,12 @@ namespace CSharpCraft.Pico8
             instance4.Play();
             instance1.Volume = 0.0f;
             instance4.Volume = 0.0f;
+            fade1 = false;
+            fade4 = false;
+
+            _sprites = DataToArray(_game.SpriteData, 1);
+            _flags = DataToArray(_game.FlagData, 2);
+            _map = DataToArray(_game.MapData, 2);
         }
 
 
@@ -342,12 +389,10 @@ namespace CSharpCraft.Pico8
 
         public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
         {
-            int xFlr = (int)Math.Floor(celx);
-            int yFlr = (int)Math.Floor(cely);
+            int xFlr = Math.Abs((int)Math.Floor(celx));
+            int yFlr = Math.Abs((int)Math.Floor(cely));
 
-            int mval = Map1[xFlr + yFlr * 128];
-
-            return mval;
+            return _map[xFlr + yFlr * 128];
         }
 
 
@@ -364,7 +409,7 @@ namespace CSharpCraft.Pico8
             int yFlr = (int)Math.Floor(cely);
             int sFlr = (int)Math.Floor(snum);
 
-            Map1[xFlr + yFlr * 128] = sFlr;
+            _map[xFlr + yFlr * 128] = sFlr;
         }
 
 
@@ -372,25 +417,30 @@ namespace CSharpCraft.Pico8
         {
             int nFlr = (int)Math.Floor(n);
 
-            if (channelMusic != null)
-            {
-                foreach (var song in channelMusic)
-                {
-                    song.Dispose();
-                }
-            }
+            //if (channelMusic != null)
+            //{
+            //    foreach (var song in channelMusic)
+            //    {
+            //        //song.Dispose();
+            //        song.Volume = 0.0f;
+            //    }
+            //}
 
             if (nFlr == 1)
             {
-                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-                channelMusic.Add(instance);
-                instance.Play();
+                //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+                //channelMusic.Add(instance);
+                //instance.Play();
+                fade1 = true;
+                fade4 = false;
             }
             else if (nFlr == 4)
             {
-                SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-                channelMusic.Add(instance);
-                instance.Play();
+                //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+                //channelMusic.Add(instance);
+                //instance.Play();
+                fade4 = true;
+                fade1 = false;
             }
             else
             {
@@ -604,6 +654,20 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public int Sget(F32 x, F32 y, int? idk = null)
+        {
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+
+            if (xFlr < 0 || yFlr < 0 || xFlr > 127 || yFlr > 127)
+            {
+                return 0;
+            }
+
+            return _sprites[xFlr + yFlr * 128];
+        }
+
+
         public void SoundDispose()
         {
             if (channelMusic != null)
@@ -794,6 +858,37 @@ namespace CSharpCraft.Pico8
             prev3 = Btn(3);
             prev4 = Btn(4);
             prev5 = Btn(5);
+
+            if (fade1)
+            {
+                if (channelMusic[0].Volume < 1.0f)
+                {
+                    channelMusic[0].Volume += 0.05f;
+                }
+                if (channelMusic[1].Volume > 0.0f)
+                {
+                    channelMusic[1].Volume -= 0.05f;
+                }
+                if (channelMusic[0].Volume >= 1.0f && channelMusic[1].Volume <= 0.0f)
+                {
+                    fade1 = false;
+                }
+            }
+            else if (fade4)
+            {
+                if (channelMusic[1].Volume < 1.0f)
+                {
+                    channelMusic[1].Volume += 0.05f;
+                }
+                if (channelMusic[0].Volume > 0.0f)
+                {
+                    channelMusic[0].Volume -= 0.05f;
+                }
+                if (channelMusic[1].Volume >= 1.0f && channelMusic[0].Volume <= 0.0f)
+                {
+                    fade4 = false;
+                }
+            }
         }
 
 

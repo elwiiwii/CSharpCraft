@@ -64,6 +64,8 @@
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
 		<None Remove="Content\Graphics\Tick.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
+		<None Remove="Content\Music\music_1.wav" />
+		<None Remove="Content\Music\music_4.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
 	</ItemGroup>
@@ -237,6 +239,9 @@
 		<Content Include="Content\Music\music_0p8.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Content Include="Content\Music\music_1.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 		<Content Include="Content\Music\music_1p8.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
@@ -244,6 +249,9 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Music\music_3p8.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\music_4.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Music\music_4p8.wav">
