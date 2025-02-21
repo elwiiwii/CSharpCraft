@@ -44,6 +44,7 @@ namespace CSharpCraft.Pico8
         private int[] _sprites;
         private int[] _flags;
         private int[] _map;
+        private ICart _cart;
 
         public Pico8Functions(Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
         {
@@ -199,6 +200,15 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public void Camera(F32 x, F32 y) // https://pico-8.fandom.com/wiki/Camera
+        {
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+
+            CameraOffset = (xFlr, yFlr);
+        }
+
+
         public void Circ(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
         {
             if (r < 0) return; // If r is negative, the circle is not drawn
@@ -206,6 +216,102 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
+            {
+                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
+                {
+                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
+                    double offsetX = i < xFlr ? 0.35D : -0.35D;
+                    double offsetY = j < yFlr ? 0.35D : -0.35D;
+                    double gridCenterX = i + offsetX;
+                    double gridCenterY = j + offsetY;
+
+                    bool isCurrentInCircle = Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr;
+
+                    // Check all four adjacent grid spaces
+                    bool isRightOutsideCircle = Math.Pow(i + 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isLeftOutsideCircle = Math.Pow(i - 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isUpOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j + 1 + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isDownOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j - 1 + offsetY - yFlr, 2) > rFlr * rFlr;
+
+                    if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
+                    {
+                        // Calculate the position and size of the line
+                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
+
+                        // Draw the line
+                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    }
+                }
+            }
+        }
+
+
+        public void Circ(F32 x, F32 y, F32 r, int c) // https://pico-8.fandom.com/wiki/Circ
+        {
+            if (r < 0) return; // If r is negative, the circle is not drawn
+
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+            int rFlr = F32.FloorToInt(r);
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
+            {
+                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
+                {
+                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
+                    double offsetX = i < xFlr ? 0.35D : -0.35D;
+                    double offsetY = j < yFlr ? 0.35D : -0.35D;
+                    double gridCenterX = i + offsetX;
+                    double gridCenterY = j + offsetY;
+
+                    bool isCurrentInCircle = Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr;
+
+                    // Check all four adjacent grid spaces
+                    bool isRightOutsideCircle = Math.Pow(i + 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isLeftOutsideCircle = Math.Pow(i - 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isUpOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j + 1 + offsetY - yFlr, 2) > rFlr * rFlr;
+                    bool isDownOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j - 1 + offsetY - yFlr, 2) > rFlr * rFlr;
+
+                    if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
+                    {
+                        // Calculate the position and size of the line
+                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
+
+                        // Draw the line
+                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    }
+                }
+            }
+        }
+
+
+        public void Circ(F32 x, F32 y, int r, int c) // https://pico-8.fandom.com/wiki/Circ
+        {
+            if (r < 0) return; // If r is negative, the circle is not drawn
+
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+            int rFlr = r;
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -287,6 +393,86 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public void Circfill(F32 x, F32 y, F32 r, int c) // https://pico-8.fandom.com/wiki/Circfill
+        {
+            if (r < 0) return; // If r is negative, the circle is not drawn
+
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+            int rFlr = F32.FloorToInt(r);
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
+            {
+                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
+                {
+                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
+                    double offsetX = i < xFlr ? 0.35D : -0.35D;
+                    double offsetY = j < yFlr ? 0.35D : -0.35D;
+                    double gridCenterX = i + offsetX;
+                    double gridCenterY = j + offsetY;
+
+                    if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
+                    {
+                        // Calculate the position and size
+                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
+
+                        // Draw
+                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    }
+                }
+            }
+        }
+
+
+        public void Circfill(F32 x, F32 y, int r, int c) // https://pico-8.fandom.com/wiki/Circfill
+        {
+            if (r < 0) return; // If r is negative, the circle is not drawn
+
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+            int rFlr = r;
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
+            {
+                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
+                {
+                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
+                    double offsetX = i < xFlr ? 0.35D : -0.35D;
+                    double offsetY = j < yFlr ? 0.35D : -0.35D;
+                    double gridCenterX = i + offsetX;
+                    double gridCenterY = j + offsetY;
+
+                    if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
+                    {
+                        // Calculate the position and size
+                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 size = new(cellWidth, cellHeight);
+
+                        // Draw
+                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    }
+                }
+            }
+        }
+
+
         public void Cls(double color = 0) // https://pico-8.fandom.com/wiki/Cls
         {
             int colorFlr = (int)Math.Floor(color);
@@ -294,6 +480,13 @@ namespace CSharpCraft.Pico8
             graphicsDevice.Clear(resetColors[colorFlr]);
         }
 
+        
+        public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
+        {
+            F32 d = F32.Cos(F32.FromDouble(-angle) * 2 * F32.Pi);
+            return d.Double;
+        }
+        
 
         public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
@@ -360,6 +553,28 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public void Map(int celx, int cely, F32 sx, F32 sy, int celw, int celh, int flags = 0) // https://pico-8.fandom.com/wiki/Map
+        {
+            int cxFlr = celx;
+            int cyFlr = cely;
+            int sxFlr = F32.FloorToInt(sx);
+            int syFlr = F32.FloorToInt(sy);
+            int cwFlr = celw;
+            int chFlr = celh;
+
+            for (int i = 0; i <= cwFlr; i++)
+            {
+                for (int j = 0; j <= chFlr; j++)
+                {
+                    if (flags == 0 || flags == Fget(Mget(celx + i, cely + j)))
+                    {
+                        Spr(Mget(i + celx, j + cely), sx + i * 8, sy + j * 8);
+                    }
+                }
+            }
+        }
+
+
         public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
         {
             if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
@@ -404,9 +619,25 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public int Mget(F32 celx, F32 cely) // https://pico-8.fandom.com/wiki/Mget
+        {
+            int xFlr = Math.Abs(F32.FloorToInt(celx));
+            int yFlr = Math.Abs(F32.FloorToInt(cely));
+
+            return _map[xFlr + yFlr * 128];
+        }
+
+
         public double Mod(double x, double m)
         {
             double r = x % m;
+            return r < 0 ? r + m : r;
+        }
+
+
+        public F32 Mod(F32 x, int m)
+        {
+            F32 r = x % m;
             return r < 0 ? r + m : r;
         }
 
@@ -418,6 +649,22 @@ namespace CSharpCraft.Pico8
             int sFlr = (int)Math.Floor(snum);
 
             _map[xFlr + yFlr * 128] = sFlr;
+        }
+
+
+        public void Mset(F32 celx, F32 cely, int snum = 0) // https://pico-8.fandom.com/wiki/Mset
+        {
+            int xFlr = F32.FloorToInt(celx);
+            int yFlr = F32.FloorToInt(cely);
+
+            _map[xFlr + yFlr * 128] = snum;
+        }
+
+        public void Mset(int celx, int cely, F32 snum) // https://pico-8.fandom.com/wiki/Mset
+        {
+            int sFlr = F32.FloorToInt(snum);
+
+            _map[celx + cely * 128] = sFlr;
         }
 
 
@@ -548,6 +795,91 @@ namespace CSharpCraft.Pico8
         }
 
 
+        
+        public void Print(string str, F32 x, F32 y, int c) // https://pico-8.fandom.com/wiki/Print
+        {
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
+            int cFlr = c;
+
+            int charWidth = 4;
+            //int charHeight = 5;
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            for (int s = 0; s < str.Length; s++)
+            {
+                char letter = str[s];
+
+                for (int i = 0; i < 5; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (Font.chars[letter][i, j] == 1)
+                        {
+                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
+                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
+                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
+
+                            Vector2 position = new Vector2(charStartX, charStartY);
+                            Vector2 size = new(cellWidth, cellHeight);
+
+                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public void Print(string str, int x, int y, F32 c) // https://pico-8.fandom.com/wiki/Print
+        {
+            int xFlr = x;
+            int yFlr = y;
+            int cFlr = F32.FloorToInt(c);
+
+            int charWidth = 4;
+            //int charHeight = 5;
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            for (int s = 0; s < str.Length; s++)
+            {
+                char letter = str[s];
+
+                for (int i = 0; i < 5; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        if (Font.chars[letter][i, j] == 1)
+                        {
+                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
+                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
+                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
+
+                            Vector2 position = new Vector2(charStartX, charStartY);
+                            Vector2 size = new(cellWidth, cellHeight);
+
+                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        }
+                    }
+                }
+            }
+        }
+
+
         public void Pset(double x, double y, double c) // https://pico-8.fandom.com/wiki/Pset
         {
             int xFlr = (int)Math.Floor(x);
@@ -605,6 +937,72 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public void Rectfill(F32 x1, int y1, F32 x2, int y2, int c) // https://pico-8.fandom.com/wiki/Rectfill
+        {
+            int x1Flr = F32.FloorToInt(x1);
+            int y1Flr = y1;
+            int x2Flr = F32.FloorToInt(x2);
+            int y2Flr = y2;
+            int cFlr = c;
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
+            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
+
+            var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
+            var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
+
+            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            //var rectThickness = (y2Flr - y1Flr) * cellHeight;
+            //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
+
+            Vector2 position = new(rectStartX, rectStartY);
+            Vector2 size = new(rectSizeX, rectSizeY);
+
+            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        }
+
+
+        public void Rectfill(int x1, int y1, F32 x2, int y2, int c) // https://pico-8.fandom.com/wiki/Rectfill
+        {
+            int x1Flr = x1;
+            int y1Flr = y1;
+            int x2Flr = F32.FloorToInt(x2);
+            int y2Flr = y2;
+            int cFlr = c;
+
+            // Get the size of the viewport
+            int viewportWidth = graphicsDevice.Viewport.Width;
+            int viewportHeight = graphicsDevice.Viewport.Height;
+
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
+            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
+
+            var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
+            var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
+
+            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            //var rectThickness = (y2Flr - y1Flr) * cellHeight;
+            //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
+
+            Vector2 position = new(rectStartX, rectStartY);
+            Vector2 size = new(rectSizeX, rectSizeY);
+
+            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        }
+
+
         public void Reload() // https://pico-8.fandom.com/wiki/Reload
         {
             //spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
@@ -625,15 +1023,15 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public F32 Rnd() // https://pico-8.fandom.com/wiki/Rnd
+        public F32 Rnd(F32 limit) // https://pico-8.fandom.com/wiki/Rnd
         {
             Random random = new();
-            F32 n = F32.FromDouble(random.NextDouble());
+            F32 n = F32.FromDouble(random.NextDouble()) * limit;
             return n;
         }
 
 
-        public F32 Rnd(F32 limit) // https://pico-8.fandom.com/wiki/Rnd
+        public F32 Rnd(int limit = 0) // https://pico-8.fandom.com/wiki/Rnd
         {
             Random random = new();
             F32 n = F32.FromDouble(random.NextDouble()) * limit;
@@ -676,6 +1074,13 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
+        {
+            F32 d = F32.Sin(F32.FromDouble(-angle) * 2 * F32.Pi);
+            return d.Double;
+        }
+
+
         public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
             return F32.Sin(-angle * 2 * F32.Pi);
@@ -715,6 +1120,152 @@ namespace CSharpCraft.Pico8
             int yFlr = (int)Math.Floor(y) - 8;
             int wFlr = (int)Math.Floor(w);
             int hFlr = (int)Math.Floor(h);
+
+            var spriteWidth = 8;
+            var spriteHeight = 8;
+
+            int spriteX = spriteNumberFlr % 16 * spriteWidth;
+            int spriteY = spriteNumberFlr / 16 * spriteHeight;
+
+            int colorCache = 0;
+
+            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
+            //{
+            //    if (sprColors[i] != resetSprColors[i])
+            //    {
+            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
+            //        {
+            //            if (sprColors[i] == resetSprColors[k])
+            //            {
+            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
+            //                goto Continue;
+            //            }
+            //        }
+            //    }
+            //
+            //    Continue:
+            //
+            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
+            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
+            //}
+
+            for (int i = 0; i < resetSprColors.Length; i++)
+            {
+                if (sprColors[i] != resetSprColors[i])
+                {
+                    for (int j = 0; j < resetSprColors.Length; j++)
+                    {
+                        if (sprColors[i] == resetSprColors[j])
+                        {
+                            colorCache += (i * 100 + j) * 1000;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
+            {
+                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                spriteTextures[spriteNumberFlr + colorCache] = texture;
+            }
+
+            // Get the size of the viewport
+            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+
+            //Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 size = new(cellWidth, cellHeight);
+            SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
+
+            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
+        }
+
+
+        public void Spr(F32 spriteNumber, F32 x, F32 y, int w = 1, int h = 1, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
+        {
+            int spriteNumberFlr = F32.FloorToInt(spriteNumber);
+            int xFlr = F32.FloorToInt(x) - 8;
+            int yFlr = F32.FloorToInt(y) - 8;
+            int wFlr = w;
+            int hFlr = h;
+
+            var spriteWidth = 8;
+            var spriteHeight = 8;
+
+            int spriteX = spriteNumberFlr % 16 * spriteWidth;
+            int spriteY = spriteNumberFlr / 16 * spriteHeight;
+
+            int colorCache = 0;
+
+            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
+            //{
+            //    if (sprColors[i] != resetSprColors[i])
+            //    {
+            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
+            //        {
+            //            if (sprColors[i] == resetSprColors[k])
+            //            {
+            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
+            //                goto Continue;
+            //            }
+            //        }
+            //    }
+            //
+            //    Continue:
+            //
+            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
+            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
+            //}
+
+            for (int i = 0; i < resetSprColors.Length; i++)
+            {
+                if (sprColors[i] != resetSprColors[i])
+                {
+                    for (int j = 0; j < resetSprColors.Length; j++)
+                    {
+                        if (sprColors[i] == resetSprColors[j])
+                        {
+                            colorCache += (i * 100 + j) * 1000;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
+            {
+                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                spriteTextures[spriteNumberFlr + colorCache] = texture;
+            }
+
+            // Get the size of the viewport
+            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+
+            //Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 size = new(cellWidth, cellHeight);
+            SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
+
+            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
+        }
+
+
+        public void Spr(int spriteNumber, F32 x, F32 y, int w = 1, int h = 1, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
+        {
+            int spriteNumberFlr = spriteNumber;
+            int xFlr = F32.FloorToInt(x) - 8;
+            int yFlr = F32.FloorToInt(y) - 8;
+            int wFlr = w;
+            int hFlr = h;
 
             var spriteWidth = 8;
             var spriteHeight = 8;
