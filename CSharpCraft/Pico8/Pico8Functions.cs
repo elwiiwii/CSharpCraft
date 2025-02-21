@@ -44,7 +44,6 @@ namespace CSharpCraft.Pico8
         private int[] _sprites;
         private int[] _flags;
         private int[] _map;
-        private ICart _cart;
 
         public Pico8Functions(Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
         {

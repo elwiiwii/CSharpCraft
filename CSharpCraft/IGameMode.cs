@@ -12,8 +12,5 @@ namespace CSharpCraft
         void Init();
         void Update();
         void Draw();
-        string Sprites { get; }
-        string Flags { get; }
-        string Map { get; }
     }
 }

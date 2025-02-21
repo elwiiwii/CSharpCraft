@@ -593,16 +593,6 @@ namespace CSharpCraft.Pcraft
             data[i + j * levelsx - 1] = v;
         }
 
-        private F32 GetData(F32 x, F32 y, F32 @default)
-        {
-            (int i, int j) = GetMcoord(x, y);
-            if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
-            {
-                return @default;
-            }
-            return DirGetData(i, j, @default);
-        }
-
         private F32 GetData(F32 x, F32 y, int @default)
         {
             (int i, int j) = GetMcoord(x, y);
@@ -678,20 +668,6 @@ namespace CSharpCraft.Pcraft
             }
 
             return (dx, dy);
-        }
-
-        private void AddItem(Material mat, F32 count, F32 hitx, F32 hity)
-        {
-            int countFlr = F32.FloorToInt(count);
-
-            for (int i = 0; i < countFlr; i++)
-            {
-                Entity gi = Rentity(mat, F32.Floor(hitx / 16) * 16 + p8.Rnd(14) + 1, F32.Floor(hity / 16) * 16 + p8.Rnd(14) + 1);
-                gi.GiveItem = mat;
-                gi.HasCol = true;
-                gi.Timer = 110 + p8.Rnd(20);
-                p8.Add(entities, gi);
-            }
         }
 
         private void AddItem(Material mat, int count, F32 hitx, F32 hity)
@@ -1155,8 +1131,8 @@ namespace CSharpCraft.Pcraft
                             if (e.Life <= 0)
                             {
                                 p8.Del(enemies, e);
-                                AddItem(ichor, p8.Rnd(3), e.X, e.Y);
-                                AddItem(fabric, p8.Rnd(3), e.X, e.Y);
+                                AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                                AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
                             }
                             p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
                         }
@@ -1190,7 +1166,7 @@ namespace CSharpCraft.Pcraft
                         {
                             SetGr(hitx, hity, hit.Tile);
                             Cleardata(hitx, hity);
-                            AddItem(hit.Mat, p8.Rnd(3) + 2, hitx, hity);
+                            AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
                             if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
                             {
                                 AddItem(apple, 1, hitx, hity);
@@ -1233,7 +1209,7 @@ namespace CSharpCraft.Pcraft
                                 {
                                     SetGr(hitx, hity, grfarm);
                                     SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                                    AddItem(sand, p8.Rnd(2), hitx, hity);
+                                    AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
                                 }
                             }
                             if (hit == grwater && curItem.Type == sand)
@@ -1258,7 +1234,7 @@ namespace CSharpCraft.Pcraft
                             {
                                 SetGr(hitx, hity, grsand);
                                 F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
-                                AddItem(wheat, d / 2 + p8.Rnd(d / 2), hitx, hity);
+                                AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd(d / 2)), hitx, hity);
                                 AddItem(seed, 1, hitx, hity);
                             }
                         }
@@ -2252,7 +2228,6 @@ f22f11117212f2ff7f7722ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
 f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff1211111111111111111111111111111111111111111111111111111111111111111121121111f2121121ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111111111111111111111111111111111111111111111111111
 1111111121111111222211221111221122111111221121121111111111221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ".Replace("\n", "").Replace("\r", "");
-
 
     }
 }
