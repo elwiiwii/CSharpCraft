@@ -9,10 +9,11 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class KeyboardOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
+    public class KeyboardOptions : IGameMode
     {
 
-        public string GameModeName { get => "4"; }
+        public string GameModeName { get => "options"; }
+        private Pico8Functions p8;
 
         private int menuX;
         private int menuY;
@@ -31,23 +32,24 @@ namespace CSharpCraft.OptionsMenu
             return sel > size - 1 ? 0 : sel < -1 ? -1 : sel;
         }
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             menuX = 0;
             menuY = -1;
             menuWidth = 2;
             menuLength = typeof(KeyboardOptionsFile).GetProperties().Length;
             waitingForInput = false;
             delay = 0;
-            mainOptions.currentOptionsMode = 4;
         }
 
         public void Update()
         {
             if (menuY == -1)
             {
-                if (p8.Btnp(1)) { optionsModes[5].Init(); return; }
-                if (p8.Btnp(2)) { optionsModes[2].Init(); return; }
+                if (p8.Btnp(1)) { p8.LoadCart(new ControllerOptions()); return; }
+                if (p8.Btnp(2)) { p8.LoadCart(new ControlsOptions()); return; }
                 if (p8.Btnp(3)) { menuY += 1; }
                 return;
             }
@@ -64,18 +66,18 @@ namespace CSharpCraft.OptionsMenu
                         var properties = typeof(KeyboardOptionsFile).GetProperties();
                         var currentProperty = properties[menuY];
                         var propertyName = typeof(KeyboardOptionsFile).GetProperty(currentProperty.Name);
-                        var binding = (Binding)propertyName.GetValue(keyboardOptionsFile);
+                        var binding = (Binding)propertyName.GetValue(p8.keyboardOptionsFile);
                         if (menuX == 0 && propertyName != null)
                         {
                             var newBinding = new Binding(KeysToString.keysToString[key[0]], binding.Bind2);
-                            propertyName.SetValue(keyboardOptionsFile, newBinding);
-                            KeyboardOptionsFile.JsonWrite(keyboardOptionsFile);
+                            propertyName.SetValue(p8.keyboardOptionsFile, newBinding);
+                            KeyboardOptionsFile.JsonWrite(p8.keyboardOptionsFile);
                         }
                         else
                         {
                             var newBinding = new Binding(binding.Bind1, KeysToString.keysToString[key[0]]);
-                            propertyName.SetValue(keyboardOptionsFile, newBinding);
-                            KeyboardOptionsFile.JsonWrite(keyboardOptionsFile);
+                            propertyName.SetValue(p8.keyboardOptionsFile, newBinding);
+                            KeyboardOptionsFile.JsonWrite(p8.keyboardOptionsFile);
                         }
                         delay = 0;
                         waitingForInput = false;
@@ -101,8 +103,8 @@ namespace CSharpCraft.OptionsMenu
         public void Draw()
         {
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -110,20 +112,20 @@ namespace CSharpCraft.OptionsMenu
 
             Vector2 size = new(cellW, cellH);
 
-            batch.Draw(textureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             if (waitingForInput)
             {
-                batch.Draw(textureDictionary["WaitingForInput"], new Vector2(20 * cellW, 51 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["WaitingForInput"], new Vector2(20 * cellW, 51 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {
-                batch.Draw(textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
                 if (menuY >= 0)
                 {
                     var position5 = new Vector2((46 + 36 * menuX) * cellW, (menuY * 6 + 55) * cellH);
-                    batch.Draw(textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                    p8.batch.Draw(p8.textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 }
                 else
                 {
@@ -132,8 +134,8 @@ namespace CSharpCraft.OptionsMenu
 
                 var position3 = new Vector2(16 * cellW, 31 * cellH);
                 var position4 = new Vector2(30 * cellW, 31 * cellH);
-                batch.Draw(textureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary["SelectorHalf"], position4, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], position4, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
 
                 p8.Print("keyboard", 19, 33, 7);
                 p8.Print("controller", 19 + 54, 33, 7);
@@ -143,7 +145,7 @@ namespace CSharpCraft.OptionsMenu
                 foreach (var property in properties)
                 {
                     p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
-                    var val = (Binding)property.GetValue(keyboardOptionsFile);
+                    var val = (Binding)property.GetValue(p8.keyboardOptionsFile);
                     p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
                     p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
                     j += 6;
@@ -152,6 +154,10 @@ namespace CSharpCraft.OptionsMenu
             }
 
         }
+
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
 

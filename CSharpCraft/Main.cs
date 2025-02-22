@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Input;
 namespace CSharpCraft
 {
 
-    partial class FNAGame : Game
+    class FNAGame : Game
     {
         [STAThread]
         static void Main(string[] args)
@@ -28,23 +28,12 @@ namespace CSharpCraft
         private List<IGameMode> gameModes = [];
         private GraphicsDeviceManager graphics;
         private Pico8Functions p8;
-        private PcraftSingleplayer pcraftSingleplayer;
-        private TitleScreen titleScreen;
 
-        private MainRace mainRace;
         private List<IGameMode> raceScenes = [];
         private JoinRoomScene joinRoomScene;
         private LobbyScene lobbyScene;
         private PickBanScene pickBanScene;
 
-        private MainOptions mainOptions;
-        private List<IGameMode> optionsModes = [];
-        private BackOptions1 backOptions1;
-        private BackOptions2 backOptions2;
-        private ControlsOptions controlsOptions;
-        private GraphicsOptions graphicsOptions;
-        private KeyboardOptions keyboardOptions;
-        private ControllerOptions controllerOptions;
         private KeyboardOptionsFile keyboardOptionsFile;
 
         //private List<Texture2D> textures = [];
@@ -102,25 +91,18 @@ namespace CSharpCraft
 
             UpdateViewport();
 
-            p8.Init();
-
-            gameModes.Add(titleScreen);
-            gameModes.Add(pcraftSingleplayer);
-            gameModes.Add(mainRace);
-            gameModes.Add(mainOptions);
+            //p8.Init();
 
             raceScenes.Add(joinRoomScene);
             raceScenes.Add(lobbyScene);
             raceScenes.Add(pickBanScene);
 
-            optionsModes.Add(backOptions1);
-            optionsModes.Add(backOptions2);
-            optionsModes.Add(controlsOptions);
-            optionsModes.Add(graphicsOptions);
-            optionsModes.Add(keyboardOptions);
-            optionsModes.Add(controllerOptions);
+            gameModes.Add(new TitleScreen());
+            gameModes.Add(new PcraftSingleplayer());
+            gameModes.Add(new MainRace(raceScenes));
+            gameModes.Add(new ControlsOptions());
 
-            titleScreen.Init();
+            //titleScreen.Init();
         }
 
 
@@ -137,13 +119,13 @@ namespace CSharpCraft
             KeyboardState state = Keyboard.GetState();
             GamePadState gamepadState = GamePad.GetState(PlayerIndex.One);
 
-            currentGameMode = titleScreen.currentGameMode;
+            //currentGameMode = titleScreen.currentGameMode;
 
             if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
             {
-                gameModes[currentGameMode].Update();
-                
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R)) { gameModes[currentGameMode].Init(); }
+                //gameModes[currentGameMode].Update();
+
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R)) { }//gameModes[currentGameMode].Init(); }
 
                 if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
                 {
@@ -151,7 +133,7 @@ namespace CSharpCraft
                     {
                         p8.SoundDispose();
                         currentGameMode = 0;
-                        titleScreen.Init();
+                        //titleScreen.Init();
                     }
                     else
                     {
@@ -181,10 +163,11 @@ namespace CSharpCraft
 
             p8.Pal();
             p8.Palt();
+            p8.Draw();
 
             if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
             {
-                gameModes[currentGameMode].Draw();
+                //gameModes[currentGameMode].Draw();
             }
 
             // Get the size of the viewport
@@ -275,22 +258,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
-            pcraftSingleplayer = new PcraftSingleplayer(p8);
-            titleScreen = new TitleScreen(p8, textureDictionary, batch, GraphicsDevice, gameModes);
-
-            mainRace = new MainRace(raceScenes);
-            joinRoomScene = new JoinRoomScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
-            lobbyScene = new LobbyScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen);
-            pickBanScene = new PickBanScene(p8, textureDictionary, batch, GraphicsDevice, raceScenes, mainRace, titleScreen, keyboardOptionsFile);
-
-            mainOptions = new MainOptions(optionsModes);
-            backOptions1 = new BackOptions1(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
-            backOptions2 = new BackOptions2(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions, titleScreen);
-            controlsOptions = new ControlsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
-            graphicsOptions = new GraphicsOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
-            keyboardOptions = new KeyboardOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
-            controllerOptions = new ControllerOptions(p8, textureDictionary, batch, GraphicsDevice, keyboardOptionsFile, optionsModes, mainOptions);
+            p8 = new Pico8Functions(new TitleScreen(), gameModes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
         }
 
 

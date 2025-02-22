@@ -16,7 +16,7 @@ using CSharpCraft.OptionsMenu;
 
 namespace CSharpCraft.RaceMode
 {
-    public class PickBanScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen, KeyboardOptionsFile keyboardOptionsFile) : IGameMode
+    public class PickBanScene(MainRace mainRace) : IGameMode
     {
 #nullable enable
         private float animationTimer;
@@ -41,9 +41,12 @@ namespace CSharpCraft.RaceMode
 #nullable disable
 
         public string GameModeName { get => "2"; }
+        private Pico8Functions p8;
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             mainRace.currentScene = 2;
             animationTimer = 0;
             gameCount = 1;
@@ -164,8 +167,8 @@ namespace CSharpCraft.RaceMode
         private void DrawSeedType(SeedType seedType, bool animated)
         {
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -177,31 +180,31 @@ namespace CSharpCraft.RaceMode
             var color = 2;
             var animationCheck = animated && seedType.Status == "UNBANNED" && !seedType.Unavailable;
 
-            batch.Draw(textureDictionary[animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary[animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
             
             if (seedType.Status == "BANNED")
             {
                 color = 1;
-                batch.Draw(textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary["SeedCross"], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[1], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SeedCross"], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[1], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {
-                batch.Draw(textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             if (seedType.Status == "PLAYED" || seedType.Unavailable)
             {
                 color = 1;
-                batch.Draw(textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary["SeedGreyOut"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, seedType.Selected ? p8.colors[14] : p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SeedGreyOut"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
         }
 
         private void DrawInitialSeedSelection(SeedType seedType, int order)
         {
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -210,7 +213,7 @@ namespace CSharpCraft.RaceMode
             Vector2 size = new(cellW, cellH);
             Vector2 quarterSize = new(cellW / 4f, cellH / 4f);
 
-            batch.Draw(textureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
 
             var color = 2;
             if (order > turn)
@@ -226,14 +229,14 @@ namespace CSharpCraft.RaceMode
                 color = 14;
             }
 
-            batch.Draw(textureDictionary["SeedSelectorArrow"], new Vector2((seedType.Xpos - 9) * cellW, seedType.Ypos * cellH), null, p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary["SeedSelectorArrow"], new Vector2((seedType.Xpos - 9) * cellW, seedType.Ypos * cellH), null, p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
         private void DrawSeedSelection(SeedType seedType, int order)
         {
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -242,7 +245,7 @@ namespace CSharpCraft.RaceMode
             Vector2 size = new(cellW, cellH);
             Vector2 quarterSize = new(cellW / 4f, cellH / 4f);
 
-            batch.Draw(textureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
 
             var color = 2;
             if (order > gameCount)
@@ -259,7 +262,7 @@ namespace CSharpCraft.RaceMode
                 color = 14;
             }
 
-            batch.Draw(textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary["SeedSelector"], new Vector2(seedType.Xpos * cellW, seedType.Ypos * cellH), null, p8.colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
         private void Printc(string t, int x, int y, int c)
@@ -277,8 +280,8 @@ namespace CSharpCraft.RaceMode
             p8.Cls();
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -288,8 +291,8 @@ namespace CSharpCraft.RaceMode
             Vector2 halfSize = new(cellW / 2f, cellH / 2f);
             Vector2 quarterSize = new(cellW / 4f, cellH / 4f);
 
-            batch.Draw(textureDictionary["SmallNameBanner"], new Vector2(0 * cellW, 4 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            batch.Draw(textureDictionary["SmallNameBanner"], new Vector2(73 * cellW, 4 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+            p8.batch.Draw(p8.textureDictionary["SmallNameBanner"], new Vector2(0 * cellW, 4 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary["SmallNameBanner"], new Vector2(73 * cellW, 4 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
             p8.Circfill(47 - player1Score.ToString().Length, 9, 3, 1);
             p8.Circfill(47 + player1Score.ToString().Length, 9, 3, 1);
             p8.Rectfill(47 - 1 - player1Score.ToString().Length, 6, 47 + 1 + player1Score.ToString().Length, 12, 1);
@@ -302,11 +305,11 @@ namespace CSharpCraft.RaceMode
             Printc($"{player2Score}", 81, 7, 7);
             p8.Print(player2Name, 87, 7, 7);
 
-            batch.Draw(textureDictionary["Game"], new Vector2(56 * cellW, 6 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-            batch.Draw(textureDictionary[$"{gameCount}"], new Vector2(62 * cellW, 12 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary["Game"], new Vector2(56 * cellW, 6 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary[$"{gameCount}"], new Vector2(62 * cellW, 12 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
 
             var s1 = $"{player1Name}'s turn";
-            var s2 = $"[{KeyNames.keyNames[keyboardOptionsFile.Menu.Bind1]}] for random action";
+            var s2 = $"[{KeyNames.keyNames[p8.keyboardOptionsFile.Menu.Bind1]}] for random action";
             //Printc(Math.Floor(animationTimer) % 2 == 0 ? s1 : s2, 64, 29, 7);
             Printc(s1, 64, 29, 7);
 
@@ -341,11 +344,11 @@ namespace CSharpCraft.RaceMode
                 DrawInitialSeedSelection(turns[2], 2);
                 DrawInitialSeedSelection(turns[3], 3);
             }
-            
-
         }
 
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
-
 }

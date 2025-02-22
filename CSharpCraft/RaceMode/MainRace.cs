@@ -20,6 +20,7 @@ namespace CSharpCraft.RaceMode
     public class MainRace(List<IGameMode> raceScenes) : IGameMode
     {
         public string GameModeName { get => "race"; }
+        private Pico8Functions p8;
 
         //TODO channel is disposable
         public GrpcChannel channel;
@@ -32,13 +33,15 @@ namespace CSharpCraft.RaceMode
 
         public int currentScene;
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             channel = GrpcChannel.ForAddress("https://localhost:5072");
             service = new GameService.GameServiceClient(channel);
 
             currentScene = 0;
-            raceScenes[currentScene].Init();
+            raceScenes[currentScene].Init(p8);
         }
 
         public void Update()
@@ -127,7 +130,7 @@ namespace CSharpCraft.RaceMode
             if (startMatchNotification.MatchStarted)
             {
                 currentScene = myself.Role == "Player" ? 2 : 2; //should be 2:3 when i make the spectator scene
-                raceScenes[currentScene].Init();
+                raceScenes[currentScene].Init(p8);
             }
         }
 
@@ -154,6 +157,10 @@ namespace CSharpCraft.RaceMode
                 dummyIndex++;
             }
         }
+
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
 

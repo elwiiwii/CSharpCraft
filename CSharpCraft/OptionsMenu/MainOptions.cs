@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using CSharpCraft.Pico8;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -16,13 +17,16 @@ namespace CSharpCraft.OptionsMenu
 
         //}
         public string GameModeName { get => "options"; }
+        private Pico8Functions p8;
 
         public int currentOptionsMode;
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             currentOptionsMode = 2;
-            optionsModes[currentOptionsMode].Init();
+            optionsModes[currentOptionsMode].Init(p8);
         }
 
         public void Update()
@@ -35,6 +39,10 @@ namespace CSharpCraft.OptionsMenu
         {
             optionsModes[currentOptionsMode].Draw();
         }
+
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
 

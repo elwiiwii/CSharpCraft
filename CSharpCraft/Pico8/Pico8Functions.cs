@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Xml.Linq;
+using System.Runtime.CompilerServices;
 
 namespace CSharpCraft.Pico8
 {
@@ -34,19 +35,25 @@ namespace CSharpCraft.Pico8
         private bool fade1;
         private bool fade4;
 
-        Dictionary<string, SoundEffect> soundEffectDictionary;
-        Dictionary<string, SoundEffect> musicDictionary;
-        Texture2D pixel;
-        SpriteBatch batch;
-        GraphicsDevice graphicsDevice;
-        KeyboardOptionsFile keyboardOptionsFile;
+        public List<IGameMode> gameModes { get; }
+        public Dictionary<string, Texture2D> textureDictionary { get; }
+        public Dictionary<string, SoundEffect> soundEffectDictionary { get; }
+        public Dictionary<string, SoundEffect> musicDictionary { get; }
+        public Texture2D pixel { get; }
+        public SpriteBatch batch { get; }
+        public GraphicsDevice graphicsDevice { get; }
+        public KeyboardOptionsFile keyboardOptionsFile { get; }
 
         private int[] _sprites;
         private int[] _flags;
         private int[] _map;
 
-        public Pico8Functions(Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
+        private IGameMode _cart;
+
+        public Pico8Functions(IGameMode cart, List<IGameMode> _gameModes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
         {
+            gameModes = _gameModes;
+            textureDictionary = _textureDictionary;
             soundEffectDictionary = _soundEffectDictionary;
             musicDictionary = _musicDictionary;
             pixel = _pixel;
@@ -54,9 +61,38 @@ namespace CSharpCraft.Pico8
             graphicsDevice = _graphicsDevice;
             keyboardOptionsFile = _keyboardOptionsFile;
 
+            LoadCart(cart);
+        }
+
+        public void LoadCart(IGameMode cart)
+        {
             _sprites = [];
             _flags = [];
             _map = [];
+
+            _cart = cart;
+
+            Array.Copy(colors, resetColors, colors.Length);
+            Array.Copy(colors, sprColors, colors.Length);
+            Array.Copy(colors, resetSprColors, colors.Length);
+
+            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
+
+            SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
+            SoundEffectInstance instance4 = musicDictionary[$"music_4"].CreateInstance();
+            channelMusic.Add(instance1);
+            channelMusic.Add(instance4);
+            instance1.IsLooped = true;
+            instance4.IsLooped = true;
+            instance1.Play();
+            instance4.Play();
+            instance1.Volume = 0.0f;
+            instance4.Volume = 0.0f;
+            fade1 = false;
+            fade4 = false;
+
+            Reload();
+            Init();
         }
 
         private static int[] DataToArray(string s, int n)
@@ -499,6 +535,12 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public void Draw()
+        {
+            _cart.Draw();
+        }
+
+
         public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
         {
             return _flags[n];
@@ -507,26 +549,7 @@ namespace CSharpCraft.Pico8
 
         public void Init()
         {
-            Array.Copy(colors, resetColors, colors.Length);
-            Array.Copy(colors, sprColors, colors.Length);
-            Array.Copy(colors, resetSprColors, colors.Length);
-
-            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
-
-            SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
-            SoundEffectInstance instance4 = musicDictionary[$"music_4"].CreateInstance();
-            channelMusic.Add(instance1);
-            channelMusic.Add(instance4);
-            instance1.IsLooped = true;
-            instance4.IsLooped = true;
-            instance1.Play();
-            instance4.Play();
-            instance1.Volume = 0.0f;
-            instance4.Volume = 0.0f;
-            fade1 = false;
-            fade4 = false;
-
-            Reload();
+            _cart.Init(this);
         }
 
 
@@ -837,48 +860,6 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Print(string str, int x, int y, F32 c) // https://pico-8.fandom.com/wiki/Print
-        {
-            int xFlr = x;
-            int yFlr = y;
-            int cFlr = F32.FloorToInt(c);
-
-            int charWidth = 4;
-            //int charHeight = 5;
-
-            // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            for (int s = 0; s < str.Length; s++)
-            {
-                char letter = str[s];
-
-                for (int i = 0; i < 5; i++)
-                {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        if (Font.chars[letter][i, j] == 1)
-                        {
-                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
-                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
-
-                            Vector2 position = new Vector2(charStartX, charStartY);
-                            Vector2 size = new(cellWidth, cellHeight);
-
-                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                        }
-                    }
-                }
-            }
-        }
-
-
         public void Pset(double x, double y, double c) // https://pico-8.fandom.com/wiki/Pset
         {
             int xFlr = (int)Math.Floor(x);
@@ -1008,9 +989,9 @@ namespace CSharpCraft.Pico8
             //Map1 = new int[128 * 64];
             //spriteTextures = [];
 
-            _sprites = DataToArray(_game.SpriteData, 1);
-            _flags = DataToArray(_game.FlagData, 2);
-            _map = DataToArray(_game.MapData, 2);
+            _sprites = DataToArray(_cart.SpriteData, 1);
+            _flags = DataToArray(_cart.FlagData, 2);
+            _map = DataToArray(_cart.MapData, 2);
         }
 
 
@@ -1411,6 +1392,8 @@ namespace CSharpCraft.Pico8
 
         public void Update()
         {
+            _cart.Update();
+
             prev0 = Btn(0);
             prev1 = Btn(1);
             prev2 = Btn(2);

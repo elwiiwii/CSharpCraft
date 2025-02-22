@@ -1,4 +1,6 @@
-﻿using CSharpCraft.Pico8;
+﻿using CSharpCraft.OptionsMenu;
+using System.IO.Pipelines;
+using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -6,10 +8,11 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class TitleScreen(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
+    public class TitleScreen : IGameMode //, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
     {
 
         public string GameModeName { get => "TitleScreen"; }
+        private Pico8Functions p8;
 
         private int menuSelected;
         public int currentGameMode;
@@ -21,8 +24,10 @@ namespace CSharpCraft
             return ((sel % lp) + lp) % lp;
         }
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             menuSelected = 0;
             currentGameMode = 0;
             prevState = Keyboard.GetState();
@@ -37,12 +42,13 @@ namespace CSharpCraft
                 if (p8.Btnp(2)){ menuSelected -= 1; }
                 if (p8.Btnp(3)) { menuSelected += 1; }
 
-                menuSelected = Loop(menuSelected, gameModes);
+                menuSelected = Loop(menuSelected, p8.gameModes);
 
                 if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
                 {
-                    gameModes[menuSelected + 1].Init();
-                    currentGameMode = menuSelected + 1;
+                    p8.LoadCart(p8.gameModes[menuSelected + 1]);
+                    //gameModes[menuSelected + 1].Init();
+                    //currentGameMode = menuSelected + 1;
                 }
             }
 
@@ -51,11 +57,11 @@ namespace CSharpCraft
 
         public void Draw()
         {
-            batch.GraphicsDevice.Clear(Color.Black);
+            p8.batch.GraphicsDevice.Clear(Color.Black);
 
             // Get the size of the viewport
-            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+            int viewportWidth = p8.batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = p8.batch.GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -64,8 +70,8 @@ namespace CSharpCraft
             Vector2 position = new(1 * cellWidth, 1 * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
 
-            Texture2D logo = textureDictionary["CSharpCraftLogo"];
-            batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            Texture2D logo = p8.textureDictionary["CSharpCraftLogo"];
+            p8.batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             p8.Print("c# craft 0.0.1", 0, 18, 6);
             p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6);
@@ -79,9 +85,9 @@ namespace CSharpCraft
             p8.Print(">", 0, 62 + (menuSelected * 6), 7);
 
             int i = 0;
-            foreach (var gameMode in gameModes)
+            foreach (var gameMode in p8.gameModes)
             {
-                if (gameMode == gameModes[0])
+                if (gameMode == p8.gameModes[0])
                 {
                     continue;
                 }
@@ -93,6 +99,9 @@ namespace CSharpCraft
             }
         }
 
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
 }

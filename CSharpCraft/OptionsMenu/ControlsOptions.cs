@@ -10,28 +10,30 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class ControlsOptions(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, KeyboardOptionsFile keyboardOptionsFile, List<IGameMode> optionsModes, MainOptions mainOptions) : IGameMode
+    public class ControlsOptions : IGameMode
     {
 
-        public string GameModeName { get => "2"; }
+        public string GameModeName { get => "options"; }
+        private Pico8Functions p8;
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
-            mainOptions.currentOptionsMode = 2;
+            p8 = pico8;
+
         }
 
         public void Update()
         {
-            if (p8.Btnp(1)) { optionsModes[3].Init(); return; }
-            if (p8.Btnp(2)) { optionsModes[0].Init(); return; }
-            if (p8.Btnp(3)) { optionsModes[4].Init(); return; }
+            if (p8.Btnp(1)) { p8.LoadCart(new GraphicsOptions()); return; }
+            if (p8.Btnp(2)) { p8.LoadCart(new BackOptions1()); return; }
+            if (p8.Btnp(3)) { p8.LoadCart(new KeyboardOptions()); return; }
         }
 
         public void Draw()
         {
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -39,9 +41,13 @@ namespace CSharpCraft.OptionsMenu
 
             Vector2 size = new(cellW, cellH);
 
-            batch.Draw(textureDictionary["OptionsBackground2"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.batch.Draw(p8.textureDictionary["OptionsBackground2"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         }
+
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
 

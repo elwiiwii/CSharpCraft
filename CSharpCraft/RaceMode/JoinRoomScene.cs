@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace CSharpCraft.RaceMode
 {
-    public class JoinRoomScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
+    public class JoinRoomScene(MainRace mainRace) : IGameMode
     {
 #nullable enable
         private static ConcurrentString userName = new();
@@ -26,9 +26,12 @@ namespace CSharpCraft.RaceMode
 #nullable disable
 
         public string GameModeName { get => "0"; }
+        private Pico8Functions p8;
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             mainRace.cancellationTokenSource = new();
             userName = new();
             role = new();
@@ -110,7 +113,7 @@ namespace CSharpCraft.RaceMode
                             joinedRoom = true;
                             await RoomStream();
                             await JoinRoom();
-                            raceScenes[1].Init();
+                            p8.LoadCart(new LobbyScene(mainRace));
                         }
                         break;
                     case 3:
@@ -123,7 +126,7 @@ namespace CSharpCraft.RaceMode
                         {
                             mainRace.cancellationTokenSource.Cancel(); // Cancel the listening task
                             mainRace.roomStream?.Dispose(); // Dispose of the stream
-                            titleScreen.currentGameMode = 0;
+                            p8.LoadCart(new TitleScreen());
                             return;
                         }
                         break;
@@ -138,8 +141,8 @@ namespace CSharpCraft.RaceMode
             p8.Cls();
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -150,22 +153,22 @@ namespace CSharpCraft.RaceMode
 
             if (!joinedRoom)
             {
-                batch.Draw(textureDictionary["SelectorHalf"], new Vector2(21 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary["SelectorHalf"], new Vector2(63 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], new Vector2(21 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], new Vector2(63 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 p8.Rectfill(44, 59, 62, 67, menuState == 0 ? 7 : 6);
                 p8.Rectfill(44, 60, 62, 66, 0);
                 Printc(prompt, 64, 52, 7);
                 Printc(userName.Value, 54, 61, 13);
 
-                batch.Draw(textureDictionary["SmallSelector"], new Vector2(42 * cellW, 70 * cellH), null, p8.colors[menuState == 3 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SmallSelector"], new Vector2(42 * cellW, 70 * cellH), null, p8.colors[menuState == 3 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 p8.Print("back", 45, 72, menuState == 3 ? 7 : 6);
 
-                batch.Draw(textureDictionary["SmallSelector"], new Vector2(65 * cellW, 70 * cellH), null, p8.colors[menuState == 2 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SmallSelector"], new Vector2(65 * cellW, 70 * cellH), null, p8.colors[menuState == 2 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 p8.Print("join", 68, 72, menuState == 2 ? 7 : 6);
 
-                batch.Draw(textureDictionary["SmallSelector"], new Vector2(88 * cellW, 59 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary[$"{role.Value}Icon"], new Vector2(91 * cellW, 61 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-                batch.Draw(textureDictionary["Arrow"], new Vector2(101 * cellW, 65 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], -1.57f, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["SmallSelector"], new Vector2(88 * cellW, 59 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary[$"{role.Value}Icon"], new Vector2(91 * cellW, 61 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["Arrow"], new Vector2(101 * cellW, 65 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], -1.57f, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {
@@ -203,8 +206,10 @@ namespace CSharpCraft.RaceMode
             _ = Task.Run(mainRace.ReadRoomStream, mainRace.cancellationTokenSource.Token);
         }
 
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
-        
     }
 
 }

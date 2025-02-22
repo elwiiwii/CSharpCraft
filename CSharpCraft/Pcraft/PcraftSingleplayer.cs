@@ -7,23 +7,23 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.Pcraft
 {
-    public class PcraftSingleplayer(Pico8Functions p8) : PcraftBase(p8)
+    public class PcraftSingleplayer : PcraftBase
     {
         public override string GameModeName => "pcraft";
 
-        public override void Init()
+        public override void Init(Pico8Functions pico8)
         {
-            base.Init();
+            base.Init(pico8);
         }
     }
 
-    public class PcraftRaceplayer(Pico8Functions p8) : PcraftBase(p8)
+    public class PcraftRaceplayer(Pico8Functions p8) : PcraftBase
     {
         public override string GameModeName => "race";
 
-        public override void Init()
+        public override void Init(Pico8Functions pico8)
         {
-            base.Init();
+            base.Init(pico8);
         }
     }
 }

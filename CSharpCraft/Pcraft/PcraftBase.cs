@@ -1,15 +1,16 @@
 ﻿using CSharpCraft.Pico8;
 using FixMath;
+using Google.Protobuf.WellKnownTypes;
 
 namespace CSharpCraft.Pcraft
 {
 
-    public abstract class PcraftBase(Pico8Functions p8) : IGameMode
+    public abstract class PcraftBase : IGameMode
     {
 
         public abstract string GameModeName { get; }
 
-        private readonly Pico8Functions p8 = p8;
+        private Pico8Functions p8;
 
 #nullable enable
 
@@ -229,9 +230,9 @@ namespace CSharpCraft.Pcraft
         private bool CanCraft(Entity req)
         {
             bool can = true;
-            for (int i = 0; i < req.Req.Count; i++)
+            foreach (Entity e in req.Req)
             {
-                if (HowMany(invent, req.Req[i]) < req.Req[i].Count)
+                if (HowMany(invent, e) < e.Count)
                 {
                     can = false;
                     break;
@@ -242,9 +243,9 @@ namespace CSharpCraft.Pcraft
 
         private void Craft(Entity req)
         {
-            for (int i = 0; i < req.Req.Count; i++)
+            foreach (Entity e in req.Req)
             {
-                RemInList(invent, req.Req[i]);
+                RemInList(invent, e);
             }
             AddItemInList(invent, SetPower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
         }
@@ -265,20 +266,21 @@ namespace CSharpCraft.Pcraft
         private int HowMany(List<Entity> list, Entity it)
         {
             int count = 0;
-            for (int i = 0; i < list.Count; i++)
+            foreach (Entity e in list)
             {
-                if (list[i].Type == it.Type)
+                if (e.Type != it.Type)
                 {
-                    if (it.Power is null || it.Power == list[i].Power)
+                    continue;
+                }
+                if (it.Power is null || it.Power == e.Power)
+                {
+                    if (e.Count is not null)
                     {
-                        if (list[i].Count is not null)
-                        {
-                            count += (int)list[i].Count;
-                        }
-                        else
-                        {
-                            count += 1;
-                        }
+                        count += (int)e.Count;
+                    }
+                    else
+                    {
+                        count += 1;
                     }
                 }
             }
@@ -287,17 +289,18 @@ namespace CSharpCraft.Pcraft
 
         private Entity IsInList(List<Entity> list, Entity it)
         {
-            for (int i = 0; i < list.Count; i++)
+            foreach (Entity e in list)
             {
-                if (list[i].Type == it.Type)
+                if (e.Type != it.Type)
                 {
-                    if (it.Power is null || it.Power == list[i].Power)
-                    {
-                        return list[i];
-                    }
+                    continue;
+                }
+                if (it.Power is null || it.Power == e.Power)
+                {
+                    return e;
                 }
             }
-            return null;
+            return new();
         }
 
         private void RemInList(List<Entity> list, Entity elem)
@@ -478,8 +481,10 @@ namespace CSharpCraft.Pcraft
             p8.Add(invent, Inst(pickuptool));
         }
 
-        public virtual void Init()
+        public virtual void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             p8.Music(4, 10000);
 
             furnaceRecipe = [];
@@ -526,7 +531,7 @@ namespace CSharpCraft.Pcraft
             curMenu = mainMenu;
         }
 
-        private (int, int) GetMcoord(F32 x, F32 y)
+        private (int x, int y) GetMcoord(F32 x, F32 y)
         {
             return (F32.FloorToInt(x / 16), F32.FloorToInt(y / 16));
         }
@@ -546,16 +551,10 @@ namespace CSharpCraft.Pcraft
         private Ground GetGr(F32 x, F32 y)
         {
             (int i, int j) = GetMcoord(x, y);
-            return GetDirectGr(i, j);
+            return GetDirectGr(F32.FromInt(i), F32.FromInt(j));
         }
 
         private Ground GetDirectGr(F32 i, F32 j)
-        {
-            if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
-            return grounds[p8.Mget(i + levelx, j)];
-        }
-
-        private Ground GetDirectGr(int i, int j)
         {
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
             return grounds[p8.Mget(i + levelx, j)];
@@ -578,16 +577,6 @@ namespace CSharpCraft.Pcraft
             return data[g - 1];
         }
 
-        private F32 DirGetData(int i, int j, F32 @default)
-        {
-            int g = i + j * levelsx;
-            if (data[g - 1] == 0)
-            {
-                data[g - 1] = @default;
-            }
-            return data[g - 1];
-        }
-
         private void DirSetData(int i, int j, F32 v)
         {
             data[i + j * levelsx - 1] = v;
@@ -600,7 +589,7 @@ namespace CSharpCraft.Pcraft
             {
                 return F32.FromInt(@default);
             }
-            return DirGetData(i, j, F32.FromInt(@default));
+            return DirGetData(F32.FromInt(i), F32.FromInt(j), F32.FromInt(@default));
         }
 
         private void SetData(F32 x, F32 y, F32 v)
@@ -634,7 +623,7 @@ namespace CSharpCraft.Pcraft
             return F32.Max(F32.Abs(e.X - x), F32.Abs(e.Y - y)) > 8;
         }
 
-        private (F32, F32) ReflectCol(F32 x, F32 y, F32 dx, F32 dy, Func<F32, F32, Entity, bool> checkfun, F32 dp, Entity e = null)
+        private (F32 dx, F32 dy) ReflectCol(F32 x, F32 y, F32 dx, F32 dy, Func<F32, F32, Entity, bool> checkfun, F32 dp, Entity e = null)
         {
             F32 newx = x + dx;
             F32 newy = y + dy;
@@ -644,27 +633,28 @@ namespace CSharpCraft.Pcraft
             bool chor = checkfun(newx, y, e);
             bool cver = checkfun(x, newy, e);
 
-            if (ccur)
+            if (!ccur)
             {
-                if (chor || cver)
+                return (dx, dy);
+            }
+            if (chor || cver)
+            {
+                if (!ctotal)
                 {
-                    if (!ctotal)
+                    if (chor)
                     {
-                        if (chor)
-                        {
-                            dy = -dy * dp;
-                        }
-                        else
-                        {
-                            dx = -dx * dp;
-                        }
+                        dy = -dy * dp;
+                    }
+                    else
+                    {
+                        dx = -dx * dp;
                     }
                 }
-                else
-                {
-                    dx = -dx * dp;
-                    dy = -dy * dp;
-                }
+            }
+            else
+            {
+                dx = -dx * dp;
+                dy = -dy * dp;
             }
 
             return (dx, dy);
@@ -719,6 +709,326 @@ namespace CSharpCraft.Pcraft
             return (Lerp(rot, grot, F32.FromDouble(0.4)) % 1 + 1) % 1;
         }
 
+        private (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
+        {
+            int fin = entities.Count;
+            for (int i = fin - 1; i >= 0; i--)
+            {
+                Entity e = entities[i];
+                if (e.HasCol)
+                {
+                    (e.Vx, e.Vy) = ReflectCol(e.X, e.Y, e.Vx, e.Vy, IsFree, F32.FromDouble(0.9));
+                }
+                e.X += e.Vx;
+                e.Y += e.Vy;
+                e.Vx *= F32.FromDouble(0.95);
+                e.Vy *= F32.FromDouble(0.95);
+
+                if (e.Timer is not null && e.Timer < 1)
+                {
+                    p8.Del(entities, e);
+                    continue;
+                }
+                
+                if (e.Timer is not null) { e.Timer -= 1; }
+
+                F32 dist = F32.Max(F32.Abs(e.X - plx), F32.Abs(e.Y - ply));
+                if (e.GiveItem is not null)
+                {
+                    if (dist < 5 && (e.Timer is null || e.Timer < 115))
+                    {
+                        Entity newIt = Instc(e.GiveItem, 1);
+                        AddItemInList(invent, newIt, -1);
+                        p8.Del(entities, e);
+                        p8.Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
+                        p8.Sfx(18, 3);
+                    }
+                    continue;
+                }
+                
+                if (e.HasCol)
+                {
+                    (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, F32.Zero, e);
+                }
+                if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
+                {
+                    if (curItem is not null && curItem.Type == pickuptool)
+                    {
+                        if (e.Type == chest || e.Type.BeCraft)
+                        {
+                            AddItemInList(invent, e, -1);
+                            curItem = e;
+                            p8.Del(entities, e);
+                        }
+                        canAct = false;
+                        continue;
+                    }
+
+                    if (e.Type == chest || e.Type.BeCraft)
+                    {
+                        toogleMenu = 0;
+                        curMenu = Cmenu(e.Type, e.List);
+                        p8.Sfx(13, 3);
+                    }
+                    canAct = false;
+                }
+            }
+            return (dx, dy, canAct);
+        }
+
+        private void UpEnemies(F32 ebx, F32 eby)
+        {
+            foreach (Entity e in enemies)
+            {
+                if (!IsIn(e, 100))
+                {
+                    continue;
+                }
+                if (e.Type == player)
+                {
+                    e.X = plx;
+                    e.Y = ply;
+                    continue;
+                }
+
+                F32 distp = GetLen(e.X - plx, e.Y - ply);
+                F32 mspeed = F32.FromDouble(0.8);
+
+                F32 disten = GetLen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
+                if (disten < 10)
+                {
+                    p8.Add(nearEnemies, e);
+                }
+                if (distp < 8)
+                {
+                    e.Ox += F32.Max(F32.FromDouble(-0.4), F32.Min(F32.FromDouble(0.4), e.X - plx));
+                    e.Oy += F32.Max(F32.FromDouble(-0.4), F32.Min(F32.FromDouble(0.4), e.Y - ply));
+                }
+
+                if (e.Dtim <= 0)
+                {
+                    if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
+                    {
+                        e.Step = enstep_Walk;
+                        e.Dx = p8.Rnd(2) - 1;
+                        e.Dy = p8.Rnd(2) - 1;
+                        e.Dtim = 30 + p8.Rnd(60);
+                    }
+                    else if (e.Step == enstep_Walk)
+                    {
+                        e.Step = enstep_Wait;
+                        e.Dx = F32.Zero;
+                        e.Dy = F32.Zero;
+                        e.Dtim = 30 + p8.Rnd(60);
+                    }
+                    else // chase
+                    {
+                        e.Dtim = 10 + p8.Rnd(60);
+                    }
+                }
+                else
+                {
+                    if (e.Step == enstep_Chase)
+                    {
+                        if (distp > 10)
+                        {
+                            e.Dx += plx - e.X;
+                            e.Dy += ply - e.Y;
+                            e.Banim = F32.Zero;
+                        }
+                        else
+                        {
+                            e.Dx = F32.Zero;
+                            e.Dy = F32.Zero;
+                            e.Banim -= 1;
+                            e.Banim = p8.Mod(e.Banim, 8);
+                            int pow = 10;
+                            if (e.Banim == 4)
+                            {
+                                plife -= pow;
+                                p8.Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
+                                p8.Sfx(14 + p8.Rnd(2.0), 3);
+                            }
+                            plife = F32.Max(F32.Zero, plife);
+                        }
+                        mspeed = F32.FromDouble(1.4);
+                        if (distp > 70)
+                        {
+                            e.Step = enstep_Patrol;
+                            e.Dtim = 30 + p8.Rnd(60);
+                        }
+                    }
+                    else
+                    {
+                        if (distp < 40)
+                        {
+                            e.Step = enstep_Chase;
+                            e.Dtim = 10 + p8.Rnd(60);
+                        }
+                    }
+                    e.Dtim -= 1;
+                }
+
+                F32 dl2 = mspeed * GetInvLen(e.Dx, e.Dy);
+                e.Dx *= dl2;
+                e.Dy *= dl2;
+
+                F32 fx = e.Dx + e.Ox;
+                F32 fy = e.Dy + e.Oy;
+                (fx, fy) = ReflectCol(e.X, e.Y, fx, fy, IsFreeEnem, F32.Zero);
+
+                if (F32.Abs(e.Dx) > 0 || F32.Abs(e.Dy) > 0)
+                {
+                    e.Lrot = GetRot(e.Dx, e.Dy);
+                    e.Panim += F32.FromDouble(1.0 / 33.0);
+                }
+                else
+                {
+                    e.Panim = F32.Zero;
+                }
+
+                e.X += fx;
+                e.Y += fy;
+
+                e.Ox *= F32.FromDouble(0.9);
+                e.Oy *= F32.FromDouble(0.9);
+
+                e.Prot = UpRot(e.Lrot, e.Prot);
+            }
+        }
+
+        private void UpHit(F32 hitx, F32 hity, Ground hit)
+        {
+            if (nearEnemies.Count > 0)
+            {
+                p8.Sfx(19, 3);
+                F32 pow = F32.One;
+                if (curItem is not null && curItem.Type == sword)
+                {
+                    pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                    pow = F32.Floor(pow);
+                    p8.Sfx(14 + p8.Rnd(2.0), 3);
+                }
+                foreach (Entity e in nearEnemies)
+                {
+                    e.Life -= pow / nearEnemies.Count;
+                    F32 push = (pow - 1) * F32.Half;
+                    e.Ox += F32.Max(-push, F32.Min(push, e.X - plx));
+                    e.Oy += F32.Max(-push, F32.Min(push, e.Y - ply));
+                    if (e.Life <= 0)
+                    {
+                        p8.Del(enemies, e);
+                        AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                        AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                    }
+                    p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
+                }
+            }
+            else if (hit.Mat is not null)
+            {
+                p8.Sfx(15, 3);
+                F32 pow = F32.One;
+                if (curItem is not null)
+                {
+                    if (hit == grtree)
+                    {
+                        if (curItem.Type == haxe)
+                        {
+                            pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                            stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                            p8.Sfx(12, 3);
+                        }
+                    }
+                    else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
+                    {
+                        pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                        stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                        p8.Sfx(12, 3);
+                    }
+                }
+                pow = F32.Floor(pow);
+
+                F32 d = GetData(hitx, hity, hit.Life);
+                if (d - pow <= 0)
+                {
+                    SetGr(hitx, hity, hit.Tile);
+                    Cleardata(hitx, hity);
+                    AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
+                    if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
+                    {
+                        AddItem(apple, 1, hitx, hity);
+                    }
+                }
+                else
+                {
+                    SetData(hitx, hity, d - pow);
+                }
+                p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
+            }
+            else
+            {
+                p8.Sfx(19, 3);
+                if (curItem is null)
+                {
+                    return;
+                }
+                if (curItem.Power is not null)
+                {
+                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                }
+                if (curItem.Type.GiveLife is not null)
+                {
+                    plife = F32.Min(F32.FromInt(100), plife + (int)curItem.Type.GiveLife);
+                    RemInList(invent, Instc(curItem.Type, 1));
+                    p8.Sfx(21, 3);
+                }
+                switch (hit, curItem.Type)
+                {
+                    case (Ground, Material) gm when gm == (grgrass, scythe):
+                        SetGr(hitx, hity, grsand);
+                        if (p8.Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
+                        break;
+                    case (Ground, Material) gm when gm == (grsand, shovel):
+                        if (curItem.Power > 3)
+                        {
+                            SetGr(hitx, hity, grwater);
+                            AddItem(sand, 2, hitx, hity);
+                        }
+                        else
+                        {
+                            SetGr(hitx, hity, grfarm);
+                            SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                            AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
+                        }
+                        break;
+                    case (Ground, Material) gm when gm == (grwater, sand):
+                        SetGr(hitx, hity, grsand);
+                        RemInList(invent, Instc(sand, 1));
+                        break;
+                    case (Ground, Material) gm when gm == (grwater, boat):
+                        p8.Reload();
+                        p8.Memcpy(0x1000, 0x2000, 0x1000);
+                        curMenu = winMenu;
+                        p8.Music(4);
+                        break;
+                    case (Ground, Material) gm when gm == (grfarm, seed):
+                        SetGr(hitx, hity, grwheat);
+                        SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                        RemInList(invent, Instc(seed, 1));
+                        break;
+                    case (Ground, Material) gm when gm == (grwheat, scythe):
+                        SetGr(hitx, hity, grsand);
+                        F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
+                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd(d / 2)), hitx, hity);
+                        AddItem(seed, 1, hitx, hity);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         public virtual void Update()
         {
             if (curMenu is not null)
@@ -741,72 +1051,71 @@ namespace CSharpCraft.Pcraft
                     lb4 = p8.Btn(4);
                     return;
                 }
-                else
+
+                Entity intMenu = curMenu;
+                Entity othMenu = menuInvent;
+                if (curMenu.Type == chest)
                 {
-                    Entity intMenu = curMenu;
-                    Entity othMenu = menuInvent;
-                    if (curMenu.Type == chest)
+                    if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
+                    if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
+                    toogleMenu = (toogleMenu % 2 + 2) % 2;
+                    if (toogleMenu == 1)
                     {
-                        if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
-                        if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
-                        toogleMenu = (toogleMenu % 2 + 2) % 2;
-                        if (toogleMenu == 1)
-                        {
-                            intMenu = menuInvent;
-                            othMenu = curMenu;
-                        }
+                        intMenu = menuInvent;
+                        othMenu = curMenu;
                     }
+                }
 
-                    if (intMenu.List.Count > 0)
+                if (intMenu.List.Count > 0)
+                {
+                    if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
+                    if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
+
+                    intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
+
+                    if (p8.Btnp(5) && !lb5)
                     {
-                        if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
-                        if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
-
-                        intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
-
-                        if (p8.Btnp(5) && !lb5)
+                        if (curMenu.Type == chest)
                         {
-                            if (curMenu.Type == chest)
+                            p8.Sfx(16, 3);
+                            Entity el = intMenu.List[intMenu.Sel];
+                            p8.Del(intMenu.List, el);
+                            AddItemInList(othMenu.List, el, othMenu.Sel);
+                            if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
+                            if (intMenu == menuInvent && curItem == el)
                             {
-                                p8.Sfx(16, 3);
-                                Entity el = intMenu.List[intMenu.Sel];
-                                p8.Del(intMenu.List, el);
-                                AddItemInList(othMenu.List, el, othMenu.Sel);
-                                if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
-                                if (intMenu == menuInvent && curItem == el)
+                                curItem = null;
+                            }
+                        }
+                        else if (curMenu.Type.BeCraft)
+                        {
+                            if (curMenu.Sel >= 0 && curMenu.Sel < intMenu.List.Count)
+                            {
+                                Entity rec = curMenu.List[curMenu.Sel];
+                                if (CanCraft(rec))
                                 {
-                                    curItem = null;
+                                    Craft(rec);
+                                    p8.Sfx(16, 3);
+                                }
+                                else
+                                {
+                                    p8.Sfx(17, 3);
                                 }
                             }
-                            else if (curMenu.Type.BeCraft)
-                            {
-                                if (curMenu.Sel >= 0 && curMenu.Sel < intMenu.List.Count)
-                                {
-                                    Entity rec = curMenu.List[curMenu.Sel];
-                                    if (CanCraft(rec))
-                                    {
-                                        Craft(rec);
-                                        p8.Sfx(16, 3);
-                                    }
-                                    else
-                                    {
-                                        p8.Sfx(17, 3);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                curItem = curMenu.List[curMenu.Sel];
-                                p8.Del(curMenu.List, curItem);
-                                AddItemInList(curMenu.List, curItem, 0);
-                                curMenu.Sel = 0;
-                                curMenu = null;
-                                block5 = true;
-                                p8.Sfx(16, 3);
-                            }
+                        }
+                        else
+                        {
+                            curItem = curMenu.List[curMenu.Sel];
+                            p8.Del(curMenu.List, curItem);
+                            AddItemInList(curMenu.List, curItem, 0);
+                            curMenu.Sel = 0;
+                            curMenu = null;
+                            block5 = true;
+                            p8.Sfx(16, 3);
                         }
                     }
                 }
+
                 if (p8.Btnp(4) && !lb4)
                 {
                     curMenu = null;
@@ -878,199 +1187,13 @@ namespace CSharpCraft.Pcraft
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
 
             bool canAct = true;
-
-            int fin = entities.Count;
-            for (int i = fin - 1; i >= 0; i--)
-            {
-                Entity e = entities[i];
-                if (e.HasCol)
-                {
-                    (e.Vx, e.Vy) = ReflectCol(e.X, e.Y, e.Vx, e.Vy, IsFree, F32.FromDouble(0.9));
-                }
-                e.X += e.Vx;
-                e.Y += e.Vy;
-                e.Vx *= F32.FromDouble(0.95);
-                e.Vy *= F32.FromDouble(0.95);
-
-                if (e.Timer is not null && e.Timer < 1)
-                {
-                    p8.Del(entities, e);
-                }
-                else
-                {
-                    if (e.Timer is not null) { e.Timer -= 1; }
-
-                    F32 dist = F32.Max(F32.Abs(e.X - plx), F32.Abs(e.Y - ply));
-                    if (e.GiveItem is not null)
-                    {
-                        if (dist < 5)
-                        {
-                            if (e.Timer is null || e.Timer < 115)
-                            {
-                                Entity newIt = Instc(e.GiveItem, 1);
-                                AddItemInList(invent, newIt, -1);
-                                p8.Del(entities, e);
-                                p8.Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
-                                p8.Sfx(18, 3);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (e.HasCol)
-                        {
-                            (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, F32.Zero, e);
-                        }
-                        if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
-                        {
-                            if (curItem is not null && curItem.Type == pickuptool)
-                            {
-                                if (e.Type == chest || e.Type.BeCraft)
-                                {
-                                    AddItemInList(invent, e, -1);
-                                    curItem = e;
-                                    p8.Del(entities, e);
-                                }
-                                canAct = false;
-                            }
-                            else
-                            {
-                                if (e.Type == chest || e.Type.BeCraft)
-                                {
-                                    toogleMenu = 0;
-                                    curMenu = Cmenu(e.Type, e.List);
-                                    p8.Sfx(13, 3);
-                                }
-                                canAct = false;
-                            }
-                        }
-                    }
-                }
-            }
+            (dx, dy, canAct) = UpEntity(dx, dy, canAct);
 
             nearEnemies = [];
 
             F32 ebx = p8.Cos(prot);
             F32 eby = p8.Sin(prot);
-
-            for (int i = 0; i < enemies.Count; i++)
-            {
-                Entity e = enemies[i];
-                if (IsIn(e, 100))
-                {
-                    if (e.Type == player)
-                    {
-                        e.X = plx;
-                        e.Y = ply;
-                    }
-                    else
-                    {
-                        F32 distp = GetLen(e.X - plx, e.Y - ply);
-                        F32 mspeed = F32.FromDouble(0.8);
-
-                        F32 disten = GetLen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
-                        if (disten < 10)
-                        {
-                            p8.Add(nearEnemies, e);
-                        }
-                        if (distp < 8)
-                        {
-                            e.Ox += F32.Max(F32.FromDouble(-0.4), F32.Min(F32.FromDouble(0.4), e.X - plx));
-                            e.Oy += F32.Max(F32.FromDouble(-0.4), F32.Min(F32.FromDouble(0.4), e.Y - ply));
-                        }
-
-                        if (e.Dtim <= 0)
-                        {
-                            if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
-                            {
-                                e.Step = enstep_Walk;
-                                e.Dx = p8.Rnd(2) - 1;
-                                e.Dy = p8.Rnd(2) - 1;
-                                e.Dtim = 30 + p8.Rnd(60);
-                            }
-                            else if (e.Step == enstep_Walk)
-                            {
-                                e.Step = enstep_Wait;
-                                e.Dx = F32.Zero;
-                                e.Dy = F32.Zero;
-                                e.Dtim = 30 + p8.Rnd(60);
-                            }
-                            else // chase
-                            {
-                                e.Dtim = 10 + p8.Rnd(60);
-                            }
-                        }
-                        else
-                        {
-                            if (e.Step == enstep_Chase)
-                            {
-                                if (distp > 10)
-                                {
-                                    e.Dx += plx - e.X;
-                                    e.Dy += ply - e.Y;
-                                    e.Banim = F32.Zero;
-                                }
-                                else
-                                {
-                                    e.Dx = F32.Zero;
-                                    e.Dy = F32.Zero;
-                                    e.Banim -= 1;
-                                    e.Banim = p8.Mod(e.Banim, 8);
-                                    int pow = 10;
-                                    if (e.Banim == 4)
-                                    {
-                                        plife -= pow;
-                                        p8.Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
-                                        p8.Sfx(14 + p8.Rnd(2.0), 3);
-                                    }
-                                    plife = F32.Max(F32.Zero, plife);
-                                }
-                                mspeed = F32.FromDouble(1.4);
-                                if (distp > 70)
-                                {
-                                    e.Step = enstep_Patrol;
-                                    e.Dtim = 30 + p8.Rnd(60);
-                                }
-                            }
-                            else
-                            {
-                                if (distp < 40)
-                                {
-                                    e.Step = enstep_Chase;
-                                    e.Dtim = 10 + p8.Rnd(60);
-                                }
-                            }
-                            e.Dtim -= 1;
-                        }
-
-                        F32 dl2 = mspeed * GetInvLen(e.Dx, e.Dy);
-                        e.Dx *= dl2;
-                        e.Dy *= dl2;
-
-                        F32 fx = e.Dx + e.Ox;
-                        F32 fy = e.Dy + e.Oy;
-                        (fx, fy) = ReflectCol(e.X, e.Y, fx, fy, IsFreeEnem, F32.Zero);
-
-                        if (F32.Abs(e.Dx) > 0 || F32.Abs(e.Dy) > 0)
-                        {
-                            e.Lrot = GetRot(e.Dx, e.Dy);
-                            e.Panim += F32.FromDouble(1.0 / 33.0);
-                        }
-                        else
-                        {
-                            e.Panim = F32.Zero;
-                        }
-
-                        e.X += fx;
-                        e.Y += fy;
-
-                        e.Ox *= F32.FromDouble(0.9);
-                        e.Oy *= F32.FromDouble(0.9);
-
-                        e.Prot = UpRot(e.Lrot, e.Prot);
-                    }
-                }
-            }
+            UpEnemies(ebx, eby);
 
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
 
@@ -1090,155 +1213,24 @@ namespace CSharpCraft.Pcraft
                 F32 hity = ply + by * 8;
                 Ground hit = GetGr(hitx, hity);
 
-                if (!lb5 && curItem is not null && curItem.Type.Drop)
+                if (!lb5 && curItem is not null && curItem.Type.Drop && (hit == grsand || hit == grgrass))
                 {
-                    if (hit == grsand || hit == grgrass)
-                    {
-                        if (curItem.List is null) { curItem.List = []; }
-                        curItem.HasCol = true;
+                    if (curItem.List is null) { curItem.List = []; }
+                    curItem.HasCol = true;
 
-                        curItem.X = F32.Floor(hitx / 16) * 16 + 8;
-                        curItem.Y = F32.Floor(hity / 16) * 16 + 8;
-                        curItem.Vx = F32.Zero;
-                        curItem.Vy = F32.Zero;
-                        p8.Add(entities, curItem);
-                        RemInList(invent, curItem);
-                        canAct = false;
-                    }
+                    curItem.X = F32.Floor(hitx / 16) * 16 + 8;
+                    curItem.Y = F32.Floor(hity / 16) * 16 + 8;
+                    curItem.Vx = F32.Zero;
+                    curItem.Vy = F32.Zero;
+                    p8.Add(entities, curItem);
+                    RemInList(invent, curItem);
+                    canAct = false;
                 }
                 if (banim == 0 && pstam > 0 && canAct)
                 {
                     banim = F32.FromInt(8);
                     stamCost = 20;
-                    if (nearEnemies.Count > 0)
-                    {
-                        p8.Sfx(19, 3);
-                        F32 pow = F32.One;
-                        if (curItem is not null && curItem.Type == sword)
-                        {
-                            pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
-                            stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                            pow = F32.Floor(pow);
-                            p8.Sfx(14 + p8.Rnd(2.0), 3);
-                        }
-                        for (int i = 0; i < nearEnemies.Count; i++)
-                        {
-                            Entity e = nearEnemies[i];
-                            e.Life -= pow / nearEnemies.Count;
-                            F32 push = (pow - 1) * F32.Half;
-                            e.Ox += F32.Max(-push, F32.Min(push, e.X - plx));
-                            e.Oy += F32.Max(-push, F32.Min(push, e.Y - ply));
-                            if (e.Life <= 0)
-                            {
-                                p8.Del(enemies, e);
-                                AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
-                                AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
-                            }
-                            p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
-                        }
-                    }
-                    else if (hit.Mat is not null)
-                    {
-                        p8.Sfx(15, 3);
-                        F32 pow = F32.One;
-                        if (curItem is not null)
-                        {
-                            if (hit == grtree)
-                            {
-                                if (curItem.Type == haxe)
-                                {
-                                    pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
-                                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                                    p8.Sfx(12, 3);
-                                }
-                            }
-                            else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
-                            {
-                                pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power);
-                                stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                                p8.Sfx(12, 3);
-                            }
-                        }
-                        pow = F32.Floor(pow);
-
-                        F32 d = GetData(hitx, hity, hit.Life);
-                        if (d - pow <= 0)
-                        {
-                            SetGr(hitx, hity, hit.Tile);
-                            Cleardata(hitx, hity);
-                            AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
-                            if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
-                            {
-                                AddItem(apple, 1, hitx, hity);
-                            }
-                        }
-                        else
-                        {
-                            SetData(hitx, hity, d - pow);
-                        }
-                        p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
-                    }
-                    else
-                    {
-                        p8.Sfx(19, 3);
-                        if (curItem is not null)
-                        {
-                            if (curItem.Power is not null)
-                            {
-                                stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                            }
-                            if (curItem.Type.GiveLife is not null)
-                            {
-                                plife = F32.Min(F32.FromInt(100), plife + (int)curItem.Type.GiveLife);
-                                RemInList(invent, Instc(curItem.Type, 1));
-                                p8.Sfx(21, 3);
-                            }
-                            if (hit == grgrass && curItem.Type == scythe)
-                            {
-                                SetGr(hitx, hity, grsand);
-                                if (p8.Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
-                            }
-                            if (hit == grsand && curItem.Type == shovel)
-                            {
-                                if (curItem.Power > 3)
-                                {
-                                    SetGr(hitx, hity, grwater);
-                                    AddItem(sand, 2, hitx, hity);
-                                }
-                                else
-                                {
-                                    SetGr(hitx, hity, grfarm);
-                                    SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                                    AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
-                                }
-                            }
-                            if (hit == grwater && curItem.Type == sand)
-                            {
-                                SetGr(hitx, hity, grsand);
-                                RemInList(invent, Instc(sand, 1));
-                            }
-                            if (hit == grwater && curItem.Type == boat)
-                            {
-                                p8.Reload();
-                                p8.Memcpy(0x1000, 0x2000, 0x1000);
-                                curMenu = winMenu;
-                                p8.Music(4);
-                            }
-                            if (hit == grfarm && curItem.Type == seed)
-                            {
-                                SetGr(hitx, hity, grwheat);
-                                SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                                RemInList(invent, Instc(seed, 1));
-                            }
-                            if (hit == grwheat && curItem.Type == scythe)
-                            {
-                                SetGr(hitx, hity, grsand);
-                                F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
-                                AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd(d / 2)), hitx, hity);
-                                AddItem(seed, 1, hitx, hity);
-                            }
-                        }
-                    }
+                    UpHit(hitx, hity, hit);
                     pstam -= stamCost;
                 }
             }
@@ -1307,27 +1299,21 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private (int, int) Mirror(F32 rot)
+        private (int mx, int my) Mirror(F32 rot)
         {
-            if (rot < F32.FromDouble(0.125))
+            switch (rot)
             {
-                return (0, 1);
-            }
-            else if (rot < F32.FromDouble(0.325))
-            {
-                return (0, 0);
-            }
-            else if (rot < F32.FromDouble(0.625))
-            {
-                return (1, 0);
-            }
-            else if (rot < F32.FromDouble(0.825))
-            {
-                return (1, 1);
-            }
-            else
-            {
-                return (0, 1);
+                case F32 r when r < F32.FromDouble(0.125):
+                    return (0, 1);
+                case F32 r when r < F32.FromDouble(0.325):
+                    return (0, 0);
+                case F32 r when r < F32.FromDouble(0.625):
+                    return (1, 0);
+                case F32 r when r < F32.FromDouble(0.825):
+                    return (1, 1);
+                default:
+                    return (0, 1);
+
             }
         }
 
@@ -1394,9 +1380,9 @@ namespace CSharpCraft.Pcraft
                 p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
                 p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-                Console.WriteLine(-rot + F32.FromDouble(0.75));
+                Console.WriteLine(rot + F32.FromDouble(0.75));
 
-                (int mx2, int my2) = Mirror(p8.Mod(-rot + F32.FromDouble(0.75), 1)); // changed from (rot + 0.75) % 1
+                (int my2, int mx2) = Mirror(p8.Mod(rot + F32.FromDouble(0.75), 1)); // changed from (rot + 0.75) % 1
                 p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
             }
 
@@ -1669,52 +1655,54 @@ namespace CSharpCraft.Pcraft
                 for (F32 j = cj - 1; j <= cj + 8; j++)
                 {
                     Ground gr = GetDirectGr(i, j);
-                    if (gr is not null)
+                    if (gr is null)
                     {
-                        F32 gi = i * 16;
-                        F32 gj = j * 16;
+                        continue;
+                    }
 
+                    F32 gi = i * 16;
+                    F32 gj = j * 16;
+
+                    p8.Pal();
+
+                    if (gr == grwater)
+                    {
+                        WatAnim(i, j);
+                        WatAnim(i + F32.Half, j);
+                        WatAnim(i, j + F32.Half);
+                        WatAnim(i + F32.Half, j + F32.Half);
+                    }
+
+                    if (gr == grwheat)
+                    {
+                        F32 d = DirGetData(i, j, F32.Zero) - time;
+                        for (int pp = 2; pp <= 4; pp++)
+                        {
+                            p8.Pal(pp, 3);
+                            if (d > 10 - pp * 2) { p8.Palt(pp, true); }
+                        }
+                        if (d < 0) { p8.Pal(4, 9); }
+                        Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, RndSand);
+                    }
+
+                    if (gr.IsTree)
+                    {
+                        SetPal(gr.Pal);
+
+                        Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, RndTree);
+                    }
+
+                    if (gr == grhole)
+                    {
                         p8.Pal();
-
-                        if (gr == grwater)
+                        if (!levelUnder)
                         {
-                            WatAnim(i, j);
-                            WatAnim(i + F32.Half, j);
-                            WatAnim(i, j + F32.Half);
-                            WatAnim(i + F32.Half, j + F32.Half);
+                            p8.Palt(0, false);
+                            p8.Spr(31, gi, gj, 1, 2);
+                            p8.Spr(31, gi + 8, gj, 1, 2, true);
                         }
-
-                        if (gr == grwheat)
-                        {
-                            F32 d = DirGetData(i, j, F32.Zero) - time;
-                            for (int pp = 2; pp <= 4; pp++)
-                            {
-                                p8.Pal(pp, 3);
-                                if (d > 10 - pp * 2) { p8.Palt(pp, true); }
-                            }
-                            if (d < 0) { p8.Pal(4, 9); }
-                            Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, RndSand);
-                        }
-
-                        if (gr.IsTree)
-                        {
-                            SetPal(gr.Pal);
-
-                            Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, RndTree);
-                        }
-
-                        if (gr == grhole)
-                        {
-                            p8.Pal();
-                            if (!levelUnder)
-                            {
-                                p8.Palt(0, false);
-                                p8.Spr(31, gi, gj, 1, 2);
-                                p8.Spr(31, gi + 8, gj, 1, 2, true);
-                            }
-                            p8.Palt();
-                            p8.Spr(77, gi + 4, gj, 1, 2);
-                        }
+                        p8.Palt();
+                        p8.Spr(77, gi + 4, gj, 1, 2);
                     }
                 }
             }
@@ -1735,24 +1723,6 @@ namespace CSharpCraft.Pcraft
             int hx = x + (sx - name.Length * 4) / 2;
             p8.Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
             p8.Print(name, hx + 1, y + 2, 7);
-        }
-
-        private void ItemName(F32 x, F32 y, Entity it, int col)
-        {
-            Material ty = it.Type;
-            p8.Pal();
-            F32 px = x;
-            if (it.Power is not null)
-            {
-                string pwn = pwrNames[(int)it.Power - 1];
-                p8.Print(pwn, x + 10, y, col);
-                px += pwn.Length * 4 + 4;
-                SetPal(pwrPal[(int)it.Power - 1]);
-            }
-            if (ty.Pal is not null) { SetPal(ty.Pal); }
-            p8.Spr(ty.Spr, x, y - 2);
-            p8.Pal();
-            p8.Print(ty.Name, px + 10, y, col);
         }
 
         private void ItemName(int x, int y, Entity it, int col)
@@ -1856,12 +1826,7 @@ namespace CSharpCraft.Pcraft
             p8.Print(t, x, y - 1, 1);
             p8.Print(t, x, y, c);
         }
-
-        private void Printc(string t, int x, int y, F32 c)
-        {
-            p8.Print(t, x - t.Length * 2, y, c);
-        }
-
+        
         private void Printc(string t, int x, int y, int c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
@@ -1869,33 +1834,30 @@ namespace CSharpCraft.Pcraft
 
         private void Dent()
         {
-            for (int i = 0; i < entities.Count; i++)
+            foreach (Entity e in entities)
             {
-                Entity e = entities[i];
                 p8.Pal();
                 if (e.Type.Pal is not null) { SetPal(e.Type.Pal); }
                 if (e.Type.BigSpr is not null)
                 {
                     p8.Spr((int)e.Type.BigSpr, e.X - 8, e.Y - 8, 2, 2);
+                    continue;
                 }
-                else
+                
+                if (e.Type == etext)
                 {
-                    if (e.Type == etext)
+                    Printb(e.Text, e.X - 2, e.Y - 4, e.C);
+                    continue;
+                }
+                
+                if (e.Timer is not null && e.Timer < 45 && e.Timer % 4 > 2)
+                {
+                    for (int i = 0; i <= 15; i++)
                     {
-                        Printb(e.Text, e.X - 2, e.Y - 4, e.C);
-                    }
-                    else
-                    {
-                        if (e.Timer is not null && e.Timer < 45 && e.Timer % 4 > 2)
-                        {
-                            for (int j = 0; j <= 15; j++)
-                            {
-                                p8.Palt(j, true);
-                            }
-                        }
-                        p8.Spr(e.Type.Spr, e.X - 4, e.Y - 4);
+                        p8.Palt(i, true);
                     }
                 }
+                p8.Spr(e.Type.Spr, e.X - 4, e.Y - 4);
             }
         }
 
@@ -1918,9 +1880,8 @@ namespace CSharpCraft.Pcraft
         {
             Sorty(enemies);
 
-            for (int i = 0; i < enemies.Count; i++)
+            foreach (Entity e in enemies)
             {
-                Entity e = enemies[i];
                 if (e.Type == player)
                 {
                     p8.Pal();
@@ -1964,7 +1925,7 @@ namespace CSharpCraft.Pcraft
                 p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
                 Printc(curMenu.Text, 64, 80, 6);
                 Printc(curMenu.Text2, 64, 90, 6);
-                Printc("press button 1", 64, 112, 6 + time % 2);
+                Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
                 time += F32.FromDouble(0.1);
                 return;
             }
@@ -1995,41 +1956,42 @@ namespace CSharpCraft.Pcraft
                 }
             }
 
-            if (curMenu is not null)
+            if (curMenu is null)
             {
-                p8.Camera();
-                if (curMenu.Type == chest)
+                return;
+            }
+            p8.Camera();
+            if (curMenu.Type == chest)
+            {
+                if (toogleMenu == 0)
                 {
-                    if (toogleMenu == 0)
-                    {
-                        List(menuInvent, 87, 24, 84, 96, 10);
-                        List(curMenu, 4, 24, 84, 96, 10);
-                    }
-                    else
-                    {
-                        List(curMenu, -44, 24, 84, 96, 10);
-                        List(menuInvent, 39, 24, 84, 96, 10);
-                    }
-                }
-                else if (curMenu.Type.BeCraft == true)
-                {
-                    if (curMenu.Sel >= 0 && curMenu.Sel < curMenu.List.Count)
-                    {
-                        Entity curgoal = curMenu.List[curMenu.Sel];
-                        Panel("have", 71, 50, 52, 30);
-                        p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
-                        RequireList(curgoal, 4, 79, 104, 50);
-                    }
-                    List(curMenu, 4, 16, 68, 64, 6);
+                    List(menuInvent, 87, 24, 84, 96, 10);
+                    List(curMenu, 4, 24, 84, 96, 10);
                 }
                 else
                 {
-                    List(curMenu, 4, 24, 84, 96, 10);
+                    List(curMenu, -44, 24, 84, 96, 10);
+                    List(menuInvent, 39, 24, 84, 96, 10);
                 }
+            }
+            else if (curMenu.Type.BeCraft == true)
+            {
+                if (curMenu.Sel >= 0 && curMenu.Sel < curMenu.List.Count)
+                {
+                    Entity curgoal = curMenu.List[curMenu.Sel];
+                    Panel("have", 71, 50, 52, 30);
+                    p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
+                    RequireList(curgoal, 4, 79, 104, 50);
+                }
+                List(curMenu, 4, 16, 68, 64, 6);
+            }
+            else
+            {
+                List(curMenu, 4, 24, 84, 96, 10);
             }
         }
 
-        public string Sprites => @"
+        public string SpriteData => @"
 00000000ffffffffffffffffffffffffffffffff44fff44ffff44fff020121000004200002031000fff55fffffff555ff5555fff000000000001000000101000
 00000000ffffffffffffffffffffffffffff444fff4ffff4ff4fffff310310200303102041420000ff56655ffff56665f56665ff000100000011100001000100
 00000000fff4fffff4ffffffff4fffff4444fffffff444ff44fff44f205200024002001030310410f566665ffff566655666665f001110000110110010000100
@@ -2160,9 +2122,9 @@ dffffffffff2255555d55d535224224224423b52242555555555ffffff2fffddccccccccccccc1d1
 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ".Replace("\n", "").Replace("\r", "");
 
-        public string Flags => @"";
+        public string FlagData => @"";
 
-        public string Map => @"
+        public string MapData => @"
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc4fcccccccccccccccccccccccccccc
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfc44ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfcc4cccccccccccccccccccccccccccc
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc4fc4cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc77cccccccccc4fcccccccccccccccccccccccccccccc

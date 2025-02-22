@@ -15,7 +15,7 @@ using System.Drawing;
 
 namespace CSharpCraft.RaceMode
 {
-    public class LobbyScene(Pico8Functions p8, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> raceScenes, MainRace mainRace, TitleScreen titleScreen) : IGameMode
+    public class LobbyScene(MainRace mainRace) : IGameMode
     {
 #nullable enable
         private Menu roomMenu = new();
@@ -28,9 +28,12 @@ namespace CSharpCraft.RaceMode
 #nullable disable
 
         public string GameModeName { get => "1"; }
+        private Pico8Functions p8;
 
-        public void Init()
+        public void Init(Pico8Functions pico8)
         {
+            p8 = pico8;
+
             mainRace.currentScene = 1;
             roomName = "????";
             roomPassword = "????";
@@ -85,7 +88,7 @@ namespace CSharpCraft.RaceMode
             }
 
 
-            if (p8.Btnp(4)) { raceScenes[2].Init(); }
+            if (p8.Btnp(4)) { p8.LoadCart(new PickBanScene(mainRace)); }
 
             //if (p8.Btnp(5) && mainRace.myself.Role == "Player")
             //{
@@ -160,8 +163,8 @@ namespace CSharpCraft.RaceMode
             var fin = Math.Min(menu.Off + displayed, tlist);
 
             var offset = 0;
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -172,18 +175,18 @@ namespace CSharpCraft.RaceMode
             if (menu.Sel > tlist - 3)
             {
                 offset = 4;
-                batch.Draw(textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + 10) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+                p8.batch.Draw(p8.textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + 10) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
             }
             else if (menu.Sel > 1)
             {
                 offset = 2;
-                batch.Draw(textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + 9) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
-                batch.Draw(textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + height - 6) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + 9) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+                p8.batch.Draw(p8.textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + height - 6) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {
                 offset = 0;
-                batch.Draw(textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + height - 7) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + height - 7) * cellH), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
 
             var sely = y + offset + 4 + (sel + 1) * 7;
@@ -215,8 +218,8 @@ namespace CSharpCraft.RaceMode
             p8.Cls();
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.graphicsDevice.Viewport.Width;
+            int viewportHeight = p8.graphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -256,11 +259,11 @@ namespace CSharpCraft.RaceMode
             int i = 0;
             foreach (var player in mainRace.playerDictionary.Values)
             {
-                batch.Draw(textureDictionary[$"{player.Role}Icon"], new Vector2(25 * cellW, (26 + i * 7) * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                p8.batch.Draw(p8.textureDictionary[$"{player.Role}Icon"], new Vector2(25 * cellW, (26 + i * 7) * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
                 p8.Print(player.Name, 36, 26 + i * 7, 7);
                 if (player.Role == "Player" && player.Ready)
                 {
-                    batch.Draw(textureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * cellW, (26 + i * 7) * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    p8.batch.Draw(p8.textureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * cellW, (26 + i * 7) * cellH), null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 }
                 if (player.Host)
                 {
@@ -314,6 +317,9 @@ namespace CSharpCraft.RaceMode
             mainRace.myself.Ready = mainRace.service.PlayerReady(new PlayerReadyRequest { Name = mainRace.myself.Name }).Ready;
         }
 
+        public string SpriteData => @"";
+        public string FlagData => @"";
+        public string MapData => @"";
 
     }
 
