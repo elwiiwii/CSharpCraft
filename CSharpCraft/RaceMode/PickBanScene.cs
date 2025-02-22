@@ -47,7 +47,6 @@ namespace CSharpCraft.RaceMode
         {
             p8 = pico8;
 
-            mainRace.currentScene = 2;
             animationTimer = 0;
             gameCount = 1;
             turn = 0;

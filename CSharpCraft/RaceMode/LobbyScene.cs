@@ -34,7 +34,6 @@ namespace CSharpCraft.RaceMode
         {
             p8 = pico8;
 
-            mainRace.currentScene = 1;
             roomName = "????";
             roomPassword = "????";
             roomMenu = new Menu { Name = $"room name-{roomName}", Items = null, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };

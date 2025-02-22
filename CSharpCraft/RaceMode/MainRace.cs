@@ -40,8 +40,7 @@ namespace CSharpCraft.RaceMode
             channel = GrpcChannel.ForAddress("https://localhost:5072");
             service = new GameService.GameServiceClient(channel);
 
-            currentScene = 0;
-            raceScenes[currentScene].Init(p8);
+            p8.LoadCart(new JoinRoomScene(this));
         }
 
         public void Update()
@@ -58,14 +57,11 @@ namespace CSharpCraft.RaceMode
                 cancellationTokenSource.Cancel(); // Cancel the listening task
                 roomStream?.Dispose(); // Dispose of the stream
             };
-
-            currentScene = int.Parse(raceScenes[currentScene].GameModeName);
-            raceScenes[currentScene].Update();
         }
 
         public void Draw()
         {
-            raceScenes[currentScene].Draw();
+
         }
 
 

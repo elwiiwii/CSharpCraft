@@ -125,20 +125,15 @@ namespace CSharpCraft
             {
                 //gameModes[currentGameMode].Update();
 
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R)) { }//gameModes[currentGameMode].Init(); }
+                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
+                {
+                    p8.LoadCart(p8._cart);
+                }
 
                 if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
                 {
-                    if (currentGameMode > 0)
-                    {
-                        p8.SoundDispose();
-                        currentGameMode = 0;
-                        //titleScreen.Init();
-                    }
-                    else
-                    {
-                        Environment.Exit(0);
-                    }
+                    p8.SoundDispose();
+                    p8.LoadCart(new TitleScreen());
                 }
 
             }
