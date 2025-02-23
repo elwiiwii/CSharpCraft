@@ -8,7 +8,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class TitleScreen : IGameMode //, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
+    public class TitleScreen : IGameMode, IDisposable //, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
     {
 
         public string GameModeName { get => "TitleScreen"; }
@@ -20,7 +20,7 @@ namespace CSharpCraft
 
         private int Loop<T>(int sel, List<T> l)
         {
-            var lp = l.Count - 1;
+            var lp = l.Count;
             return ((sel % lp) + lp) % lp;
         }
 
@@ -46,9 +46,7 @@ namespace CSharpCraft
 
                 if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
                 {
-                    p8.LoadCart(p8.gameModes[menuSelected + 1]);
-                    //gameModes[menuSelected + 1].Init();
-                    //currentGameMode = menuSelected + 1;
+                    p8.LoadCart(p8.gameModes[menuSelected]);
                 }
             }
 
@@ -87,21 +85,20 @@ namespace CSharpCraft
             int i = 0;
             foreach (var gameMode in p8.gameModes)
             {
-                if (gameMode == p8.gameModes[0])
-                {
-                    continue;
-                }
-                else
-                {
-                    p8.Print(gameMode.GameModeName, 8, 62 + i, 7);
-                    i += 6;
-                }
+                p8.Print(gameMode.GameModeName, 8, 62 + i, 7);
+             
+                i += 6;
             }
         }
 
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";
+
+        public void Dispose()
+        {
+
+        }
 
     }
 }

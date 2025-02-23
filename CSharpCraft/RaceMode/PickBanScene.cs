@@ -16,7 +16,7 @@ using CSharpCraft.OptionsMenu;
 
 namespace CSharpCraft.RaceMode
 {
-    public class PickBanScene(MainRace mainRace) : IGameMode
+    public class PickBanScene(MainRace mainRace) : IGameMode, IDisposable
     {
 #nullable enable
         private float animationTimer;
@@ -348,6 +348,11 @@ namespace CSharpCraft.RaceMode
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";
+
+        public void Dispose()
+        {
+
+        }
 
     }
 }

@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace CSharpCraft.RaceMode
 {
-    public class JoinRoomScene(MainRace mainRace) : IGameMode
+    public class JoinRoomScene(MainRace mainRace) : IGameMode, IDisposable
     {
 #nullable enable
         private static ConcurrentString userName = new();
@@ -210,6 +210,10 @@ namespace CSharpCraft.RaceMode
         public string FlagData => @"";
         public string MapData => @"";
 
-    }
+        public void Dispose()
+        {
 
+        }
+
+    }
 }

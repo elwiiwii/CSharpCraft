@@ -9,7 +9,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class KeyboardOptions : IGameMode
+    public class KeyboardOptions : IGameMode, IDisposable
     {
 
         public string GameModeName { get => "options"; }
@@ -159,6 +159,10 @@ namespace CSharpCraft.OptionsMenu
         public string FlagData => @"";
         public string MapData => @"";
 
-    }
+        public void Dispose()
+        {
 
+        }
+
+    }
 }

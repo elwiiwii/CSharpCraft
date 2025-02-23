@@ -8,6 +8,7 @@ using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Xml.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.Xna.Framework.Media;
 
 namespace CSharpCraft.Pico8
 {
@@ -66,6 +67,10 @@ namespace CSharpCraft.Pico8
 
         public void LoadCart(IGameMode cart)
         {
+            if (_cart is not null)
+            {
+                _cart.Dispose();
+            }
             _sprites = [];
             _flags = [];
             _map = [];
@@ -77,6 +82,8 @@ namespace CSharpCraft.Pico8
             Array.Copy(colors, resetSprColors, colors.Length);
 
             spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
+
+            SoundDispose();
 
             SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
             SoundEffectInstance instance4 = musicDictionary[$"music_4"].CreateInstance();
@@ -102,8 +109,20 @@ namespace CSharpCraft.Pico8
             {
                 val[i] = Convert.ToInt32($"0x{s.Substring(i * n, n)}", 16);
             }
-
+            
             return val;
+        }
+
+        private string MapFlip(string s)
+        {
+            return string.Concat(
+                Enumerable.Range(0, (int)Math.Ceiling(s.Length / 2.0))
+                    .Select(i => new string(s
+                        .Skip(i * 2)
+                        .Take(2)
+                        .Reverse()
+                        .ToArray()))
+            );
         }
 
         private static Color HexToColor(string hex)
@@ -165,7 +184,7 @@ namespace CSharpCraft.Pico8
         //    this.resetColors = colors;
         //}
 
-        private Texture2D CreateTextureFromSpriteData(char[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
+        private Texture2D CreateTextureFromSpriteData(int[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
             //spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
 
@@ -177,9 +196,7 @@ namespace CSharpCraft.Pico8
 
             for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
             {
-                char c = spriteData[i];
-                int colorIndex = Convert.ToInt32(c.ToString(), 16); // Convert hex to int
-                Color color = sprColors[colorIndex]; // Convert the PICO-8 color index to a Color
+                Color color = sprColors[spriteData[i]%16]; // Convert the PICO-8 color index to a Color
                 colorData[j] = color;
 
                 if (i % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
@@ -601,8 +618,9 @@ namespace CSharpCraft.Pico8
         {
             if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
             {
-                var secondHalf = SpriteSheets.SpriteSheet2.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
-                secondHalf.CopyTo(spriteSheet1, secondHalf.Length);
+                Dispose();
+                int[] secondHalf = DataToArray(MapFlip(_cart.MapData.Substring(0, 8192)), 1);
+                secondHalf.CopyTo(_sprites, 8192);
             }
         }
 
@@ -989,6 +1007,8 @@ namespace CSharpCraft.Pico8
             //Map1 = new int[128 * 64];
             //spriteTextures = [];
 
+            Dispose();
+
             _sprites = DataToArray(_cart.SpriteData, 1);
             _flags = DataToArray(_cart.FlagData, 2);
             _map = DataToArray(_cart.MapData, 2);
@@ -1146,7 +1166,7 @@ namespace CSharpCraft.Pico8
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -1219,7 +1239,7 @@ namespace CSharpCraft.Pico8
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -1292,7 +1312,7 @@ namespace CSharpCraft.Pico8
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(spriteSheet1, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -1370,7 +1390,7 @@ namespace CSharpCraft.Pico8
 
             if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
             {
-                texture = CreateTextureFromSpriteData(spriteSheet1, sxFlr, syFlr, swFlr, shFlr);
+                texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
             }
 
@@ -1473,12 +1493,13 @@ namespace CSharpCraft.Pico8
 
         public void SoundDispose()
         {
-            if (channelMusic != null)
+            if (channelMusic is not null)
             {
                 foreach (var song in channelMusic)
                 {
                     song.Dispose();
                 }
+                channelMusic = [];
             }
 
             for (int i = 0; i < 4; i++)
@@ -1491,7 +1512,7 @@ namespace CSharpCraft.Pico8
                     3 => channel3,
                     _ => throw new ArgumentOutOfRangeException(nameof(i)),
                 };
-                if (c != null)
+                if (c is not null)
                 {
                     foreach (var sfxInstance in c)
                     {

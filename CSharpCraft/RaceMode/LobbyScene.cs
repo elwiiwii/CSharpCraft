@@ -15,7 +15,7 @@ using System.Drawing;
 
 namespace CSharpCraft.RaceMode
 {
-    public class LobbyScene(MainRace mainRace) : IGameMode
+    public class LobbyScene(MainRace mainRace) : IGameMode, IDisposable
     {
 #nullable enable
         private Menu roomMenu = new();
@@ -320,6 +320,10 @@ namespace CSharpCraft.RaceMode
         public string FlagData => @"";
         public string MapData => @"";
 
-    }
+        public void Dispose()
+        {
 
+        }
+
+    }
 }

@@ -10,7 +10,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class BackOptions2 : IGameMode
+    public class BackOptions2 : IGameMode, IDisposable
     {
 
         public string GameModeName { get => "options"; }
@@ -48,6 +48,10 @@ namespace CSharpCraft.OptionsMenu
         public string FlagData => @"";
         public string MapData => @"";
 
-    }
+        public void Dispose()
+        {
 
+        }
+
+    }
 }

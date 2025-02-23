@@ -16,5 +16,6 @@ namespace CSharpCraft
         string SpriteData { get; }
         string FlagData { get; }
         string MapData { get; }
+        void Dispose();
     }
 }

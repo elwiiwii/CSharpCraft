@@ -17,7 +17,7 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode
 {
-    public class MainRace(List<IGameMode> raceScenes) : IGameMode
+    public class MainRace : IGameMode, IDisposable
     {
         public string GameModeName { get => "race"; }
         private Pico8Functions p8;
@@ -125,8 +125,17 @@ namespace CSharpCraft.RaceMode
         {
             if (startMatchNotification.MatchStarted)
             {
-                currentScene = myself.Role == "Player" ? 2 : 2; //should be 2:3 when i make the spectator scene
-                raceScenes[currentScene].Init(p8);
+                switch (myself.Role)
+                {
+                    case "Player":
+                        p8.LoadCart(new PickBanScene(this));
+                        break;
+                    case "Spectator":
+                        p8.LoadCart(new PickBanScene(this)); //should be spectator version when i make the spectator scene
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -158,6 +167,16 @@ namespace CSharpCraft.RaceMode
         public string FlagData => @"";
         public string MapData => @"";
 
-    }
+        public void Dispose()
+        {
+            cancellationTokenSource.Cancel(); // Cancel the listening task
+            roomStream?.Dispose(); // Dispose of the stream
+            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            {
+                cancellationTokenSource.Cancel(); // Cancel the listening task
+                roomStream?.Dispose(); // Dispose of the stream
+            };
+        }
 
+    }
 }

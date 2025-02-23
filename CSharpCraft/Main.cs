@@ -29,11 +29,6 @@ namespace CSharpCraft
         private GraphicsDeviceManager graphics;
         private Pico8Functions p8;
 
-        private List<IGameMode> raceScenes = [];
-        private JoinRoomScene joinRoomScene;
-        private LobbyScene lobbyScene;
-        private PickBanScene pickBanScene;
-
         private KeyboardOptionsFile keyboardOptionsFile;
 
         //private List<Texture2D> textures = [];
@@ -93,13 +88,8 @@ namespace CSharpCraft
 
             //p8.Init();
 
-            raceScenes.Add(joinRoomScene);
-            raceScenes.Add(lobbyScene);
-            raceScenes.Add(pickBanScene);
-
-            gameModes.Add(new TitleScreen());
             gameModes.Add(new PcraftSingleplayer());
-            gameModes.Add(new MainRace(raceScenes));
+            gameModes.Add(new MainRace());
             gameModes.Add(new ControlsOptions());
 
             //titleScreen.Init();
@@ -132,7 +122,6 @@ namespace CSharpCraft
 
                 if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
                 {
-                    p8.SoundDispose();
                     p8.LoadCart(new TitleScreen());
                 }
 
