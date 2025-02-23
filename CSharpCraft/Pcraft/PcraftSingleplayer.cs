@@ -9,7 +9,7 @@ namespace CSharpCraft.Pcraft
 {
     public class PcraftSingleplayer : PcraftBase
     {
-        public override string GameModeName => "pcraft";
+        public override string SceneName => "pcraft";
 
         public override void Init(Pico8Functions pico8)
         {
@@ -19,7 +19,7 @@ namespace CSharpCraft.Pcraft
 
     public class PcraftRaceplayer(Pico8Functions p8) : PcraftBase
     {
-        public override string GameModeName => "race";
+        public override string SceneName => "race";
 
         public override void Init(Pico8Functions pico8)
         {

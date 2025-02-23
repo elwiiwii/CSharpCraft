@@ -14,58 +14,50 @@ namespace CSharpCraft.Pico8
 {
     public class Pico8Functions : IDisposable
     {
-        private Dictionary<int, Texture2D> spriteTextures = [];
-        private int[] Map1 = new int[128 * 64];
-        private (int, int) CameraOffset = (0, 0);
-        private char[] spriteSheet1 = new char[128 * 128];
+        public SpriteBatch batch { get; }
+        public GraphicsDevice graphicsDevice { get; }
+        public KeyboardOptionsFile keyboardOptionsFile { get; }
+        public Dictionary<string, SoundEffect> musicDictionary { get; }
+        public Texture2D pixel { get; }
+        public List<IScene> scenes { get; }
+        public Dictionary<string, SoundEffect> soundEffectDictionary { get; }
+        public Dictionary<string, Texture2D> textureDictionary { get; }
 
+        private int[] _flags;
+        private int[] _map;
+        private int[] _sprites;
+        private (int, int) CameraOffset = (0, 0);
+        public IScene _cart;
         public List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
         private List<SoundEffectInstance>? channel3 = [];
-
+        private bool fade1;
+        private bool fade4;
         public bool prev0 = false;
         public bool prev1 = false;
         public bool prev2 = false;
         public bool prev3 = false;
         public bool prev4 = false;
         public bool prev5 = false;
+        private Dictionary<int, Texture2D> spriteTextures = [];
 
-        private float musicFade;
-        private bool fade1;
-        private bool fade4;
-
-        public List<IGameMode> gameModes { get; }
-        public Dictionary<string, Texture2D> textureDictionary { get; }
-        public Dictionary<string, SoundEffect> soundEffectDictionary { get; }
-        public Dictionary<string, SoundEffect> musicDictionary { get; }
-        public Texture2D pixel { get; }
-        public SpriteBatch batch { get; }
-        public GraphicsDevice graphicsDevice { get; }
-        public KeyboardOptionsFile keyboardOptionsFile { get; }
-
-        private int[] _sprites;
-        private int[] _flags;
-        private int[] _map;
-
-        public IGameMode _cart;
-
-        public Pico8Functions(IGameMode cart, List<IGameMode> _gameModes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
+        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
         {
-            gameModes = _gameModes;
-            textureDictionary = _textureDictionary;
-            soundEffectDictionary = _soundEffectDictionary;
-            musicDictionary = _musicDictionary;
-            pixel = _pixel;
             batch = _batch;
             graphicsDevice = _graphicsDevice;
             keyboardOptionsFile = _keyboardOptionsFile;
-
+            musicDictionary = _musicDictionary;
+            pixel = _pixel;
+            scenes = _scenes;
+            soundEffectDictionary = _soundEffectDictionary;
+            textureDictionary = _textureDictionary;
+            
             LoadCart(cart);
         }
 
-        public void LoadCart(IGameMode cart)
+        public void LoadCart(IScene cart)
         {
             if (_cart is not null)
             {
@@ -80,8 +72,6 @@ namespace CSharpCraft.Pico8
             Array.Copy(colors, resetColors, colors.Length);
             Array.Copy(colors, sprColors, colors.Length);
             Array.Copy(colors, resetSprColors, colors.Length);
-
-            spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
 
             SoundDispose();
 
@@ -179,28 +169,18 @@ namespace CSharpCraft.Pico8
         public Color[] sprColors = new Color[16];
 
 
-        //private Pico8Functions(Color[] resetColors)
-        //{
-        //    this.resetColors = colors;
-        //}
-
         private Texture2D CreateTextureFromSpriteData(int[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
-            //spriteData = new string(spriteData.Where(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')).ToArray());
-
             Texture2D texture = new(graphicsDevice, spriteWidth, spriteHeight);
 
             Color[] colorData = new Color[spriteWidth * spriteHeight];
 
-            //int j = 0;
-
             for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
             {
-                Color color = sprColors[spriteData[i]%16]; // Convert the PICO-8 color index to a Color
+                Color color = sprColors[spriteData[i]%16];
                 colorData[j] = color;
 
                 if (i % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
-                //j++;
             }
 
             texture.SetData(colorData);
@@ -263,7 +243,7 @@ namespace CSharpCraft.Pico8
 
         public void Circ(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
         {
-            if (r < 0) return; // If r is negative, the circle is not drawn
+            if (r < 0) return;
 
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -311,7 +291,7 @@ namespace CSharpCraft.Pico8
 
         public void Circ(F32 x, F32 y, F32 r, int c) // https://pico-8.fandom.com/wiki/Circ
         {
-            if (r < 0) return; // If r is negative, the circle is not drawn
+            if (r < 0) return;
 
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
@@ -359,7 +339,7 @@ namespace CSharpCraft.Pico8
 
         public void Circ(F32 x, F32 y, int r, int c) // https://pico-8.fandom.com/wiki/Circ
         {
-            if (r < 0) return; // If r is negative, the circle is not drawn
+            if (r < 0) return;
 
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
@@ -407,7 +387,7 @@ namespace CSharpCraft.Pico8
 
         public void Circfill(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circfill
         {
-            if (r < 0) return; // If r is negative, the circle is not drawn
+            if (r < 0) return;
 
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -447,7 +427,7 @@ namespace CSharpCraft.Pico8
 
         public void Circfill(F32 x, F32 y, F32 r, int c) // https://pico-8.fandom.com/wiki/Circfill
         {
-            if (r < 0) return; // If r is negative, the circle is not drawn
+            if (r < 0) return;
 
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
@@ -487,7 +467,7 @@ namespace CSharpCraft.Pico8
 
         public void Circfill(F32 x, F32 y, int r, int c) // https://pico-8.fandom.com/wiki/Circfill
         {
-            if (r < 0) return; // If r is negative, the circle is not drawn
+            if (r < 0) return;
 
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
@@ -533,13 +513,6 @@ namespace CSharpCraft.Pico8
         }
 
         
-        public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
-        {
-            F32 d = F32.Cos(F32.FromDouble(-angle) * 2 * F32.Pi);
-            return d.Double;
-        }
-        
-
         public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
             return F32.Cos(-angle * 2 * F32.Pi);
@@ -592,28 +565,6 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Map(int celx, int cely, F32 sx, F32 sy, int celw, int celh, int flags = 0) // https://pico-8.fandom.com/wiki/Map
-        {
-            int cxFlr = celx;
-            int cyFlr = cely;
-            int sxFlr = F32.FloorToInt(sx);
-            int syFlr = F32.FloorToInt(sy);
-            int cwFlr = celw;
-            int chFlr = celh;
-
-            for (int i = 0; i <= cwFlr; i++)
-            {
-                for (int j = 0; j <= chFlr; j++)
-                {
-                    if (flags == 0 || flags == Fget(Mget(celx + i, cely + j)))
-                    {
-                        Spr(Mget(i + celx, j + cely), sx + i * 8, sy + j * 8);
-                    }
-                }
-            }
-        }
-
-
         public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
         {
             if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
@@ -625,53 +576,12 @@ namespace CSharpCraft.Pico8
         }
 
 
-        //public int MgetOld(double celx, double cely)
-        //{
-        //    int xFlr = (int)Math.Floor(celx);
-        //    int yFlr = (int)Math.Floor(cely);
-        //
-        //    string MapData = new(MapFile.Map1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray());
-        //
-        //    char c = MapData[xFlr + yFlr * 128];
-        //
-        //    int IntC = 0;
-        //
-        //    if (c >= 48 && c <= 57)
-        //    {
-        //        IntC = c - '0';
-        //    }
-        //    else if (c >= 97 && c <= 102)
-        //    {
-        //        IntC = 10 + c - 'a';
-        //    }
-        //
-        //    return IntC;
-        //
-        //}
-
-
         public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
         {
             int xFlr = Math.Abs((int)Math.Floor(celx));
             int yFlr = Math.Abs((int)Math.Floor(cely));
 
             return _map[xFlr + yFlr * 128];
-        }
-
-
-        public int Mget(F32 celx, F32 cely) // https://pico-8.fandom.com/wiki/Mget
-        {
-            int xFlr = Math.Abs(F32.FloorToInt(celx));
-            int yFlr = Math.Abs(F32.FloorToInt(cely));
-
-            return _map[xFlr + yFlr * 128];
-        }
-
-
-        public double Mod(double x, double m)
-        {
-            double r = x % m;
-            return r < 0 ? r + m : r;
         }
 
 
@@ -692,29 +602,13 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Mset(F32 celx, F32 cely, int snum = 0) // https://pico-8.fandom.com/wiki/Mset
-        {
-            int xFlr = F32.FloorToInt(celx);
-            int yFlr = F32.FloorToInt(cely);
-
-            _map[xFlr + yFlr * 128] = snum;
-        }
-
-        public void Mset(int celx, int cely, F32 snum) // https://pico-8.fandom.com/wiki/Mset
-        {
-            int sFlr = F32.FloorToInt(snum);
-
-            _map[celx + cely * 128] = sFlr;
-        }
-
-
         public void Music(double n, double fadems = 0, double channelmask = 0) // https://pico-8.fandom.com/wiki/Music
         {
             int nFlr = (int)Math.Floor(n);
 
-            //if (channelMusic != null)
+            //if (channelMusic is not null)
             //{
-            //    foreach (var song in channelMusic)
+            //    foreach (SoundEffect song in channelMusic)
             //    {
             //        //song.Dispose();
             //        song.Volume = 0.0f;
@@ -820,54 +714,11 @@ namespace CSharpCraft.Pico8
                     {
                         if (Font.chars[letter][i, j] == 1)
                         {
-                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
-                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
+                            int charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
+                            //int charEndX = charStartX + cellWidth - CameraOffset.Item1;
+                            int charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
 
-                            Vector2 position = new Vector2(charStartX, charStartY);
-                            Vector2 size = new(cellWidth, cellHeight);
-
-                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                        }
-                    }
-                }
-            }
-        }
-
-
-        
-        public void Print(string str, F32 x, F32 y, int c) // https://pico-8.fandom.com/wiki/Print
-        {
-            int xFlr = F32.FloorToInt(x);
-            int yFlr = F32.FloorToInt(y);
-            int cFlr = c;
-
-            int charWidth = 4;
-            //int charHeight = 5;
-
-            // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            for (int s = 0; s < str.Length; s++)
-            {
-                char letter = str[s];
-
-                for (int i = 0; i < 5; i++)
-                {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        if (Font.chars[letter][i, j] == 1)
-                        {
-                            var charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
-                            //var charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            var charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
-
-                            Vector2 position = new Vector2(charStartX, charStartY);
+                            Vector2 position = new(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
 
                             batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -918,80 +769,14 @@ namespace CSharpCraft.Pico8
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
+            int rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
+            int rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
 
-            var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
-            var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
+            int rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
+            int rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
 
-            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
-            //var rectThickness = (y2Flr - y1Flr) * cellHeight;
-            //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
-
-            Vector2 position = new(rectStartX, rectStartY);
-            Vector2 size = new(rectSizeX, rectSizeY);
-
-            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        }
-
-
-        public void Rectfill(F32 x1, int y1, F32 x2, int y2, int c) // https://pico-8.fandom.com/wiki/Rectfill
-        {
-            int x1Flr = F32.FloorToInt(x1);
-            int y1Flr = y1;
-            int x2Flr = F32.FloorToInt(x2);
-            int y2Flr = y2;
-            int cFlr = c;
-
-            // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
-
-            var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
-            var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
-
-            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
-            //var rectThickness = (y2Flr - y1Flr) * cellHeight;
-            //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
-
-            Vector2 position = new(rectStartX, rectStartY);
-            Vector2 size = new(rectSizeX, rectSizeY);
-
-            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        }
-
-
-        public void Rectfill(int x1, int y1, F32 x2, int y2, int c) // https://pico-8.fandom.com/wiki/Rectfill
-        {
-            int x1Flr = x1;
-            int y1Flr = y1;
-            int x2Flr = F32.FloorToInt(x2);
-            int y2Flr = y2;
-            int cFlr = c;
-
-            // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            var rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
-            var rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
-
-            var rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
-            var rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
-
-            //var rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
-            //var rectThickness = (y2Flr - y1Flr) * cellHeight;
+            //int rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            //int rectThickness = (y2Flr - y1Flr) * cellHeight;
             //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
 
             Vector2 position = new(rectStartX, rectStartY);
@@ -1003,10 +788,6 @@ namespace CSharpCraft.Pico8
 
         public void Reload() // https://pico-8.fandom.com/wiki/Reload
         {
-            //spriteSheet1 = SpriteSheets.SpriteSheet1.Where(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f').ToArray();
-            //Map1 = new int[128 * 64];
-            //spriteTextures = [];
-
             Dispose();
 
             _sprites = DataToArray(_cart.SpriteData, 1);
@@ -1015,26 +796,10 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public double Rnd(double limit = 1.0) // https://pico-8.fandom.com/wiki/Rnd
+        public F32 Rnd(double limit = 1.0) // https://pico-8.fandom.com/wiki/Rnd
         {
             Random random = new();
-            double n = random.NextDouble() * limit;
-            return n;
-        }
-
-
-        public F32 Rnd(F32 limit) // https://pico-8.fandom.com/wiki/Rnd
-        {
-            Random random = new();
-            F32 n = F32.FromDouble(random.NextDouble()) * limit;
-            return n;
-        }
-
-
-        public F32 Rnd(int limit = 0) // https://pico-8.fandom.com/wiki/Rnd
-        {
-            Random random = new();
-            F32 n = F32.FromDouble(random.NextDouble()) * limit;
+            F32 n = F32.FromDouble(random.NextDouble() * limit);
             return n;
         }
 
@@ -1053,9 +818,9 @@ namespace CSharpCraft.Pico8
                 _ => throw new ArgumentOutOfRangeException(nameof(channel)),
             };
 
-            if (c != null)
+            if (c is not null)
             {
-                foreach (var sfxInstance in c)
+                foreach (SoundEffectInstance sfxInstance in c)
                 {
                     sfxInstance.Dispose();
                 }
@@ -1071,13 +836,6 @@ namespace CSharpCraft.Pico8
                 return;
             }
 
-        }
-
-
-        public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
-        {
-            F32 d = F32.Sin(F32.FromDouble(-angle) * 2 * F32.Pi);
-            return d.Double;
         }
 
 
@@ -1121,33 +879,13 @@ namespace CSharpCraft.Pico8
             int wFlr = (int)Math.Floor(w);
             int hFlr = (int)Math.Floor(h);
 
-            var spriteWidth = 8;
-            var spriteHeight = 8;
+            int spriteWidth = 8;
+            int spriteHeight = 8;
 
             int spriteX = spriteNumberFlr % 16 * spriteWidth;
             int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
             int colorCache = 0;
-
-            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
-            //{
-            //    if (sprColors[i] != resetSprColors[i])
-            //    {
-            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
-            //        {
-            //            if (sprColors[i] == resetSprColors[k])
-            //            {
-            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
-            //                goto Continue;
-            //            }
-            //        }
-            //    }
-            //
-            //    Continue:
-            //
-            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
-            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
-            //}
 
             for (int i = 0; i < resetSprColors.Length; i++)
             {
@@ -1164,153 +902,7 @@ namespace CSharpCraft.Pico8
                 }
             }
 
-            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
-            {
-                texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
-                spriteTextures[spriteNumberFlr + colorCache] = texture;
-            }
-
-            // Get the size of the viewport
-            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
-
-            //Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
-            Vector2 size = new(cellWidth, cellHeight);
-            SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
-
-            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
-        }
-
-
-        public void Spr(F32 spriteNumber, F32 x, F32 y, int w = 1, int h = 1, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
-        {
-            int spriteNumberFlr = F32.FloorToInt(spriteNumber);
-            int xFlr = F32.FloorToInt(x) - 8;
-            int yFlr = F32.FloorToInt(y) - 8;
-            int wFlr = w;
-            int hFlr = h;
-
-            var spriteWidth = 8;
-            var spriteHeight = 8;
-
-            int spriteX = spriteNumberFlr % 16 * spriteWidth;
-            int spriteY = spriteNumberFlr / 16 * spriteHeight;
-
-            int colorCache = 0;
-
-            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
-            //{
-            //    if (sprColors[i] != resetSprColors[i])
-            //    {
-            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
-            //        {
-            //            if (sprColors[i] == resetSprColors[k])
-            //            {
-            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
-            //                goto Continue;
-            //            }
-            //        }
-            //    }
-            //
-            //    Continue:
-            //
-            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
-            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
-            //}
-
-            for (int i = 0; i < resetSprColors.Length; i++)
-            {
-                if (sprColors[i] != resetSprColors[i])
-                {
-                    for (int j = 0; j < resetSprColors.Length; j++)
-                    {
-                        if (sprColors[i] == resetSprColors[j])
-                        {
-                            colorCache += (i * 100 + j) * 1000;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
-            {
-                texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
-                spriteTextures[spriteNumberFlr + colorCache] = texture;
-            }
-
-            // Get the size of the viewport
-            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
-
-            //Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
-            Vector2 size = new(cellWidth, cellHeight);
-            SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
-
-            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
-        }
-
-
-        public void Spr(int spriteNumber, F32 x, F32 y, int w = 1, int h = 1, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
-        {
-            int spriteNumberFlr = spriteNumber;
-            int xFlr = F32.FloorToInt(x) - 8;
-            int yFlr = F32.FloorToInt(y) - 8;
-            int wFlr = w;
-            int hFlr = h;
-
-            var spriteWidth = 8;
-            var spriteHeight = 8;
-
-            int spriteX = spriteNumberFlr % 16 * spriteWidth;
-            int spriteY = spriteNumberFlr / 16 * spriteHeight;
-
-            int colorCache = 0;
-
-            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
-            //{
-            //    if (sprColors[i] != resetSprColors[i])
-            //    {
-            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
-            //        {
-            //            if (sprColors[i] == resetSprColors[k])
-            //            {
-            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
-            //                goto Continue;
-            //            }
-            //        }
-            //    }
-            //
-            //    Continue:
-            //
-            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
-            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
-            //}
-
-            for (int i = 0; i < resetSprColors.Length; i++)
-            {
-                if (sprColors[i] != resetSprColors[i])
-                {
-                    for (int j = 0; j < resetSprColors.Length; j++)
-                    {
-                        if (sprColors[i] == resetSprColors[j])
-                        {
-                            colorCache += (i * 100 + j) * 1000;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
+            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out Texture2D texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
@@ -1343,33 +935,10 @@ namespace CSharpCraft.Pico8
             int dwFlr = dw == -1 ? swFlr : (int)Math.Floor(dw) > 8 ? (int)Math.Floor(dw / 4) + 1 : (int)Math.Floor(dw / 8);
             int dhFlr = dh == -1 ? shFlr : (int)Math.Floor(dh) > 8 ? (int)Math.Floor(dh / 4) + 1 : (int)Math.Floor(dh / 8);
 
-            var spriteWidth = swFlr;
-            var spriteHeight = shFlr;
-
-            //int spriteX = spriteNumberFlr % 16 * spriteWidth;
-            //int spriteY = spriteNumberFlr / 16 * spriteHeight;
+            int spriteWidth = swFlr;
+            int spriteHeight = shFlr;
 
             int colorCache = 0;
-
-            //for (int i = 0, j = 1; i < resetColors.Length; i++, j = 1)
-            //{
-            //    if (sprColors[i] != resetSprColors[i])
-            //    {
-            //        for (int k = 0; k < resetSprColors.Length; k++, j++)
-            //        {
-            //            if (sprColors[i] == resetSprColors[k])
-            //            {
-            //                colorCache += (j * (int)Math.Pow(10, i * 2)) * 1000;
-            //                goto Continue;
-            //            }
-            //        }
-            //    }
-            //
-            //    Continue:
-            //
-            //    var transparency = sprColors[i].A == 0 ? 1 : 2;
-            //    colorCache += ((transparency * 16) * (int)Math.Pow(10, i * 2)) * 1000;
-            //}
 
             for (int i = 0; i < resetSprColors.Length; i++)
             {
@@ -1386,9 +955,9 @@ namespace CSharpCraft.Pico8
                 }
             }
 
-            var spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
+            int spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
 
-            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out var texture))
+            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out Texture2D texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);
                 spriteTextures[spriteNumberFlr + colorCache] = texture;
@@ -1456,38 +1025,11 @@ namespace CSharpCraft.Pico8
 
         public void Dispose()
         {
-            foreach (var texture in spriteTextures.Values)
+            foreach (Texture2D texture in spriteTextures.Values)
             {
                 texture.Dispose();
             }
             spriteTextures.Clear();
-
-            //if (channelMusic != null)
-            //{
-            //    foreach (var song in channelMusic)
-            //    {
-            //        song.Dispose();
-            //    }
-            //    channelMusic.Clear();
-            //}
-            //if (soundEffects != null)
-            //{
-            //    foreach (var soundEffect in soundEffects)
-            //    {
-            //        soundEffect?.Dispose();
-            //    }
-            //}
-            //if (music != null)
-            //{
-            //    foreach (var song in music)
-            //    {
-            //        song?.Dispose();
-            //    }
-            //}
-            //pixel.Dispose();
-            //batch.Dispose();
-            //graphicsDevice.Dispose();
-
         }
 
 
@@ -1495,7 +1037,7 @@ namespace CSharpCraft.Pico8
         {
             if (channelMusic is not null)
             {
-                foreach (var song in channelMusic)
+                foreach (SoundEffectInstance song in channelMusic)
                 {
                     song.Dispose();
                 }
@@ -1514,7 +1056,7 @@ namespace CSharpCraft.Pico8
                 };
                 if (c is not null)
                 {
-                    foreach (var sfxInstance in c)
+                    foreach (SoundEffectInstance sfxInstance in c)
                     {
                         sfxInstance.Dispose();
                     }

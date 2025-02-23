@@ -17,9 +17,9 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode
 {
-    public class MainRace : IGameMode, IDisposable
+    public class MainRace : IScene, IDisposable
     {
-        public string GameModeName { get => "race"; }
+        public string SceneName { get => "race"; }
         private Pico8Functions p8;
 
         //TODO channel is disposable
@@ -67,7 +67,7 @@ namespace CSharpCraft.RaceMode
 
         public async Task ReadRoomStream()
         {
-            await foreach (var response in roomStream.ResponseStream.ReadAllAsync(cancellationTokenSource.Token))
+            await foreach (RoomStreamResponse response in roomStream.ResponseStream.ReadAllAsync(cancellationTokenSource.Token))
             {
                 switch (response.MessageCase)
                 {
@@ -100,7 +100,7 @@ namespace CSharpCraft.RaceMode
 
                 // this would write to a ConcurrentDictionary of players, which the draw method can draw from
                 //mainRace.playerDictionary.Clear();
-                //var dummyIndex = 1;
+                //int dummyIndex = 1;
                 //foreach (var player in response.Users)
                 //{
                 //    //Console.WriteLine(player);
@@ -142,8 +142,8 @@ namespace CSharpCraft.RaceMode
         private void HandleJoinRoomNotification(JoinRoomNotification notification)
         {
             playerDictionary.Clear();
-            var dummyIndex = 1;
-            foreach (var player in notification.Users)
+            int dummyIndex = 1;
+            foreach (RoomUser player in notification.Users)
             {
                 //Console.WriteLine(player);
                 playerDictionary.TryAdd(dummyIndex, player);
@@ -154,8 +154,8 @@ namespace CSharpCraft.RaceMode
         private void HandlePlayerReadyNotification(PlayerReadyNotification notification)
         {
             playerDictionary.Clear();
-            var dummyIndex = 1;
-            foreach (var player in notification.Users)
+            int dummyIndex = 1;
+            foreach (RoomUser player in notification.Users)
             {
                 //Console.WriteLine(player);
                 playerDictionary.TryAdd(dummyIndex, player);

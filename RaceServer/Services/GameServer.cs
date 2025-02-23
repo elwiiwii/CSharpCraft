@@ -26,16 +26,16 @@ public class GameServer : GameService.GameServiceBase
 
         clients.Add(responseStream);
 
-        var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
+        User newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
         room.AddPlayer(newUser);
 
-        var notification = new RoomStreamResponse
+        RoomStreamResponse notification = new()
         {
-            JoinRoomNotification = new JoinRoomNotification { }
+            JoinRoomNotification = new JoinRoomNotification()
         };
-        foreach (var user in room.Users)
+        foreach (User user in room.Users)
         {
-            var roomUser = new RoomUser
+            RoomUser roomUser = new()
             {
                 Name = user.Name,
                 Role = user.Role,
@@ -45,7 +45,7 @@ public class GameServer : GameService.GameServiceBase
             notification.JoinRoomNotification.Users.Add(roomUser);
         }
 
-        foreach (var client in clients)
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
         {
             await client.WriteAsync(notification);
         }
@@ -66,11 +66,11 @@ public class GameServer : GameService.GameServiceBase
 
         notification = new RoomStreamResponse
         {
-            JoinRoomNotification = new JoinRoomNotification { }
+            JoinRoomNotification = new JoinRoomNotification()
         };
-        foreach (var user in room.Users)
+        foreach (User user in room.Users)
         {
-            var roomUser = new RoomUser
+            RoomUser roomUser = new()
             {
                 Name = user.Name,
                 Role = user.Role,
@@ -81,7 +81,7 @@ public class GameServer : GameService.GameServiceBase
         }
 
         //List<string> userNames = new List<string>();
-        //foreach (var user in room.Users)
+        //foreach (User user in room.Users)
         //{
         //    userNames.Add(user.Name);
         //}
@@ -91,9 +91,9 @@ public class GameServer : GameService.GameServiceBase
         //    Message = $"{request.Name} has left the room.",
         //};
         //users = new List<RoomUser>();
-        //foreach (var user in room.Users)
+        //foreach (User user in room.Users)
         //{
-        //    var roomUser = new RoomUser
+        //    RoomUser roomUser = new()
         //    {
         //        Name = user.Name,
         //        Role = user.Role,
@@ -102,7 +102,7 @@ public class GameServer : GameService.GameServiceBase
         //    joinMessage.Users.Add(roomUser);
         //}
 
-        foreach (var client in clients)
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
         {
             await client.WriteAsync(notification);
         }
@@ -110,16 +110,16 @@ public class GameServer : GameService.GameServiceBase
 
     public override async Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
     {
-        //var newUser = new User { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
+        //User newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
         //room.AddPlayer(newUser);
         //
-        //var notification = new RoomStreamResponse
+        //RoomStreamResponse notification = new()
         //{
         //    JoinRoomNotification = new JoinRoomNotification { }
         //};
-        //foreach (var user in room.Users)
+        //foreach (User user in room.Users)
         //{
-        //    var roomUser = new RoomUser
+        //    RoomUser roomUser = new()
         //    {
         //        Name = user.Name,
         //        Role = user.Role,
@@ -129,7 +129,7 @@ public class GameServer : GameService.GameServiceBase
         //    notification.JoinRoomNotification.Users.Add(roomUser);
         //}
         //
-        //foreach (var client in clients)
+        //foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
         //{
         //    await client.WriteAsync(notification);
         //}
@@ -147,13 +147,13 @@ public class GameServer : GameService.GameServiceBase
     {
         room.TogglePlayerReady(request.Name);
 
-        var notification = new RoomStreamResponse
+        RoomStreamResponse notification = new()
         {
-            PlayerReadyNotification = new PlayerReadyNotification { }
+            PlayerReadyNotification = new PlayerReadyNotification()
         };
-        foreach (var user in room.Users)
+        foreach (User user in room.Users)
         {
-            var roomUser = new RoomUser
+            RoomUser roomUser = new()
             {
                 Name = user.Name,
                 Role = user.Role,
@@ -163,12 +163,12 @@ public class GameServer : GameService.GameServiceBase
             notification.PlayerReadyNotification.Users.Add(roomUser);
         }
 
-        foreach (var client in clients)
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
         {
             await client.WriteAsync(notification);
         }
 
-        var myself = room.users.FirstOrDefault(p => p.Name == request.Name);
+        User myself = room.users.FirstOrDefault(p => p.Name == request.Name);
         return new PlayerReadyResponse
         {
             Ready = myself.Ready
@@ -178,16 +178,16 @@ public class GameServer : GameService.GameServiceBase
     public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
     {
         room.AssignSeedingTemp();
-        var h = room.users.FirstOrDefault(p => p.Seed == 1);
-        var l = room.users.FirstOrDefault(p => p.Seed == 2);
+        User h = room.users.FirstOrDefault(p => p.Seed == 1);
+        User l = room.users.FirstOrDefault(p => p.Seed == 2);
         room.CurrentMatch = room.NewDuelMatch(h, l);
 
-        var notification = new RoomStreamResponse
+        RoomStreamResponse notification = new()
         {
             StartMatchNotification = new StartMatchNotification { MatchStarted = room.AllPlayersReady() }
         };
 
-        foreach (var client in clients)
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
         {
             await client.WriteAsync(notification);
         }

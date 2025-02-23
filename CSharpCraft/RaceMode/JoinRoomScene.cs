@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace CSharpCraft.RaceMode
 {
-    public class JoinRoomScene(MainRace mainRace) : IGameMode, IDisposable
+    public class JoinRoomScene(MainRace mainRace) : IScene, IDisposable
     {
 #nullable enable
         private static ConcurrentString userName = new();
@@ -25,7 +25,7 @@ namespace CSharpCraft.RaceMode
         private string prompt;
 #nullable disable
 
-        public string GameModeName { get => "0"; }
+        public string SceneName { get => "0"; }
         private Pico8Functions p8;
 
         public void Init(Pico8Functions pico8)
@@ -52,8 +52,8 @@ namespace CSharpCraft.RaceMode
             }
             else if ((KeyNames.keyNames[key.ToString()].Length == 1 || key == Keys.Space) && @string.Value.Length < 10)
             {
-                var keyMatch = false;
-                foreach (var prevKey in prevState.GetPressedKeys())
+                bool keyMatch = false;
+                foreach (Keys prevKey in prevState.GetPressedKeys())
                 {
                     if (key == prevKey) { keyMatch = true; break; }
                 }
@@ -81,7 +81,7 @@ namespace CSharpCraft.RaceMode
                 {
                     case 0:
                         prompt = "enter your name";
-                        foreach (var key in state.GetPressedKeys())
+                        foreach (Keys key in state.GetPressedKeys())
                         {
                             TypingHandling(key, userName);
                         }
@@ -174,7 +174,7 @@ namespace CSharpCraft.RaceMode
             {
                 Printc("players in room", 64, 5, 8);
                 int i = 0;
-                foreach (var player in mainRace.playerDictionary.Values)
+                foreach (RoomUser player in mainRace.playerDictionary.Values)
                 {
                     p8.Print(player.Name, 34, 13 + i * 6, 8);
                     i++;
@@ -190,14 +190,14 @@ namespace CSharpCraft.RaceMode
 
         private async Task JoinRoom()
         {
-            var response = mainRace.service.JoinRoom(new JoinRoomRequest { Name = userName.Value, Role = role.Value });
+            JoinRoomResponse response = mainRace.service.JoinRoom(new JoinRoomRequest { Name = userName.Value, Role = role.Value });
             mainRace.myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host };
         }
 
         private async Task RoomStream()
         {
             //Console.WriteLine("Join as (1) Player or (2) Spectator?");
-            //var role = Console.ReadKey().KeyChar == '1' ? "Player" : "Spectator";
+            //string role = Console.ReadKey().KeyChar == '1' ? "Player" : "Spectator";
 
             mainRace.roomStream = mainRace.service.RoomStream(new RoomStreamRequest { Name = userName.Value, Role = role.Value });
 

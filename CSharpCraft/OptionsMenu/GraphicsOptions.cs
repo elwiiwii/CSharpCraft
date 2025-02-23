@@ -10,10 +10,10 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class GraphicsOptions : IGameMode, IDisposable
+    public class GraphicsOptions : IScene, IDisposable
     {
 
-        public string GameModeName { get => "options"; }
+        public string SceneName { get => "options"; }
         private Pico8Functions p8;
 
         public void Init(Pico8Functions pico8)

@@ -4,8 +4,7 @@ using System.Reflection;
 namespace CSharpCraft.OptionsMenu
 {
     public record Binding(string Bind1, string Bind2);
-
-
+    
     public class KeyboardOptionsFile
     {
         public Binding Left { get; set; } = new Binding("Left", "NumPad4");
@@ -17,11 +16,12 @@ namespace CSharpCraft.OptionsMenu
         public Binding Pause { get; set; } = new Binding("Escape", "Enter");
 
         private static readonly string optionsFileName = "settings.json";
+        private static readonly JsonSerializerOptions jsonOptions = new() { IncludeFields = true, WriteIndented = true };
 
         public List<FieldInfo> GetAllFields()
         {
             List<FieldInfo> fields = [];
-            foreach (var fieldInfo in GetType().GetFields())
+            foreach (FieldInfo fieldInfo in GetType().GetFields())
             {
                 fields.Add(fieldInfo);
             }
@@ -30,7 +30,6 @@ namespace CSharpCraft.OptionsMenu
 
         public static KeyboardOptionsFile JsonWrite(KeyboardOptionsFile file)
         {
-            var jsonOptions = new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
             string jsonString = JsonSerializer.Serialize(file, jsonOptions);
             File.WriteAllText(optionsFileName, jsonString);
             return file;
@@ -47,12 +46,10 @@ namespace CSharpCraft.OptionsMenu
             }
             else
             {
-                var optionsFile = new KeyboardOptionsFile();
+                KeyboardOptionsFile optionsFile = new();
                 return JsonWrite(optionsFile);
             }
         }
-
-
     }
 
     public class ControllerOptionsFile
@@ -71,7 +68,4 @@ namespace CSharpCraft.OptionsMenu
         public string Menu2 { get; set; } = "RightShoulder";
         public string Pause { get; set; } = "Start";
     }
-
-
-
 }

@@ -20,9 +20,9 @@ namespace RaceServer
 
         public void RemovePlayer(string name)
         {
-            var user = users.FirstOrDefault(p => p.Name == name);
+            User user = users.FirstOrDefault(p => p.Name == name);
 
-            if (user != null)
+            if (user is not null)
             {
                 users.Remove(user);
             }
@@ -30,7 +30,7 @@ namespace RaceServer
         
         public void TogglePlayerReady(string name)
         {
-            var player = users.FirstOrDefault(p => p.Name == name);
+            User player = users.FirstOrDefault(p => p.Name == name);
             if (player is not null && player.Role == "Player")
                 player.Ready = !player.Ready;
         }
@@ -38,7 +38,7 @@ namespace RaceServer
         public void AssignSeedingTemp()
         {
             int seed = 1;
-            foreach (var user in users)
+            foreach (User user in users)
             { 
                 if (user.Role == "Player")
                 {

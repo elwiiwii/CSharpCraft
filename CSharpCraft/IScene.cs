@@ -7,9 +7,9 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft
 {
-    public interface IGameMode
+    public interface IScene
     {
-        string GameModeName { get; }
+        string SceneName { get; }
         void Init(Pico8Functions p8);
         void Update();
         void Draw();

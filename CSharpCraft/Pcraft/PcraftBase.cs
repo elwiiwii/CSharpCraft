@@ -5,10 +5,10 @@ using Google.Protobuf.WellKnownTypes;
 namespace CSharpCraft.Pcraft
 {
 
-    public abstract class PcraftBase : IGameMode, IDisposable
+    public abstract class PcraftBase : IScene, IDisposable
     {
 
-        public abstract string GameModeName { get; }
+        public abstract string SceneName { get; }
 
         private Pico8Functions p8;
 
@@ -356,7 +356,15 @@ namespace CSharpCraft.Pcraft
 
         private F32 Lerp(F32 a, F32 b, F32 alpha)
         {
-            return a * (1 - alpha) + b * alpha;
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"a = {a} | b = {b} | alpha = {alpha}" + Environment.NewLine);
+
+            F32 v1 = a * (1 - alpha);
+                
+            F32 v2 = v1 + b * alpha;
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"v1 = {v1} | v2 = {v2}" + Environment.NewLine);
+
+            return v2;
         }
 
         private F32 GetInvLen(F32 x, F32 y)
@@ -557,7 +565,7 @@ namespace CSharpCraft.Pcraft
         private Ground GetDirectGr(F32 i, F32 j)
         {
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
-            return grounds[p8.Mget(i + levelx, j)];
+            return grounds[p8.Mget(i.Double + levelx, j.Double)];
         }
 
         private void SetGr(F32 x, F32 y, Ground v)
@@ -686,7 +694,7 @@ namespace CSharpCraft.Pcraft
                         F32 d = DirGetData(i, j, F32.Zero);
                         if (time > d)
                         {
-                            p8.Mset(i + levelx, j, grsand.Id);
+                            p8.Mset(i.Double + levelx, j.Double, grsand.Id);
                         }
                     }
                 }
@@ -695,6 +703,7 @@ namespace CSharpCraft.Pcraft
 
         private F32 UpRot(F32 grot, F32 rot)
         {
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {grot} | rot = {rot}" + Environment.NewLine);
             if (F32.Abs(rot - grot) > F32.Half)
             {
                 if (rot > grot)
@@ -706,7 +715,13 @@ namespace CSharpCraft.Pcraft
                     grot -= 1;
                 }
             }
-            return (Lerp(rot, grot, F32.FromDouble(0.4)) % 1 + 1) % 1;
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {grot} | rot = {rot}" + Environment.NewLine);
+
+            F32 e = p8.Mod(p8.Mod(Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"e = {e}" + Environment.NewLine);
+
+            return e;
         }
 
         private (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
@@ -847,7 +862,7 @@ namespace CSharpCraft.Pcraft
                             {
                                 plife -= pow;
                                 p8.Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
-                                p8.Sfx(14 + p8.Rnd(2.0), 3);
+                                p8.Sfx(14 + p8.Rnd(2).Double, 3);
                             }
                             plife = F32.Max(F32.Zero, plife);
                         }
@@ -908,7 +923,7 @@ namespace CSharpCraft.Pcraft
                     pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
                     stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                     pow = F32.Floor(pow);
-                    p8.Sfx(14 + p8.Rnd(2.0), 3);
+                    p8.Sfx(14 + p8.Rnd(2).Double, 3);
                 }
                 foreach (Entity e in nearEnemies)
                 {
@@ -1020,7 +1035,7 @@ namespace CSharpCraft.Pcraft
                     case (Ground, Material) gm when gm == (grwheat, scythe):
                         SetGr(hitx, hity, grsand);
                         F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
-                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd(d / 2)), hitx, hity);
+                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double)), hitx, hity);
                         AddItem(seed, 1, hitx, hity);
                         break;
                     default:
@@ -1126,6 +1141,8 @@ namespace CSharpCraft.Pcraft
                 return;
             }
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"UPDATE" + Environment.NewLine);
+
             if (switchLevel)
             {
                 if (currentLevel == cave) { SetLevel(island); }
@@ -1160,16 +1177,23 @@ namespace CSharpCraft.Pcraft
 
             F32 dx = F32.Zero;
             F32 dy = F32.Zero;
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {dx} | dy = {dy}" + Environment.NewLine);
 
             if (p8.Btn(0)) dx -= 1;
             if (p8.Btn(1)) dx += 1;
             if (p8.Btn(2)) dy -= 1;
             if (p8.Btn(3)) dy += 1;
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {dx} | dy = {dy}" + Environment.NewLine);
+
             F32 dl = GetInvLen(dx, dy);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dl = {dl}" + Environment.NewLine);
 
             dx *= dl;
             dy *= dl;
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {dx} | dy = {dy}" + Environment.NewLine);
 
             if (F32.Abs(dx) > 0 || F32.Abs(dy) > 0)
             {
@@ -1181,13 +1205,21 @@ namespace CSharpCraft.Pcraft
                 panim = F32.Zero;
             }
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"lrot = {lrot} | panim = {panim}" + Environment.NewLine);
+
             dx *= s;
             dy *= s;
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {dx} | dy = {dy}" + Environment.NewLine);
+
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {dx} | dy = {dy}" + Environment.NewLine);
 
             bool canAct = true;
             (dx, dy, canAct) = UpEntity(dx, dy, canAct);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {dx} | dy = {dy}" + Environment.NewLine);
 
             nearEnemies = [];
 
@@ -1197,10 +1229,16 @@ namespace CSharpCraft.Pcraft
 
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"plx = {plx} | ply = {ply} | dx = {dx} | dy = {dy}" + Environment.NewLine);
+
             plx += dx;
             ply += dy;
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"plx = {plx} | ply = {ply}" + Environment.NewLine);
+
             prot = UpRot(lrot, prot);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"prot {prot}" + Environment.NewLine);
 
             llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
             lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
@@ -1257,23 +1295,33 @@ namespace CSharpCraft.Pcraft
                 coffy += dy * F32.FromDouble(0.4);
             }
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"coffx = {coffx} | coffy = {coffy}" + Environment.NewLine);
+
             cmx = F32.Max(plx - m, cmx);
             cmx = F32.Min(plx + m, cmx);
             cmy = F32.Max(ply - m, cmy);
             cmy = F32.Min(ply + m, cmy);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"cmx = {cmx} | cmy = {cmy}" + Environment.NewLine);
 
             coffx *= F32.FromDouble(0.9);
             coffy *= F32.FromDouble(0.9);
             coffx = F32.Min(msp, F32.Max(-msp, coffx));
             coffy = F32.Min(msp, F32.Max(-msp, coffy));
 
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"coffx = {coffx} | coffy = {coffy}" + Environment.NewLine);
+
             clx += coffx;
             cly += coffy;
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"clx = {clx} | cly = {cly}" + Environment.NewLine);
 
             clx = F32.Max(cmx - m, clx);
             clx = F32.Min(cmx + m, clx);
             cly = F32.Max(cmy - m, cly);
             cly = F32.Min(cmy + m, cly);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"clx = {clx} | cly = {cly}" + Environment.NewLine);
 
             if (p8.Btnp(4) && !lb4)
             {
@@ -1371,7 +1419,7 @@ namespace CSharpCraft.Pcraft
                 }
             }
 
-            p8.Spr(weap, x + bcr * 4 - cr * lan - mx * 8 + 1, y + bsr * 4 - sr * lan + my * 8 - 7, 1, 1, mx == 1, my == 1);
+            p8.Spr(weap, (x + bcr * 4 - cr * lan - mx * 8 + 1).Double, (y + bsr * 4 - sr * lan + my * 8 - 7).Double, 1, 1, mx == 1, my == 1);
 
             if (isplayer) { p8.Pal(); }
 
@@ -1380,10 +1428,10 @@ namespace CSharpCraft.Pcraft
                 p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
                 p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-                Console.WriteLine(rot + F32.FromDouble(0.75));
+                //Console.WriteLine(rot + F32.FromDouble(0.75));
 
                 (int my2, int mx2) = Mirror(p8.Mod(rot + F32.FromDouble(0.75), 1)); // changed from (rot + 0.75) % 1
-                p8.Spr(75, x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1, y + sv * 4 + sr * lan + my2 * 8 - 7, 1, 1, mx2 == 0, my2 == 1);
+                p8.Spr(75, (x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1).Double, (y + sv * 4 + sr * lan + my2 * 8 - 7).Double, 1, 1, mx2 == 0, my2 == 1);
             }
 
             p8.Circfill(x + cr, y + sr - 2, 4, 2);
@@ -1537,7 +1585,7 @@ namespace CSharpCraft.Pcraft
             {
                 for (int j = 0; j < levelsy; j++)
                 {
-                    p8.Mset(i + levelx, j + levely, level[i][j]);
+                    p8.Mset(i + levelx, j + levely, level[i][j].Double);
                 }
             }
 
@@ -1575,7 +1623,7 @@ namespace CSharpCraft.Pcraft
         private void WatAnim(F32 i, F32 j)
         {
             F32 a = (time * F32.FromDouble(0.6) + WatVal(i, j) / 100) % 1 * 19;
-            if (a > 16) { p8.Spr(13 + a - 16, i * 16, j * 16); }
+            if (a > 16) { p8.Spr(13 + a.Double - 16, i.Double * 16, j.Double * 16); }
         }
 
         private F32 RndCenter(F32 i, F32 j)
@@ -1595,10 +1643,10 @@ namespace CSharpCraft.Pcraft
 
         private void Spr4(F32 i, F32 j, F32 gi, F32 gj, int a, int b, int c, int d, int off, Func<F32, F32, int> f)
         {
-            p8.Spr(f(i, j + off) + a, gi, gj + 2 * off);
-            p8.Spr(f(i + F32.Half, j + off) + b, gi + 8, gj + 2 * off);
-            p8.Spr(f(i, j + F32.Half + off) + c, gi, gj + 8 + 2 * off);
-            p8.Spr(f(i + F32.Half, j + F32.Half + off) + d, gi + 8, gj + 8 + 2 * off);
+            p8.Spr(f(i, j + off) + a, gi.Double, (gj + 2 * off).Double);
+            p8.Spr(f(i + F32.Half, j + off) + b, gi.Double + 8, (gj + 2 * off).Double);
+            p8.Spr(f(i, j + F32.Half + off) + c, gi.Double, (gj + 8 + 2 * off).Double);
+            p8.Spr(f(i + F32.Half, j + F32.Half + off) + d, gi.Double + 8, (gj + 8 + 2 * off).Double);
         }
 
         private void DrawBack()
@@ -1648,7 +1696,7 @@ namespace CSharpCraft.Pcraft
                 p8.Pal(15, 5);
                 p8.Pal(4, 1);
             }
-            p8.Map(64, 32, ci * 16, cj * 16, 18, 18);
+            p8.Map(64, 32, ci.Double * 16, cj.Double * 16, 18, 18);
 
             for (F32 i = ci - 1; i <= ci + 8; i++)
             {
@@ -1698,11 +1746,11 @@ namespace CSharpCraft.Pcraft
                         if (!levelUnder)
                         {
                             p8.Palt(0, false);
-                            p8.Spr(31, gi, gj, 1, 2);
-                            p8.Spr(31, gi + 8, gj, 1, 2, true);
+                            p8.Spr(31, gi.Double, gj.Double, 1, 2);
+                            p8.Spr(31, gi.Double + 8, gj.Double, 1, 2, true);
                         }
                         p8.Palt();
-                        p8.Spr(77, gi + 4, gj, 1, 2);
+                        p8.Spr(77, gi.Double + 4, gj.Double, 1, 2);
                     }
                 }
             }
@@ -1818,7 +1866,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        public void Printb(string t, F32 x, F32 y, int c)
+        public void Printb(string t, double x, double y, int c)
         {
             p8.Print(t, x + 1, y, 1);
             p8.Print(t, x - 1, y, 1);
@@ -1840,13 +1888,13 @@ namespace CSharpCraft.Pcraft
                 if (e.Type.Pal is not null) { SetPal(e.Type.Pal); }
                 if (e.Type.BigSpr is not null)
                 {
-                    p8.Spr((int)e.Type.BigSpr, e.X - 8, e.Y - 8, 2, 2);
+                    p8.Spr((int)e.Type.BigSpr, e.X.Double - 8, e.Y.Double - 8, 2, 2);
                     continue;
                 }
                 
                 if (e.Type == etext)
                 {
-                    Printb(e.Text, e.X - 2, e.Y - 4, e.C);
+                    Printb(e.Text, e.X.Double - 2, e.Y.Double - 4, e.C);
                     continue;
                 }
                 
@@ -1857,7 +1905,7 @@ namespace CSharpCraft.Pcraft
                         p8.Palt(i, true);
                     }
                 }
-                p8.Spr(e.Type.Spr, e.X - 4, e.Y - 4);
+                p8.Spr(e.Type.Spr, e.X.Double - 4, e.Y.Double - 4);
             }
         }
 
@@ -1909,9 +1957,9 @@ namespace CSharpCraft.Pcraft
             F32 pe = px + v * F32.FromDouble(0.3);
             F32 pe2 = px + m * F32.FromDouble(0.3);
             p8.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
-            p8.Rectfill(px, py, pe - 1, py + 3, c2);
-            p8.Rectfill(px, py, F32.Max(F32.FromInt(px), pe - 2), py + 2, c);
-            if (m > v) { p8.Rectfill(pe, py, pe2 - 1, py + 3, 10); }
+            p8.Rectfill(px, py, pe.Double - 1, py + 3, c2);
+            p8.Rectfill(px, py, F32.Max(F32.FromInt(px), pe - 2).Double, py + 2, c);
+            if (m > v) { p8.Rectfill(pe.Double, py, pe2.Double - 1, py + 3, 10); }
         }
 
         public virtual void Draw()

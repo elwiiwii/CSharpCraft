@@ -8,19 +8,19 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class TitleScreen : IGameMode, IDisposable //, Dictionary<string, Texture2D> textureDictionary, SpriteBatch batch, GraphicsDevice graphicsDevice, List<IGameMode> gameModes) : IGameMode
+    public class TitleScreen : IScene, IDisposable
     {
 
-        public string GameModeName { get => "TitleScreen"; }
+        public string SceneName { get => "TitleScreen"; }
         private Pico8Functions p8;
 
         private int menuSelected;
-        public int currentGameMode;
+        public int currentScene;
         private KeyboardState prevState;
 
         private int Loop<T>(int sel, List<T> l)
         {
-            var lp = l.Count;
+            int lp = l.Count;
             return ((sel % lp) + lp) % lp;
         }
 
@@ -29,7 +29,7 @@ namespace CSharpCraft
             p8 = pico8;
 
             menuSelected = 0;
-            currentGameMode = 0;
+            currentScene = 0;
             prevState = Keyboard.GetState();
         }
 
@@ -37,16 +37,16 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (currentGameMode == 0) // titlescreen
+            if (currentScene == 0) // titlescreen
             {
                 if (p8.Btnp(2)){ menuSelected -= 1; }
                 if (p8.Btnp(3)) { menuSelected += 1; }
 
-                menuSelected = Loop(menuSelected, p8.gameModes);
+                menuSelected = Loop(menuSelected, p8.scenes);
 
                 if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
                 {
-                    p8.LoadCart(p8.gameModes[menuSelected]);
+                    p8.LoadCart(p8.scenes[menuSelected]);
                 }
             }
 
@@ -83,9 +83,9 @@ namespace CSharpCraft
             p8.Print(">", 0, 62 + (menuSelected * 6), 7);
 
             int i = 0;
-            foreach (var gameMode in p8.gameModes)
+            foreach (IScene scene in p8.scenes)
             {
-                p8.Print(gameMode.GameModeName, 8, 62 + i, 7);
+                p8.Print(scene.SceneName, 8, 62 + i, 7);
              
                 i += 6;
             }

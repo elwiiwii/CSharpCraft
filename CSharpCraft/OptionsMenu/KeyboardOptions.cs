@@ -9,10 +9,10 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class KeyboardOptions : IGameMode, IDisposable
+    public class KeyboardOptions : IScene, IDisposable
     {
 
-        public string GameModeName { get => "options"; }
+        public string SceneName { get => "options"; }
         private Pico8Functions p8;
 
         private int menuX;
@@ -60,22 +60,22 @@ namespace CSharpCraft.OptionsMenu
             {
                 if (delay > 5)
                 {
-                    var key = Keyboard.GetState().GetPressedKeys();
+                    Keys[] key = Keyboard.GetState().GetPressedKeys();
                     if (key.Length == 1)
                     {
-                        var properties = typeof(KeyboardOptionsFile).GetProperties();
-                        var currentProperty = properties[menuY];
-                        var propertyName = typeof(KeyboardOptionsFile).GetProperty(currentProperty.Name);
-                        var binding = (Binding)propertyName.GetValue(p8.keyboardOptionsFile);
-                        if (menuX == 0 && propertyName != null)
+                        PropertyInfo[] properties = typeof(KeyboardOptionsFile).GetProperties();
+                        PropertyInfo currentProperty = properties[menuY];
+                        PropertyInfo propertyName = typeof(KeyboardOptionsFile).GetProperty(currentProperty.Name);
+                        Binding binding = (Binding)propertyName.GetValue(p8.keyboardOptionsFile);
+                        if (menuX == 0 && propertyName is not null)
                         {
-                            var newBinding = new Binding(KeysToString.keysToString[key[0]], binding.Bind2);
+                            Binding newBinding = new Binding(KeysToString.keysToString[key[0]], binding.Bind2);
                             propertyName.SetValue(p8.keyboardOptionsFile, newBinding);
                             KeyboardOptionsFile.JsonWrite(p8.keyboardOptionsFile);
                         }
                         else
                         {
-                            var newBinding = new Binding(binding.Bind1, KeysToString.keysToString[key[0]]);
+                            Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[key[0]]);
                             propertyName.SetValue(p8.keyboardOptionsFile, newBinding);
                             KeyboardOptionsFile.JsonWrite(p8.keyboardOptionsFile);
                         }
@@ -124,7 +124,7 @@ namespace CSharpCraft.OptionsMenu
 
                 if (menuY >= 0)
                 {
-                    var position5 = new Vector2((46 + 36 * menuX) * cellW, (menuY * 6 + 55) * cellH);
+                    Vector2 position5 = new((46 + 36 * menuX) * cellW, (menuY * 6 + 55) * cellH);
                     p8.batch.Draw(p8.textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 }
                 else
@@ -132,20 +132,20 @@ namespace CSharpCraft.OptionsMenu
                     p8.Rectfill(17, 32, 51, 38, 13);
                 }
 
-                var position3 = new Vector2(16 * cellW, 31 * cellH);
-                var position4 = new Vector2(30 * cellW, 31 * cellH);
+                Vector2 position3 = new(16 * cellW, 31 * cellH);
+                Vector2 position4 = new(30 * cellW, 31 * cellH);
                 p8.batch.Draw(p8.textureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 p8.batch.Draw(p8.textureDictionary["SelectorHalf"], position4, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
 
                 p8.Print("keyboard", 19, 33, 7);
                 p8.Print("controller", 19 + 54, 33, 7);
 
-                var properties = typeof(KeyboardOptionsFile).GetProperties();
+                PropertyInfo[] properties = typeof(KeyboardOptionsFile).GetProperties();
                 int j = 0;
-                foreach (var property in properties)
+                foreach (PropertyInfo property in properties)
                 {
                     p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
-                    var val = (Binding)property.GetValue(p8.keyboardOptionsFile);
+                    Binding val = (Binding)property.GetValue(p8.keyboardOptionsFile);
                     p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
                     p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
                     j += 6;

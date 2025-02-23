@@ -16,7 +16,7 @@ using CSharpCraft.OptionsMenu;
 
 namespace CSharpCraft.RaceMode
 {
-    public class PickBanScene(MainRace mainRace) : IGameMode, IDisposable
+    public class PickBanScene(MainRace mainRace) : IScene, IDisposable
     {
 #nullable enable
         private float animationTimer;
@@ -40,7 +40,7 @@ namespace CSharpCraft.RaceMode
         private List<SeedType> gameSeeds = new();
 #nullable disable
 
-        public string GameModeName { get => "2"; }
+        public string SceneName { get => "2"; }
         private Pico8Functions p8;
 
         public void Init(Pico8Functions pico8)
@@ -91,18 +91,18 @@ namespace CSharpCraft.RaceMode
             else if (selectedType > 7) { selectedType = 7; }
             seedTypes[selectedType].Selected = true;
 
-            var turnType = turns[turn];
-            var selectedSeedType = seedTypes[selectedType];
-            var gameType = gameSeeds[gameCount - 1];
+            SeedType turnType = turns[turn];
+            SeedType selectedSeedType = seedTypes[selectedType];
+            SeedType gameType = gameSeeds[gameCount - 1];
 
-            var unbannedCount = 0;
-            foreach (var seedType in seedTypes)
+            int unbannedCount = 0;
+            foreach (SeedType seedType in seedTypes)
             {
                 if (seedType.Status == "UNBANNED") { unbannedCount++; }
             }
             if (unbannedCount == 0)
             {
-                foreach (var seedType in seedTypes)
+                foreach (SeedType seedType in seedTypes)
                 {
                     if (seedType.Name != "SeedType0")
                     {
@@ -176,8 +176,8 @@ namespace CSharpCraft.RaceMode
             Vector2 size = new(cellW, cellH);
             Vector2 quarterSize = new(cellW / 4f, cellH / 4f);
 
-            var color = 2;
-            var animationCheck = animated && seedType.Status == "UNBANNED" && !seedType.Unavailable;
+            int color = 2;
+            bool animationCheck = animated && seedType.Status == "UNBANNED" && !seedType.Unavailable;
 
             p8.batch.Draw(p8.textureDictionary[animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
             
@@ -214,7 +214,7 @@ namespace CSharpCraft.RaceMode
 
             p8.batch.Draw(p8.textureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
 
-            var color = 2;
+            int color = 2;
             if (order > turn)
             {
                 color = 2;
@@ -246,7 +246,7 @@ namespace CSharpCraft.RaceMode
 
             p8.batch.Draw(p8.textureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * cellW, (seedType.Ypos + 2) * cellH), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
 
-            var color = 2;
+            int color = 2;
             if (order > gameCount)
             {
                 color = 2;
@@ -307,8 +307,8 @@ namespace CSharpCraft.RaceMode
             p8.batch.Draw(p8.textureDictionary["Game"], new Vector2(56 * cellW, 6 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
             p8.batch.Draw(p8.textureDictionary[$"{gameCount}"], new Vector2(62 * cellW, 12 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
 
-            var s1 = $"{player1Name}'s turn";
-            var s2 = $"[{KeyNames.keyNames[p8.keyboardOptionsFile.Menu.Bind1]}] for random action";
+            string s1 = $"{player1Name}'s turn";
+            string s2 = $"[{KeyNames.keyNames[p8.keyboardOptionsFile.Menu.Bind1]}] for random action";
             //Printc(Math.Floor(animationTimer) % 2 == 0 ? s1 : s2, 64, 29, 7);
             Printc(s1, 64, 29, 7);
 

@@ -25,30 +25,21 @@ namespace CSharpCraft
 #nullable enable
 
         private SpriteBatch batch;
-        private List<IGameMode> gameModes = [];
+        private List<IScene> scenes = [];
         private GraphicsDeviceManager graphics;
         private Pico8Functions p8;
 
         private KeyboardOptionsFile keyboardOptionsFile;
 
-        //private List<Texture2D> textures = [];
-        //private List<SoundEffect> music = [];
-        //private List<SoundEffect> soundEffects = [];
-
         private Dictionary<string, Texture2D> textureDictionary = new();
         private Dictionary<string, SoundEffect> musicDictionary = new();
         private Dictionary<string, SoundEffect> soundEffectDictionary = new();
 
-        //private Texture2D logo;
-        //private Texture2D optionsMenuBackground;
-        //private Texture2D optionsMenuTab;
         private Texture2D pixel;
-        //private Texture2D selectorHalf;
         private KeyboardState prevState;
 
 #nullable disable
 
-        private int currentGameMode = 0;
         private double elapsedSeconds = 0.0;
         string graphicsFolderPath = "Content/Graphics";
         string musicFolderPath = "Content/Music";
@@ -86,13 +77,9 @@ namespace CSharpCraft
 
             UpdateViewport();
 
-            //p8.Init();
-
-            gameModes.Add(new PcraftSingleplayer());
-            gameModes.Add(new MainRace());
-            gameModes.Add(new ControlsOptions());
-
-            //titleScreen.Init();
+            scenes.Add(new PcraftSingleplayer());
+            scenes.Add(new MainRace());
+            scenes.Add(new ControlsOptions());
         }
 
 
@@ -109,26 +96,18 @@ namespace CSharpCraft
             KeyboardState state = Keyboard.GetState();
             GamePadState gamepadState = GamePad.GetState(PlayerIndex.One);
 
-            //currentGameMode = titleScreen.currentGameMode;
-
-            if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
             {
-                //gameModes[currentGameMode].Update();
-
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
-                {
-                    p8.LoadCart(p8._cart);
-                }
-
-                if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
-                {
-                    p8.LoadCart(new TitleScreen());
-                }
-
+                p8.LoadCart(p8._cart);
             }
 
-            //var keybinds = new List<string>();
-            //foreach (var keybind in keybinds)
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
+            {
+                p8.LoadCart(new TitleScreen());
+            }
+
+            //List<string> keybinds = new();
+            //foreach (string keybind in keybinds)
             //{
             //    (p8)Enum.Parse(typeof(p8), $"prev{keybind}") = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keybind));
             //}
@@ -148,11 +127,6 @@ namespace CSharpCraft
             p8.Pal();
             p8.Palt();
             p8.Draw();
-
-            if (currentGameMode >= 0 && currentGameMode < gameModes.Count)
-            {
-                //gameModes[currentGameMode].Draw();
-            }
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -186,33 +160,10 @@ namespace CSharpCraft
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
 
-            //logo = Content.Load<Texture2D>("Graphics/CSharpCraftLogo.png");
-            //optionsMenuBackground = Content.Load<Texture2D>("Graphics/OptionsMenuBackground.png");
-            //optionsMenuTab = Content.Load<Texture2D>("Graphics/OptionsMenuTab.png");
-            //selectorHalf = Content.Load<Texture2D>("Graphics/SelectorHalf.png");
-
-            //for (int i = 0; i <= 6; i++)
-            //{
-            //    string fileName = $"Content/Music/music_{i}.wav";
-            //    using var stream = TitleContainer.OpenStream(fileName);
-            //    {
-            //        music.Add(SoundEffect.FromStream(stream));
-            //    }
-            //}
-
-            //for (int i = 0; i <= 21; i++)
-            //{
-            //    string fileName = $"Content/Sfx/sfx_{i}.wav";
-            //    using var stream = TitleContainer.OpenStream(fileName);
-            //    {
-            //        soundEffects.Add(SoundEffect.FromStream(stream));
-            //    }
-            //}
-
             string[] graphicsFiles = Directory.GetFiles(graphicsFolderPath, "*.png");
-            foreach (var file in graphicsFiles)
+            foreach (string file in graphicsFiles)
             {
-                using var stream = TitleContainer.OpenStream(file);
+                using Stream stream = TitleContainer.OpenStream(file);
                 {
                     Texture2D texture = Texture2D.FromStream(GraphicsDevice, stream);
                     string textureName = Path.GetFileNameWithoutExtension(file);
@@ -221,9 +172,9 @@ namespace CSharpCraft
             }
 
             string[] musicFiles = Directory.GetFiles(musicFolderPath, "*.wav");
-            foreach (var file in musicFiles)
+            foreach (string file in musicFiles)
             {
-                using var stream = TitleContainer.OpenStream(file);
+                using Stream stream = TitleContainer.OpenStream(file);
                 {
                     SoundEffect music = SoundEffect.FromStream(stream);
                     string musicName = Path.GetFileNameWithoutExtension(file);
@@ -232,9 +183,9 @@ namespace CSharpCraft
             }
 
             string[] sfxFiles = Directory.GetFiles(sfxFolderPath, "*.wav");
-            foreach (var file in sfxFiles)
+            foreach (string file in sfxFiles)
             {
-                using var stream = TitleContainer.OpenStream(file);
+                using Stream stream = TitleContainer.OpenStream(file);
                 {
                     SoundEffect soundEffect = SoundEffect.FromStream(stream);
                     string soundEffectName = Path.GetFileNameWithoutExtension(file);
@@ -242,7 +193,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(new TitleScreen(), gameModes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
+            p8 = new Pico8Functions(new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
         }
 
 
@@ -252,15 +203,15 @@ namespace CSharpCraft
             pixel.Dispose();
             p8.Dispose();
 
-            foreach (var texture in textureDictionary.Values)
+            foreach (Texture2D texture in textureDictionary.Values)
             {
                 texture.Dispose();
             }
-            foreach (var music in musicDictionary.Values)
+            foreach (SoundEffect music in musicDictionary.Values)
             {
                 music.Dispose();
             }
-            foreach (var soundEffect in soundEffectDictionary.Values)
+            foreach (SoundEffect soundEffect in soundEffectDictionary.Values)
             {
                 soundEffect.Dispose();
             }
@@ -279,12 +230,12 @@ namespace CSharpCraft
             int size = (maxSize / 128) * 128;
 
             // Calculate the exact center of the client area
-            double centerX = Window.ClientBounds.Width / 2.0f;
-            double centerY = Window.ClientBounds.Height / 2.0f;
+            double centerX = Window.ClientBounds.Width / 2.0;
+            double centerY = Window.ClientBounds.Height / 2.0;
 
             // Calculate the top left corner of the square so that its center aligns with the client area's center
-            int left = (int)Math.Round(centerX - size / 2.0f);
-            int top = (int)Math.Round(centerY - size / 2.0f);
+            int left = (int)Math.Round(centerX - size / 2.0);
+            int top = (int)Math.Round(centerY - size / 2.0);
 
             // Set the viewport to the square area
             GraphicsDevice.Viewport = new Viewport(left, top, size, size);
