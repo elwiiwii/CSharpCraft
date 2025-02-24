@@ -2,6 +2,7 @@
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
 using CSharpCraft.RaceMode;
+using CSharpCraft.Credits;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -80,6 +81,7 @@ namespace CSharpCraft
             scenes.Add(new PcraftSingleplayer());
             scenes.Add(new MainRace());
             scenes.Add(new ControlsOptions());
+            scenes.Add(new CreditsScene());
         }
 
 

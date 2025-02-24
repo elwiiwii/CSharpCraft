@@ -6,30 +6,22 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
+
 namespace CSharpCraft
 {
     public class TitleScreen : IScene, IDisposable
     {
-
         public string SceneName { get => "TitleScreen"; }
         private Pico8Functions p8;
 
         private int menuSelected;
-        public int currentScene;
         private KeyboardState prevState;
-
-        private int Loop<T>(int sel, List<T> l)
-        {
-            int lp = l.Count;
-            return ((sel % lp) + lp) % lp;
-        }
 
         public void Init(Pico8Functions pico8)
         {
             p8 = pico8;
 
             menuSelected = 0;
-            currentScene = 0;
             prevState = Keyboard.GetState();
         }
 
@@ -37,17 +29,14 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (currentScene == 0) // titlescreen
+            if (p8.Btnp(2)){ menuSelected -= 1; }
+            if (p8.Btnp(3)) { menuSelected += 1; }
+
+            menuSelected = GeneralFunctions.Loop(menuSelected, p8.scenes);
+
+            if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
             {
-                if (p8.Btnp(2)){ menuSelected -= 1; }
-                if (p8.Btnp(3)) { menuSelected += 1; }
-
-                menuSelected = Loop(menuSelected, p8.scenes);
-
-                if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
-                {
-                    p8.LoadCart(p8.scenes[menuSelected]);
-                }
+                p8.LoadCart(p8.scenes[menuSelected]);
             }
 
             prevState = state;
