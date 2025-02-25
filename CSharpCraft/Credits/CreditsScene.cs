@@ -1,5 +1,7 @@
 ﻿using CSharpCraft.Credits.Credits;
 using CSharpCraft.Pico8;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace CSharpCraft.Credits
@@ -10,14 +12,14 @@ namespace CSharpCraft.Credits
         private Pico8Functions p8;
         List<CreditsItem> credits;
 
-        private int menuSelected;
+        private (int ver, int hor) menuSelected;
         private KeyboardState prevState;
 
         public void Init(Pico8Functions pico8)
         {
             p8 = pico8;
 
-            menuSelected = 0;
+            menuSelected = (0, 0);
             prevState = Keyboard.GetState();
 
             credits = new();
@@ -25,55 +27,71 @@ namespace CSharpCraft.Credits
             CreditsItem nusan = new()
             {
                 Name = "nusan",
-                Description = "",
+                Description = new(),
                 Links = new()
             };
-            nusan.Links.Add("website", "https://nusan.fr");
-            nusan.Links.Add("website", "https://linktr.ee/poticogames");
-            nusan.Links.Add("itchio", "https://nusan.itch.io");
-            nusan.Links.Add("steam", "https://store.steampowered.com/developer/NuSan");
+            nusan.Description.Add("THANK YOU NUSAN FOR");
+            nusan.Description.Add("MAKING PCRAFT! SHE OWNS");
+            nusan.Description.Add("IT AND YOU CAN SUPPORT");
+            nusan.Description.Add("HER ON ITCH.IO OR STEAM!");
+            nusan.Links.Add(("Itchio", "https://nusan.itch.io"));
+            nusan.Links.Add(("Steam", "https://steampowered.com/developer/NuSan"));
+            nusan.Links.Add(("Website", "https://nusan.fr"));
+            nusan.Links.Add(("Website", "https://linktr.ee/poticogames"));
             credits.Add(nusan);
 
             CreditsItem lexaloffle = new()
             {
                 Name = "lexaloffle",
-                Description = "",
+                Description = new(),
                 Links = new()
             };
-            lexaloffle.Links.Add("pico8", "https://www.lexaloffle.com");
+            lexaloffle.Description.Add("CHECK OUT THE MAKERS OF");
+            lexaloffle.Description.Add("pico 8! THEY MADE ALL OF THIS");
+            lexaloffle.Description.Add("POSSIBLE AND INSPIRED A LOT");
+            lexaloffle.Description.Add("OF THE STYLE OF THIS GAME");
+            lexaloffle.Links.Add(("Pico8", "https://lexaloffle.com"));
             credits.Add(lexaloffle);
 
             CreditsItem ellie = new()
             {
                 Name = "ellie",
-                Description = "",
+                Description = new(),
                 Links = new()
             };
-            ellie.Links.Add("youtube", "https://www.youtube.com/@elwiiwii");
-            ellie.Links.Add("discord", "@elwiiwii");
-            ellie.Links.Add("github", "https://github.com/elwiiwii");
+            ellie.Description.Add("OH LOOK ITS ME I MADE THIS!");
+            ellie.Description.Add("ALSO SHOUT OUT TO MY DAD <3");
+            ellie.Links.Add(("Youtube", "https://youtube.com/@elwiiwii"));
+            ellie.Links.Add(("Discord", "@elwiiwii"));
+            ellie.Links.Add(("Github", "https://github.com/elwiiwii"));
             credits.Add(ellie);
 
             CreditsItem holoknight = new()
             {
                 Name = "holoknight",
-                Description = "",
+                Description = new(),
                 Links = new()
             };
-            holoknight.Links.Add("bandcamp", "https://holoknight.bandcamp.com/");
-            holoknight.Links.Add("youtube", "https://www.youtube.com/@holoknight");
-            holoknight.Links.Add("discord", "@holoknight");
+            holoknight.Description.Add("THANK YOU HOLOKNIGHT FOR ALL");
+            holoknight.Description.Add("THE AMAZING MUSIC! YOU CAN");
+            holoknight.Description.Add("SUPPORT THEM ON BANDCAMP!");
+            holoknight.Links.Add(("Bandcamp", "https://holoknight.bandcamp.com"));
+            holoknight.Links.Add(("Youtube", "https://youtube.com/@holoknight"));
+            holoknight.Links.Add(("Discord", "@holoknight"));
             credits.Add(holoknight);
 
             CreditsItem cassie = new()
             {
                 Name = "cassie",
-                Description = "",
+                Description = new(),
                 Links = new()
             };
-            cassie.Links.Add("twitter", "https://x.com/rythin_rta");
-            cassie.Links.Add("bluesky", "https://bsky.app/profile/rythin.bsky.social");
-            cassie.Links.Add("youtube", "https://www.youtube.com/@rythin");
+            cassie.Description.Add("THANK YOU CASSIE FOR ALL THE");
+            cassie.Description.Add("PICO 8 MODS YOU HAVE MADE");
+            cassie.Description.Add("AND ALL THE TASES TOO :3");
+            cassie.Links.Add(("Twitter", "https://x.com/rythin_rta"));
+            cassie.Links.Add(("Bluesky", "https://bsky.app/profile/rythin.bsky.social"));
+            cassie.Links.Add(("Youtube", "https://youtube.com/@rythin"));
             credits.Add(cassie);
         }
 
@@ -81,14 +99,24 @@ namespace CSharpCraft.Credits
         {
             KeyboardState state = Keyboard.GetState();
 
-            if (p8.Btnp(2)) { menuSelected -= 1; }
-            if (p8.Btnp(3)) { menuSelected += 1; }
+            if (p8.Btnp(0)) { menuSelected.hor -= 1; }
+            if (p8.Btnp(1)) { menuSelected.hor += 1; }
+            if (p8.Btnp(2)) { menuSelected.ver -= 1; menuSelected.hor = 0; }
+            if (p8.Btnp(3)) { menuSelected.ver += 1; menuSelected.hor = 0; }
 
-            menuSelected = GeneralFunctions.Loop(menuSelected, credits);
+            menuSelected.ver = GeneralFunctions.Loop(menuSelected.ver, credits.Count);
+            menuSelected.hor = GeneralFunctions.Loop(menuSelected.hor, credits[menuSelected.ver].Links.Count + 1);
 
             if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
             {
-                OpenBrowser.OpenUrl(credits[menuSelected].Links.ElementAt(0).Value);
+                if (menuSelected.hor == 0)
+                {
+                    menuSelected.hor = 1;
+                }
+                else
+                {
+                    OpenBrowser.OpenUrl(credits[menuSelected.ver].Links[menuSelected.hor - 1].link);
+                }
             }
 
             prevState = state;
@@ -96,16 +124,80 @@ namespace CSharpCraft.Credits
 
         public void Draw()
         {
-            p8.Cls();
+            p8.Cls(1);
 
-            p8.Print(">", 0, 62 + (menuSelected * 6), 7);
+            // Get the size of the viewport
+            int viewportWidth = p8.batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = p8.batch.GraphicsDevice.Viewport.Height;
 
-            int i = 0;
+            // Calculate the size of each cell
+            int cellWidth = viewportWidth / 128;
+            int cellHeight = viewportHeight / 128;
+
+            Vector2 size = new(cellWidth, cellHeight);
+            Vector2 halfsize = new(cellWidth / 2f, cellHeight / 2f);
+
+            p8.batch.Draw(p8.textureDictionary["Credits"], new Vector2(27 * cellWidth, 8 * cellHeight), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+
+            int icon_gap = 4;
+            int item_gap = 4;
+            int description_indent = 3;
+            int xstart = 6;
+            int ystart = 40;
+            int ypos = 0;
+            int yoff = 0;
             foreach (CreditsItem item in credits)
             {
-                p8.Print(item.Name, 8, 62 + i, 7);
+                if (ypos / 9 == menuSelected.ver)
+                {
+                    if (!(ypos == 0))
+                    {
+                        yoff += item_gap;
+                    }
 
-                i += 6;
+                    if (menuSelected.hor == 0)
+                    {
+                        p8.Print(">", 0, ystart + (menuSelected.ver * 9) + yoff, 7);
+                    }
+                    else
+                    {
+                        Vector2 position2 = new((xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap) * cellWidth, (ystart - 5 + menuSelected.ver * 9 + yoff) * cellHeight);
+                        p8.batch.Draw(p8.textureDictionary["ArrowV"], position2, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        p8.Print(credits[menuSelected.ver].Links[menuSelected.hor - 1].link.Replace("https://", ""),
+                            xstart + 6 + credits[menuSelected.ver].Name.Length * 4 + 8 * credits[menuSelected.ver].Links.Count,
+                            ystart + menuSelected.ver * 9 + yoff,
+                            6);
+                    }
+                }
+
+                p8.Print(item.Name, xstart, ypos + yoff + ystart, 7);
+
+                int xpos = 0;
+                foreach ((string type , string link) icon in item.Links)
+                {
+                    Vector2 position = new((xstart + item.Name.Length * 4 + xpos + icon_gap - 1) * cellWidth, (ypos + yoff + ystart - 1) * cellHeight);
+                    p8.batch.Draw(p8.textureDictionary[icon.type], position, null, Color.White, 0, Vector2.Zero, halfsize, SpriteEffects.None, 0);
+                    xpos += 8;
+                }
+
+                if (ypos / 9 == menuSelected.ver)
+                {
+                    ypos += 4;
+
+                    int linecount = 6;
+                    foreach (string line in item.Description)
+                    {
+                        p8.Print(line,
+                            xstart + description_indent,
+                            ypos + yoff + linecount + ystart - 1,
+                            6);
+                        linecount += 6;
+                    }
+
+                    yoff += item.Description.Count * 6 + item_gap - 1;
+                }
+
+                ypos += 9;
             }
         }
 

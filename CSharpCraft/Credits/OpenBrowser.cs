@@ -16,18 +16,36 @@ namespace CSharpCraft.Credits.Credits
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    // Works on Windows
-                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    }
+                    catch
+                    {
+                        return;
+                    }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    // Works on Linux
-                    Process.Start("xdg-open", url);
+                    try
+                    {
+                        Process.Start("xdg-open", url);
+                    }
+                    catch
+                    {
+                        return;
+                    }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    // Works on macOS
-                    Process.Start("open", url);
+                    try
+                    {
+                        Process.Start("open", url);
+                    }
+                    catch
+                    {
+                        return;
+                    }
                 }
                 else
                 {
@@ -37,7 +55,7 @@ namespace CSharpCraft.Credits.Credits
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to open URL: {ex.Message}");
-                throw; // Re-throw if you want callers to handle the exception
+                throw;
             }
         }
     }
