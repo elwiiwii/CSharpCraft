@@ -16,8 +16,8 @@ namespace CSharpCraft.Pico8
     {
         public SpriteBatch batch { get; }
         public GraphicsDevice graphicsDevice { get; }
-        public KeyboardOptionsFile keyboardOptionsFile { get; }
         public Dictionary<string, SoundEffect> musicDictionary { get; }
+        public OptionsFile optionsFile { get; }
         public Texture2D pixel { get; }
         public List<IScene> scenes { get; }
         public Dictionary<string, SoundEffect> soundEffectDictionary { get; }
@@ -43,12 +43,12 @@ namespace CSharpCraft.Pico8
         public bool prev5 = false;
         private Dictionary<int, Texture2D> spriteTextures = [];
 
-        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, KeyboardOptionsFile _keyboardOptionsFile)
+        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
         {
             batch = _batch;
             graphicsDevice = _graphicsDevice;
-            keyboardOptionsFile = _keyboardOptionsFile;
             musicDictionary = _musicDictionary;
+            optionsFile = _optionsFile;
             pixel = _pixel;
             scenes = _scenes;
             soundEffectDictionary = _soundEffectDictionary;
@@ -199,15 +199,50 @@ namespace CSharpCraft.Pico8
 
         public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
         {
-            KeyboardState state = Keyboard.GetState();
+            KeyboardState keyb_state = Keyboard.GetState();
+            GamePadState con_state = GamePad.GetState(PlayerIndex.One);
 
-            if (i == 0) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Left.Bind1)); }
-            if (i == 1) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Right.Bind1)); }
-            if (i == 2) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Up.Bind1)); }
-            if (i == 3) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Down.Bind1)); }
-            if (i == 4) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Menu.Bind1)); }
-            if (i == 5) { return state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keyboardOptionsFile.Use.Bind1)); }
-            else { return false; }
+
+            switch (i)
+            {
+                case 0:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Left.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Left.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Left.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Left.Bind2));
+                case 1:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Right.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Right.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Right.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Right.Bind2));
+                case 2:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Up.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Up.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Up.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Up.Bind2));
+                case 3:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Down.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Down.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Down.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Down.Bind2));
+                case 4:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Menu.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Menu.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Menu.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Menu.Bind2));
+                case 5:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Use.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Use.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Use.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Use.Bind2));
+                case 6:
+                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Pause.Bind1)) ||
+                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Pause.Bind2)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Pause.Bind1)) ||
+                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Pause.Bind2));
+                default:
+                    return false;
+            }
         }
 
 

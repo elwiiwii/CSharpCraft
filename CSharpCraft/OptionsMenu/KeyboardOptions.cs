@@ -39,7 +39,7 @@ namespace CSharpCraft.OptionsMenu
             menuX = 0;
             menuY = -1;
             menuWidth = 2;
-            menuLength = typeof(KeyboardOptionsFile).GetProperties().Length;
+            menuLength = typeof(OptionsFile).GetProperties().Length;
             waitingForInput = false;
             delay = 0;
         }
@@ -63,21 +63,21 @@ namespace CSharpCraft.OptionsMenu
                     Keys[] key = Keyboard.GetState().GetPressedKeys();
                     if (key.Length == 1)
                     {
-                        PropertyInfo[] properties = typeof(KeyboardOptionsFile).GetProperties();
+                        PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
                         PropertyInfo currentProperty = properties[menuY];
-                        PropertyInfo propertyName = typeof(KeyboardOptionsFile).GetProperty(currentProperty.Name);
-                        Binding binding = (Binding)propertyName.GetValue(p8.keyboardOptionsFile);
+                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
+                        Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
                         if (menuX == 0 && propertyName is not null)
                         {
                             Binding newBinding = new Binding(KeysToString.keysToString[key[0]], binding.Bind2);
-                            propertyName.SetValue(p8.keyboardOptionsFile, newBinding);
-                            KeyboardOptionsFile.JsonWrite(p8.keyboardOptionsFile);
+                            propertyName.SetValue(p8.optionsFile, newBinding);
+                            OptionsFile.JsonWrite(p8.optionsFile);
                         }
                         else
                         {
                             Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[key[0]]);
-                            propertyName.SetValue(p8.keyboardOptionsFile, newBinding);
-                            KeyboardOptionsFile.JsonWrite(p8.keyboardOptionsFile);
+                            propertyName.SetValue(p8.optionsFile, newBinding);
+                            OptionsFile.JsonWrite(p8.optionsFile);
                         }
                         delay = 0;
                         waitingForInput = false;
@@ -140,12 +140,12 @@ namespace CSharpCraft.OptionsMenu
                 p8.Print("keyboard", 19, 33, 7);
                 p8.Print("controller", 19 + 54, 33, 7);
 
-                PropertyInfo[] properties = typeof(KeyboardOptionsFile).GetProperties();
+                PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
                 int j = 0;
                 foreach (PropertyInfo property in properties)
                 {
                     p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
-                    Binding val = (Binding)property.GetValue(p8.keyboardOptionsFile);
+                    Binding val = (Binding)property.GetValue(p8.optionsFile);
                     p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
                     p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
                     j += 6;

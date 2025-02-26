@@ -308,7 +308,7 @@ namespace CSharpCraft.RaceMode
             p8.batch.Draw(p8.textureDictionary[$"{gameCount}"], new Vector2(62 * cellW, 12 * cellH), null, p8.colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
 
             string s1 = $"{player1Name}'s turn";
-            string s2 = $"[{KeyNames.keyNames[p8.keyboardOptionsFile.Menu.Bind1]}] for random action";
+            string s2 = $"[{KeyNames.keyNames[p8.optionsFile.Keyb_Menu.Bind1]}] for random action";
             //Printc(Math.Floor(animationTimer) % 2 == 0 ? s1 : s2, 64, 29, 7);
             Printc(s1, 64, 29, 7);
 

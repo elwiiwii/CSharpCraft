@@ -30,7 +30,7 @@ namespace CSharpCraft
         private GraphicsDeviceManager graphics;
         private Pico8Functions p8;
 
-        private KeyboardOptionsFile keyboardOptionsFile;
+        private OptionsFile optionsFile;
 
         private Dictionary<string, Texture2D> textureDictionary = new();
         private Dictionary<string, SoundEffect> musicDictionary = new();
@@ -65,7 +65,7 @@ namespace CSharpCraft
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30));
             graphics.SynchronizeWithVerticalRetrace = true;
 
-            keyboardOptionsFile = KeyboardOptionsFile.Initialize();
+            optionsFile = OptionsFile.Initialize();
             prevState = Keyboard.GetState();
         }
 
@@ -195,7 +195,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, keyboardOptionsFile);
+            p8 = new Pico8Functions(new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
         }
 
 
