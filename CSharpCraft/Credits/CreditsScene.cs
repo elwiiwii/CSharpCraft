@@ -12,7 +12,7 @@ namespace CSharpCraft.Credits
         private Pico8Functions p8;
         List<CreditsItem> credits;
 
-        private (int ver, int hor) menuSelected;
+        private (int hor, int ver) menuSelected;
         private KeyboardState prevState;
 
         public void Init(Pico8Functions pico8)

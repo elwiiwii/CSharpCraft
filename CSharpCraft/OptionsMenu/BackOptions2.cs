@@ -30,6 +30,8 @@ namespace CSharpCraft.OptionsMenu
 
         public void Draw()
         {
+            p8.Cls();
+
             // Get the size of the viewport
             int viewportWidth = p8.graphicsDevice.Viewport.Width;
             int viewportHeight = p8.graphicsDevice.Viewport.Height;

@@ -9,48 +9,36 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu
 {
-    public class KeyboardOptions : IScene, IDisposable
+    public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
     {
 
         public string SceneName { get => "options"; }
         private Pico8Functions p8;
 
-        private int menuX;
-        private int menuY;
-        private int menuWidth;
-        private int menuLength;
+        private (int hor, int ver) menuSelected;
+        private int menuW;
+        private int menuH;
         private bool waitingForInput;
-        private int delay;
-
-        private int Loop(int sel, int size)
-        {
-            return (sel % size + size) % size;
-        }
-
-        private int LoopY(int sel, int size)
-        {
-            return sel > size - 1 ? 0 : sel < -1 ? -1 : sel;
-        }
+        private bool lockout;
 
         public void Init(Pico8Functions pico8)
         {
             p8 = pico8;
 
-            menuX = 0;
-            menuY = -1;
-            menuWidth = 2;
-            menuLength = typeof(OptionsFile).GetProperties().Length;
+            menuSelected = (0, startIndex);
+            menuW = 2;
+            menuH = 7;
             waitingForInput = false;
-            delay = 0;
+            lockout = true;
         }
 
         public void Update()
         {
-            if (menuY == -1)
+            if (menuSelected.ver == -1)
             {
                 if (p8.Btnp(1)) { p8.LoadCart(new ControllerOptions()); return; }
                 if (p8.Btnp(2)) { p8.LoadCart(new ControlsOptions()); return; }
-                if (p8.Btnp(3)) { menuY += 1; }
+                if (p8.Btnp(3)) { menuSelected.ver += 1; }
                 return;
             }
 
@@ -58,50 +46,47 @@ namespace CSharpCraft.OptionsMenu
 
             if (waitingForInput)
             {
-                if (delay > 5)
-                {
-                    Keys[] key = Keyboard.GetState().GetPressedKeys();
-                    if (key.Length == 1)
-                    {
-                        PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
-                        PropertyInfo currentProperty = properties[menuY];
-                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
-                        Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
-                        if (menuX == 0 && propertyName is not null)
-                        {
-                            Binding newBinding = new Binding(KeysToString.keysToString[key[0]], binding.Bind2);
-                            propertyName.SetValue(p8.optionsFile, newBinding);
-                            OptionsFile.JsonWrite(p8.optionsFile);
-                        }
-                        else
-                        {
-                            Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[key[0]]);
-                            propertyName.SetValue(p8.optionsFile, newBinding);
-                            OptionsFile.JsonWrite(p8.optionsFile);
-                        }
-                        delay = 0;
-                        waitingForInput = false;
-                    }
-                }
-                else
-                {
-                    delay++;
-                }
+                Keys[] keys = Keyboard.GetState().GetPressedKeys();
 
+                if (keys.Length == 0) { lockout = false; }
+
+                if (!lockout && keys.Length == 1)
+                {
+                    PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
+                    PropertyInfo currentProperty = properties[menuSelected.ver];
+                    PropertyInfo propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
+                    Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
+                    if (menuSelected.hor == 0 && propertyName is not null)
+                    {
+                        Binding newBinding = new Binding(KeysToString.keysToString[keys[0]], binding.Bind2);
+                        propertyName.SetValue(p8.optionsFile, newBinding);
+                        OptionsFile.JsonWrite(p8.optionsFile);
+                    }
+                    else
+                    {
+                        Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[keys[0]]);
+                        propertyName.SetValue(p8.optionsFile, newBinding);
+                        OptionsFile.JsonWrite(p8.optionsFile);
+                    }
+                    waitingForInput = false;
+                    lockout = true;
+                }
+                return;
             }
 
-            if (p8.Btnp(0)) { menuX -= 1; }
-            if (p8.Btnp(1)) { menuX += 1; }
-            if (p8.Btnp(2)) { menuY -= 1; }
-            if (p8.Btnp(3)) { menuY += 1; }
+            if (p8.Btnp(0)) { menuSelected.hor -= 1; }
+            if (p8.Btnp(1)) { menuSelected.hor += 1; }
+            if (p8.Btnp(2)) { menuSelected.ver -= 1; }
+            if (p8.Btnp(3)) { menuSelected.ver += 1; }
 
-            menuX = Loop(menuX, menuWidth);
-            menuY = LoopY(menuY, menuLength);
-
+            menuSelected.hor = GeneralFunctions.Loop(menuSelected.hor, menuW);
+            menuSelected.ver = menuSelected.ver > -1 ? GeneralFunctions.Loop(menuSelected.ver, menuH) : -1;
         }
 
         public void Draw()
         {
+            p8.Cls();
+
             // Get the size of the viewport
             int viewportWidth = p8.graphicsDevice.Viewport.Width;
             int viewportHeight = p8.graphicsDevice.Viewport.Height;
@@ -122,12 +107,12 @@ namespace CSharpCraft.OptionsMenu
             {
                 p8.batch.Draw(p8.textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-                if (menuY >= 0)
+                if (menuSelected.ver >= 0)
                 {
-                    Vector2 position5 = new((46 + 36 * menuX) * cellW, (menuY * 6 + 55) * cellH);
+                    Vector2 position5 = new((46 + 36 * menuSelected.hor) * cellW, (menuSelected.ver * 6 + 55) * cellH);
                     p8.batch.Draw(p8.textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 }
-                else
+                else if (menuSelected.ver == -1)
                 {
                     p8.Rectfill(17, 32, 51, 38, 13);
                 }
@@ -144,11 +129,14 @@ namespace CSharpCraft.OptionsMenu
                 int j = 0;
                 foreach (PropertyInfo property in properties)
                 {
-                    p8.Print(property.Name.ToLower(), 8, 55 + j, 7);
-                    Binding val = (Binding)property.GetValue(p8.optionsFile);
-                    p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
-                    p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
-                    j += 6;
+                    if (property.Name.StartsWith("Keyb_"))
+                    {
+                        p8.Print(property.Name.Substring(5).ToLower(), 8, 55 + j, 7);
+                        Binding val = (Binding)property.GetValue(p8.optionsFile);
+                        p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
+                        p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
+                        j += 6;
+                    }
                 }
 
             }

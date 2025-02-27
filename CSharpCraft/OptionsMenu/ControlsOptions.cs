@@ -16,10 +16,15 @@ namespace CSharpCraft.OptionsMenu
         public string SceneName { get => "options"; }
         private Pico8Functions p8;
 
+        IScene drawScene;
+
         public void Init(Pico8Functions pico8)
         {
             p8 = pico8;
 
+            drawScene = new KeyboardOptions(-2);
+
+            drawScene.Init(p8);
         }
 
         public void Update()
@@ -31,6 +36,8 @@ namespace CSharpCraft.OptionsMenu
 
         public void Draw()
         {
+            p8.Cls();
+
             // Get the size of the viewport
             int viewportWidth = p8.graphicsDevice.Viewport.Width;
             int viewportHeight = p8.graphicsDevice.Viewport.Height;
@@ -40,6 +47,8 @@ namespace CSharpCraft.OptionsMenu
             int cellH = viewportHeight / 128;
 
             Vector2 size = new(cellW, cellH);
+
+            drawScene.Draw();
 
             p8.batch.Draw(p8.textureDictionary["OptionsBackground2"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 

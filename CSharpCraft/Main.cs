@@ -62,7 +62,7 @@ namespace CSharpCraft
             graphics.IsFullScreen = false;
 
             this.IsFixedTimeStep = true;
-            this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30));
+            this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
             graphics.SynchronizeWithVerticalRetrace = true;
 
             optionsFile = OptionsFile.Initialize();
