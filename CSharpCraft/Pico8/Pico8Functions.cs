@@ -28,19 +28,21 @@ namespace CSharpCraft.Pico8
         private int[] _sprites;
         private (int, int) CameraOffset = (0, 0);
         public IScene _cart;
-        public List<SoundEffectInstance>? channelMusic = [];
+        private List<SoundEffectInstance>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
         private List<SoundEffectInstance>? channel3 = [];
         private bool fade1;
         private bool fade4;
-        public bool prev0 = false;
-        public bool prev1 = false;
-        public bool prev2 = false;
-        public bool prev3 = false;
-        public bool prev4 = false;
-        public bool prev5 = false;
+        private bool prev0;
+        private bool prev1;
+        private bool prev2;
+        private bool prev3;
+        private bool prev4;
+        private bool prev5;
+        private bool prev6;
+        private bool isPaused;
         private Dictionary<int, Texture2D> spriteTextures = [];
 
         public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
@@ -53,7 +55,16 @@ namespace CSharpCraft.Pico8
             scenes = _scenes;
             soundEffectDictionary = _soundEffectDictionary;
             textureDictionary = _textureDictionary;
-            
+
+            prev0 = false;
+            prev1 = false;
+            prev2 = false;
+            prev3 = false;
+            prev4 = false;
+            prev5 = false;
+            prev6 = false;
+            isPaused = false;
+
             LoadCart(cart);
         }
 
@@ -91,6 +102,84 @@ namespace CSharpCraft.Pico8
             Reload();
             Init();
         }
+
+
+        public void Init()
+        {
+            isPaused = false;
+            _cart.Init(this);
+        }
+
+
+        public void Update()
+        {
+            if (Btnp(6))
+            {
+                isPaused = !isPaused;
+            }
+            prev6 = Btn(6);
+
+            if (isPaused)
+            {
+
+            }
+            else
+            {
+                _cart.Update();
+
+                prev0 = Btn(0);
+                prev1 = Btn(1);
+                prev2 = Btn(2);
+                prev3 = Btn(3);
+                prev4 = Btn(4);
+                prev5 = Btn(5);
+
+                if (fade1)
+                {
+                    if (channelMusic[0].Volume < 1.0f)
+                    {
+                        channelMusic[0].Volume += 0.05f;
+                    }
+                    if (channelMusic[1].Volume > 0.0f)
+                    {
+                        channelMusic[1].Volume -= 0.05f;
+                    }
+                    if (channelMusic[0].Volume >= 1.0f && channelMusic[1].Volume <= 0.0f)
+                    {
+                        fade1 = false;
+                    }
+                }
+                else if (fade4)
+                {
+                    if (channelMusic[1].Volume < 1.0f)
+                    {
+                        channelMusic[1].Volume += 0.05f;
+                    }
+                    if (channelMusic[0].Volume > 0.0f)
+                    {
+                        channelMusic[0].Volume -= 0.05f;
+                    }
+                    if (channelMusic[1].Volume >= 1.0f && channelMusic[0].Volume <= 0.0f)
+                    {
+                        fade4 = false;
+                    }
+                }
+            }
+        }
+
+
+        public void Draw()
+        {
+            if (isPaused)
+            {
+                
+            }
+            else
+            {
+                _cart.Draw();
+            }
+        }
+
 
         private static int[] DataToArray(string s, int n)
         {
@@ -254,16 +343,14 @@ namespace CSharpCraft.Pico8
             if (i == 3 && Btn(i) && !prev3) { return true; }
             if (i == 4 && Btn(i) && !prev4) { return true; }
             if (i == 5 && Btn(i) && !prev5) { return true; }
+            if (i == 6 && Btn(i) && !prev6) { return true; }
             else { return false; }
         }
 
 
-        public void Camera(double x = 0, double y = 0) // https://pico-8.fandom.com/wiki/Camera
+        public void Camera() // https://pico-8.fandom.com/wiki/Camera
         {
-            int xFlr = (int)Math.Floor(x);
-            int yFlr = (int)Math.Floor(y);
-
-            CameraOffset = (xFlr, yFlr);
+            CameraOffset = (0, 0);
         }
 
 
@@ -324,61 +411,13 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Circ(F32 x, F32 y, F32 r, int c) // https://pico-8.fandom.com/wiki/Circ
+        public void Circ(F32 x, F32 y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
         {
             if (r < 0) return;
 
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
-            int rFlr = F32.FloorToInt(r);
-
-            // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
-            {
-                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
-                {
-                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = i < xFlr ? 0.35D : -0.35D;
-                    double offsetY = j < yFlr ? 0.35D : -0.35D;
-                    double gridCenterX = i + offsetX;
-                    double gridCenterY = j + offsetY;
-
-                    bool isCurrentInCircle = Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr;
-
-                    // Check all four adjacent grid spaces
-                    bool isRightOutsideCircle = Math.Pow(i + 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
-                    bool isLeftOutsideCircle = Math.Pow(i - 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
-                    bool isUpOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j + 1 + offsetY - yFlr, 2) > rFlr * rFlr;
-                    bool isDownOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j - 1 + offsetY - yFlr, 2) > rFlr * rFlr;
-
-                    if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
-                    {
-                        // Calculate the position and size of the line
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
-                        Vector2 size = new(cellWidth, cellHeight);
-
-                        // Draw the line
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                    }
-                }
-            }
-        }
-
-
-        public void Circ(F32 x, F32 y, int r, int c) // https://pico-8.fandom.com/wiki/Circ
-        {
-            if (r < 0) return;
-
-            int xFlr = F32.FloorToInt(x);
-            int yFlr = F32.FloorToInt(y);
-            int rFlr = r;
+            int rFlr = (int)Math.Floor(r);
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -460,53 +499,13 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Circfill(F32 x, F32 y, F32 r, int c) // https://pico-8.fandom.com/wiki/Circfill
+        public void Circfill(F32 x, F32 y, double r, int c) // https://pico-8.fandom.com/wiki/Circfill
         {
             if (r < 0) return;
 
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
-            int rFlr = F32.FloorToInt(r);
-
-            // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
-            {
-                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
-                {
-                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = i < xFlr ? 0.35D : -0.35D;
-                    double offsetY = j < yFlr ? 0.35D : -0.35D;
-                    double gridCenterX = i + offsetX;
-                    double gridCenterY = j + offsetY;
-
-                    if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
-                    {
-                        // Calculate the position and size
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
-                        Vector2 size = new(cellWidth, cellHeight);
-
-                        // Draw
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                    }
-                }
-            }
-        }
-
-
-        public void Circfill(F32 x, F32 y, int r, int c) // https://pico-8.fandom.com/wiki/Circfill
-        {
-            if (r < 0) return;
-
-            int xFlr = F32.FloorToInt(x);
-            int yFlr = F32.FloorToInt(y);
-            int rFlr = r;
+            int rFlr = (int)Math.Floor(r);
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -560,21 +559,9 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Draw()
-        {
-            _cart.Draw();
-        }
-
-
         public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
         {
             return _flags[n];
-        }
-
-
-        public void Init()
-        {
-            _cart.Init(this);
         }
 
 
@@ -1011,50 +998,6 @@ namespace CSharpCraft.Pico8
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
             batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
-        }
-
-
-        public void Update()
-        {
-            _cart.Update();
-
-            prev0 = Btn(0);
-            prev1 = Btn(1);
-            prev2 = Btn(2);
-            prev3 = Btn(3);
-            prev4 = Btn(4);
-            prev5 = Btn(5);
-
-            if (fade1)
-            {
-                if (channelMusic[0].Volume < 1.0f)
-                {
-                    channelMusic[0].Volume += 0.05f;
-                }
-                if (channelMusic[1].Volume > 0.0f)
-                {
-                    channelMusic[1].Volume -= 0.05f;
-                }
-                if (channelMusic[0].Volume >= 1.0f && channelMusic[1].Volume <= 0.0f)
-                {
-                    fade1 = false;
-                }
-            }
-            else if (fade4)
-            {
-                if (channelMusic[1].Volume < 1.0f)
-                {
-                    channelMusic[1].Volume += 0.05f;
-                }
-                if (channelMusic[0].Volume > 0.0f)
-                {
-                    channelMusic[0].Volume -= 0.05f;
-                }
-                if (channelMusic[1].Volume >= 1.0f && channelMusic[0].Volume <= 0.0f)
-                {
-                    fade4 = false;
-                }
-            }
         }
 
 

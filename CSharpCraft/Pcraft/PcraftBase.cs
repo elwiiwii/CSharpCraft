@@ -1385,8 +1385,8 @@ namespace CSharpCraft.Pcraft
                 p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
 
                 F32 anc = 3 + time * 3 % 1 * 3;
-                p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc, 6);
-                p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc, 6);
+                p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc.Double, 6);
+                p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc.Double, 6);
             }
             else
             {
@@ -1436,7 +1436,7 @@ namespace CSharpCraft.Pcraft
 
             p8.Circfill(x + cr, y + sr - 2, 4, 2);
             p8.Circfill(x + cr, y + sr, 4, 2);
-            p8.Circfill(x + cr * F32.FromDouble(1.5), y + sr * F32.FromDouble(1.5) - 2, F32.FromDouble(2.5), 15);
+            p8.Circfill(x + cr * F32.FromDouble(1.5), y + sr * F32.FromDouble(1.5) - 2, 2.5, 15);
             p8.Circfill(x - cr, y - sr - 3, 3, 4);
 
         }
