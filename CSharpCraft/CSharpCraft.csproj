@@ -395,16 +395,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="bin\Debug\net8.0\FAudio.dll" />
-	  <None Include="bin\Debug\net8.0\FNA3D.dll" />
-	  <None Include="bin\Debug\net8.0\libtheorafile.dll" />
-	  <None Include="bin\Debug\net8.0\SDL2.dll" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <PackageReference Include="Google.Protobuf" Version="3.29.3" />
 	  <PackageReference Include="Grpc.Net.Client" Version="2.67.0" />
-	  <PackageReference Include="Grpc.Tools" Version="2.69.0">
+	  <PackageReference Include="Grpc.Tools" Version="2.70.0">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
@@ -418,6 +411,13 @@
 	  <Protobuf Include="..\RaceServer\Protos\gameservice.proto">
 	    <Link>Protos\gameservice.proto</Link>
 	  </Protobuf>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="bin\Debug\net9.0\FAudio.dll" />
+	  <None Include="bin\Debug\net9.0\FNA3D.dll" />
+	  <None Include="bin\Debug\net9.0\libtheorafile.dll" />
+	  <None Include="bin\Debug\net9.0\SDL3.dll" />
 	</ItemGroup>
 
 </Project>

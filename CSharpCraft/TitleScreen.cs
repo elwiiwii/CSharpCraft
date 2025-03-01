@@ -29,6 +29,11 @@ namespace CSharpCraft
         {
             KeyboardState state = Keyboard.GetState();
 
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
+            {
+                Environment.Exit(0);
+            }
+
             if (p8.Btnp(2)){ menuSelected -= 1; }
             if (p8.Btnp(3)) { menuSelected += 1; }
 

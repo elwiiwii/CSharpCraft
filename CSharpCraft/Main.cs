@@ -16,7 +16,6 @@ namespace CSharpCraft
         [STAThread]
         static void Main(string[] args)
         {
-            Environment.SetEnvironmentVariable("FNA_PLATFORM_BACKEND", "SDL3");
             ArgumentNullException.ThrowIfNull(args);
 
             using FNAGame g = new();
@@ -82,6 +81,7 @@ namespace CSharpCraft
             //scenes.Add(new MainRace());
             scenes.Add(new ControlsOptions());
             scenes.Add(new CreditsScene());
+            scenes.Add(new ExitScene());
         }
 
 
@@ -96,25 +96,18 @@ namespace CSharpCraft
             }
 
             KeyboardState state = Keyboard.GetState();
-            GamePadState gamepadState = GamePad.GetState(PlayerIndex.One);
-
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
-            {
-                p8.LoadCart(p8._cart);
-            }
+            
+            p8.Update();
 
             if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
             {
                 p8.LoadCart(new TitleScreen());
             }
 
-            //List<string> keybinds = new();
-            //foreach (string keybind in keybinds)
-            //{
-            //    (p8)Enum.Parse(typeof(p8), $"prev{keybind}") = state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), keybind));
-            //}
-
-            p8.Update();
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
+            {
+                p8.LoadCart(p8._cart);
+            }
 
             prevState = state;
 
@@ -155,10 +148,8 @@ namespace CSharpCraft
 
         protected override void LoadContent()
         {
-            // Create the batch...
             batch = new SpriteBatch(GraphicsDevice);
 
-            // Create a 1x1 white pixel texture for drawing lines
             pixel = new Texture2D(GraphicsDevice, 1, 1);
             pixel.SetData(new[] { Color.White });
 
