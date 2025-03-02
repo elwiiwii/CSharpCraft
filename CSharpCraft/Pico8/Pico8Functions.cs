@@ -611,15 +611,9 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
-        {
-            return Math.Cos(-angle * 2 * Math.PI);
-        }
-
-
         public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
-            return F32.Cos(-angle * 2 * F32.Pi);
+            return F32.FromDouble(Math.Cos(-angle.Double * 2 * Math.PI));
         }
 
 
@@ -925,15 +919,9 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
-        {
-            return Math.Sin(-angle * 2 * Math.PI);
-        }
-
-
         public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
-            return F32.Sin(-angle * 2 * F32.Pi);
+            return F32.FromDouble(Math.Sin(-angle.Double * 2 * Math.PI));
         }
 
 
@@ -985,7 +973,12 @@ namespace CSharpCraft.Pico8
                 {
                     for (int j = 0; j < palColors.Length; j++)
                     {
-                        if (palColors[j] == j)
+                        if (palColors[i] is null)
+                        {
+                            colorCache += i * -1000;
+                            break;
+                        }
+                        else if (palColors[i] == j)
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
@@ -1038,7 +1031,12 @@ namespace CSharpCraft.Pico8
                 {
                     for (int j = 0; j < palColors.Length; j++)
                     {
-                        if (palColors[j] == j)
+                        if (palColors[i] is null)
+                        {
+                            colorCache += i * -1000;
+                            break;
+                        }
+                        else if (palColors[i] == j)
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;

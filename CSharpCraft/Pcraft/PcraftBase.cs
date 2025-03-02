@@ -353,17 +353,17 @@ namespace CSharpCraft.Pcraft
             return e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size;
         }
 
-        private F32 Lerp(F32 a, F32 b, F32 alpha)
+        private F32 Lerp(double a, double b, double alpha)
         {
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"a = {a} | b = {b} | alpha = {alpha}" + Environment.NewLine);
 
-            F32 v1 = a * (1 - alpha);
-                
-            F32 v2 = v1 + b * alpha;
+            double v1 = a * (1 - alpha);
+
+            double v2 = v1 + b * alpha;
 
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"v1 = {v1} | v2 = {v2}" + Environment.NewLine);
 
-            return v2;
+            return F32.FromDouble(v2);
         }
 
         private F32 GetInvLen(F32 x, F32 y)
@@ -716,7 +716,7 @@ namespace CSharpCraft.Pcraft
             }
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {grot} | rot = {rot}" + Environment.NewLine);
 
-            F32 e = p8.Mod(p8.Mod(Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
+            F32 e = p8.Mod(p8.Mod(Lerp(rot.Double, grot.Double, F32.FromDouble(0.4).Double), 1) + 1, 1);
 
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"e = {e}" + Environment.NewLine);
 
@@ -1369,8 +1369,8 @@ namespace CSharpCraft.Pcraft
             File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"DPLAYER()" + Environment.NewLine);
             File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"x = {x} | y = {y} | rot = {rot} | anim = {anim} | subanim = {subanim} | isplayer = {isplayer}" + Environment.NewLine);
             
-            F32 cr = F32.FromDouble(p8.Cos(rot.Double));
-            F32 sr = F32.FromDouble(p8.Sin(rot.Double));
+            F32 cr = p8.Cos(rot);
+            F32 sr = p8.Sin(rot);
             F32 cv = -sr;
             F32 sv = cr;
 
@@ -1408,8 +1408,8 @@ namespace CSharpCraft.Pcraft
                 blade = blade - F32.FromDouble(0.3) + subanim * F32.FromDouble(0.04);
                 File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"blade = {blade}" + Environment.NewLine);
             }
-            F32 bcr = F32.FromDouble(p8.Cos(blade.Double));
-            F32 bsr = F32.FromDouble(p8.Sin(blade.Double));
+            F32 bcr = p8.Cos(blade);
+            F32 bsr = p8.Sin(blade);
 
             (int mx, int my) = Mirror(blade);
 
