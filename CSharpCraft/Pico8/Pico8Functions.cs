@@ -84,11 +84,7 @@ namespace CSharpCraft.Pico8
             menuItems = [];
 
             _cart = cart;
-
-            Array.Copy(colors, resetColors, colors.Length);
-            Array.Copy(colors, sprColors, colors.Length);
-            Array.Copy(colors, resetSprColors, colors.Length);
-
+            
             SoundDispose();
 
             SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
@@ -310,9 +306,7 @@ namespace CSharpCraft.Pico8
             HexToColor("FF9D81"), // 31 peach
             */
         ];
-        public Color[] resetColors = new Color[16];
-        public Color[] resetSprColors = new Color[16];
-        public Color[] sprColors = new Color[16];
+        public int?[] palColors = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 
         private Texture2D CreateTextureFromSpriteData(int[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
@@ -323,8 +317,13 @@ namespace CSharpCraft.Pico8
 
             for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
             {
-                Color color = sprColors[spriteData[i]%16];
-                colorData[j] = color;
+                int index = spriteData[i] % 16;
+                int? palSwapCol = palColors[index];
+                if (palSwapCol is not null)
+                {
+                    Color color = colors[(int)palSwapCol];
+                    colorData[j] = color;
+                }
 
                 if (i % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
             }
@@ -461,7 +460,8 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
+                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -509,7 +509,8 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
+                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -549,7 +550,8 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
+                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -589,7 +591,8 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        batch.Draw(pixel, position, null, colors[c], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
+                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -600,7 +603,8 @@ namespace CSharpCraft.Pico8
         {
             int colorFlr = (int)Math.Floor(color);
 
-            graphicsDevice.Clear(resetColors[colorFlr]);
+            int clearCol = palColors[colorFlr] is null ? 0 : (int)palColors[colorFlr];
+            graphicsDevice.Clear(colors[clearCol]);
         }
 
         
@@ -726,8 +730,13 @@ namespace CSharpCraft.Pico8
 
         public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
-            Array.Copy(resetSprColors, sprColors, resetSprColors.Length);
-            Array.Copy(resetColors, colors, resetColors.Length);
+            for (int i = 0; i <= 15; i++)
+            {
+                if (palColors[i] is not null)
+                {
+                    palColors[i] = i;
+                }
+            }
         }
 
 
@@ -736,20 +745,13 @@ namespace CSharpCraft.Pico8
             int c0Flr = (int)Math.Floor(c0);
             int c1Flr = (int)Math.Floor(c1);
 
-            sprColors[c0Flr] = c1Flr == 0 ? resetColors[c1Flr] : resetSprColors[c1Flr];
-            colors[c0Flr] = resetColors[c1Flr];
+            palColors[c0Flr] = c1Flr;
         }
 
 
         public void Palt() // https://pico-8.fandom.com/wiki/Palt
         {
-            sprColors[0].A = 0;
-            resetSprColors[0].A = 0;
-            for (int i = 1; i <= 15; i++)
-            {
-                sprColors[i].A = 255;
-                resetSprColors[i].A = 255;
-            }
+            palColors = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         }
 
 
@@ -759,15 +761,11 @@ namespace CSharpCraft.Pico8
 
             if (t)
             {
-                sprColors[colFlr] = sprColors[0];
-                sprColors[colFlr].A = 0;
-                resetSprColors[colFlr].A = 0;
+                palColors[colFlr] = null;
             }
             else
             {
-                sprColors[colFlr] = resetSprColors[colFlr];
-                sprColors[colFlr].A = 255;
-                resetSprColors[colFlr].A = 255;
+                palColors[colFlr] = colFlr;
             }
         }
 
@@ -972,13 +970,13 @@ namespace CSharpCraft.Pico8
 
             int colorCache = 0;
 
-            for (int i = 0; i < resetSprColors.Length; i++)
+            for (int i = 0; i < palColors.Length; i++)
             {
-                if (sprColors[i] != resetSprColors[i])
+                if (palColors[i] != i)
                 {
-                    for (int j = 0; j < resetSprColors.Length; j++)
+                    for (int j = 0; j < palColors.Length; j++)
                     {
-                        if (sprColors[i] == resetSprColors[j])
+                        if (palColors[i] == j)
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
@@ -1025,13 +1023,13 @@ namespace CSharpCraft.Pico8
 
             int colorCache = 0;
 
-            for (int i = 0; i < resetSprColors.Length; i++)
+            for (int i = 0; i < palColors.Length; i++)
             {
-                if (sprColors[i] != resetSprColors[i])
+                if (palColors[i] != i)
                 {
-                    for (int j = 0; j < resetSprColors.Length; j++)
+                    for (int j = 0; j < palColors.Length; j++)
                     {
-                        if (sprColors[i] == resetSprColors[j])
+                        if (palColors[i] == j)
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
