@@ -119,8 +119,6 @@ namespace CSharpCraft
         {
             batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
 
-            p8.Pal();
-            p8.Palt();
             p8.Draw();
 
             // Get the size of the viewport

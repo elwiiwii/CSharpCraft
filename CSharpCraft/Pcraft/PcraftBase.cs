@@ -1366,15 +1366,24 @@ namespace CSharpCraft.Pcraft
 
         private void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
         {
-            F32 cr = p8.Cos(rot);
-            F32 sr = p8.Sin(rot);
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"DPLAYER()" + Environment.NewLine);
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"x = {x} | y = {y} | rot = {rot} | anim = {anim} | subanim = {subanim} | isplayer = {isplayer}" + Environment.NewLine);
+            
+            F32 cr = F32.FromDouble(p8.Cos(rot.Double));
+            F32 sr = F32.FromDouble(p8.Sin(rot.Double));
             F32 cv = -sr;
             F32 sv = cr;
+
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"cr = {cr} | sr = {sr} | cv = {cv} | sv = {sv}" + Environment.NewLine);
 
             x = F32.Floor(x);
             y = F32.Floor(y - 4);
 
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"x = {x} | y = {y}" + Environment.NewLine);
+
             F32 lan = p8.Sin(anim * 2) * F32.FromDouble(1.5);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"lan = {lan}" + Environment.NewLine);
 
             Ground bel = GetGr(x, y);
             if (bel == grwater)
@@ -1393,14 +1402,18 @@ namespace CSharpCraft.Pcraft
                 p8.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
             }
             F32 blade = (rot + F32.FromDouble(0.25)) % 1;
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"blade = {blade}" + Environment.NewLine);
             if (subanim > 0)
             {
                 blade = blade - F32.FromDouble(0.3) + subanim * F32.FromDouble(0.04);
+                File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"blade = {blade}" + Environment.NewLine);
             }
-            F32 bcr = p8.Cos(blade);
-            F32 bsr = p8.Sin(blade);
+            F32 bcr = F32.FromDouble(p8.Cos(blade.Double));
+            F32 bsr = F32.FromDouble(p8.Sin(blade.Double));
 
             (int mx, int my) = Mirror(blade);
+
+            File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"bcr = {bcr} | bsr = {bsr} | mx = {mx} | my = {my}" + Environment.NewLine);
 
             int weap = 75;
 
@@ -1430,6 +1443,7 @@ namespace CSharpCraft.Pcraft
                 //Console.WriteLine(rot + F32.FromDouble(0.75));
 
                 (int my2, int mx2) = Mirror(p8.Mod(rot + F32.FromDouble(0.75), 1)); // changed from (rot + 0.75) % 1
+                File.AppendAllText(@"c:\Users\me\Desktop\dplayer.txt", $"mx2 = {mx2} | my2 = {my2}" + Environment.NewLine);
                 p8.Spr(75, (x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1).Double, (y + sv * 4 + sr * lan + my2 * 8 - 7).Double, 1, 1, mx2 == 0, my2 == 1);
             }
 

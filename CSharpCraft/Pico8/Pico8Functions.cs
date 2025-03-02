@@ -200,6 +200,9 @@ namespace CSharpCraft.Pico8
 
         public void Draw()
         {
+            Pal();
+            Palt();
+
             if (isPaused)
             {
                 int viewportWidth = graphicsDevice.Viewport.Width;
@@ -347,7 +350,6 @@ namespace CSharpCraft.Pico8
             KeyboardState keyb_state = Keyboard.GetState();
             GamePadState con_state = GamePad.GetState(PlayerIndex.One);
 
-
             switch (i)
             {
                 case 0:
@@ -426,6 +428,7 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
+            int drawCol = palColors[c] is null ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -434,7 +437,7 @@ namespace CSharpCraft.Pico8
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
-
+            
             for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
             {
                 for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
@@ -460,11 +463,11 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
                         batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
+            
         }
 
 
@@ -475,6 +478,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
+            int drawCol = palColors[c] is null ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -509,7 +513,6 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
                         batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
@@ -524,6 +527,7 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
+            int drawCol = palColors[c] is null ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -550,7 +554,6 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
                         batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
@@ -565,6 +568,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
+            int drawCol = palColors[c] is null ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -591,7 +595,6 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        int drawCol = palColors[c] is null ? 0 : (int)palColors[c];
                         batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
@@ -603,11 +606,17 @@ namespace CSharpCraft.Pico8
         {
             int colorFlr = (int)Math.Floor(color);
 
-            int clearCol = palColors[colorFlr] is null ? 0 : (int)palColors[colorFlr];
+            int clearCol = palColors[colorFlr] is null ? colorFlr : (int)palColors[colorFlr];
             graphicsDevice.Clear(colors[clearCol]);
         }
 
-        
+
+        public double Cos(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
+        {
+            return Math.Cos(-angle * 2 * Math.PI);
+        }
+
+
         public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
             return F32.Cos(-angle * 2 * F32.Pi);
@@ -730,13 +739,7 @@ namespace CSharpCraft.Pico8
 
         public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
-            for (int i = 0; i <= 15; i++)
-            {
-                if (palColors[i] is not null)
-                {
-                    palColors[i] = i;
-                }
-            }
+            palColors = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         }
 
 
@@ -922,6 +925,12 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public double Sin(double angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
+        {
+            return Math.Sin(-angle * 2 * Math.PI);
+        }
+
+
         public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
             return F32.Sin(-angle * 2 * F32.Pi);
@@ -976,7 +985,7 @@ namespace CSharpCraft.Pico8
                 {
                     for (int j = 0; j < palColors.Length; j++)
                     {
-                        if (palColors[i] == j)
+                        if (palColors[j] == j)
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
@@ -1029,7 +1038,7 @@ namespace CSharpCraft.Pico8
                 {
                     for (int j = 0; j < palColors.Length; j++)
                     {
-                        if (palColors[i] == j)
+                        if (palColors[j] == j)
                         {
                             colorCache += (i * 100 + j) * 1000;
                             break;
