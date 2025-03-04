@@ -743,7 +743,7 @@ namespace CSharpCraft.Pcraft
                     p8.Del(entities, e);
                     continue;
                 }
-                
+
                 if (e.Timer is not null) { e.Timer -= 1; }
 
                 F32 dist = F32.Max(F32.Abs(e.X - plx), F32.Abs(e.Y - ply));
@@ -759,7 +759,7 @@ namespace CSharpCraft.Pcraft
                     }
                     continue;
                 }
-                
+
                 if (e.HasCol)
                 {
                     (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, F32.Zero, e);
@@ -1387,7 +1387,7 @@ namespace CSharpCraft.Pcraft
         {
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"DPLAYER()" + Environment.NewLine);
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"x = {F32ToHex(x)} | y = {F32ToHex(y)} | rot = {F32ToHex(rot)} | anim = {F32ToHex(anim)} | subanim = {F32ToHex(subanim)} | isplayer = {isplayer.ToString().ToLower()}" + Environment.NewLine);
-            
+
             F32 cr = p8.Cos(rot);
             F32 sr = p8.Sin(rot);
             F32 cv = -sr;
@@ -1420,7 +1420,7 @@ namespace CSharpCraft.Pcraft
                 p8.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
                 p8.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
             }
-            F32 blade = (rot + F32.FromDouble(0.25)) % 1;
+            F32 blade = p8.Mod(rot + F32.FromDouble(0.25), 1);
             File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"blade = {F32ToHex(blade)}" + Environment.NewLine);
             if (subanim > 0)
             {
@@ -1906,7 +1906,7 @@ namespace CSharpCraft.Pcraft
             p8.Print(t, x, y - 1, 1);
             p8.Print(t, x, y, c);
         }
-        
+
         private void Printc(string t, int x, int y, int c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
@@ -1923,13 +1923,13 @@ namespace CSharpCraft.Pcraft
                     p8.Spr((int)e.Type.BigSpr, e.X.Double - 8, e.Y.Double - 8, 2, 2);
                     continue;
                 }
-                
+
                 if (e.Type == etext)
                 {
                     Printb(e.Text, e.X.Double - 2, e.Y.Double - 4, e.C);
                     continue;
                 }
-                
+
                 if (e.Timer is not null && e.Timer < 45 && e.Timer % 4 > 2)
                 {
                     for (int i = 0; i <= 15; i++)
@@ -2270,6 +2270,31 @@ f22f11117212f2ff7f7722ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
 f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff1211111111111111111111111111111111111111111111111111111111111111111121121111f2121121ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111111111111111111111111111111111111111111111111111
 1111111121111111222211221111221122111111221121121111111111221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ".Replace("\n", "").Replace("\r", "");
+
+        public Dictionary<string, ((string name, bool loop)[] tracks, int group)[]> Music => new()
+        {
+            { "original", [
+                ([("pcraft_og_cave", true)], 0),
+                ([("pcraft_og_surface", true)], 1),
+                ([("pcraft_og_cave", true)], 2),
+                ([("pcraft_og_cave", true)], 3),
+                ([("pcraft_og_cave", true)], 4)]
+            },
+            { "new!", [
+                ([("pcraft_new_title", true)], 0),
+                ([("pcraft_new_surface", true)], 1),
+                ([("pcraft_new_cave", true)], 1),
+                ([("pcraft_new_win", false), ("pcraft_new_title", true)], 2),
+                ([("pcraft_new_death", true)], 3)]
+            },
+            { "pog edition", [
+                ([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
+                ([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
+                ([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
+                ([("pcraft_pe_win", false)], 3),
+                ([("pcraft_pe_death", true)], 4)]
+            }
+        };
 
         public void Dispose()
         {

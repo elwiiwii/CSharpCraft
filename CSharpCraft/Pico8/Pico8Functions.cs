@@ -108,7 +108,43 @@ namespace CSharpCraft.Pico8
 
             void Options()
             {
-                
+                menuSelected = 0;
+                menuItems.Clear();
+
+                void Sound()
+                {
+
+                }
+                Menuitem(0, "sound:on", () => Sound());
+
+                void SfxVol()
+                {
+
+                }
+                Menuitem(1, "sfx vol:100%", () => SfxVol());
+
+                void MusicVol()
+                {
+
+                }
+                Menuitem(2, "music vol:100%", () => MusicVol());
+
+                void Music()
+                {
+
+                }
+                Menuitem(3, "music:new!", () => Music());
+
+                void Back()
+                {
+                    menuSelected = 0;
+                    menuItems.Clear();
+                    Menuitem(0, "continue", () => Continue());
+                    Menuitem(1, "options", () => Options());
+                    Menuitem(2, "reset cart", () => ResetCart());
+                    Menuitem(3, "exit", () => Exit());
+                }
+                Menuitem(4, "back", () => Back());
             }
             Menuitem(1, "options", () => Options());
 
@@ -202,6 +238,7 @@ namespace CSharpCraft.Pico8
         {
             Pal();
             Palt();
+            _cart.Draw();
 
             if (isPaused)
             {
@@ -229,10 +266,6 @@ namespace CSharpCraft.Pico8
                     Print(menuItems[j].name, xborder + indent + 12, i, 7);
                     i += 8;
                 }
-            }
-            else
-            {
-                _cart.Draw();
             }
         }
 
@@ -613,10 +646,9 @@ namespace CSharpCraft.Pico8
 
         public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
-            F32 modAngle = Mod(angle, 1);
-            double radians = (modAngle * 2 * F32.Pi).Double;
-            double val = Math.Cos(radians);
-            return F32.FromDouble(val);
+            F32 radians = angle * 2 * F32.Pi;
+            F32 val = F32.Cos(radians);
+            return val;
         }
 
 
@@ -924,10 +956,10 @@ namespace CSharpCraft.Pico8
 
         public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
-            F32 modAngle = Mod(angle, 1);
-            double radians = (modAngle * 2 * F32.Pi).Double;
-            double val = -Math.Sin(radians);
-            return F32.FromDouble(val);
+            //F32 modAngle = Mod(angle, 1);
+            F32 radians = angle * 2 * F32.Pi;
+            F32 val = F32.Sin(radians);
+            return -val; // F32.FromDouble(val);
         }
 
 

@@ -385,7 +385,7 @@ ffffff11ffffffff11ffffff3333533333533333ff1111ffff1111ffff1111ff66d6666d66666666
 
         public string FlagData => @"";
         public string MapData => @"";
-
+        public Dictionary<string, ((string name, bool loop)[] tracks, int group)[]> Music => new();
         public void Dispose()
         {
 

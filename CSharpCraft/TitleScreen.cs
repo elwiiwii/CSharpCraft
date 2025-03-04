@@ -88,7 +88,7 @@ namespace CSharpCraft
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";
-
+        public Dictionary<string, ((string name, bool loop)[] tracks, int group)[]> Music => new();
         public void Dispose()
         {
 

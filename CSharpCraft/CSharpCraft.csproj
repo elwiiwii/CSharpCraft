@@ -79,10 +79,32 @@
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Graphics\Website.png" />
 		<None Remove="Content\Graphics\Youtube.png" />
+		<None Remove="Content\Music\menu.wav" />
 		<None Remove="Content\Music\music_1.wav" />
 		<None Remove="Content\Music\music_4.wav" />
+		<None Remove="Content\Music\pcraft_new_boss.wav" />
+		<None Remove="Content\Music\pcraft_new_cave.wav" />
+		<None Remove="Content\Music\pcraft_new_surface.wav" />
+		<None Remove="Content\Music\pcraft_new_title.wav" />
+		<None Remove="Content\Music\pcraft_pe_cave_0.wav" />
+		<None Remove="Content\Music\pcraft_pe_cave_1.wav" />
+		<None Remove="Content\Music\pcraft_pe_death.wav" />
+		<None Remove="Content\Music\pcraft_pe_surface_0.wav" />
+		<None Remove="Content\Music\pcraft_pe_surface_1.wav" />
+		<None Remove="Content\Music\pcraft_pe_title_0.wav" />
+		<None Remove="Content\Music\pcraft_pe_title_1.wav" />
+		<None Remove="Content\Music\pcraft_pe_win.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Content\Music\menu.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Music\pcraft_pe_surface_1.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -299,31 +321,37 @@
 		<Content Include="Content\Graphics\Youtube.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_0p8.wav">
+		<Content Include="Content\Music\pcraft_new_boss.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_1.wav">
+		<Content Include="Content\Music\pcraft_new_cave.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_1p8.wav">
+		<Content Include="Content\Music\pcraft_new_surface.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_2p8.wav">
+		<Content Include="Content\Music\pcraft_new_title.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_3p8.wav">
+		<Content Include="Content\Music\pcraft_pe_cave_0.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_4.wav">
+		<Content Include="Content\Music\pcraft_pe_cave_1.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_4p8.wav">
+		<Content Include="Content\Music\pcraft_pe_death.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_5p8.wav">
+		<Content Include="Content\Music\pcraft_pe_surface_0.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Music\music_6p8.wav">
+		<Content Include="Content\Music\pcraft_pe_title_0.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\pcraft_pe_title_1.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Music\pcraft_pe_win.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\sfx_0.wav">
