@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework.Media;
 using System.Reflection.Metadata.Ecma335;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace CSharpCraft.Pico8
 {
@@ -28,9 +29,10 @@ namespace CSharpCraft.Pico8
         private int[] _flags;
         private int[] _map;
         private int[] _sprites;
+        private Dictionary<string, ((string name, bool loop)[] tracks, int group)[]> _music;
         private (int, int) CameraOffset = (0, 0);
         public IScene _cart;
-        private List<SoundEffectInstance>? channelMusic = [];
+        private List<List<(SoundEffectInstance track, bool loop)>>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
@@ -48,6 +50,7 @@ namespace CSharpCraft.Pico8
         private Dictionary<int, Texture2D> spriteTextures = [];
         private List<(string name, Action function)> menuItems;
         private int menuSelected;
+        private int curSoundtrack;
 
         public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
         {
@@ -69,6 +72,9 @@ namespace CSharpCraft.Pico8
             prev6 = false;
             isPaused = false;
 
+            menuSelected = 0;
+            curSoundtrack = 0;
+
             LoadCart(cart);
         }
 
@@ -81,16 +87,17 @@ namespace CSharpCraft.Pico8
             _sprites = [];
             _flags = [];
             _map = [];
+            _music = cart.Music;
             menuItems = [];
 
             _cart = cart;
             
             SoundDispose();
 
-            SoundEffectInstance instance1 = musicDictionary[$"music_1"].CreateInstance();
-            SoundEffectInstance instance4 = musicDictionary[$"music_4"].CreateInstance();
-            channelMusic.Add(instance1);
-            channelMusic.Add(instance4);
+            SoundEffectInstance instance1 = musicDictionary[$"pcraft_new_surface"].CreateInstance();
+            SoundEffectInstance instance4 = musicDictionary[$"pcraft_new_cave"].CreateInstance();
+            //channelMusic.Add(instance1);
+            //channelMusic.Add(instance4);
             instance1.IsLooped = true;
             instance4.IsLooped = true;
             instance1.Play();
@@ -201,36 +208,36 @@ namespace CSharpCraft.Pico8
             prev4 = Btn(4);
             prev5 = Btn(5);
 
-            if (fade1)
-            {
-                if (channelMusic[0].Volume < 1.0f)
-                {
-                    channelMusic[0].Volume += 0.05f;
-                }
-                if (channelMusic[1].Volume > 0.0f)
-                {
-                    channelMusic[1].Volume -= 0.05f;
-                }
-                if (channelMusic[0].Volume >= 1.0f && channelMusic[1].Volume <= 0.0f)
-                {
-                    fade1 = false;
-                }
-            }
-            else if (fade4)
-            {
-                if (channelMusic[1].Volume < 1.0f)
-                {
-                    channelMusic[1].Volume += 0.05f;
-                }
-                if (channelMusic[0].Volume > 0.0f)
-                {
-                    channelMusic[0].Volume -= 0.05f;
-                }
-                if (channelMusic[1].Volume >= 1.0f && channelMusic[0].Volume <= 0.0f)
-                {
-                    fade4 = false;
-                }
-            }
+            //if (fade1)
+            //{
+            //    if (channelMusic[0].Volume < 1.0f)
+            //    {
+            //        channelMusic[0].Volume += 0.05f;
+            //    }
+            //    if (channelMusic[1].Volume > 0.0f)
+            //    {
+            //        channelMusic[1].Volume -= 0.05f;
+            //    }
+            //    if (channelMusic[0].Volume >= 1.0f && channelMusic[1].Volume <= 0.0f)
+            //    {
+            //        fade1 = false;
+            //    }
+            //}
+            //else if (fade4)
+            //{
+            //    if (channelMusic[1].Volume < 1.0f)
+            //    {
+            //        channelMusic[1].Volume += 0.05f;
+            //    }
+            //    if (channelMusic[0].Volume > 0.0f)
+            //    {
+            //        channelMusic[0].Volume -= 0.05f;
+            //    }
+            //    if (channelMusic[1].Volume >= 1.0f && channelMusic[0].Volume <= 0.0f)
+            //    {
+            //        fade4 = false;
+            //    }
+            //}
         }
 
 
@@ -729,40 +736,77 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Music(double n, double fadems = 0, double channelmask = 0) // https://pico-8.fandom.com/wiki/Music
+        public void Music(int n, double fadems = 0, bool swap = false) // https://pico-8.fandom.com/wiki/Music
         {
-            int nFlr = (int)Math.Floor(n);
+            //SoundBank;
+            //currentInstance.State == SoundState.Stopped;
 
-            //if (channelMusic is not null)
+            if (!swap)
+            {
+                if (channelMusic is not null)
+                {
+                    foreach (List<(SoundEffectInstance track, bool loop)> songList in channelMusic)
+                    {
+                        foreach ((SoundEffectInstance track, bool loop) song in songList)
+                        {
+                            song.track.Dispose();
+                        }
+                    }
+                    channelMusic = [];
+                }
+            }
+
+            ((string name, bool loop)[] tracks, int group) song2 = _music["pog edition"][n];
+            
+            List<(SoundEffectInstance track, bool loop)> songs = new();
+            foreach ((string name, bool loop) track in song2.tracks)
+            {
+                songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
+            }
+            channelMusic.Add(songs);
+            for (int j = 0; j < _music["pog edition"].Length; j++)
+            {
+                ((string name, bool loop)[] tracks, int group) song = _music["pog edition"][j];
+                if (song.group == n && j != n)
+                {
+                    foreach ((string name, bool loop) track in song.tracks)
+                    {
+                        songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
+                    }
+                    channelMusic.Add(songs);
+                }
+            }
+
+            int i = 0;
+            foreach (List<(SoundEffectInstance track, bool loop)> song in channelMusic)
+            {
+                (SoundEffectInstance track, bool loop) curSong = song[0];
+                curSong.track.IsLooped = curSong.loop;
+                curSong.track.Play();
+                curSong.track.Volume = (i == 0) ? 1 : 0;
+                i++;
+            }
+
+            //if (nFlr == 1)
             //{
-            //    foreach (SoundEffect song in channelMusic)
-            //    {
-            //        //song.Dispose();
-            //        song.Volume = 0.0f;
-            //    }
+            //    //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+            //    //channelMusic.Add(instance);
+            //    //instance.Play();
+            //    fade1 = true;
+            //    fade4 = false;
             //}
-
-            if (nFlr == 1)
-            {
-                //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-                //channelMusic.Add(instance);
-                //instance.Play();
-                fade1 = true;
-                fade4 = false;
-            }
-            else if (nFlr == 4)
-            {
-                //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-                //channelMusic.Add(instance);
-                //instance.Play();
-                fade4 = true;
-                fade1 = false;
-            }
-            else
-            {
-                return;
-            }
-
+            //else if (nFlr == 4)
+            //{
+            //    //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
+            //    //channelMusic.Add(instance);
+            //    //instance.Play();
+            //    fade4 = true;
+            //    fade1 = false;
+            //}
+            //else
+            //{
+            //    return;
+            //}
         }
 
 
@@ -1121,9 +1165,12 @@ namespace CSharpCraft.Pico8
         {
             if (channelMusic is not null)
             {
-                foreach (SoundEffectInstance song in channelMusic)
+                foreach (List<(SoundEffectInstance track, bool loop)> songList in channelMusic)
                 {
-                    song.Dispose();
+                    foreach ((SoundEffectInstance track, bool loop) song in songList)
+                    {
+                        song.track.Dispose();
+                    }
                 }
                 channelMusic = [];
             }

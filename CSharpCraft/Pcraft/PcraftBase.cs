@@ -492,7 +492,7 @@ namespace CSharpCraft.Pcraft
         {
             p8 = pico8;
 
-            p8.Music(4, 10000);
+            p8.Music(0, 10000);
 
             furnaceRecipe = [];
             workbenchRecipe = [];
@@ -1024,7 +1024,7 @@ namespace CSharpCraft.Pcraft
                         p8.Reload();
                         p8.Memcpy(0x1000, 0x2000, 0x1000);
                         curMenu = winMenu;
-                        p8.Music(4);
+                        p8.Music(3);
                         break;
                     case (Ground, Material) gm when gm == (grfarm, seed):
                         SetGr(hitx, hity, grwheat);
@@ -1151,7 +1151,7 @@ namespace CSharpCraft.Pcraft
                 FillEne(currentLevel);
                 switchLevel = false;
                 canSwitchLevel = false;
-                p8.Music(currentLevel == cave ? 4 : 1);
+                p8.Music(currentLevel == cave ? 2 : 1);
             }
 
             if (curItem is not null)
