@@ -355,13 +355,13 @@ namespace CSharpCraft.Pcraft
 
         private F32 Lerp(F32 a, F32 b, F32 alpha)
         {
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"a = {Math.Round(a.Double, 4)} | b = {Math.Round(b.Double, 4)} | alpha = {Math.Round(alpha.Double, 4)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"a = {Math.Round(a.Double, 4)} | b = {Math.Round(b.Double, 4)} | alpha = {Math.Round(alpha.Double, 4)}" + Environment.NewLine);
 
             F32 v1 = a * (1 - alpha);
 
             F32 v2 = v1 + b * alpha;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"v1 = {Math.Round(v1.Double, 4)} | v2 = {Math.Round(v2.Double, 4)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"v1 = {Math.Round(v1.Double, 4)} | v2 = {Math.Round(v2.Double, 4)}" + Environment.NewLine);
 
             return v2;
         }
@@ -406,7 +406,7 @@ namespace CSharpCraft.Pcraft
                         newe.Step = 0;
                         newe.Ox = F32.Zero;
                         newe.Oy = F32.Zero;
-                        //p8.Add(l.Ene, newe);
+                        p8.Add(l.Ene, newe);
                     }
                 }
             }
@@ -702,7 +702,7 @@ namespace CSharpCraft.Pcraft
 
         private F32 UpRot(F32 grot, F32 rot)
         {
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {Math.Round(grot.Double, 4)} | rot = {Math.Round(rot.Double, 4)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {Math.Round(grot.Double, 4)} | rot = {Math.Round(rot.Double, 4)}" + Environment.NewLine);
             if (F32.Abs(rot - grot) > F32.Half)
             {
                 if (rot > grot)
@@ -714,11 +714,11 @@ namespace CSharpCraft.Pcraft
                     grot -= 1;
                 }
             }
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {Math.Round(grot.Double, 4)} | rot = {Math.Round(rot.Double, 4)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"grot = {Math.Round(grot.Double, 4)} | rot = {Math.Round(rot.Double, 4)}" + Environment.NewLine);
 
             F32 e = p8.Mod(p8.Mod(Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"e = {Math.Round(e.Double, 4)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"e = {Math.Round(e.Double, 4)}" + Environment.NewLine);
 
             return e;
         }
@@ -1140,7 +1140,7 @@ namespace CSharpCraft.Pcraft
                 return;
             }
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"UPDATE()" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"UPDATE()" + Environment.NewLine);
 
             if (switchLevel)
             {
@@ -1176,23 +1176,23 @@ namespace CSharpCraft.Pcraft
 
             F32 dx = F32.Zero;
             F32 dy = F32.Zero;
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             if (p8.Btn(0)) dx -= 1;
             if (p8.Btn(1)) dx += 1;
             if (p8.Btn(2)) dy -= 1;
             if (p8.Btn(3)) dy += 1;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             F32 dl = GetInvLen(dx, dy);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dl = {F32ToHex(dl)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dl = {F32ToHex(dl)}" + Environment.NewLine);
 
             dx *= dl;
             dy *= dl;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             if (F32.Abs(dx) > 0 || F32.Abs(dy) > 0)
             {
@@ -1204,21 +1204,21 @@ namespace CSharpCraft.Pcraft
                 panim = F32.Zero;
             }
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"lrot = {F32ToHex(lrot)} | panim = {F32ToHex(panim)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"lrot = {F32ToHex(lrot)} | panim = {F32ToHex(panim)}" + Environment.NewLine);
 
             dx *= s;
             dy *= s;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             bool canAct = true;
             (dx, dy, canAct) = UpEntity(dx, dy, canAct);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             nearEnemies = [];
 
@@ -1228,16 +1228,16 @@ namespace CSharpCraft.Pcraft
 
             (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"plx = {F32ToHex(plx)} | ply = {F32ToHex(ply)} | dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"plx = {F32ToHex(plx)} | ply = {F32ToHex(ply)} | dx = {F32ToHex(dx)} | dy = {F32ToHex(dy)}" + Environment.NewLine);
 
             plx += dx;
             ply += dy;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"plx = {F32ToHex(plx)} | ply = {F32ToHex(ply)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"plx = {F32ToHex(plx)} | ply = {F32ToHex(ply)}" + Environment.NewLine);
 
             prot = UpRot(lrot, prot);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"prot = {F32ToHex(prot)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"prot = {F32ToHex(prot)}" + Environment.NewLine);
 
             llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
             lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
@@ -1248,7 +1248,7 @@ namespace CSharpCraft.Pcraft
             F32 hity = ply + by * 8;
             Ground hit = GetGr(hitx, hity);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"bx = {F32ToHex(bx)} | by = {F32ToHex(by)} | hitx = {F32ToHex(hitx)} | hity = {F32ToHex(hity)} | hit = {hit.ToString().ToLower()}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"bx = {F32ToHex(bx)} | by = {F32ToHex(by)} | hitx = {F32ToHex(hitx)} | hity = {F32ToHex(hity)} | hit = {hit.ToString().ToLower()}" + Environment.NewLine);
 
             if (p8.Btn(5) && !block5 && canAct)
             {
@@ -1302,33 +1302,33 @@ namespace CSharpCraft.Pcraft
                 coffy += dy * F32.FromDouble(0.4);
             }
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"coffx = {F32ToHex(coffx)} | coffy = {F32ToHex(coffy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"coffx = {F32ToHex(coffx)} | coffy = {F32ToHex(coffy)}" + Environment.NewLine);
 
             cmx = F32.Max(plx - m, cmx);
             cmx = F32.Min(plx + m, cmx);
             cmy = F32.Max(ply - m, cmy);
             cmy = F32.Min(ply + m, cmy);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"cmx = {F32ToHex(cmx)} | cmy = {F32ToHex(cmy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"cmx = {F32ToHex(cmx)} | cmy = {F32ToHex(cmy)}" + Environment.NewLine);
 
             coffx *= F32.FromDouble(0.9);
             coffy *= F32.FromDouble(0.9);
             coffx = F32.Min(msp, F32.Max(-msp, coffx));
             coffy = F32.Min(msp, F32.Max(-msp, coffy));
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"coffx = {F32ToHex(coffx)} | coffy = {F32ToHex(coffy)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"coffx = {F32ToHex(coffx)} | coffy = {F32ToHex(coffy)}" + Environment.NewLine);
 
             clx += coffx;
             cly += coffy;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"clx = {F32ToHex(clx)} | cly = {F32ToHex(cly)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"clx = {F32ToHex(clx)} | cly = {F32ToHex(cly)}" + Environment.NewLine);
 
             clx = F32.Max(cmx - m, clx);
             clx = F32.Min(cmx + m, clx);
             cly = F32.Max(cmy - m, cly);
             cly = F32.Min(cmy + m, cly);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"clx = {F32ToHex(clx)} | cly = {F32ToHex(cly)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"clx = {F32ToHex(clx)} | cly = {F32ToHex(cly)}" + Environment.NewLine);
 
             if (p8.Btnp(4) && !lb4)
             {
@@ -1385,24 +1385,24 @@ namespace CSharpCraft.Pcraft
 
         private void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
         {
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"DPLAYER()" + Environment.NewLine);
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"x = {F32ToHex(x)} | y = {F32ToHex(y)} | rot = {F32ToHex(rot)} | anim = {F32ToHex(anim)} | subanim = {F32ToHex(subanim)} | isplayer = {isplayer.ToString().ToLower()}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"DPLAYER()" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"x = {F32ToHex(x)} | y = {F32ToHex(y)} | rot = {F32ToHex(rot)} | anim = {F32ToHex(anim)} | subanim = {F32ToHex(subanim)} | isplayer = {isplayer.ToString().ToLower()}" + Environment.NewLine);
 
             F32 cr = p8.Cos(rot);
             F32 sr = p8.Sin(rot);
             F32 cv = -sr;
             F32 sv = cr;
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"cr = {F32ToHex(cr)} | sr = {F32ToHex(sr)} | cv = {F32ToHex(cv)} | sv = {F32ToHex(sv)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"cr = {F32ToHex(cr)} | sr = {F32ToHex(sr)} | cv = {F32ToHex(cv)} | sv = {F32ToHex(sv)}" + Environment.NewLine);
 
             x = F32.Floor(x);
             y = F32.Floor(y - 4);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"x = {F32ToHex(x)} | y = {F32ToHex(y)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"x = {F32ToHex(x)} | y = {F32ToHex(y)}" + Environment.NewLine);
 
             F32 lan = p8.Sin(anim * 2) * F32.FromDouble(1.5);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"lan = {F32ToHex(lan)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"lan = {F32ToHex(lan)}" + Environment.NewLine);
 
             Ground bel = GetGr(x, y);
             if (bel == grwater)
@@ -1421,18 +1421,18 @@ namespace CSharpCraft.Pcraft
                 p8.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
             }
             F32 blade = p8.Mod(rot + F32.FromDouble(0.25), 1);
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"blade = {F32ToHex(blade)}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"blade = {F32ToHex(blade)}" + Environment.NewLine);
             if (subanim > 0)
             {
                 blade = blade - F32.FromDouble(0.3) + subanim * F32.FromDouble(0.04);
-                File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"blade = {F32ToHex(blade)}" + Environment.NewLine);
+                //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"blade = {F32ToHex(blade)}" + Environment.NewLine);
             }
             F32 bcr = p8.Cos(blade);
             F32 bsr = p8.Sin(blade);
 
             (int mx, int my) = Mirror(blade);
 
-            File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"bcr = {F32ToHex(bcr)} | bsr = {F32ToHex(bsr)} | mx = {F32ToHex(F32.FromInt(mx))} | my = {F32ToHex(F32.FromInt(my))}" + Environment.NewLine);
+            //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"bcr = {F32ToHex(bcr)} | bsr = {F32ToHex(bsr)} | mx = {F32ToHex(F32.FromInt(mx))} | my = {F32ToHex(F32.FromInt(my))}" + Environment.NewLine);
 
             int weap = 75;
 
@@ -1462,7 +1462,7 @@ namespace CSharpCraft.Pcraft
                 //Console.WriteLine(rot + F32.FromDouble(0.75));
 
                 (int my2, int mx2) = Mirror(p8.Mod(rot + F32.FromDouble(0.75), 1)); // changed from (rot + 0.75) % 1
-                File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"mx2 = {F32ToHex(F32.FromInt(mx2))} | my2 = {F32ToHex(F32.FromInt(my2))}" + Environment.NewLine);
+                //File.AppendAllText(@"c:\Users\me\Desktop\pcraft.txt", $"mx2 = {F32ToHex(F32.FromInt(mx2))} | my2 = {F32ToHex(F32.FromInt(my2))}" + Environment.NewLine);
                 p8.Spr(75, (x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1).Double, (y + sv * 4 + sr * lan + my2 * 8 - 7).Double, 1, 1, mx2 == 0, my2 == 1);
             }
 
@@ -1989,9 +1989,9 @@ namespace CSharpCraft.Pcraft
             F32 pe = px + v * F32.FromDouble(0.3);
             F32 pe2 = px + m * F32.FromDouble(0.3);
             p8.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
-            p8.Rectfill(px, py, pe.Double - 1, py + 3, c2);
-            p8.Rectfill(px, py, F32.Max(F32.FromInt(px), pe - 2).Double, py + 2, c);
-            if (m > v) { p8.Rectfill(pe.Double, py, pe2.Double - 1, py + 3, 10); }
+            p8.Rectfill(px, py, pe.Double, py + 3, c2);
+            p8.Rectfill(px, py, F32.Max(F32.FromInt(px), pe - 1).Double, py + 2, c);
+            if (m > v) { p8.Rectfill(pe.Double + 1, py, pe2.Double, py + 3, 10); }
         }
 
         public virtual void Draw()

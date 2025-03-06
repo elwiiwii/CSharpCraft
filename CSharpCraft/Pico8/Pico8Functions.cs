@@ -51,6 +51,8 @@ namespace CSharpCraft.Pico8
         private List<(string name, Action function)> menuItems;
         private int menuSelected;
         private int curSoundtrack;
+        private CosDict cosDict = new();
+        private SinDict sinDict = new();
 
         public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
         {
@@ -653,8 +655,8 @@ namespace CSharpCraft.Pico8
 
         public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
         {
-            F32 radians = angle * 2 * F32.Pi;
-            F32 val = F32.FromDouble(Math.Cos(radians.Double));
+            angle = Mod(angle, 1);
+            F32 val = F32.FromRaw((int)(cosDict.LookupTable[angle.Raw / 10.0] * 10));
             return val;
         }
 
@@ -914,10 +916,10 @@ namespace CSharpCraft.Pico8
 
         public void Rectfill(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rectfill
         {
-            int x1Flr = (int)Math.Floor(x1);
-            int y1Flr = (int)Math.Floor(y1);
-            int x2Flr = (int)Math.Floor(x2);
-            int y2Flr = (int)Math.Floor(y2);
+            int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
+            int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
+            int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
+            int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
             int cFlr = (int)Math.Floor(c);
 
             // Get the size of the viewport
@@ -1000,10 +1002,9 @@ namespace CSharpCraft.Pico8
 
         public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
         {
-            //F32 modAngle = Mod(angle, 1);
-            double radians = angle.Double * 2 * Math.PI;
-            F32 val = F32.FromDouble(Math.Sin(radians));
-            return -val; // F32.FromDouble(val);
+            angle = Mod(angle, 1);
+            F32 val = F32.FromRaw((int)(sinDict.LookupTable[angle.Raw / 10.0] * 10));
+            return val;
         }
 
 
