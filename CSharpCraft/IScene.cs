@@ -16,7 +16,8 @@ namespace CSharpCraft
         string SpriteData { get; }
         string FlagData { get; }
         string MapData { get; }
-        public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music { get; }
+        Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music { get; }
+        Dictionary<string, Dictionary<int, string>> Sfx { get; }
         void Dispose();
     }
 }

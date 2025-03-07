@@ -6,12 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
-using System.Xml.Linq;
-using System.Runtime.CompilerServices;
-using Microsoft.Xna.Framework.Media;
-using System.Reflection.Metadata.Ecma335;
-using System.Drawing;
-using System.Collections.Generic;
 
 namespace CSharpCraft.Pico8
 {
@@ -30,6 +24,7 @@ namespace CSharpCraft.Pico8
         private int[] _map;
         private int[] _sprites;
         private Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> _music;
+        private Dictionary<string, Dictionary<int, string>> _sfx;
         private (int, int) CameraOffset = (0, 0);
         public IScene _cart;
         private List<List<(string name, SoundEffectInstance track, bool loop, int group)>>? channelMusic = [];
@@ -48,12 +43,16 @@ namespace CSharpCraft.Pico8
         private bool prev6;
         private bool isPaused;
         private Dictionary<int, Texture2D> spriteTextures = [];
-        private List<(string name, Action function)> menuItems;
+        private List<MenuItem> menuItems;
         private int menuSelected;
-        private string curSoundtrack;
+        private bool soundOn;
+        private int curSoundtrack;
+        private int curSfxPack;
         private int curTrack;
         private float musicVol;
+        private float sfxVol;
         private (List<SoundEffectInstance>, List<SoundEffectInstance>) musicTransition;
+        private int? lastMusicCall;
         private CosDict cosDict = new();
         private SinDict sinDict = new();
 
@@ -78,9 +77,13 @@ namespace CSharpCraft.Pico8
             isPaused = false;
 
             menuSelected = 0;
-            curSoundtrack = "new!";
+            soundOn = true;
+            curSoundtrack = 0;
+            curSfxPack = 0;
             musicVol = 1.0f;
+            sfxVol = 1.0f;
             musicTransition = new();
+            lastMusicCall = null;
 
             LoadCart(cart);
         }
@@ -95,84 +98,139 @@ namespace CSharpCraft.Pico8
             _flags = [];
             _map = [];
             _music = cart.Music;
+            _sfx = cart.Sfx;
             menuItems = [];
 
             _cart = cart;
             
             SoundDispose();
 
-            //SoundEffectInstance instance1 = musicDictionary[$"pcraft_new_surface"].CreateInstance();
-            //SoundEffectInstance instance4 = musicDictionary[$"pcraft_new_cave"].CreateInstance();
-            //channelMusic.Add(instance1);
-            //channelMusic.Add(instance4);
-            //instance1.IsLooped = true;
-            //instance4.IsLooped = true;
-            //instance1.Play();
-            //instance4.Play();
-            //instance1.Volume = 0.0f;
-            //instance4.Volume = 0.0f;
-            //fade1 = false;
-            //fade4 = false;
-
             void Continue()
             {
-                isPaused = false;
+                if (Btnp(4) || Btnp(5))
+                {
+                    isPaused = false;
+                }
             }
-            Menuitem(0, "continue", () => Continue());
+            Menuitem(0, () => "continue", () => Continue());
 
             void Options()
             {
-                menuSelected = 0;
-                menuItems.Clear();
-
-                void Sound()
-                {
-
-                }
-                Menuitem(0, "sound:on", () => Sound());
-
-                void SfxVol()
-                {
-
-                }
-                Menuitem(1, "sfx vol:100%", () => SfxVol());
-
-                void MusicVol()
-                {
-
-                }
-                Menuitem(2, "music vol:100%", () => MusicVol());
-
-                void Music()
-                {
-
-                }
-                Menuitem(3, "music:new!", () => Music());
-
-                void Back()
+                if (Btnp(4) || Btnp(5))
                 {
                     menuSelected = 0;
                     menuItems.Clear();
-                    Menuitem(0, "continue", () => Continue());
-                    Menuitem(1, "options", () => Options());
-                    Menuitem(2, "reset cart", () => ResetCart());
-                    Menuitem(3, "exit", () => Exit());
+
+                    void Sound()
+                    {
+                        if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
+                        {
+                            soundOn = !soundOn;
+                            if (!soundOn)
+                            {
+                                SoundDispose();
+                            }
+                            else
+                            {
+                                if (lastMusicCall is not null) { Music((int)lastMusicCall); }
+                            }
+                        }
+                    }
+                    Menuitem(0, () => $"sound:{(soundOn ? "on" : "off")}", () => Sound());
+
+                    void MusicVol()
+                    {
+                        if (Btnp(0))
+                        {
+                            musicVol = Math.Max(musicVol - 0.1f, 0.0f);
+                        }
+                        if (Btnp(1))
+                        {
+                            musicVol = Math.Min(musicVol + 0.1f, 1.0f);
+                        }
+                    }
+                    Menuitem(1, () => $"music vol:{Math.Round(musicVol*100)}%", () => MusicVol());
+
+                    void SfxVol()
+                    {
+                        if (Btnp(0))
+                        {
+                            sfxVol = Math.Max(sfxVol - 0.1f, 0.0f);
+                        }
+                        if (Btnp(1))
+                        {
+                            sfxVol = Math.Min(sfxVol + 0.1f, 1.0f);
+                        }
+                    }
+                    Menuitem(2, () => $"sfx vol:{Math.Round(sfxVol *100)}%", () => SfxVol());
+
+                    void Soundtrack()
+                    {
+                        if (Btnp(0))
+                        {
+                            curSoundtrack -= 1;
+                        }
+                        if (Btnp(1))
+                        {
+                            curSoundtrack += 1;
+                        }
+                        curSoundtrack = GeneralFunctions.Loop(curSoundtrack, _music.Count);
+                        if (Btnp(0) || Btnp(1))
+                        {
+                            SoundDispose();
+                            if (lastMusicCall is not null) { Music((int)lastMusicCall); }
+                        }
+                    }
+                    Menuitem(3, () => $"music:{_music.ElementAt(curSoundtrack).Key}", () => Soundtrack());
+
+                    void Sfx()
+                    {
+                        if (Btnp(0))
+                        {
+                            curSfxPack -= 1;
+                        }
+                        if (Btnp(1))
+                        {
+                            curSfxPack += 1;
+                        }
+                        curSfxPack = GeneralFunctions.Loop(curSfxPack, _sfx.Count);
+                    }
+                    Menuitem(4, () => $"sfx:{_sfx.ElementAt(curSfxPack).Key}", () => Sfx());
+
+                    void Back()
+                    {
+                        if (Btnp(4) || Btnp(5))
+                        {
+                            menuSelected = 0;
+                            menuItems.Clear();
+                            Menuitem(0, () => "continue", () => Continue());
+                            Menuitem(1, () => "options", () => Options());
+                            Menuitem(2, () => "reset cart", () => ResetCart());
+                            Menuitem(3, () => "exit", () => Exit());
+                        }
+                    }
+                    Menuitem(5, () => "back", () => Back());
                 }
-                Menuitem(4, "back", () => Back());
             }
-            Menuitem(1, "options", () => Options());
+            Menuitem(1, () => "options", () => Options());
 
             void ResetCart()
             {
-                LoadCart(_cart);
+                if (Btnp(4) || Btnp(5))
+                {
+                    LoadCart(_cart);
+                }
             }
-            Menuitem(2, "reset cart", () => ResetCart());
+            Menuitem(2, () => "reset cart", () => ResetCart());
 
             void Exit()
             {
-                LoadCart(new TitleScreen());
+                if (Btnp(4) || Btnp(5))
+                {
+                    LoadCart(new TitleScreen());
+                }
             }
-            Menuitem(3, "exit", () => Exit());
+            Menuitem(3, () => "exit", () => Exit());
 
             Reload();
             Init();
@@ -197,7 +255,7 @@ namespace CSharpCraft.Pico8
 
             if (isPaused)
             {
-                if (Btnp(5) || Btnp(4)) { menuItems[menuSelected].function(); }
+                if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)) { menuItems[menuSelected].Function(); }
 
                 if (Btnp(2)) { menuSelected -= 1; }
                 if (Btnp(3)) { menuSelected += 1; }
@@ -215,7 +273,7 @@ namespace CSharpCraft.Pico8
             prev4 = Btn(4);
             prev5 = Btn(5);
 
-            float fadeStep = 0.05f;
+            float fadeStep = musicVol / 20.0f;
 
             foreach (var song in channelMusic)
             {
@@ -230,55 +288,32 @@ namespace CSharpCraft.Pico8
                     }
                 }
 
-                if (musicTransition != (null,  null))
+                if (musicTransition.Item1 is null || musicTransition.Item2 is null)
+                {
+                    musicTransition = new();
+                    if (song[curTrack].track.Volume > 0)
+                    {
+                        song[curTrack].track.Volume = musicVol;
+                    }
+                }
+                else
                 {
                     if (musicTransition.Item1[curTrack].Volume > 0.0f)
                     {
                         musicTransition.Item1[curTrack].Volume -= fadeStep;
                     }
-                    if (musicTransition.Item2[curTrack].Volume < 1.0f)
+                    if (musicTransition.Item2[curTrack].Volume < musicVol)
                     {
                         musicTransition.Item2[curTrack].Volume += fadeStep;
                     }
-                    if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= 1.0f)
+                    if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= musicVol)
                     {
                         musicTransition.Item1[curTrack].Volume = 0.0f;
-                        musicTransition.Item2[curTrack].Volume = 1.0f;
+                        musicTransition.Item2[curTrack].Volume = musicVol;
                         musicTransition = new();
                     }
                 }
             }
-
-            //if (fade1)
-            //{
-            //    if (channelMusic[0].Volume < 1.0f)
-            //    {
-            //        channelMusic[0].Volume += 0.05f;
-            //    }
-            //    if (channelMusic[1].Volume > 0.0f)
-            //    {
-            //        channelMusic[1].Volume -= 0.05f;
-            //    }
-            //    if (channelMusic[0].Volume >= 1.0f && channelMusic[1].Volume <= 0.0f)
-            //    {
-            //        fade1 = false;
-            //    }
-            //}
-            //else if (fade4)
-            //{
-            //    if (channelMusic[1].Volume < 1.0f)
-            //    {
-            //        channelMusic[1].Volume += 0.05f;
-            //    }
-            //    if (channelMusic[0].Volume > 0.0f)
-            //    {
-            //        channelMusic[0].Volume -= 0.05f;
-            //    }
-            //    if (channelMusic[1].Volume >= 1.0f && channelMusic[0].Volume <= 0.0f)
-            //    {
-            //        fade4 = false;
-            //    }
-            //}
         }
 
 
@@ -311,7 +346,7 @@ namespace CSharpCraft.Pico8
                 for(int j = 0; j < menuItems.Count; j++)
                 {
                     int indent = menuSelected == j ? 1 : 0;
-                    Print(menuItems[j].name, xborder + indent + 12, i, 7);
+                    Print(menuItems[j].GetName(), xborder + indent + 12, i, 7);
                     i += 8;
                 }
             }
@@ -745,9 +780,9 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Menuitem(int pos, string name, Action function)
+        public void Menuitem(int pos, Func<string> getName, Action function)
         {
-            menuItems.Insert(pos, (name, function));
+            menuItems.Insert(pos, new MenuItem(getName, function));
         }
 
 
@@ -779,7 +814,9 @@ namespace CSharpCraft.Pico8
 
         public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
         {
-            (List<(string name, bool loop)> tracks, int group) curSong = _music[curSoundtrack][n];
+            lastMusicCall = n;
+            if (!soundOn) { return; }
+            (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(curSoundtrack).Value[n];
 
             if (channelMusic.Count > 0 && channelMusic[0][0].group == curSong.group)
             {
@@ -805,16 +842,9 @@ namespace CSharpCraft.Pico8
             }
             else
             {
-                foreach (var songs in channelMusic)
-                {
-                    foreach (var song in songs)
-                    {
-                        song.track.Dispose();
-                    }
-                }
-                channelMusic = [];
+                SoundDispose();
 
-                foreach ((List<(string name, bool loop)> tracks, int group) song in _music[curSoundtrack])
+                foreach ((List<(string name, bool loop)> tracks, int group) song in _music.ElementAt(curSoundtrack).Value)
                 {
                     if (song.group == curSong.group)
                     {
@@ -835,73 +865,6 @@ namespace CSharpCraft.Pico8
                     curTrack = 0;
                 }
             }
-
-            //if (!swap)
-            //{
-            //    if (channelMusic is not null)
-            //    {
-            //        foreach (List<(SoundEffectInstance track, bool loop)> songList in channelMusic)
-            //        {
-            //            foreach ((SoundEffectInstance track, bool loop) song in songList)
-            //            {
-            //                song.track.Dispose();
-            //            }
-            //        }
-            //        channelMusic = [];
-            //    }
-            //}
-
-            //((string name, bool loop)[] tracks, int group) song2 = _music[curSoundtrack][n];
-            //
-            //List<(SoundEffectInstance track, bool loop)> songs = new();
-            //foreach ((string name, bool loop) track in song2.tracks)
-            //{
-            //    songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
-            //}
-            //channelMusic.Add(songs);
-            //for (int j = 0; j < _music[curSoundtrack].Length; j++)
-            //{
-            //    ((string name, bool loop)[] tracks, int group) song = _music[curSoundtrack][j];
-            //    if (song.group == n && j != n)
-            //    {
-            //        foreach ((string name, bool loop) track in song.tracks)
-            //        {
-            //            songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
-            //        }
-            //        channelMusic.Add(songs);
-            //    }
-            //}
-            //
-            //int i = 0;
-            //foreach (List<(SoundEffectInstance track, bool loop)> song in channelMusic)
-            //{
-            //    (SoundEffectInstance track, bool loop) curSong = song[0];
-            //    curSong.track.IsLooped = curSong.loop;
-            //    curSong.track.Play();
-            //    curSong.track.Volume = (i == 0) ? 1 : 0;
-            //    i++;
-            //}
-
-            //if (nFlr == 1)
-            //{
-            //    //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-            //    //channelMusic.Add(instance);
-            //    //instance.Play();
-            //    fade1 = true;
-            //    fade4 = false;
-            //}
-            //else if (nFlr == 4)
-            //{
-            //    //SoundEffectInstance instance = musicDictionary[$"music_{nFlr}"].CreateInstance();
-            //    //channelMusic.Add(instance);
-            //    //instance.Play();
-            //    fade4 = true;
-            //    fade1 = false;
-            //}
-            //else
-            //{
-            //    return;
-            //}
         }
 
 
@@ -1060,6 +1023,7 @@ namespace CSharpCraft.Pico8
 
         public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
         {
+            if (!soundOn) { return; }
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
 
@@ -1079,11 +1043,12 @@ namespace CSharpCraft.Pico8
                     sfxInstance.Dispose();
                 }
 
-                SoundEffectInstance instance = soundEffectDictionary[$"sfx_{nFlr}"].CreateInstance();
+                SoundEffectInstance instance = soundEffectDictionary[_sfx.ElementAt(curSfxPack).Value[nFlr]].CreateInstance();
 
                 c.Add(instance);
 
                 instance.Play();
+                instance.Volume = sfxVol;
             }
             else
             {

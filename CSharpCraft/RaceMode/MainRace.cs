@@ -167,6 +167,7 @@ namespace CSharpCraft.RaceMode
         public string FlagData => @"";
         public string MapData => @"";
         public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new();
+        public Dictionary<string, Dictionary<int, string>> Sfx => new();
         public void Dispose()
         {
             cancellationTokenSource.Cancel(); // Cancel the listening task

@@ -1154,7 +1154,7 @@ namespace CSharpCraft.Pcraft
 
             F32 dx = F32.Zero;
             F32 dy = F32.Zero;
-            
+
             if (p8.Btn(0)) dx -= 1;
             if (p8.Btn(1)) dx += 1;
             if (p8.Btn(2)) dy -= 1;
@@ -2187,11 +2187,11 @@ f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
         public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new()
         {
             { "original", [
-                ([("pcraft_og_cave", true)], 0),
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
                 ([("pcraft_og_surface", true)], 1),
-                ([("pcraft_og_cave", true)], 2),
-                ([("pcraft_og_cave", true)], 3),
-                ([("pcraft_og_cave", true)], 4)]
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
             },
             { "new!", [
                 ([("pcraft_new_title", true)], 0),
@@ -2207,6 +2207,49 @@ f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
                 ([("pcraft_pe_win", false)], 3),
                 ([("pcraft_pe_death", true)], 4)]
             }
+        };
+
+        public Dictionary<string, Dictionary<int, string>> Sfx => new()
+        {
+            { "original", new() {
+                { 11, "pcraft_og_11" },
+                { 12, "pcraft_og_12" },
+                { 13, "pcraft_og_13" },
+                { 14, "pcraft_og_14" },
+                { 15, "pcraft_og_15" },
+                { 16, "pcraft_og_16" },
+                { 17, "pcraft_og_17" },
+                { 18, "pcraft_og_18" },
+                { 19, "pcraft_og_19" },
+                { 20, "pcraft_og_20" },
+                { 21, "pcraft_og_21" }}
+            },
+            { "soft", new() {
+                { 11, "pcraft_soft_11" },
+                { 12, "pcraft_soft_12" },
+                { 13, "pcraft_soft_13" },
+                { 14, "pcraft_soft_14" },
+                { 15, "pcraft_soft_15" },
+                { 16, "pcraft_soft_16" },
+                { 17, "pcraft_soft_17" },
+                { 18, "pcraft_soft_18" },
+                { 19, "pcraft_soft_19" },
+                { 20, "pcraft_soft_20" },
+                { 21, "pcraft_soft_21" }}
+            },
+            { "pog edition", new() {
+                { 11, "pcraft_pe_11" },
+                { 12, "pcraft_pe_12" },
+                { 13, "pcraft_pe_13" },
+                { 14, "pcraft_pe_14" },
+                { 15, "pcraft_pe_15" },
+                { 16, "pcraft_pe_16" },
+                { 17, "pcraft_pe_17" },
+                { 18, "pcraft_pe_18" },
+                { 19, "pcraft_pe_19" },
+                { 20, "pcraft_pe_20" },
+                { 21, "pcraft_pe_21" }}
+            },
         };
 
         public void Dispose()

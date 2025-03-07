@@ -86,6 +86,9 @@
 		<None Remove="Content\Music\pcraft_new_cave.wav" />
 		<None Remove="Content\Music\pcraft_new_surface.wav" />
 		<None Remove="Content\Music\pcraft_new_title.wav" />
+		<None Remove="Content\Music\pcraft_og_cave_0.wav" />
+		<None Remove="Content\Music\pcraft_og_cave_1.wav" />
+		<None Remove="Content\Music\pcraft_og_surface.wav" />
 		<None Remove="Content\Music\pcraft_pe_cave_0.wav" />
 		<None Remove="Content\Music\pcraft_pe_cave_1.wav" />
 		<None Remove="Content\Music\pcraft_pe_death.wav" />
@@ -94,12 +97,43 @@
 		<None Remove="Content\Music\pcraft_pe_title_0.wav" />
 		<None Remove="Content\Music\pcraft_pe_title_1.wav" />
 		<None Remove="Content\Music\pcraft_pe_win.wav" />
+		<None Remove="Content\Sfx\pcraft_og_11.wav" />
+		<None Remove="Content\Sfx\pcraft_og_12.wav" />
+		<None Remove="Content\Sfx\pcraft_og_13.wav" />
+		<None Remove="Content\Sfx\pcraft_og_14.wav" />
+		<None Remove="Content\Sfx\pcraft_og_15.wav" />
+		<None Remove="Content\Sfx\pcraft_og_16.wav" />
+		<None Remove="Content\Sfx\pcraft_og_17.wav" />
+		<None Remove="Content\Sfx\pcraft_og_18.wav" />
+		<None Remove="Content\Sfx\pcraft_og_19.wav" />
+		<None Remove="Content\Sfx\pcraft_og_20.wav" />
+		<None Remove="Content\Sfx\pcraft_og_21.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_11.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_12.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_13.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_14.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_15.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_16.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_17.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_18.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_19.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_20.wav" />
+		<None Remove="Content\Sfx\pcraft_soft_21.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Content Include="Content\Music\menu.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Music\pcraft_og_cave_0.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Music\pcraft_og_cave_1.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Music\pcraft_og_surface.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Music\pcraft_pe_surface_1.wav">
@@ -354,71 +388,71 @@
 		<Content Include="Content\Music\pcraft_pe_win.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_0.wav">
+		<Content Include="Content\Sfx\pcraft_og_11.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_1.wav">
+		<Content Include="Content\Sfx\pcraft_og_12.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_2.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_13.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_3.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_14.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_4.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_15.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_5.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_16.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_6.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_17.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_7.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_18.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_8.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_19.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_9.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_20.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_10.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_og_21.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_11.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_11.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_12.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_12.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_13.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_13.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_14.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_14.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_15.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_15.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_16.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_16.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_17.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_17.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_18.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_18.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_19.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_19.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_20.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_20.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\sfx_21.wav">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<Content Include="Content\Sfx\pcraft_soft_21.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 
