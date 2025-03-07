@@ -29,10 +29,10 @@ namespace CSharpCraft.Pico8
         private int[] _flags;
         private int[] _map;
         private int[] _sprites;
-        private Dictionary<string, ((string name, bool loop)[] tracks, int group)[]> _music;
+        private Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> _music;
         private (int, int) CameraOffset = (0, 0);
         public IScene _cart;
-        private List<List<(SoundEffectInstance track, bool loop)>>? channelMusic = [];
+        private List<List<(string name, SoundEffectInstance track, bool loop, int group)>>? channelMusic = [];
         private List<SoundEffectInstance>? channel0 = [];
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
@@ -50,7 +50,10 @@ namespace CSharpCraft.Pico8
         private Dictionary<int, Texture2D> spriteTextures = [];
         private List<(string name, Action function)> menuItems;
         private int menuSelected;
-        private int curSoundtrack;
+        private string curSoundtrack;
+        private int curTrack;
+        private float musicVol;
+        private (List<SoundEffectInstance>, List<SoundEffectInstance>) musicTransition;
         private CosDict cosDict = new();
         private SinDict sinDict = new();
 
@@ -75,7 +78,9 @@ namespace CSharpCraft.Pico8
             isPaused = false;
 
             menuSelected = 0;
-            curSoundtrack = 0;
+            curSoundtrack = "new!";
+            musicVol = 1.0f;
+            musicTransition = new();
 
             LoadCart(cart);
         }
@@ -96,18 +101,18 @@ namespace CSharpCraft.Pico8
             
             SoundDispose();
 
-            SoundEffectInstance instance1 = musicDictionary[$"pcraft_new_surface"].CreateInstance();
-            SoundEffectInstance instance4 = musicDictionary[$"pcraft_new_cave"].CreateInstance();
+            //SoundEffectInstance instance1 = musicDictionary[$"pcraft_new_surface"].CreateInstance();
+            //SoundEffectInstance instance4 = musicDictionary[$"pcraft_new_cave"].CreateInstance();
             //channelMusic.Add(instance1);
             //channelMusic.Add(instance4);
-            instance1.IsLooped = true;
-            instance4.IsLooped = true;
-            instance1.Play();
-            instance4.Play();
-            instance1.Volume = 0.0f;
-            instance4.Volume = 0.0f;
-            fade1 = false;
-            fade4 = false;
+            //instance1.IsLooped = true;
+            //instance4.IsLooped = true;
+            //instance1.Play();
+            //instance4.Play();
+            //instance1.Volume = 0.0f;
+            //instance4.Volume = 0.0f;
+            //fade1 = false;
+            //fade4 = false;
 
             void Continue()
             {
@@ -209,6 +214,40 @@ namespace CSharpCraft.Pico8
             prev3 = Btn(3);
             prev4 = Btn(4);
             prev5 = Btn(5);
+
+            float fadeStep = 0.05f;
+
+            foreach (var song in channelMusic)
+            {
+                if (song[curTrack].track.State == SoundState.Stopped)
+                {
+                    if (song.Count <= curTrack + 2)
+                    {
+                        curTrack += 1;
+                        song[curTrack].track.IsLooped = song[curTrack].loop;
+                        song[curTrack].track.Play();
+                        song[curTrack].track.Volume = musicVol;
+                    }
+                }
+
+                if (musicTransition != (null,  null))
+                {
+                    if (musicTransition.Item1[curTrack].Volume > 0.0f)
+                    {
+                        musicTransition.Item1[curTrack].Volume -= fadeStep;
+                    }
+                    if (musicTransition.Item2[curTrack].Volume < 1.0f)
+                    {
+                        musicTransition.Item2[curTrack].Volume += fadeStep;
+                    }
+                    if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= 1.0f)
+                    {
+                        musicTransition.Item1[curTrack].Volume = 0.0f;
+                        musicTransition.Item2[curTrack].Volume = 1.0f;
+                        musicTransition = new();
+                    }
+                }
+            }
 
             //if (fade1)
             //{
@@ -370,7 +409,7 @@ namespace CSharpCraft.Pico8
                     colorData[j] = color;
                 }
 
-                if (i % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
+                if (j % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
             }
 
             texture.SetData(colorData);
@@ -738,56 +777,110 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Music(int n, double fadems = 0, bool swap = false) // https://pico-8.fandom.com/wiki/Music
+        public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
         {
-            //SoundBank;
-            //currentInstance.State == SoundState.Stopped;
+            (List<(string name, bool loop)> tracks, int group) curSong = _music[curSoundtrack][n];
 
-            if (!swap)
+            if (channelMusic.Count > 0 && channelMusic[0][0].group == curSong.group)
             {
-                if (channelMusic is not null)
+                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> item in channelMusic)
                 {
-                    foreach (List<(SoundEffectInstance track, bool loop)> songList in channelMusic)
+                    if (item[0].name != curSong.tracks[0].name)
                     {
-                        foreach ((SoundEffectInstance track, bool loop) song in songList)
+                        foreach (var sfxInst in item)
                         {
-                            song.track.Dispose();
+                            musicTransition.Item1 = [];
+                            musicTransition.Item1.Add(sfxInst.track);
                         }
                     }
-                    channelMusic = [];
-                }
-            }
-
-            ((string name, bool loop)[] tracks, int group) song2 = _music["pog edition"][n];
-            
-            List<(SoundEffectInstance track, bool loop)> songs = new();
-            foreach ((string name, bool loop) track in song2.tracks)
-            {
-                songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
-            }
-            channelMusic.Add(songs);
-            for (int j = 0; j < _music["pog edition"].Length; j++)
-            {
-                ((string name, bool loop)[] tracks, int group) song = _music["pog edition"][j];
-                if (song.group == n && j != n)
-                {
-                    foreach ((string name, bool loop) track in song.tracks)
+                    else
                     {
-                        songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
+                        foreach (var sfxInst in item)
+                        {
+                            musicTransition.Item2 = [];
+                            musicTransition.Item2.Add(sfxInst.track);
+                        }
                     }
-                    channelMusic.Add(songs);
+                }
+            }
+            else
+            {
+                foreach (var songs in channelMusic)
+                {
+                    foreach (var song in songs)
+                    {
+                        song.track.Dispose();
+                    }
+                }
+                channelMusic = [];
+
+                foreach ((List<(string name, bool loop)> tracks, int group) song in _music[curSoundtrack])
+                {
+                    if (song.group == curSong.group)
+                    {
+                        List<(string name, SoundEffectInstance track, bool loop, int group)> listOfTracks = [];
+                        foreach ((string name, bool loop) track in song.tracks)
+                        {
+                            listOfTracks.Add((track.name, musicDictionary[track.name].CreateInstance(), track.loop, song.group));
+                        }
+                        channelMusic.Add(listOfTracks);
+                    }
+                }
+
+                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> item in channelMusic)
+                {
+                    item[0].track.IsLooped = item[0].loop;
+                    item[0].track.Play();
+                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? musicVol : 0;
+                    curTrack = 0;
                 }
             }
 
-            int i = 0;
-            foreach (List<(SoundEffectInstance track, bool loop)> song in channelMusic)
-            {
-                (SoundEffectInstance track, bool loop) curSong = song[0];
-                curSong.track.IsLooped = curSong.loop;
-                curSong.track.Play();
-                curSong.track.Volume = (i == 0) ? 1 : 0;
-                i++;
-            }
+            //if (!swap)
+            //{
+            //    if (channelMusic is not null)
+            //    {
+            //        foreach (List<(SoundEffectInstance track, bool loop)> songList in channelMusic)
+            //        {
+            //            foreach ((SoundEffectInstance track, bool loop) song in songList)
+            //            {
+            //                song.track.Dispose();
+            //            }
+            //        }
+            //        channelMusic = [];
+            //    }
+            //}
+
+            //((string name, bool loop)[] tracks, int group) song2 = _music[curSoundtrack][n];
+            //
+            //List<(SoundEffectInstance track, bool loop)> songs = new();
+            //foreach ((string name, bool loop) track in song2.tracks)
+            //{
+            //    songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
+            //}
+            //channelMusic.Add(songs);
+            //for (int j = 0; j < _music[curSoundtrack].Length; j++)
+            //{
+            //    ((string name, bool loop)[] tracks, int group) song = _music[curSoundtrack][j];
+            //    if (song.group == n && j != n)
+            //    {
+            //        foreach ((string name, bool loop) track in song.tracks)
+            //        {
+            //            songs.Add((musicDictionary[track.name].CreateInstance(), track.loop));
+            //        }
+            //        channelMusic.Add(songs);
+            //    }
+            //}
+            //
+            //int i = 0;
+            //foreach (List<(SoundEffectInstance track, bool loop)> song in channelMusic)
+            //{
+            //    (SoundEffectInstance track, bool loop) curSong = song[0];
+            //    curSong.track.IsLooped = curSong.loop;
+            //    curSong.track.Play();
+            //    curSong.track.Volume = (i == 0) ? 1 : 0;
+            //    i++;
+            //}
 
             //if (nFlr == 1)
             //{
@@ -1166,9 +1259,9 @@ namespace CSharpCraft.Pico8
         {
             if (channelMusic is not null)
             {
-                foreach (List<(SoundEffectInstance track, bool loop)> songList in channelMusic)
+                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> songList in channelMusic)
                 {
-                    foreach ((SoundEffectInstance track, bool loop) song in songList)
+                    foreach ((string name, SoundEffectInstance track, bool loop, int group) song in songList)
                     {
                         song.track.Dispose();
                     }
