@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
+using System.Reflection;
 
 namespace CSharpCraft.Pico8
 {
@@ -56,7 +57,7 @@ namespace CSharpCraft.Pico8
         private int curTrack;
         private float musicVol;
         private float sfxVol;
-        private (List<SoundEffectInstance>, List<SoundEffectInstance>) musicTransition;
+        private (List<SoundEffectInstance> fromSong, List<SoundEffectInstance> toSong) musicTransition;
         private int? lastMusicCall;
         private CosDict cosDict = new();
         private SinDict sinDict = new();
@@ -94,12 +95,8 @@ namespace CSharpCraft.Pico8
             musicTransition = new();
             lastMusicCall = null;
 
-            //todo move to json
-            soundOn = true;
-            curSoundtrack = 0;
-            curSfxPack = 0;
-            musicVol = 1.0f;
-            sfxVol = 1.0f;
+            curSoundtrack = optionsFile.Pcraft_Soundtrack;
+            curSfxPack = optionsFile.Pcraft_Sfx_Pack;
 
             LoadCart(cart);
         }
@@ -141,8 +138,10 @@ namespace CSharpCraft.Pico8
                     {
                         if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
                         {
-                            soundOn = !soundOn;
-                            if (!soundOn)
+                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sound_On");
+                            propertyName.SetValue(optionsFile, !optionsFile.Sound_On);
+                            OptionsFile.JsonWrite(optionsFile);
+                            if (!optionsFile.Sound_On)
                             {
                                 SoundDispose();
                             }
@@ -152,33 +151,41 @@ namespace CSharpCraft.Pico8
                             }
                         }
                     }
-                    Menuitem(0, () => $"sound:{(soundOn ? "on" : "off")}", () => Sound());
+                    Menuitem(0, () => $"sound:{(optionsFile.Sound_On ? "on" : "off")}", () => Sound());
 
                     void MusicVol()
                     {
                         if (Btnp(0))
                         {
-                            musicVol = Math.Max(musicVol - 0.1f, 0.0f);
+                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Music_Vol");
+                            propertyName.SetValue(optionsFile, Math.Max(optionsFile.Music_Vol - 10, 0));
+                            OptionsFile.JsonWrite(optionsFile);
                         }
                         if (Btnp(1))
                         {
-                            musicVol = Math.Min(musicVol + 0.1f, 1.0f);
+                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Music_Vol");
+                            propertyName.SetValue(optionsFile, Math.Min(optionsFile.Music_Vol + 10, 100));
+                            OptionsFile.JsonWrite(optionsFile);
                         }
                     }
-                    Menuitem(1, () => $"music vol:{Math.Round(musicVol*100)}%", () => MusicVol());
+                    Menuitem(1, () => $"music vol:{optionsFile.Music_Vol}%", () => MusicVol());
 
                     void SfxVol()
                     {
                         if (Btnp(0))
                         {
-                            sfxVol = Math.Max(sfxVol - 0.1f, 0.0f);
+                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sfx_Vol");
+                            propertyName.SetValue(optionsFile, Math.Max(optionsFile.Sfx_Vol - 10, 0));
+                            OptionsFile.JsonWrite(optionsFile);
                         }
                         if (Btnp(1))
                         {
-                            sfxVol = Math.Min(sfxVol + 0.1f, 1.0f);
+                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sfx_Vol");
+                            propertyName.SetValue(optionsFile, Math.Min(optionsFile.Sfx_Vol + 10, 100));
+                            OptionsFile.JsonWrite(optionsFile);
                         }
                     }
-                    Menuitem(2, () => $"sfx vol:{Math.Round(sfxVol *100)}%", () => SfxVol());
+                    Menuitem(2, () => $"sfx vol:{optionsFile.Sfx_Vol}%", () => SfxVol());
 
                     void Soundtrack()
                     {
@@ -191,13 +198,16 @@ namespace CSharpCraft.Pico8
                             curSoundtrack += 1;
                         }
                         curSoundtrack = GeneralFunctions.Loop(curSoundtrack, _music.Count);
+                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Pcraft_Soundtrack");
+                        propertyName.SetValue(optionsFile, curSoundtrack);
+                        OptionsFile.JsonWrite(optionsFile);
                         if (Btnp(0) || Btnp(1))
                         {
                             SoundDispose();
                             if (lastMusicCall is not null) { Music((int)lastMusicCall); }
                         }
                     }
-                    Menuitem(3, () => $"music:{_music.ElementAt(curSoundtrack).Key}", () => Soundtrack());
+                    Menuitem(3, () => $"music:{_music.ElementAt(optionsFile.Pcraft_Soundtrack).Key}", () => Soundtrack());
 
                     void Sfx()
                     {
@@ -210,8 +220,11 @@ namespace CSharpCraft.Pico8
                             curSfxPack += 1;
                         }
                         curSfxPack = GeneralFunctions.Loop(curSfxPack, _sfx.Count);
+                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Pcraft_Sfx_Pack");
+                        propertyName.SetValue(optionsFile, curSfxPack);
+                        OptionsFile.JsonWrite(optionsFile);
                     }
-                    Menuitem(4, () => $"sfx:{_sfx.ElementAt(curSfxPack).Key}", () => Sfx());
+                    Menuitem(4, () => $"sfx:{_sfx.ElementAt(optionsFile.Pcraft_Sfx_Pack).Key}", () => Sfx());
 
                     void Back()
                     {
@@ -268,7 +281,6 @@ namespace CSharpCraft.Pico8
                 menuSelected = 0;
             }
             prev6 = Btn(6);
-            heldCount6 = prev6 ? heldCount6 + 1 : 0;
 
             if (isPaused)
             {
@@ -297,9 +309,9 @@ namespace CSharpCraft.Pico8
             heldCount4 = prev4 ? heldCount4 + 1 : 0;
             heldCount5 = prev5 ? heldCount5 + 1 : 0;
 
-            float fadeStep = musicVol / 20.0f;
+            float fadeStep = optionsFile.Music_Vol / 2000.0f;
 
-            foreach (var song in channelMusic)
+            foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
             {
                 if (song[curTrack].track.State == SoundState.Stopped)
                 {
@@ -308,16 +320,16 @@ namespace CSharpCraft.Pico8
                         curTrack += 1;
                         song[curTrack].track.IsLooped = song[curTrack].loop;
                         song[curTrack].track.Play();
-                        song[curTrack].track.Volume = musicVol;
+                        song[curTrack].track.Volume = optionsFile.Music_Vol / 100.0f;
                     }
                 }
 
                 if (musicTransition.Item1 is null || musicTransition.Item2 is null)
                 {
                     musicTransition = new();
-                    if (song[curTrack].track.Volume > 0)
+                    if (song[curTrack].name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].tracks[curTrack].name)
                     {
-                        song[curTrack].track.Volume = musicVol;
+                        song[curTrack].track.Volume = optionsFile.Music_Vol / 100.0f;
                     }
                 }
                 else
@@ -326,14 +338,14 @@ namespace CSharpCraft.Pico8
                     {
                         musicTransition.Item1[curTrack].Volume -= fadeStep;
                     }
-                    if (musicTransition.Item2[curTrack].Volume < musicVol)
+                    if (musicTransition.Item2[curTrack].Volume < optionsFile.Music_Vol / 100.0f)
                     {
                         musicTransition.Item2[curTrack].Volume += fadeStep;
                     }
-                    if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= musicVol)
+                    if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= optionsFile.Music_Vol / 100.0f)
                     {
                         musicTransition.Item1[curTrack].Volume = 0.0f;
-                        musicTransition.Item2[curTrack].Volume = musicVol;
+                        musicTransition.Item2[curTrack].Volume = optionsFile.Music_Vol / 100.0f;
                         musicTransition = new();
                     }
                 }
@@ -535,13 +547,15 @@ namespace CSharpCraft.Pico8
 
         public bool Btnp(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btnp
         {
-            if (i == 0 && Btn(i) && (!prev0 || heldCount0 == 15 || heldCount0 > 15 && (heldCount0 - 15) % 4 == 0)) { return true; }
-            if (i == 1 && Btn(i) && (!prev1 || heldCount1 == 15 || heldCount1 > 15 && (heldCount1 - 15) % 4 == 0)) { return true; }
-            if (i == 2 && Btn(i) && (!prev2 || heldCount2 == 15 || heldCount2 > 15 && (heldCount2 - 15) % 4 == 0)) { return true; }
-            if (i == 3 && Btn(i) && (!prev3 || heldCount3 == 15 || heldCount3 > 15 && (heldCount3 - 15) % 4 == 0)) { return true; }
-            if (i == 4 && Btn(i) && (!prev4 || heldCount4 == 15 || heldCount4 > 15 && (heldCount4 - 15) % 4 == 0)) { return true; }
-            if (i == 5 && Btn(i) && (!prev5 || heldCount5 == 15 || heldCount5 > 15 && (heldCount5 - 15) % 4 == 0)) { return true; }
-            if (i == 6 && Btn(i) && (!prev6 || heldCount6 == 15 || heldCount6 > 15 && (heldCount6 - 15) % 4 == 0)) { return true; }
+            int initDelay = 15;
+            int repDelay = 4;
+            if (i == 0 && Btn(i) && (!prev0 || heldCount0 == initDelay || heldCount0 > initDelay && (heldCount0 - initDelay) % repDelay == 0)) { return true; }
+            if (i == 1 && Btn(i) && (!prev1 || heldCount1 == initDelay || heldCount1 > initDelay && (heldCount1 - initDelay) % repDelay == 0)) { return true; }
+            if (i == 2 && Btn(i) && (!prev2 || heldCount2 == initDelay || heldCount2 > initDelay && (heldCount2 - initDelay) % repDelay == 0)) { return true; }
+            if (i == 3 && Btn(i) && (!prev3 || heldCount3 == initDelay || heldCount3 > initDelay && (heldCount3 - initDelay) % repDelay == 0)) { return true; }
+            if (i == 4 && Btn(i) && (!prev4 || heldCount4 == initDelay || heldCount4 > initDelay && (heldCount4 - initDelay) % repDelay == 0)) { return true; }
+            if (i == 5 && Btn(i) && (!prev5 || heldCount5 == initDelay || heldCount5 > initDelay && (heldCount5 - initDelay) % repDelay == 0)) { return true; }
+            if (i == 6 && Btn(i) && !prev6) { return true; }
             return false;
         }
 
@@ -839,8 +853,8 @@ namespace CSharpCraft.Pico8
         public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
         {
             lastMusicCall = n;
-            if (!soundOn) { return; }
-            (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(curSoundtrack).Value[n];
+            if (!optionsFile.Sound_On) { return; }
+            (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(optionsFile.Pcraft_Soundtrack).Value[n];
 
             if (channelMusic.Count > 0 && channelMusic[0][0].group == curSong.group)
             {
@@ -848,18 +862,18 @@ namespace CSharpCraft.Pico8
                 {
                     if (item[0].name != curSong.tracks[0].name)
                     {
-                        foreach (var sfxInst in item)
+                        foreach ((string name, SoundEffectInstance track, bool loop, int group) sfxInst in item)
                         {
-                            musicTransition.Item1 = [];
-                            musicTransition.Item1.Add(sfxInst.track);
+                            musicTransition.fromSong = [];
+                            musicTransition.fromSong.Add(sfxInst.track);
                         }
                     }
                     else
                     {
-                        foreach (var sfxInst in item)
+                        foreach ((string name, SoundEffectInstance track, bool loop, int group) sfxInst in item)
                         {
-                            musicTransition.Item2 = [];
-                            musicTransition.Item2.Add(sfxInst.track);
+                            musicTransition.toSong = [];
+                            musicTransition.toSong.Add(sfxInst.track);
                         }
                     }
                 }
@@ -868,7 +882,7 @@ namespace CSharpCraft.Pico8
             {
                 SoundDispose();
 
-                foreach ((List<(string name, bool loop)> tracks, int group) song in _music.ElementAt(curSoundtrack).Value)
+                foreach ((List<(string name, bool loop)> tracks, int group) song in _music.ElementAt(optionsFile.Pcraft_Soundtrack).Value)
                 {
                     if (song.group == curSong.group)
                     {
@@ -885,7 +899,7 @@ namespace CSharpCraft.Pico8
                 {
                     item[0].track.IsLooped = item[0].loop;
                     item[0].track.Play();
-                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? musicVol : 0;
+                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? optionsFile.Music_Vol / 100.0f : 0;
                     curTrack = 0;
                 }
             }
@@ -1047,7 +1061,7 @@ namespace CSharpCraft.Pico8
 
         public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
         {
-            if (!soundOn) { return; }
+            if (!optionsFile.Sound_On) { return; }
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
 
@@ -1067,12 +1081,12 @@ namespace CSharpCraft.Pico8
                     sfxInstance.Dispose();
                 }
 
-                SoundEffectInstance instance = soundEffectDictionary[_sfx.ElementAt(curSfxPack).Value[nFlr]].CreateInstance();
+                SoundEffectInstance instance = soundEffectDictionary[_sfx.ElementAt(optionsFile.Pcraft_Sfx_Pack).Value[nFlr]].CreateInstance();
 
                 c.Add(instance);
 
                 instance.Play();
-                instance.Volume = sfxVol;
+                instance.Volume = optionsFile.Sfx_Vol / 100.0f;
             }
             else
             {

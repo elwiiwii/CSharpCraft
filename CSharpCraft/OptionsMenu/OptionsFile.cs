@@ -23,6 +23,12 @@ namespace CSharpCraft.OptionsMenu
         public Binding Con_Menu { get; set; } = new Binding("B", "RightShoulder");
         public Binding Con_Pause { get; set; } = new Binding("Start", "Back");
 
+        public bool Sound_On { get; set; } = true;
+        public int Music_Vol { get; set; } = 100;
+        public int Sfx_Vol { get; set; } = 100;
+        public int Pcraft_Soundtrack { get; set; } = 0;
+        public int Pcraft_Sfx_Pack { get; set; } = 0;
+
         private static readonly string optionsFileName = "settings.json";
         private static readonly JsonSerializerOptions jsonOptions = new() { IncludeFields = true, WriteIndented = true };
 
