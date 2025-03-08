@@ -46,17 +46,13 @@ namespace CSharpCraft.Pico8
         private int heldCount3;
         private int heldCount4;
         private int heldCount5;
-        private int heldCount6;
         private bool isPaused;
-        private Dictionary<(int, int?[]), Texture2D> spriteTextures = [];
+        private Dictionary<int[], Texture2D> spriteTextures = new(new EqualityComparer());
         private List<MenuItem> menuItems;
         private int menuSelected;
-        private bool soundOn;
         private int curSoundtrack;
         private int curSfxPack;
         private int curTrack;
-        private float musicVol;
-        private float sfxVol;
         private (List<SoundEffectInstance> fromSong, List<SoundEffectInstance> toSong) musicTransition;
         private int? lastMusicCall;
         private CosDict cosDict = new();
@@ -87,7 +83,6 @@ namespace CSharpCraft.Pico8
             heldCount3 = 0;
             heldCount4 = 0;
             heldCount5 = 0;
-            heldCount6 = 0;
 
             isPaused = false;
 
@@ -461,7 +456,7 @@ namespace CSharpCraft.Pico8
             HexToColor("FF9D81"), // 31 peach
             */
         ];
-        public int?[] palColors = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        public int[] palColors = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 
         private Texture2D CreateTextureFromSpriteData(int[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
@@ -473,8 +468,8 @@ namespace CSharpCraft.Pico8
             for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
             {
                 int index = spriteData[i] % 16;
-                int? palSwapCol = palColors[index];
-                if (palSwapCol is not null)
+                int palSwapCol = palColors[index];
+                if (palSwapCol != -1)
                 {
                     Color color = colors[(int)palSwapCol];
                     colorData[j] = color;
@@ -582,7 +577,7 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] is null ? c : (int)palColors[c];
+            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -632,7 +627,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] is null ? c : (int)palColors[c];
+            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -681,7 +676,7 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] is null ? c : (int)palColors[c];
+            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -722,7 +717,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] is null ? c : (int)palColors[c];
+            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
             int viewportWidth = graphicsDevice.Viewport.Width;
@@ -760,7 +755,7 @@ namespace CSharpCraft.Pico8
         {
             int colorFlr = (int)Math.Floor(color);
 
-            int clearCol = palColors[colorFlr] is null ? colorFlr : (int)palColors[colorFlr];
+            int clearCol = palColors[colorFlr] == -1 ? colorFlr : (int)palColors[colorFlr];
             graphicsDevice.Clear(colors[clearCol]);
         }
 
@@ -908,7 +903,7 @@ namespace CSharpCraft.Pico8
 
         public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
-            palColors = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            palColors = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         }
 
 
@@ -923,7 +918,7 @@ namespace CSharpCraft.Pico8
 
         public void Palt() // https://pico-8.fandom.com/wiki/Palt
         {
-            palColors = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            palColors = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         }
 
 
@@ -933,7 +928,7 @@ namespace CSharpCraft.Pico8
 
             if (t)
             {
-                palColors[colFlr] = null;
+                palColors[colFlr] = -1;
             }
             else
             {
@@ -1144,10 +1139,13 @@ namespace CSharpCraft.Pico8
             int spriteX = spriteNumberFlr % 16 * spriteWidth;
             int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
-            if (!spriteTextures.TryGetValue((spriteNumberFlr, palColors), out Texture2D texture))
+            int[] cache = palColors;
+            Array.Resize(ref cache, 17);
+            cache[16] = spriteNumberFlr;
+            if (!spriteTextures.TryGetValue(cache, out Texture2D texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
-                spriteTextures[(spriteNumberFlr, palColors)] = texture;
+                spriteTextures[cache] = texture;
             }
 
             // Get the size of the viewport
@@ -1182,10 +1180,13 @@ namespace CSharpCraft.Pico8
 
             int spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
 
-            if (!spriteTextures.TryGetValue((spriteNumberFlr, palColors), out Texture2D texture))
+            int[] cache = palColors;
+            Array.Resize(ref cache, 17);
+            cache[16] = spriteNumberFlr;
+            if (!spriteTextures.TryGetValue(cache, out Texture2D texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);
-                spriteTextures[(spriteNumberFlr, palColors)] = texture;
+                spriteTextures[cache] = texture;
             }
 
             // Get the size of the viewport

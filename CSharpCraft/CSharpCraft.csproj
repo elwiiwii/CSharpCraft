@@ -108,6 +108,16 @@
 		<None Remove="Content\Sfx\pcraft_og_19.wav" />
 		<None Remove="Content\Sfx\pcraft_og_20.wav" />
 		<None Remove="Content\Sfx\pcraft_og_21.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_11.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_12.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_13.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_14.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_15.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_16.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_17.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_18.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_19.wav" />
+		<None Remove="Content\Sfx\pcraft_pe_21.wav" />
 		<None Remove="Content\Sfx\pcraft_soft_11.wav" />
 		<None Remove="Content\Sfx\pcraft_soft_12.wav" />
 		<None Remove="Content\Sfx\pcraft_soft_13.wav" />
@@ -416,10 +426,37 @@
 		<Content Include="Content\Sfx\pcraft_og_19.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\pcraft_og_20.wav">
+		<Content Include="Content\Sfx\pcraft_og_21.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Content\Sfx\pcraft_og_21.wav">
+		<Content Include="Content\Sfx\pcraft_pe_11.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_12.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_13.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_14.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_15.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_16.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_17.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_18.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_19.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Content\Sfx\pcraft_pe_21.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\pcraft_soft_11.wav">
@@ -447,9 +484,6 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\pcraft_soft_19.wav">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Content\Sfx\pcraft_soft_20.wav">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\pcraft_soft_21.wav">
