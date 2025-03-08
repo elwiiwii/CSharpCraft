@@ -121,6 +121,7 @@
 		<None Remove="Content\Sfx\pcraft_soft_21.wav" />
 		<None Remove="Content\Sfx\sfx_0.wav" />
 		<None Remove="Content\Sfx\sfx_1.wav" />
+		<None Remove="CSharpCraft.bmp" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -452,6 +453,9 @@
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Content\Sfx\pcraft_soft_21.wav">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="CSharpCraft.bmp">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

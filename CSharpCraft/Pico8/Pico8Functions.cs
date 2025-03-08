@@ -32,8 +32,6 @@ namespace CSharpCraft.Pico8
         private List<SoundEffectInstance>? channel1 = [];
         private List<SoundEffectInstance>? channel2 = [];
         private List<SoundEffectInstance>? channel3 = [];
-        private bool fade1;
-        private bool fade4;
         private bool prev0;
         private bool prev1;
         private bool prev2;
@@ -41,8 +39,15 @@ namespace CSharpCraft.Pico8
         private bool prev4;
         private bool prev5;
         private bool prev6;
+        private int heldCount0;
+        private int heldCount1;
+        private int heldCount2;
+        private int heldCount3;
+        private int heldCount4;
+        private int heldCount5;
+        private int heldCount6;
         private bool isPaused;
-        private Dictionary<int, Texture2D> spriteTextures = [];
+        private Dictionary<(int, int?[]), Texture2D> spriteTextures = [];
         private List<MenuItem> menuItems;
         private int menuSelected;
         private bool soundOn;
@@ -74,16 +79,27 @@ namespace CSharpCraft.Pico8
             prev4 = false;
             prev5 = false;
             prev6 = false;
+
+            heldCount0 = 0;
+            heldCount1 = 0;
+            heldCount2 = 0;
+            heldCount3 = 0;
+            heldCount4 = 0;
+            heldCount5 = 0;
+            heldCount6 = 0;
+
             isPaused = false;
 
             menuSelected = 0;
+            musicTransition = new();
+            lastMusicCall = null;
+
+            //todo move to json
             soundOn = true;
             curSoundtrack = 0;
             curSfxPack = 0;
             musicVol = 1.0f;
             sfxVol = 1.0f;
-            musicTransition = new();
-            lastMusicCall = null;
 
             LoadCart(cart);
         }
@@ -252,6 +268,7 @@ namespace CSharpCraft.Pico8
                 menuSelected = 0;
             }
             prev6 = Btn(6);
+            heldCount6 = prev6 ? heldCount6 + 1 : 0;
 
             if (isPaused)
             {
@@ -272,6 +289,13 @@ namespace CSharpCraft.Pico8
             prev3 = Btn(3);
             prev4 = Btn(4);
             prev5 = Btn(5);
+
+            heldCount0 = prev0 ? heldCount0 + 1 : 0;
+            heldCount1 = prev1 ? heldCount1 + 1 : 0;
+            heldCount2 = prev2 ? heldCount2 + 1 : 0;
+            heldCount3 = prev3 ? heldCount3 + 1 : 0;
+            heldCount4 = prev4 ? heldCount4 + 1 : 0;
+            heldCount5 = prev5 ? heldCount5 + 1 : 0;
 
             float fadeStep = musicVol / 20.0f;
 
@@ -511,14 +535,14 @@ namespace CSharpCraft.Pico8
 
         public bool Btnp(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btnp
         {
-            if (i == 0 && Btn(i) && !prev0) { return true; }
-            if (i == 1 && Btn(i) && !prev1) { return true; }
-            if (i == 2 && Btn(i) && !prev2) { return true; }
-            if (i == 3 && Btn(i) && !prev3) { return true; }
-            if (i == 4 && Btn(i) && !prev4) { return true; }
-            if (i == 5 && Btn(i) && !prev5) { return true; }
-            if (i == 6 && Btn(i) && !prev6) { return true; }
-            else { return false; }
+            if (i == 0 && Btn(i) && (!prev0 || heldCount0 == 15 || heldCount0 > 15 && (heldCount0 - 15) % 4 == 0)) { return true; }
+            if (i == 1 && Btn(i) && (!prev1 || heldCount1 == 15 || heldCount1 > 15 && (heldCount1 - 15) % 4 == 0)) { return true; }
+            if (i == 2 && Btn(i) && (!prev2 || heldCount2 == 15 || heldCount2 > 15 && (heldCount2 - 15) % 4 == 0)) { return true; }
+            if (i == 3 && Btn(i) && (!prev3 || heldCount3 == 15 || heldCount3 > 15 && (heldCount3 - 15) % 4 == 0)) { return true; }
+            if (i == 4 && Btn(i) && (!prev4 || heldCount4 == 15 || heldCount4 > 15 && (heldCount4 - 15) % 4 == 0)) { return true; }
+            if (i == 5 && Btn(i) && (!prev5 || heldCount5 == 15 || heldCount5 > 15 && (heldCount5 - 15) % 4 == 0)) { return true; }
+            if (i == 6 && Btn(i) && (!prev6 || heldCount6 == 15 || heldCount6 > 15 && (heldCount6 - 15) % 4 == 0)) { return true; }
+            return false;
         }
 
 
@@ -1106,32 +1130,10 @@ namespace CSharpCraft.Pico8
             int spriteX = spriteNumberFlr % 16 * spriteWidth;
             int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
-            int colorCache = 0;
-
-            for (int i = 0; i < palColors.Length; i++)
-            {
-                if (palColors[i] != i)
-                {
-                    for (int j = 0; j < palColors.Length; j++)
-                    {
-                        if (palColors[i] is null)
-                        {
-                            colorCache += i * -1000;
-                            break;
-                        }
-                        else if (palColors[i] == j)
-                        {
-                            colorCache += (i * 100 + j) * 1000;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out Texture2D texture))
+            if (!spriteTextures.TryGetValue((spriteNumberFlr, palColors), out Texture2D texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
-                spriteTextures[spriteNumberFlr + colorCache] = texture;
+                spriteTextures[(spriteNumberFlr, palColors)] = texture;
             }
 
             // Get the size of the viewport
@@ -1164,34 +1166,12 @@ namespace CSharpCraft.Pico8
             int spriteWidth = swFlr;
             int spriteHeight = shFlr;
 
-            int colorCache = 0;
-
-            for (int i = 0; i < palColors.Length; i++)
-            {
-                if (palColors[i] != i)
-                {
-                    for (int j = 0; j < palColors.Length; j++)
-                    {
-                        if (palColors[i] is null)
-                        {
-                            colorCache += i * -1000;
-                            break;
-                        }
-                        else if (palColors[i] == j)
-                        {
-                            colorCache += (i * 100 + j) * 1000;
-                            break;
-                        }
-                    }
-                }
-            }
-
             int spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
 
-            if (!spriteTextures.TryGetValue(spriteNumberFlr + colorCache, out Texture2D texture))
+            if (!spriteTextures.TryGetValue((spriteNumberFlr, palColors), out Texture2D texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);
-                spriteTextures[spriteNumberFlr + colorCache] = texture;
+                spriteTextures[(spriteNumberFlr, palColors)] = texture;
             }
 
             // Get the size of the viewport
