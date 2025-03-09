@@ -72,8 +72,8 @@ namespace CSharpCraft.Credits
                 Description = new(),
                 Links = new()
             };
-            holoknight.Description.Add("THANK YOU HOLOKNIGHT FOR ALL");
-            holoknight.Description.Add("THE AMAZING MUSIC! YOU CAN");
+            holoknight.Description.Add("THANK YOU HOLOKNIGHT FOR THE");
+            holoknight.Description.Add("AWESOME NEW MUSIC! YOU CAN");
             holoknight.Description.Add("SUPPORT THEM ON BANDCAMP!");
             holoknight.Links.Add(("Bandcamp", "https://holoknight.bandcamp.com"));
             holoknight.Links.Add(("Youtube", "https://youtube.com/@holoknight"));

@@ -31,7 +31,7 @@ namespace CSharpCraft.OptionsMenu
         public void Update()
         {
             if (p8.Btnp(3)) { p8.LoadCart(new ControlsOptions()); return; }
-            if (p8.Btnp(4) || p8.Btnp(5)) { p8.LoadCart(new TitleScreen()); return; }
+            if (p8.Btnp(4) || p8.Btnp(5)) { p8.LoadCart(new TitleScreen(false)); return; }
         }
 
         public void Draw()

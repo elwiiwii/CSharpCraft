@@ -47,12 +47,19 @@ namespace CSharpCraft.OptionsMenu
             if (waitingForInput)
             {
                 Keys[] keys = Keyboard.GetState().GetPressedKeys();
+                var mouseState = Mouse.GetState();
+                List<string> pressedButtons = [];
+                if (mouseState.LeftButton == ButtonState.Pressed) { pressedButtons.Add("LeftButton"); }
+                if (mouseState.MiddleButton == ButtonState.Pressed) { pressedButtons.Add("MiddleButton"); }
+                if (mouseState.RightButton == ButtonState.Pressed) { pressedButtons.Add("RightButton"); }
+                if (mouseState.XButton1 == ButtonState.Pressed) { pressedButtons.Add("XButton1"); }
+                if (mouseState.XButton2 == ButtonState.Pressed) { pressedButtons.Add("XButton2"); }
 
-                if (keys.Length == 0) { lockout = false; }
+                if (keys.Length + pressedButtons.Count == 0) { lockout = false; }
 
-                if (!lockout && keys.Length == 1)
+                if (!lockout && keys.Length + pressedButtons.Count == 1)
                 {
-                    if (!(keys[0] == Keys.Delete))
+                    if (pressedButtons.Count == 1 || (keys.Length == 1 && !(keys[0] == Keys.Delete)))
                     {
                         PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
                         PropertyInfo currentProperty = properties[menuSelected.ver];
@@ -60,13 +67,29 @@ namespace CSharpCraft.OptionsMenu
                         Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
                         if (menuSelected.hor == 0 && propertyName is not null)
                         {
-                            Binding newBinding = new Binding(KeysToString.keysToString[keys[0]], binding.Bind2);
+                            Binding newBinding;
+                            if (keys.Length == 1)
+                            {
+                                newBinding = new Binding(KeysToString.keysToString[keys[0]], binding.Bind2);
+                            }
+                            else
+                            {
+                                newBinding = new Binding(pressedButtons[0], binding.Bind2);
+                            }
                             propertyName.SetValue(p8.optionsFile, newBinding);
                             OptionsFile.JsonWrite(p8.optionsFile);
                         }
                         else
                         {
-                            Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[keys[0]]);
+                            Binding newBinding;
+                            if (keys.Length == 1)
+                            {
+                                newBinding = new Binding(binding.Bind1, KeysToString.keysToString[keys[0]]);
+                            }
+                            else
+                            {
+                                newBinding = new Binding(binding.Bind1, pressedButtons[0]);
+                            }
                             propertyName.SetValue(p8.optionsFile, newBinding);
                             OptionsFile.JsonWrite(p8.optionsFile);
                         }

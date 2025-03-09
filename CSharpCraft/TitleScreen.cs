@@ -9,7 +9,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class TitleScreen : IScene, IDisposable
+    public class TitleScreen(bool animation) : IScene, IDisposable
     {
         public string SceneName { get => "TitleScreen"; }
         private Pico8Functions p8;
@@ -24,7 +24,7 @@ namespace CSharpCraft
 
             menuSelected = 0;
             prevState = Keyboard.GetState();
-            frame = 0;
+            frame = animation ? 0 : 50;
         }
 
         public void Update()
@@ -36,17 +36,18 @@ namespace CSharpCraft
                 Environment.Exit(0);
             }
 
-            if (p8.Btnp(2)){ menuSelected -= 1; }
+            if (p8.Btnp(2)) { menuSelected -= 1; }
             if (p8.Btnp(3)) { menuSelected += 1; }
 
             menuSelected = GeneralFunctions.Loop(menuSelected, p8.scenes);
 
-            if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
+            if (frame >= 39 && ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5)))
             {
                 p8.LoadCart(p8.scenes[menuSelected]);
             }
 
             prevState = state;
+            if (animation) { frame++; }
         }
 
         public void Draw()
@@ -67,23 +68,26 @@ namespace CSharpCraft
             Texture2D logo = p8.textureDictionary["CSharpCraftLogo"];
             p8.batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-            p8.Print("c# craft 0.0.1", 0, 18, 6);
-            p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6);
+            if (frame >= 5) { p8.Print("c# craft 0.0.1", 0, 18, 6); }
+            if (frame >= 6) { p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
-            //p8.Print("musicNote", 3, 36, 14);
-            //p8.Print("musicNote", 11, 38, 14);
-            //p8.Print("musicNote", 19, 36, 14);
-            //p8.Print("musicNote", 27, 34, 14);
+            if (frame >= 7) { p8.batch.Draw(p8.textureDictionary["MusicNote"], new(3 * cellWidth, 36 * cellHeight), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+            if (frame >= 11) { p8.batch.Draw(p8.textureDictionary["MusicNote"], new(11 * cellWidth, 38 * cellHeight), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+            if (frame >= 15) { p8.batch.Draw(p8.textureDictionary["MusicNote"], new(19 * cellWidth, 36 * cellHeight), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+            if (frame >= 19) { p8.batch.Draw(p8.textureDictionary["MusicNote"], new(27 * cellWidth, 34 * cellHeight), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
 
-            p8.Print("choose a game mode", 0, 50, 6);
-            p8.Print(">", 0, 62 + (menuSelected * 6), 7);
+            if (frame >= 29) { p8.Print("choose a game mode", 0, 50, 6); }
 
-            int i = 0;
-            foreach (IScene scene in p8.scenes)
+            if (frame >= 39)
             {
-                p8.Print(scene.SceneName, 8, 62 + i, 7);
-             
-                i += 6;
+                p8.Print(">", 0, 62 + (menuSelected * 6), 7);
+                int i = 0;
+                foreach (IScene scene in p8.scenes)
+                {
+                    p8.Print(scene.SceneName, 8, 62 + i, 7);
+
+                    i += 6;
+                }
             }
         }
 

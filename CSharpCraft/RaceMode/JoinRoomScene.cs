@@ -126,7 +126,7 @@ namespace CSharpCraft.RaceMode
                         {
                             mainRace.cancellationTokenSource.Cancel(); // Cancel the listening task
                             mainRace.roomStream?.Dispose(); // Dispose of the stream
-                            p8.LoadCart(new TitleScreen());
+                            p8.LoadCart(new TitleScreen(false));
                             return;
                         }
                         break;

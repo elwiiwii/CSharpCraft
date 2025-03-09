@@ -260,7 +260,7 @@ namespace CSharpCraft.Pico8
             {
                 if (Btnp(4) || Btnp(5))
                 {
-                    LoadCart(new TitleScreen());
+                    LoadCart(new TitleScreen(false));
                 }
             }
             Menuitem(3, () => "exit", () => Exit());
@@ -293,9 +293,33 @@ namespace CSharpCraft.Pico8
                 if (Btnp(2)) { menuSelected -= 1; }
                 if (Btnp(3)) { menuSelected += 1; }
                 menuSelected = GeneralFunctions.Loop(menuSelected, menuItems);
+
+                foreach (var song in channelMusic)
+                {
+                    song[curTrack].track.Pause();
+                }
+                foreach (var channel in new List<List<SoundEffectInstance>?>([channel0, channel1, channel2, channel3]))
+                {
+                    foreach (var sfx in channel)
+                    {
+                        sfx.Pause();
+                    }
+                }
             }
             else
             {
+                foreach (var song in channelMusic)
+                {
+                    if (song[curTrack].track.State == SoundState.Paused) { song[curTrack].track.Play(); }
+                }
+                foreach (var channel in new List<List<SoundEffectInstance>?>([channel0, channel1, channel2, channel3]))
+                {
+                    foreach (var sfx in channel)
+                    {
+                        if (sfx.State == SoundState.Paused) { sfx.Play(); }
+                    }
+                }
+
                 _cart.Update();
             }
 
@@ -313,7 +337,7 @@ namespace CSharpCraft.Pico8
             heldCount4 = prev4 ? heldCount4 + 1 : 0;
             heldCount5 = prev5 ? heldCount5 + 1 : 0;
 
-            float fadeStep = optionsFile.Music_Vol / 2000.0f;
+            float fadeStep = optionsFile.Music_Vol / 1600.0f;
 
             foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
             {
@@ -336,22 +360,23 @@ namespace CSharpCraft.Pico8
                         song[curTrack].track.Volume = optionsFile.Music_Vol / 100.0f;
                     }
                 }
-                else
+            }
+
+            if (musicTransition.Item1 is not null && musicTransition.Item2 is not null && musicTransition.Item1[curTrack].State == SoundState.Playing && musicTransition.Item2[curTrack].State == SoundState.Playing)
+            {
+                if (musicTransition.Item1[curTrack].Volume > 0.0f)
                 {
-                    if (musicTransition.Item1[curTrack].Volume > 0.0f)
-                    {
-                        musicTransition.Item1[curTrack].Volume -= fadeStep;
-                    }
-                    if (musicTransition.Item2[curTrack].Volume < optionsFile.Music_Vol / 100.0f)
-                    {
-                        musicTransition.Item2[curTrack].Volume += fadeStep;
-                    }
-                    if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= optionsFile.Music_Vol / 100.0f)
-                    {
-                        musicTransition.Item1[curTrack].Volume = 0.0f;
-                        musicTransition.Item2[curTrack].Volume = optionsFile.Music_Vol / 100.0f;
-                        musicTransition = new();
-                    }
+                    musicTransition.Item1[curTrack].Volume -= fadeStep;
+                }
+                if (musicTransition.Item2[curTrack].Volume < optionsFile.Music_Vol / 100.0f)
+                {
+                    musicTransition.Item2[curTrack].Volume += fadeStep;
+                }
+                if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= optionsFile.Music_Vol / 100.0f)
+                {
+                    musicTransition.Item1[curTrack].Volume = 0.0f;
+                    musicTransition.Item2[curTrack].Volume = optionsFile.Music_Vol / 100.0f;
+                    musicTransition = new();
                 }
             }
         }
@@ -501,48 +526,96 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
+        private bool IsBindingDown(int device, string bind)
         {
             KeyboardState keyb_state = Keyboard.GetState();
             GamePadState con_state = GamePad.GetState(PlayerIndex.One);
 
+            if (device == 0)
+            {
+                if (Enum.TryParse(bind, out Keys key))
+                {
+                    return keyb_state.IsKeyDown(key);
+                }
+
+                if (IsMouseButton(bind))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if (Enum.TryParse(bind, out Buttons button))
+                {
+                    return con_state.IsButtonDown(button);
+                }
+            }
+
+            return false;
+        }
+
+
+        private bool IsMouseButton(string bind)
+        {
+            MouseState mouse_state = Mouse.GetState();
+
+            switch (bind)
+            {
+                case "LeftButton":
+                    return mouse_state.LeftButton == ButtonState.Pressed;
+                case "RightButton":
+                    return mouse_state.RightButton == ButtonState.Pressed;
+                case "MiddleButton":
+                    return mouse_state.MiddleButton == ButtonState.Pressed;
+                case "XButton1":
+                    return mouse_state.XButton1 == ButtonState.Pressed;
+                case "XButton2":
+                    return mouse_state.XButton2 == ButtonState.Pressed;
+                default:
+                    return false;
+            }
+        }
+
+
+        public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
+        {
             switch (i)
             {
                 case 0:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Left.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Left.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Left.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Left.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Left.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Left.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Left.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Left.Bind2);
                 case 1:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Right.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Right.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Right.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Right.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Right.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Right.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Right.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Right.Bind2);
                 case 2:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Up.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Up.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Up.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Up.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Up.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Up.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Up.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Up.Bind2);
                 case 3:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Down.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Down.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Down.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Down.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Down.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Down.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Down.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Down.Bind2);
                 case 4:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Menu.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Menu.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Menu.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Menu.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Menu.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Menu.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Menu.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Menu.Bind2);
                 case 5:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Use.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Use.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Use.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Use.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Use.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Use.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Use.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Use.Bind2);
                 case 6:
-                    return keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Pause.Bind1)) ||
-                        keyb_state.IsKeyDown((Keys)Enum.Parse(typeof(Keys), optionsFile.Keyb_Pause.Bind2)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Pause.Bind1)) ||
-                        con_state.IsButtonDown((Buttons)Enum.Parse(typeof(Buttons), optionsFile.Con_Pause.Bind2));
+                    return IsBindingDown(0, optionsFile.Keyb_Pause.Bind1) ||
+                        IsBindingDown(0, optionsFile.Keyb_Pause.Bind2) ||
+                        IsBindingDown(1, optionsFile.Con_Pause.Bind1) ||
+                        IsBindingDown(1, optionsFile.Con_Pause.Bind2);
                 default:
                     return false;
             }

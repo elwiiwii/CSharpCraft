@@ -103,7 +103,7 @@ namespace CSharpCraft
 
             if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
             {
-                p8.LoadCart(new TitleScreen());
+                p8.LoadCart(new TitleScreen(false));
             }
 
             if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
@@ -212,7 +212,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
+            p8 = new Pico8Functions(new TitleScreen(true), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
         }
 
 
