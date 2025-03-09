@@ -31,8 +31,8 @@ namespace CSharpCraft.Credits
                 Links = new()
             };
             nusan.Description.Add("THANK YOU NUSAN FOR");
-            nusan.Description.Add("MAKING PCRAFT! SHE OWNS");
-            nusan.Description.Add("IT AND YOU CAN SUPPORT");
+            nusan.Description.Add("MAKING PCRAFT! IT'S HER");
+            nusan.Description.Add("GAME AND YOU CAN SUPPORT");
             nusan.Description.Add("HER ON ITCH.IO OR STEAM!");
             nusan.Links.Add(("Itchio", "https://nusan.itch.io"));
             nusan.Links.Add(("Steam", "https://steampowered.com/developer/NuSan"));

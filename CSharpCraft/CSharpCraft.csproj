@@ -41,6 +41,7 @@
 		<None Remove="Content\Graphics\Itchio.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\LobbyBackground.png" />
+		<None Remove="Content\Graphics\MusicNote.png" />
 		<None Remove="Content\Graphics\OptionsBackground0.png" />
 		<None Remove="Content\Graphics\OptionsBackground1.png" />
 		<None Remove="Content\Graphics\OptionsBackground2.png" />
@@ -142,6 +143,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\MusicNote.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Music\menu.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

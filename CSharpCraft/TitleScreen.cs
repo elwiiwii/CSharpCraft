@@ -16,6 +16,7 @@ namespace CSharpCraft
 
         private int menuSelected;
         private KeyboardState prevState;
+        private int frame;
 
         public void Init(Pico8Functions pico8)
         {
@@ -23,6 +24,7 @@ namespace CSharpCraft
 
             menuSelected = 0;
             prevState = Keyboard.GetState();
+            frame = 0;
         }
 
         public void Update()

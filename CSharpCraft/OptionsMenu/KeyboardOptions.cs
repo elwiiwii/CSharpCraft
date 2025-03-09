@@ -52,21 +52,24 @@ namespace CSharpCraft.OptionsMenu
 
                 if (!lockout && keys.Length == 1)
                 {
-                    PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
-                    PropertyInfo currentProperty = properties[menuSelected.ver];
-                    PropertyInfo propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
-                    Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
-                    if (menuSelected.hor == 0 && propertyName is not null)
+                    if (!(keys[0] == Keys.Delete))
                     {
-                        Binding newBinding = new Binding(KeysToString.keysToString[keys[0]], binding.Bind2);
-                        propertyName.SetValue(p8.optionsFile, newBinding);
-                        OptionsFile.JsonWrite(p8.optionsFile);
-                    }
-                    else
-                    {
-                        Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[keys[0]]);
-                        propertyName.SetValue(p8.optionsFile, newBinding);
-                        OptionsFile.JsonWrite(p8.optionsFile);
+                        PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
+                        PropertyInfo currentProperty = properties[menuSelected.ver];
+                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
+                        Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
+                        if (menuSelected.hor == 0 && propertyName is not null)
+                        {
+                            Binding newBinding = new Binding(KeysToString.keysToString[keys[0]], binding.Bind2);
+                            propertyName.SetValue(p8.optionsFile, newBinding);
+                            OptionsFile.JsonWrite(p8.optionsFile);
+                        }
+                        else
+                        {
+                            Binding newBinding = new Binding(binding.Bind1, KeysToString.keysToString[keys[0]]);
+                            propertyName.SetValue(p8.optionsFile, newBinding);
+                            OptionsFile.JsonWrite(p8.optionsFile);
+                        }
                     }
                     waitingForInput = false;
                     lockout = true;
