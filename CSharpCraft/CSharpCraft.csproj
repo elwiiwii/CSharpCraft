@@ -6,7 +6,14 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>AnyCPU;x64</Platforms>
+		<PublishSingleFile>true</PublishSingleFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\FNA\FNA.Core.csproj">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</ProjectReference>
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Remove="Content\Graphics\0.png" />

@@ -28,11 +28,11 @@ namespace CSharpCraft.Pico8
         private Dictionary<string, Dictionary<int, string>> _sfx;
         private (int, int) CameraOffset = (0, 0);
         public IScene _cart;
-        private List<List<(string name, SoundEffectInstance track, bool loop, int group)>>? channelMusic = [];
-        private List<SoundEffectInstance>? channel0 = [];
-        private List<SoundEffectInstance>? channel1 = [];
-        private List<SoundEffectInstance>? channel2 = [];
-        private List<SoundEffectInstance>? channel3 = [];
+        public List<List<(string name, SoundEffectInstance track, bool loop, int group)>>? channelMusic = [];
+        public List<SoundEffectInstance>? channel0 = [];
+        public List<SoundEffectInstance>? channel1 = [];
+        public List<SoundEffectInstance>? channel2 = [];
+        public List<SoundEffectInstance>? channel3 = [];
         private bool prev0;
         private bool prev1;
         private bool prev2;
@@ -138,11 +138,20 @@ namespace CSharpCraft.Pico8
                             OptionsFile.JsonWrite(optionsFile);
                             if (!optionsFile.Sound_On)
                             {
-                                SoundDispose();
-                            }
-                            else
-                            {
-                                if (lastMusicCall is not null) { Music((int)lastMusicCall); }
+                                foreach (var song in channelMusic)
+                                {
+                                    foreach (var track in song)
+                                    {
+                                        track.track.Volume = 0.0f;
+                                    }
+                                }
+                                foreach (var channel in new List<List<SoundEffectInstance>?>([channel0, channel1, channel2, channel3]))
+                                {
+                                    foreach (var sfx in channel)
+                                    {
+                                        sfx.Volume = 0.0f;
+                                    }
+                                }
                             }
                         }
                     }
@@ -322,7 +331,7 @@ namespace CSharpCraft.Pico8
                 if (musicTransition.Item1 is null || musicTransition.Item2 is null)
                 {
                     musicTransition = new();
-                    if (song[curTrack].name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].tracks[curTrack].name)
+                    if (optionsFile.Sound_On && song[curTrack].name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].tracks[curTrack].name)
                     {
                         song[curTrack].track.Volume = optionsFile.Music_Vol / 100.0f;
                     }
@@ -848,7 +857,6 @@ namespace CSharpCraft.Pico8
         public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
         {
             lastMusicCall = n;
-            if (!optionsFile.Sound_On) { return; }
             (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(optionsFile.Pcraft_Soundtrack).Value[n];
 
             if (channelMusic.Count > 0 && channelMusic[0][0].group == curSong.group)
@@ -894,7 +902,7 @@ namespace CSharpCraft.Pico8
                 {
                     item[0].track.IsLooped = item[0].loop;
                     item[0].track.Play();
-                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? optionsFile.Music_Vol / 100.0f : 0;
+                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? optionsFile.Sound_On ? optionsFile.Music_Vol / 100.0f : 0 : 0;
                     curTrack = 0;
                 }
             }
@@ -1056,7 +1064,6 @@ namespace CSharpCraft.Pico8
 
         public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
         {
-            if (!optionsFile.Sound_On) { return; }
             int nFlr = (int)Math.Floor(n);
             int channelFlr = (int)Math.Floor(channel);
 
@@ -1081,7 +1088,7 @@ namespace CSharpCraft.Pico8
                 c.Add(instance);
 
                 instance.Play();
-                instance.Volume = optionsFile.Sfx_Vol / 100.0f;
+                instance.Volume = optionsFile.Sound_On ? optionsFile.Sfx_Vol / 100.0f : 0;
             }
             else
             {

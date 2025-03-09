@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Reflection;
+using System.Threading.Channels;
 
 namespace CSharpCraft
 {
@@ -107,6 +109,32 @@ namespace CSharpCraft
             if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
             {
                 p8.LoadCart(p8._cart);
+            }
+
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
+            {
+                PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sound_On");
+                propertyName.SetValue(optionsFile, !optionsFile.Sound_On);
+                OptionsFile.JsonWrite(optionsFile);
+                foreach (var song in p8.channelMusic)
+                {
+                    foreach (var track in song)
+                    {
+                        track.track.Volume = 0.0f;
+                    }
+                }
+                foreach (var channel in new List<List<SoundEffectInstance>?>([p8.channel0, p8.channel1, p8.channel2, p8.channel3]))
+                {
+                    foreach (var sfx in channel)
+                    {
+                        sfx.Volume = 0.0f;
+                    }
+                }
+            }
+
+            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F))
+            {
+                graphics.ToggleFullScreen();
             }
 
             prevState = state;
