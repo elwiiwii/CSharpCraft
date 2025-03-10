@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Reflection;
 using System.Threading.Channels;
+using System.Numerics;
 
 namespace CSharpCraft
 {
@@ -40,6 +41,8 @@ namespace CSharpCraft
         private Texture2D pixel;
         private KeyboardState prevState;
 
+        private (string text, double frame) popup;
+
 #nullable disable
 
         private double elapsedSeconds = 0.0;
@@ -58,15 +61,16 @@ namespace CSharpCraft
             // All content loaded will be in a "Content" folder
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferWidth = 512;
-            graphics.PreferredBackBufferHeight = 512;
-            graphics.IsFullScreen = false;
+            optionsFile = OptionsFile.Initialize();
+
+            graphics.PreferredBackBufferWidth = optionsFile.Gen_Window_Width;
+            graphics.PreferredBackBufferHeight = optionsFile.Gen_Window_Height;
+            graphics.IsFullScreen = optionsFile.Gen_Fullscreen;
 
             this.IsFixedTimeStep = true;
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
             graphics.SynchronizeWithVerticalRetrace = true;
 
-            optionsFile = OptionsFile.Initialize();
             prevState = Keyboard.GetState();
         }
 
@@ -84,6 +88,8 @@ namespace CSharpCraft
             scenes.Add(new ControlsOptions());
             scenes.Add(new CreditsScene());
             scenes.Add(new ExitScene());
+
+            popup = ("", 0);
         }
 
 
@@ -98,48 +104,75 @@ namespace CSharpCraft
             }
 
             KeyboardState state = Keyboard.GetState();
-            
-            p8.Update();
 
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
+            int halfDur = 30;
+            if (Math.Abs(popup.frame) < 1.5)
             {
-                p8.LoadCart(new TitleScreen(false));
+                popup.frame = 0;
+            }
+            else if (!(popup.frame == 0) && popup.frame < halfDur)
+            {
+                popup.frame += 1.5;
+            }
+            else if (!(popup.frame == 0) && popup.frame >= halfDur)
+            {
+                popup.frame *= -1;
             }
 
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
+            if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
+            {
+                p8.LoadCart(new TitleScreen(false));
+                popup = ($"quit (ctrl-q)", 1.5);
+            }
+
+            if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
             {
                 p8.LoadCart(p8._cart);
             }
 
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
+            if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
             {
-                PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sound_On");
-                propertyName.SetValue(optionsFile, !optionsFile.Sound_On);
+                PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Sound_On");
+                propertyName.SetValue(optionsFile, !optionsFile.Gen_Sound_On);
                 OptionsFile.JsonWrite(optionsFile);
-                foreach (var song in p8.channelMusic)
+                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in p8.channelMusic)
                 {
-                    foreach (var track in song)
+                    foreach ((string name, SoundEffectInstance track, bool loop, int group) track in song)
                     {
                         track.track.Volume = 0.0f;
                     }
                 }
-                foreach (var channel in new List<List<SoundEffectInstance>?>([p8.channel0, p8.channel1, p8.channel2, p8.channel3]))
+                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([p8.channel0, p8.channel1, p8.channel2, p8.channel3]))
                 {
-                    foreach (var sfx in channel)
+                    foreach (SoundEffectInstance sfx in channel)
                     {
                         sfx.Volume = 0.0f;
                     }
                 }
+                popup = ($"sound {(optionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
             }
 
-            if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F))
+            if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F))
             {
+                PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Fullscreen");
+                propertyName.SetValue(optionsFile, !optionsFile.Gen_Fullscreen);
+                OptionsFile.JsonWrite(optionsFile);
                 graphics.ToggleFullScreen();
+                popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
             }
+
+            p8.Update();
 
             prevState = state;
 
             base.Update(gameTime);
+        }
+
+
+        private void Popup(string s, int x1, int y1, int x2, int y2)
+        {
+            p8.Rectfill(x1, y1, x2, y2, 8);
+            p8.Print(s, 1, y1 + 1, 15);
         }
 
 
@@ -148,6 +181,9 @@ namespace CSharpCraft
             batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
 
             p8.Draw();
+
+            int clampFrame = Math.Abs((int)Math.Floor(popup.frame)) > 7 ? 7 : Math.Abs((int)Math.Floor(popup.frame));
+            Popup(popup.text, 0, 128 - clampFrame, 127, 128 - clampFrame + 7);
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -212,7 +248,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(new TitleScreen(true), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, GraphicsDevice, optionsFile);
+            p8 = new Pico8Functions(new TitleScreen(true), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, optionsFile);
         }
 
 

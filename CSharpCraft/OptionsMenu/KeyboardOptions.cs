@@ -47,7 +47,7 @@ namespace CSharpCraft.OptionsMenu
             if (waitingForInput)
             {
                 Keys[] keys = Keyboard.GetState().GetPressedKeys();
-                var mouseState = Mouse.GetState();
+                MouseState mouseState = Mouse.GetState();
                 List<string> pressedButtons = [];
                 if (mouseState.LeftButton == ButtonState.Pressed) { pressedButtons.Add("LeftButton"); }
                 if (mouseState.MiddleButton == ButtonState.Pressed) { pressedButtons.Add("MiddleButton"); }
@@ -63,8 +63,8 @@ namespace CSharpCraft.OptionsMenu
                     {
                         PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
                         PropertyInfo currentProperty = properties[menuSelected.ver];
-                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
-                        Binding binding = (Binding)propertyName.GetValue(p8.optionsFile);
+                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
+                        Binding binding = (Binding)propertyName.GetValue(p8.OptionsFile);
                         if (menuSelected.hor == 0 && propertyName is not null)
                         {
                             Binding newBinding;
@@ -76,10 +76,10 @@ namespace CSharpCraft.OptionsMenu
                             {
                                 newBinding = new Binding(pressedButtons[0], binding.Bind2);
                             }
-                            propertyName.SetValue(p8.optionsFile, newBinding);
-                            OptionsFile.JsonWrite(p8.optionsFile);
+                            propertyName.SetValue(p8.OptionsFile, newBinding);
+                            OptionsFile.JsonWrite(p8.OptionsFile);
                         }
-                        else
+                        else if (propertyName is not null)
                         {
                             Binding newBinding;
                             if (keys.Length == 1)
@@ -90,8 +90,8 @@ namespace CSharpCraft.OptionsMenu
                             {
                                 newBinding = new Binding(binding.Bind1, pressedButtons[0]);
                             }
-                            propertyName.SetValue(p8.optionsFile, newBinding);
-                            OptionsFile.JsonWrite(p8.optionsFile);
+                            propertyName.SetValue(p8.OptionsFile, newBinding);
+                            OptionsFile.JsonWrite(p8.OptionsFile);
                         }
                     }
                     waitingForInput = false;
@@ -114,8 +114,8 @@ namespace CSharpCraft.OptionsMenu
             p8.Cls();
 
             // Get the size of the viewport
-            int viewportWidth = p8.graphicsDevice.Viewport.Width;
-            int viewportHeight = p8.graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.GraphicsDevice.Viewport.Width;
+            int viewportHeight = p8.GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -123,20 +123,20 @@ namespace CSharpCraft.OptionsMenu
 
             Vector2 size = new(cellW, cellH);
 
-            p8.batch.Draw(p8.textureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             if (waitingForInput)
             {
-                p8.batch.Draw(p8.textureDictionary["WaitingForInput"], new Vector2(20 * cellW, 51 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["WaitingForInput"], new Vector2(20 * cellW, 51 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {
-                p8.batch.Draw(p8.textureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
                 if (menuSelected.ver >= 0)
                 {
                     Vector2 position5 = new((46 + 36 * menuSelected.hor) * cellW, (menuSelected.ver * 6 + 55) * cellH);
-                    p8.batch.Draw(p8.textureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                    p8.Batch.Draw(p8.TextureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 }
                 else if (menuSelected.ver == -1)
                 {
@@ -145,8 +145,8 @@ namespace CSharpCraft.OptionsMenu
 
                 Vector2 position3 = new(16 * cellW, 31 * cellH);
                 Vector2 position4 = new(30 * cellW, 31 * cellH);
-                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], position4, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], position3, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], position4, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
 
                 p8.Print("keyboard", 19, 33, 7);
                 p8.Print("controller", 19 + 54, 33, 7);
@@ -155,10 +155,10 @@ namespace CSharpCraft.OptionsMenu
                 int j = 0;
                 foreach (PropertyInfo property in properties)
                 {
-                    if (property.Name.StartsWith("Keyb_"))
+                    if (property.Name.StartsWith("Kbm_"))
                     {
-                        p8.Print(property.Name.Substring(5).ToLower(), 8, 55 + j, 7);
-                        Binding val = (Binding)property.GetValue(p8.optionsFile);
+                        p8.Print(property.Name.Substring(4).ToLower(), 8, 55 + j, 7);
+                        Binding val = (Binding)property.GetValue(p8.OptionsFile);
                         p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
                         p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
                         j += 6;

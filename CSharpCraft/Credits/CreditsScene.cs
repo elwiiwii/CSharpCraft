@@ -10,7 +10,7 @@ namespace CSharpCraft.Credits
     {
         public string SceneName => @"credits";
         private Pico8Functions p8;
-        List<CreditsItem> credits;
+        List<CreditsItem> credits = [];
 
         private (int hor, int ver) menuSelected;
         private KeyboardState prevState;
@@ -127,8 +127,8 @@ namespace CSharpCraft.Credits
             p8.Cls(1);
 
             // Get the size of the viewport
-            int viewportWidth = p8.batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = p8.batch.GraphicsDevice.Viewport.Height;
+            int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -137,7 +137,7 @@ namespace CSharpCraft.Credits
             Vector2 size = new(cellWidth, cellHeight);
             Vector2 halfsize = new(cellWidth / 2f, cellHeight / 2f);
 
-            p8.batch.Draw(p8.textureDictionary["Credits"], new Vector2(27 * cellWidth, 8 * cellHeight), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Credits"], new Vector2(27 * cellWidth, 8 * cellHeight), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             int icon_gap = 4;
             int item_gap = 4;
@@ -162,7 +162,7 @@ namespace CSharpCraft.Credits
                     else
                     {
                         Vector2 position2 = new((xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap) * cellWidth, (ystart - 5 + menuSelected.ver * 9 + yoff) * cellHeight);
-                        p8.batch.Draw(p8.textureDictionary["ArrowV"], position2, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        p8.Batch.Draw(p8.TextureDictionary["ArrowV"], position2, null, p8.colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                         p8.Print(credits[menuSelected.ver].Links[menuSelected.hor - 1].link.Replace("https://", ""),
                             xstart + 6 + credits[menuSelected.ver].Name.Length * 4 + 8 * credits[menuSelected.ver].Links.Count,
                             ystart + menuSelected.ver * 9 + yoff,
@@ -176,7 +176,7 @@ namespace CSharpCraft.Credits
                 foreach ((string type , string link) icon in item.Links)
                 {
                     Vector2 position = new((xstart + item.Name.Length * 4 + xpos + icon_gap - 1) * cellWidth, (ypos + yoff + ystart - 1) * cellHeight);
-                    p8.batch.Draw(p8.textureDictionary[icon.type], position, null, Color.White, 0, Vector2.Zero, halfsize, SpriteEffects.None, 0);
+                    p8.Batch.Draw(p8.TextureDictionary[icon.type], position, null, Color.White, 0, Vector2.Zero, halfsize, SpriteEffects.None, 0);
                     xpos += 8;
                 }
 

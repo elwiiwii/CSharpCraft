@@ -17,7 +17,7 @@ namespace CSharpCraft.Pcraft
         }
     }
 
-    public class PcraftRaceplayer(Pico8Functions p8) : PcraftBase
+    public class PcraftRaceplayer : PcraftBase
     {
         public override string SceneName => "race";
 

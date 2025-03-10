@@ -141,8 +141,8 @@ namespace CSharpCraft.RaceMode
             p8.Cls();
 
             // Get the size of the viewport
-            int viewportWidth = p8.graphicsDevice.Viewport.Width;
-            int viewportHeight = p8.graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.GraphicsDevice.Viewport.Width;
+            int viewportHeight = p8.GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -153,22 +153,22 @@ namespace CSharpCraft.RaceMode
 
             if (!joinedRoom)
             {
-                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], new Vector2(21 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                p8.batch.Draw(p8.textureDictionary["SelectorHalf"], new Vector2(63 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], new Vector2(21 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], new Vector2(63 * cellW, 59 * cellH), null, p8.colors[menuState == 0 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
                 p8.Rectfill(44, 59, 62, 67, menuState == 0 ? 7 : 6);
                 p8.Rectfill(44, 60, 62, 66, 0);
                 Printc(prompt, 64, 52, 7);
                 Printc(userName.Value, 54, 61, 13);
 
-                p8.batch.Draw(p8.textureDictionary["SmallSelector"], new Vector2(42 * cellW, 70 * cellH), null, p8.colors[menuState == 3 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SmallSelector"], new Vector2(42 * cellW, 70 * cellH), null, p8.colors[menuState == 3 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 p8.Print("back", 45, 72, menuState == 3 ? 7 : 6);
 
-                p8.batch.Draw(p8.textureDictionary["SmallSelector"], new Vector2(65 * cellW, 70 * cellH), null, p8.colors[menuState == 2 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SmallSelector"], new Vector2(65 * cellW, 70 * cellH), null, p8.colors[menuState == 2 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 p8.Print("join", 68, 72, menuState == 2 ? 7 : 6);
 
-                p8.batch.Draw(p8.textureDictionary["SmallSelector"], new Vector2(88 * cellW, 59 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                p8.batch.Draw(p8.textureDictionary[$"{role.Value}Icon"], new Vector2(91 * cellW, 61 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-                p8.batch.Draw(p8.textureDictionary["Arrow"], new Vector2(101 * cellW, 65 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], -1.57f, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["SmallSelector"], new Vector2(88 * cellW, 59 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary[$"{role.Value}Icon"], new Vector2(91 * cellW, 61 * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["Arrow"], new Vector2(101 * cellW, 65 * cellH), null, p8.colors[menuState == 1 ? 7 : 6], -1.57f, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             else
             {

@@ -24,7 +24,7 @@ namespace CSharpCraft.OptionsMenu
 
         public void Update()
         {
-            if (p8.Btnp(3)) { p8.LoadCart(new GraphicsOptions()); return; }
+            if (p8.Btnp(3)) { p8.LoadCart(new GeneralOptionsTitle()); return; }
             if (p8.Btnp(4) || p8.Btnp(5)) { p8.LoadCart(new TitleScreen(false)); return; }
         }
 
@@ -33,8 +33,8 @@ namespace CSharpCraft.OptionsMenu
             p8.Cls();
 
             // Get the size of the viewport
-            int viewportWidth = p8.graphicsDevice.Viewport.Width;
-            int viewportHeight = p8.graphicsDevice.Viewport.Height;
+            int viewportWidth = p8.GraphicsDevice.Viewport.Width;
+            int viewportHeight = p8.GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellW = viewportWidth / 128;
@@ -42,7 +42,7 @@ namespace CSharpCraft.OptionsMenu
 
             Vector2 size = new(cellW, cellH);
 
-            p8.batch.Draw(p8.textureDictionary["OptionsBackground1"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["OptionsBackground1"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         }
 

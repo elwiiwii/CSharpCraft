@@ -7,13 +7,13 @@ namespace CSharpCraft.OptionsMenu
     
     public class OptionsFile
     {
-        public Binding Keyb_Left { get; set; } = new Binding("Left", "NumPad4");
-        public Binding Keyb_Right { get; set; } = new Binding("Right", "NumPad6");
-        public Binding Keyb_Up { get; set; } = new Binding("Up", "NumPad8");
-        public Binding Keyb_Down { get; set; } = new Binding("Down", "NumPad5");
-        public Binding Keyb_Use { get; set; } = new Binding("X", "V");
-        public Binding Keyb_Menu { get; set; } = new Binding("Z", "C");
-        public Binding Keyb_Pause { get; set; } = new Binding("Escape", "Enter");
+        public Binding Kbm_Left { get; set; } = new Binding("Left", "NumPad4");
+        public Binding Kbm_Right { get; set; } = new Binding("Right", "NumPad6");
+        public Binding Kbm_Up { get; set; } = new Binding("Up", "NumPad8");
+        public Binding Kbm_Down { get; set; } = new Binding("Down", "NumPad5");
+        public Binding Kbm_Use { get; set; } = new Binding("X", "V");
+        public Binding Kbm_Menu { get; set; } = new Binding("Z", "C");
+        public Binding Kbm_Pause { get; set; } = new Binding("Escape", "Enter");
 
         public Binding Con_Left { get; set; } = new Binding("DPadLeft", "LeftThumbstickLeft");
         public Binding Con_Right { get; set; } = new Binding("DPadRight", "LeftThumbstickRight");
@@ -23,11 +23,15 @@ namespace CSharpCraft.OptionsMenu
         public Binding Con_Menu { get; set; } = new Binding("B", "RightShoulder");
         public Binding Con_Pause { get; set; } = new Binding("Start", "Back");
 
-        public bool Sound_On { get; set; } = true;
-        public int Music_Vol { get; set; } = 100;
-        public int Sfx_Vol { get; set; } = 100;
+        public bool Gen_Sound_On { get; set; } = true;
+        public int Gen_Music_Vol { get; set; } = 100;
+        public int Gen_Sfx_Vol { get; set; } = 100;
         public int Pcraft_Soundtrack { get; set; } = 0;
         public int Pcraft_Sfx_Pack { get; set; } = 0;
+
+        public bool Gen_Fullscreen { get; set; } = false;
+        public int Gen_Window_Width { get; set; } = 512;
+        public int Gen_Window_Height { get; set; } = 512;
 
         private static readonly string optionsFileName = "settings.json";
         private static readonly JsonSerializerOptions jsonOptions = new() { IncludeFields = true, WriteIndented = true };

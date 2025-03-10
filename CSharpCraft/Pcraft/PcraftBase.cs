@@ -8,7 +8,7 @@ namespace CSharpCraft.Pcraft
     {
         public abstract string SceneName { get; }
 
-        private Pico8Functions p8;
+        private Pico8Functions? p8;
 
 #nullable enable
 

@@ -12,14 +12,15 @@ namespace CSharpCraft.Pico8
 {
     public class Pico8Functions : IDisposable
     {
-        public SpriteBatch batch { get; }
-        public GraphicsDevice graphicsDevice { get; }
-        public Dictionary<string, SoundEffect> musicDictionary { get; }
-        public OptionsFile optionsFile { get; }
-        public Texture2D pixel { get; }
-        public List<IScene> scenes { get; }
-        public Dictionary<string, SoundEffect> soundEffectDictionary { get; }
-        public Dictionary<string, Texture2D> textureDictionary { get; }
+        public SpriteBatch Batch { get; }
+        public GraphicsDeviceManager Graphics { get; }
+        public GraphicsDevice GraphicsDevice { get; }
+        public Dictionary<string, SoundEffect> MusicDictionary { get; }
+        public OptionsFile OptionsFile { get; }
+        public Texture2D Pixel { get; }
+        public List<IScene> Scenes { get; }
+        public Dictionary<string, SoundEffect> SoundEffectDictionary { get; }
+        public Dictionary<string, Texture2D> TextureDictionary { get; }
 
         private int[] _flags;
         private int[] _map;
@@ -28,11 +29,11 @@ namespace CSharpCraft.Pico8
         private Dictionary<string, Dictionary<int, string>> _sfx;
         private (int, int) CameraOffset = (0, 0);
         public IScene _cart;
-        public List<List<(string name, SoundEffectInstance track, bool loop, int group)>>? channelMusic = [];
-        public List<SoundEffectInstance>? channel0 = [];
-        public List<SoundEffectInstance>? channel1 = [];
-        public List<SoundEffectInstance>? channel2 = [];
-        public List<SoundEffectInstance>? channel3 = [];
+        public List<List<(string name, SoundEffectInstance track, bool loop, int group)>> channelMusic = [];
+        public List<SoundEffectInstance> channel0 = [];
+        public List<SoundEffectInstance> channel1 = [];
+        public List<SoundEffectInstance> channel2 = [];
+        public List<SoundEffectInstance> channel3 = [];
         private bool prev0;
         private bool prev1;
         private bool prev2;
@@ -58,16 +59,17 @@ namespace CSharpCraft.Pico8
         private CosDict cosDict = new();
         private SinDict sinDict = new();
 
-        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
+        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
         {
-            batch = _batch;
-            graphicsDevice = _graphicsDevice;
-            musicDictionary = _musicDictionary;
-            optionsFile = _optionsFile;
-            pixel = _pixel;
-            scenes = _scenes;
-            soundEffectDictionary = _soundEffectDictionary;
-            textureDictionary = _textureDictionary;
+            Batch = _batch;
+            Graphics = _graphics;
+            GraphicsDevice = _graphicsDevice;
+            MusicDictionary = _musicDictionary;
+            OptionsFile = _optionsFile;
+            Pixel = _pixel;
+            Scenes = _scenes;
+            SoundEffectDictionary = _soundEffectDictionary;
+            TextureDictionary = _textureDictionary;
 
             prev0 = false;
             prev1 = false;
@@ -90,8 +92,15 @@ namespace CSharpCraft.Pico8
             musicTransition = new();
             lastMusicCall = null;
 
-            curSoundtrack = optionsFile.Pcraft_Soundtrack;
-            curSfxPack = optionsFile.Pcraft_Sfx_Pack;
+            curSoundtrack = OptionsFile.Pcraft_Soundtrack;
+            curSfxPack = OptionsFile.Pcraft_Sfx_Pack;
+
+            _sprites = [];
+            _flags = [];
+            _map = [];
+            _music = [];
+            _sfx = [];
+            menuItems = [];
 
             LoadCart(cart);
         }
@@ -133,21 +142,22 @@ namespace CSharpCraft.Pico8
                     {
                         if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
                         {
-                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sound_On");
-                            propertyName.SetValue(optionsFile, !optionsFile.Sound_On);
-                            OptionsFile.JsonWrite(optionsFile);
-                            if (!optionsFile.Sound_On)
+                            PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Sound_On");
+                            if (propertyName is null) { return; }
+                            propertyName.SetValue(OptionsFile, !OptionsFile.Gen_Sound_On);
+                            OptionsFile.JsonWrite(OptionsFile);
+                            if (!OptionsFile.Gen_Sound_On)
                             {
-                                foreach (var song in channelMusic)
+                                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
                                 {
-                                    foreach (var track in song)
+                                    foreach ((string name, SoundEffectInstance track, bool loop, int group) track in song)
                                     {
                                         track.track.Volume = 0.0f;
                                     }
                                 }
-                                foreach (var channel in new List<List<SoundEffectInstance>?>([channel0, channel1, channel2, channel3]))
+                                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
                                 {
-                                    foreach (var sfx in channel)
+                                    foreach (SoundEffectInstance sfx in channel)
                                     {
                                         sfx.Volume = 0.0f;
                                     }
@@ -155,80 +165,58 @@ namespace CSharpCraft.Pico8
                             }
                         }
                     }
-                    Menuitem(0, () => $"sound:{(optionsFile.Sound_On ? "on" : "off")}", () => Sound());
+                    Menuitem(0, () => $"sound:{(OptionsFile.Gen_Sound_On ? "on" : "off")}", () => Sound());
 
                     void MusicVol()
                     {
                         if (Btnp(0))
                         {
-                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Music_Vol");
-                            propertyName.SetValue(optionsFile, Math.Max(optionsFile.Music_Vol - 10, 0));
-                            OptionsFile.JsonWrite(optionsFile);
+                            PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Music_Vol");
+                            if (propertyName is null) { return; }
+                            propertyName.SetValue(OptionsFile, Math.Max(OptionsFile.Gen_Music_Vol - 10, 0));
+                            OptionsFile.JsonWrite(OptionsFile);
                         }
                         if (Btnp(1))
                         {
-                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Music_Vol");
-                            propertyName.SetValue(optionsFile, Math.Min(optionsFile.Music_Vol + 10, 100));
-                            OptionsFile.JsonWrite(optionsFile);
+                            PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Music_Vol");
+                            if (propertyName is null) { return; }
+                            propertyName.SetValue(OptionsFile, Math.Min(OptionsFile.Gen_Music_Vol + 10, 100));
+                            OptionsFile.JsonWrite(OptionsFile);
                         }
                     }
-                    Menuitem(1, () => $"music vol:{optionsFile.Music_Vol}%", () => MusicVol());
+                    Menuitem(1, () => $"music vol:{OptionsFile.Gen_Music_Vol}%", () => MusicVol());
 
                     void SfxVol()
                     {
                         if (Btnp(0))
                         {
-                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sfx_Vol");
-                            propertyName.SetValue(optionsFile, Math.Max(optionsFile.Sfx_Vol - 10, 0));
-                            OptionsFile.JsonWrite(optionsFile);
+                            PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Sfx_Vol");
+                            if (propertyName is null) { return; }
+                            propertyName.SetValue(OptionsFile, Math.Max(OptionsFile.Gen_Sfx_Vol - 10, 0));
+                            OptionsFile.JsonWrite(OptionsFile);
                         }
                         if (Btnp(1))
                         {
-                            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Sfx_Vol");
-                            propertyName.SetValue(optionsFile, Math.Min(optionsFile.Sfx_Vol + 10, 100));
-                            OptionsFile.JsonWrite(optionsFile);
+                            PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Sfx_Vol");
+                            if (propertyName is null) { return; }
+                            propertyName.SetValue(OptionsFile, Math.Min(OptionsFile.Gen_Sfx_Vol + 10, 100));
+                            OptionsFile.JsonWrite(OptionsFile);
                         }
                     }
-                    Menuitem(2, () => $"sfx vol:{optionsFile.Sfx_Vol}%", () => SfxVol());
+                    Menuitem(2, () => $"sfx vol:{OptionsFile.Gen_Sfx_Vol}%", () => SfxVol());
 
-                    void Soundtrack()
+                    void Fullscreen()
                     {
-                        if (Btnp(0))
+                        if (Btnp(4) || Btnp(5))
                         {
-                            curSoundtrack -= 1;
-                        }
-                        if (Btnp(1))
-                        {
-                            curSoundtrack += 1;
-                        }
-                        curSoundtrack = GeneralFunctions.Loop(curSoundtrack, _music.Count);
-                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Pcraft_Soundtrack");
-                        propertyName.SetValue(optionsFile, curSoundtrack);
-                        OptionsFile.JsonWrite(optionsFile);
-                        if (Btnp(0) || Btnp(1))
-                        {
-                            SoundDispose();
-                            if (lastMusicCall is not null) { Music((int)lastMusicCall); }
+                            PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Fullscreen");
+                            if (propertyName is null) { return; }
+                            propertyName.SetValue(OptionsFile, !OptionsFile.Gen_Fullscreen);
+                            OptionsFile.JsonWrite(OptionsFile);
+                            Graphics.ToggleFullScreen();
                         }
                     }
-                    Menuitem(3, () => $"music:{_music.ElementAt(optionsFile.Pcraft_Soundtrack).Key}", () => Soundtrack());
-
-                    void Sfx()
-                    {
-                        if (Btnp(0))
-                        {
-                            curSfxPack -= 1;
-                        }
-                        if (Btnp(1))
-                        {
-                            curSfxPack += 1;
-                        }
-                        curSfxPack = GeneralFunctions.Loop(curSfxPack, _sfx.Count);
-                        PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Pcraft_Sfx_Pack");
-                        propertyName.SetValue(optionsFile, curSfxPack);
-                        OptionsFile.JsonWrite(optionsFile);
-                    }
-                    Menuitem(4, () => $"sfx:{_sfx.ElementAt(optionsFile.Pcraft_Sfx_Pack).Key}", () => Sfx());
+                    Menuitem(3, () => $"fullscreen:{(OptionsFile.Gen_Fullscreen ? "on" : "off")}", () => Fullscreen());
 
                     void Back()
                     {
@@ -242,7 +230,54 @@ namespace CSharpCraft.Pico8
                             Menuitem(3, () => "exit", () => Exit());
                         }
                     }
-                    Menuitem(5, () => "back", () => Back());
+                    Menuitem(4, () => "back", () => Back());
+
+                    void Sfx()
+                    {
+                        if (Btnp(0))
+                        {
+                            curSfxPack -= 1;
+                        }
+                        if (Btnp(1))
+                        {
+                            curSfxPack += 1;
+                        }
+                        curSfxPack = GeneralFunctions.Loop(curSfxPack, _sfx.Count);
+                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Pcraft_Sfx_Pack");
+                        if (propertyName is null) { return; }
+                        propertyName.SetValue(OptionsFile, curSfxPack);
+                        OptionsFile.JsonWrite(OptionsFile);
+                    }
+                    if (_sfx.Count > 1)
+                    {
+                        Menuitem(3, () => $"sfx:{_sfx.ElementAt(OptionsFile.Pcraft_Sfx_Pack).Key}", () => Sfx());
+                    }
+
+                    void Soundtrack()
+                    {
+                        if (Btnp(0))
+                        {
+                            curSoundtrack -= 1;
+                        }
+                        if (Btnp(1))
+                        {
+                            curSoundtrack += 1;
+                        }
+                        curSoundtrack = GeneralFunctions.Loop(curSoundtrack, _music.Count);
+                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Pcraft_Soundtrack");
+                        if (propertyName is null) { return; }
+                        propertyName.SetValue(OptionsFile, curSoundtrack);
+                        OptionsFile.JsonWrite(OptionsFile);
+                        if (Btnp(0) || Btnp(1))
+                        {
+                            SoundDispose();
+                            if (lastMusicCall is not null) { Music((int)lastMusicCall); }
+                        }
+                    }
+                    if (_music.Count > 1)
+                    {
+                        Menuitem(3, () => $"music:{_music.ElementAt(OptionsFile.Pcraft_Soundtrack).Key}", () => Soundtrack());
+                    }
                 }
             }
             Menuitem(1, () => "options", () => Options());
@@ -294,13 +329,13 @@ namespace CSharpCraft.Pico8
                 if (Btnp(3)) { menuSelected += 1; }
                 menuSelected = GeneralFunctions.Loop(menuSelected, menuItems);
 
-                foreach (var song in channelMusic)
+                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
                 {
                     song[curTrack].track.Pause();
                 }
-                foreach (var channel in new List<List<SoundEffectInstance>?>([channel0, channel1, channel2, channel3]))
+                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
                 {
-                    foreach (var sfx in channel)
+                    foreach (SoundEffectInstance sfx in channel)
                     {
                         sfx.Pause();
                     }
@@ -308,13 +343,13 @@ namespace CSharpCraft.Pico8
             }
             else
             {
-                foreach (var song in channelMusic)
+                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
                 {
                     if (song[curTrack].track.State == SoundState.Paused) { song[curTrack].track.Play(); }
                 }
-                foreach (var channel in new List<List<SoundEffectInstance>?>([channel0, channel1, channel2, channel3]))
+                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
                 {
-                    foreach (var sfx in channel)
+                    foreach (SoundEffectInstance sfx in channel)
                     {
                         if (sfx.State == SoundState.Paused) { sfx.Play(); }
                     }
@@ -337,7 +372,7 @@ namespace CSharpCraft.Pico8
             heldCount4 = prev4 ? heldCount4 + 1 : 0;
             heldCount5 = prev5 ? heldCount5 + 1 : 0;
 
-            float fadeStep = optionsFile.Music_Vol / 1600.0f;
+            float fadeStep = OptionsFile.Gen_Music_Vol / 1600.0f;
 
             foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
             {
@@ -348,16 +383,16 @@ namespace CSharpCraft.Pico8
                         curTrack += 1;
                         song[curTrack].track.IsLooped = song[curTrack].loop;
                         song[curTrack].track.Play();
-                        song[curTrack].track.Volume = optionsFile.Music_Vol / 100.0f;
+                        song[curTrack].track.Volume = OptionsFile.Gen_Music_Vol / 100.0f;
                     }
                 }
 
                 if (musicTransition.Item1 is null || musicTransition.Item2 is null)
                 {
                     musicTransition = new();
-                    if (optionsFile.Sound_On && song[curTrack].name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].tracks[curTrack].name)
+                    if (OptionsFile.Gen_Sound_On && lastMusicCall is not null && song[curTrack].name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].tracks[curTrack].name)
                     {
-                        song[curTrack].track.Volume = optionsFile.Music_Vol / 100.0f;
+                        song[curTrack].track.Volume = OptionsFile.Gen_Music_Vol / 100.0f;
                     }
                 }
             }
@@ -368,14 +403,14 @@ namespace CSharpCraft.Pico8
                 {
                     musicTransition.Item1[curTrack].Volume -= fadeStep;
                 }
-                if (musicTransition.Item2[curTrack].Volume < optionsFile.Music_Vol / 100.0f)
+                if (musicTransition.Item2[curTrack].Volume < OptionsFile.Gen_Music_Vol / 100.0f)
                 {
                     musicTransition.Item2[curTrack].Volume += fadeStep;
                 }
-                if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= optionsFile.Music_Vol / 100.0f)
+                if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= OptionsFile.Gen_Music_Vol / 100.0f)
                 {
                     musicTransition.Item1[curTrack].Volume = 0.0f;
-                    musicTransition.Item2[curTrack].Volume = optionsFile.Music_Vol / 100.0f;
+                    musicTransition.Item2[curTrack].Volume = OptionsFile.Gen_Music_Vol / 100.0f;
                     musicTransition = new();
                 }
             }
@@ -390,8 +425,8 @@ namespace CSharpCraft.Pico8
 
             if (isPaused)
             {
-                int viewportWidth = graphicsDevice.Viewport.Width;
-                int viewportHeight = graphicsDevice.Viewport.Height;
+                int viewportWidth = GraphicsDevice.Viewport.Width;
+                int viewportHeight = GraphicsDevice.Viewport.Height;
 
                 // Calculate the size of each cell
                 int cellW = viewportWidth / 128;
@@ -406,7 +441,7 @@ namespace CSharpCraft.Pico8
                 Rectfill(0 + xborder + 1, i - 7 + 1, 127 - xborder - 1, i + menuItems.Count * 8 + 2 - 1, 7);
                 Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + menuItems.Count * 8 + 2 - 2, 0);
 
-                batch.Draw(textureDictionary["PauseArrow"], new Vector2((xborder + 4) * cellW, (i - 1 + menuSelected * 8) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                Batch.Draw(TextureDictionary["PauseArrow"], new Vector2((xborder + 4) * cellW, (i - 1 + menuSelected * 8) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
                 for(int j = 0; j < menuItems.Count; j++)
                 {
@@ -495,7 +530,7 @@ namespace CSharpCraft.Pico8
 
         private Texture2D CreateTextureFromSpriteData(int[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
-            Texture2D texture = new(graphicsDevice, spriteWidth, spriteHeight);
+            Texture2D texture = new(GraphicsDevice, spriteWidth, spriteHeight);
 
             Color[] colorData = new Color[spriteWidth * spriteHeight];
 
@@ -528,14 +563,14 @@ namespace CSharpCraft.Pico8
 
         private bool IsBindingDown(int device, string bind)
         {
-            KeyboardState keyb_state = Keyboard.GetState();
+            KeyboardState Kbm_state = Keyboard.GetState();
             GamePadState con_state = GamePad.GetState(PlayerIndex.One);
 
             if (device == 0)
             {
                 if (Enum.TryParse(bind, out Keys key))
                 {
-                    return keyb_state.IsKeyDown(key);
+                    return Kbm_state.IsKeyDown(key);
                 }
 
                 if (IsMouseButton(bind))
@@ -582,40 +617,40 @@ namespace CSharpCraft.Pico8
             switch (i)
             {
                 case 0:
-                    return IsBindingDown(0, optionsFile.Keyb_Left.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Left.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Left.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Left.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Left.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Left.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Left.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Left.Bind2);
                 case 1:
-                    return IsBindingDown(0, optionsFile.Keyb_Right.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Right.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Right.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Right.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Right.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Right.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Right.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Right.Bind2);
                 case 2:
-                    return IsBindingDown(0, optionsFile.Keyb_Up.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Up.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Up.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Up.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Up.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Up.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Up.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Up.Bind2);
                 case 3:
-                    return IsBindingDown(0, optionsFile.Keyb_Down.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Down.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Down.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Down.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Down.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Down.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Down.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Down.Bind2);
                 case 4:
-                    return IsBindingDown(0, optionsFile.Keyb_Menu.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Menu.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Menu.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Menu.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Menu.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Menu.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Menu.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Menu.Bind2);
                 case 5:
-                    return IsBindingDown(0, optionsFile.Keyb_Use.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Use.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Use.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Use.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Use.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Use.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Use.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Use.Bind2);
                 case 6:
-                    return IsBindingDown(0, optionsFile.Keyb_Pause.Bind1) ||
-                        IsBindingDown(0, optionsFile.Keyb_Pause.Bind2) ||
-                        IsBindingDown(1, optionsFile.Con_Pause.Bind1) ||
-                        IsBindingDown(1, optionsFile.Con_Pause.Bind2);
+                    return IsBindingDown(0, OptionsFile.Kbm_Pause.Bind1) ||
+                        IsBindingDown(0, OptionsFile.Kbm_Pause.Bind2) ||
+                        IsBindingDown(1, OptionsFile.Con_Pause.Bind1) ||
+                        IsBindingDown(1, OptionsFile.Con_Pause.Bind2);
                 default:
                     return false;
             }
@@ -662,8 +697,8 @@ namespace CSharpCraft.Pico8
             int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -694,7 +729,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -712,8 +747,8 @@ namespace CSharpCraft.Pico8
             int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -744,7 +779,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -761,8 +796,8 @@ namespace CSharpCraft.Pico8
             int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -785,7 +820,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -802,8 +837,8 @@ namespace CSharpCraft.Pico8
             int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -826,7 +861,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        batch.Draw(pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -838,7 +873,7 @@ namespace CSharpCraft.Pico8
             int colorFlr = (int)Math.Floor(color);
 
             int clearCol = palColors[colorFlr] == -1 ? colorFlr : (int)palColors[colorFlr];
-            graphicsDevice.Clear(colors[clearCol]);
+            GraphicsDevice.Clear(colors[clearCol]);
         }
 
 
@@ -930,7 +965,7 @@ namespace CSharpCraft.Pico8
         public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
         {
             lastMusicCall = n;
-            (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(optionsFile.Pcraft_Soundtrack).Value[n];
+            (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value[n];
 
             if (channelMusic.Count > 0 && channelMusic[0][0].group == curSong.group)
             {
@@ -958,14 +993,14 @@ namespace CSharpCraft.Pico8
             {
                 SoundDispose();
 
-                foreach ((List<(string name, bool loop)> tracks, int group) song in _music.ElementAt(optionsFile.Pcraft_Soundtrack).Value)
+                foreach ((List<(string name, bool loop)> tracks, int group) song in _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value)
                 {
                     if (song.group == curSong.group)
                     {
                         List<(string name, SoundEffectInstance track, bool loop, int group)> listOfTracks = [];
                         foreach ((string name, bool loop) track in song.tracks)
                         {
-                            listOfTracks.Add((track.name, musicDictionary[track.name].CreateInstance(), track.loop, song.group));
+                            listOfTracks.Add((track.name, MusicDictionary[track.name].CreateInstance(), track.loop, song.group));
                         }
                         channelMusic.Add(listOfTracks);
                     }
@@ -975,7 +1010,7 @@ namespace CSharpCraft.Pico8
                 {
                     item[0].track.IsLooped = item[0].loop;
                     item[0].track.Play();
-                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? optionsFile.Sound_On ? optionsFile.Music_Vol / 100.0f : 0 : 0;
+                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? OptionsFile.Gen_Sound_On ? OptionsFile.Gen_Music_Vol / 100.0f : 0 : 0;
                     curTrack = 0;
                 }
             }
@@ -1028,8 +1063,8 @@ namespace CSharpCraft.Pico8
             //int charHeight = 5;
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -1052,7 +1087,7 @@ namespace CSharpCraft.Pico8
                             Vector2 position = new(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
 
-                            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                            Batch.Draw(Pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                         }
                     }
                 }
@@ -1068,8 +1103,8 @@ namespace CSharpCraft.Pico8
             int cFlr = (int)Math.Floor(c);
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -1080,7 +1115,7 @@ namespace CSharpCraft.Pico8
             Vector2 size = new(cellWidth, cellHeight);
 
             // Draw the line
-            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            Batch.Draw(Pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
 
@@ -1093,8 +1128,8 @@ namespace CSharpCraft.Pico8
             int cFlr = (int)Math.Floor(c);
 
             // Get the size of the viewport
-            int viewportWidth = graphicsDevice.Viewport.Width;
-            int viewportHeight = graphicsDevice.Viewport.Height;
+            int viewportWidth = GraphicsDevice.Viewport.Width;
+            int viewportHeight = GraphicsDevice.Viewport.Height;
 
             // Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -1113,7 +1148,7 @@ namespace CSharpCraft.Pico8
             Vector2 position = new(rectStartX, rectStartY);
             Vector2 size = new(rectSizeX, rectSizeY);
 
-            batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            Batch.Draw(Pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
 
@@ -1156,12 +1191,12 @@ namespace CSharpCraft.Pico8
                     sfxInstance.Dispose();
                 }
 
-                SoundEffectInstance instance = soundEffectDictionary[_sfx.ElementAt(optionsFile.Pcraft_Sfx_Pack).Value[nFlr]].CreateInstance();
+                SoundEffectInstance instance = SoundEffectDictionary[_sfx.ElementAt(OptionsFile.Pcraft_Sfx_Pack).Value[nFlr]].CreateInstance();
 
                 c.Add(instance);
 
                 instance.Play();
-                instance.Volume = optionsFile.Sound_On ? optionsFile.Sfx_Vol / 100.0f : 0;
+                instance.Volume = OptionsFile.Gen_Sound_On ? OptionsFile.Gen_Sfx_Vol / 100.0f : 0;
             }
             else
             {
@@ -1222,15 +1257,15 @@ namespace CSharpCraft.Pico8
             int[] cache = palColors;
             Array.Resize(ref cache, 17);
             cache[16] = spriteNumberFlr;
-            if (!spriteTextures.TryGetValue(cache, out Texture2D texture))
+            if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[cache] = texture;
             }
 
             // Get the size of the viewport
-            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+            int viewportWidth = Batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = Batch.GraphicsDevice.Viewport.Height;
 
             //Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -1240,7 +1275,7 @@ namespace CSharpCraft.Pico8
             Vector2 size = new(cellWidth, cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
-            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
+            Batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
 
 
@@ -1263,15 +1298,15 @@ namespace CSharpCraft.Pico8
             int[] cache = palColors;
             Array.Resize(ref cache, 17);
             cache[16] = spriteNumberFlr;
-            if (!spriteTextures.TryGetValue(cache, out Texture2D texture))
+            if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);
                 spriteTextures[cache] = texture;
             }
 
             // Get the size of the viewport
-            int viewportWidth = batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = batch.GraphicsDevice.Viewport.Height;
+            int viewportWidth = Batch.GraphicsDevice.Viewport.Width;
+            int viewportHeight = Batch.GraphicsDevice.Viewport.Height;
 
             //Calculate the size of each cell
             int cellWidth = viewportWidth / 128;
@@ -1281,7 +1316,7 @@ namespace CSharpCraft.Pico8
             Vector2 size = new(dwFlr * cellWidth, dhFlr * cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
-            batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
+            Batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
         }
 
 
