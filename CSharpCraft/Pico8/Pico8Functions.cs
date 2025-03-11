@@ -16,7 +16,7 @@ namespace CSharpCraft.Pico8
         public GraphicsDeviceManager Graphics { get; }
         public GraphicsDevice GraphicsDevice { get; }
         public Dictionary<string, SoundEffect> MusicDictionary { get; }
-        public OptionsFile OptionsFile { get; }
+        public OptionsFile OptionsFile { get; set; }
         public Texture2D Pixel { get; }
         public List<IScene> Scenes { get; }
         public Dictionary<string, SoundEffect> SoundEffectDictionary { get; }
@@ -383,7 +383,7 @@ namespace CSharpCraft.Pico8
                         curTrack += 1;
                         song[curTrack].track.IsLooped = song[curTrack].loop;
                         song[curTrack].track.Play();
-                        song[curTrack].track.Volume = OptionsFile.Gen_Music_Vol / 100.0f;
+                        if (OptionsFile.Gen_Sound_On) { song[curTrack].track.Volume = OptionsFile.Gen_Music_Vol / 100.0f; }
                     }
                 }
 
@@ -397,7 +397,7 @@ namespace CSharpCraft.Pico8
                 }
             }
 
-            if (musicTransition.Item1 is not null && musicTransition.Item2 is not null && musicTransition.Item1[curTrack].State == SoundState.Playing && musicTransition.Item2[curTrack].State == SoundState.Playing)
+            if (OptionsFile.Gen_Sound_On && musicTransition.Item1 is not null && musicTransition.Item2 is not null && musicTransition.Item1[curTrack].State == SoundState.Playing && musicTransition.Item2[curTrack].State == SoundState.Playing)
             {
                 if (musicTransition.Item1[curTrack].Volume > 0.0f)
                 {

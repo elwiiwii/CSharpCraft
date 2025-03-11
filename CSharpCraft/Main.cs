@@ -104,7 +104,7 @@ namespace CSharpCraft
             }
 
             bool er;
-            (optionsFile, er) = OptionsFile.Initialize();
+            (p8.OptionsFile, er) = OptionsFile.Initialize();
             if (er) { popup = ("settings file corrupted", 1.5); }
 
             p8.Update();
@@ -139,8 +139,8 @@ namespace CSharpCraft
             if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
             {
                 PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Sound_On");
-                propertyName.SetValue(optionsFile, !optionsFile.Gen_Sound_On);
-                OptionsFile.JsonWrite(optionsFile);
+                propertyName.SetValue(p8.OptionsFile, !p8.OptionsFile.Gen_Sound_On);
+                OptionsFile.JsonWrite(p8.OptionsFile);
                 foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in p8.channelMusic)
                 {
                     foreach ((string name, SoundEffectInstance track, bool loop, int group) track in song)
@@ -155,16 +155,16 @@ namespace CSharpCraft
                         sfx.Volume = 0.0f;
                     }
                 }
-                popup = ($"sound {(optionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
+                popup = ($"sound {(p8.OptionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
             }
 
             if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F))
             {
                 PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Fullscreen");
-                propertyName.SetValue(optionsFile, !optionsFile.Gen_Fullscreen);
-                OptionsFile.JsonWrite(optionsFile);
+                propertyName.SetValue(p8.OptionsFile, !p8.OptionsFile.Gen_Fullscreen);
+                OptionsFile.JsonWrite(p8.OptionsFile);
                 graphics.ToggleFullScreen();
-                popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
+                popup = ($"fullscreen {(p8.OptionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
             }
 
             prevState = state;
