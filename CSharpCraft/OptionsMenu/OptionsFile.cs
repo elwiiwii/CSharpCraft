@@ -1,5 +1,8 @@
 ﻿using System.Text.Json;
 using System.Reflection;
+using Microsoft.Xna.Framework.Audio;
+using System.Security.Cryptography;
+using CSharpCraft.Pcraft;
 
 namespace CSharpCraft.OptionsMenu
 {
@@ -53,19 +56,147 @@ namespace CSharpCraft.OptionsMenu
             return file;
         }
 
-        public static OptionsFile Initialize()
+        private static OptionsFile CreateNewOptionsFile()
         {
+            OptionsFile optionsFile = new();
+            JsonWrite(optionsFile); // Save new defaults to disk
+            return optionsFile;
+        }
+
+        private static void FixFile(OptionsFile file)
+        {
+            PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
+
+            foreach (PropertyInfo prop in properties)
+            {
+                PropertyInfo? propertyName = typeof(OptionsFile).GetProperty(prop.Name);
+                if (prop.Name.StartsWith("Kbm_"))
+                {
+                    Binding binding = (Binding)propertyName.GetValue(file);
+                    Binding @default = (Binding)propertyName.GetValue(new OptionsFile());
+                    if (binding.Bind1 is null || !KeyNames.keyNames.ContainsKey(binding.Bind1))
+                    {
+                        Binding newBinding = new Binding(@default.Bind1, binding.Bind2);
+                        propertyName.SetValue(file, newBinding);
+                        JsonWrite(file);
+                    }
+                    if (binding.Bind2 is null || !KeyNames.keyNames.ContainsKey(binding.Bind2))
+                    {
+                        Binding newBinding = new Binding(binding.Bind1, @default.Bind2);
+                        propertyName.SetValue(file, newBinding);
+                        JsonWrite(file);
+                    }
+                }
+                else if (prop.Name.StartsWith("Con_"))
+                {
+                    Binding binding = (Binding)propertyName.GetValue(file);
+                    Binding @default = (Binding)propertyName.GetValue(new OptionsFile());
+                    if (binding.Bind1 is null || !ButtonNames.buttonNames.ContainsKey(binding.Bind1))
+                    {
+                        Binding newBinding = new Binding(@default.Bind1, binding.Bind2);
+                        propertyName.SetValue(file, newBinding);
+                        JsonWrite(file);
+                    }
+                    if (binding.Bind2 is null || !ButtonNames.buttonNames.ContainsKey(binding.Bind2))
+                    {
+                        Binding newBinding = new Binding(binding.Bind1, @default.Bind2);
+                        propertyName.SetValue(file, newBinding);
+                        JsonWrite(file);
+                    }
+                }
+                else if (prop.Name == "Gen_Sound_On")
+                {
+                    //bool val = (bool)propertyName.GetValue(file);
+                    //bool @default = (bool)propertyName.GetValue(new OptionsFile());
+                    //if (!(val == true | val == false))
+                    //{
+                    //    propertyName.SetValue(file, @default);
+                    //    JsonWrite(file);
+                    //}
+                }
+                else if (prop.Name == "Gen_Fullscreen")
+                {
+                    //bool val = (bool)propertyName.GetValue(file);
+                    //bool @default = (bool)propertyName.GetValue(new OptionsFile());
+                    //if (!(val == true | val == false))
+                    //{
+                    //    propertyName.SetValue(file, @default);
+                    //    JsonWrite(file);
+                    //}
+                }
+                else if (prop.Name.EndsWith("_Vol"))
+                {
+                    int val = (int)propertyName.GetValue(file);
+                    int @default = (int)propertyName.GetValue(new OptionsFile());
+                    if (val < 0 || val > 100)
+                    {
+                        propertyName.SetValue(file, @default);
+                        JsonWrite(file);
+                    }
+                }
+                else if (prop.Name == "Pcraft_Soundtrack")
+                {
+                    int val = (int)propertyName.GetValue(file);
+                    int @default = (int)propertyName.GetValue(new OptionsFile());
+                    if (val < 0 || val > new PcraftSingleplayer().Music.Count - 1)
+                    {
+                        propertyName.SetValue(file, @default);
+                        JsonWrite(file);
+                    }
+                }
+                else if (prop.Name == "Pcraft_Sfx_Pack")
+                {
+                    int val = (int)propertyName.GetValue(file);
+                    int @default = (int)propertyName.GetValue(new OptionsFile());
+                    if (val < 0 || val > new PcraftSingleplayer().Sfx.Count - 1)
+                    {
+                        propertyName.SetValue(file, @default);
+                        JsonWrite(file);
+                    }
+                }
+                else if (prop.Name.StartsWith("Gen_Window_"))
+                {
+                    int val = (int)propertyName.GetValue(file);
+                    int @default = (int)propertyName.GetValue(new OptionsFile());
+                    if (val < 1 || val > 16384)
+                    {
+                        propertyName.SetValue(file, @default);
+                        JsonWrite(file);
+                    }
+                }
+            }
+        }
+
+        public static (OptionsFile file, bool error) Initialize()
+        {
+            const string optionsFileName = "settings.json";
 
             if (File.Exists(optionsFileName))
             {
-                string jsonString = File.ReadAllText(optionsFileName);
-                //need to handle bad quality json
-                return JsonSerializer.Deserialize<OptionsFile>(jsonString);
+                try
+                {
+                    string jsonString = File.ReadAllText(optionsFileName);
+                    OptionsFile? result = JsonSerializer.Deserialize<OptionsFile>(jsonString);
+
+                    FixFile(result);
+
+                    return (result, false);
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Corrupted JSON: {ex.Message}. Recreating file.");
+                    File.Delete(optionsFileName);
+                    return (CreateNewOptionsFile(), true);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    Console.WriteLine($"File error: {ex.Message}. Using defaults.");
+                    return (new OptionsFile(), true);
+                }
             }
             else
             {
-                OptionsFile optionsFile = new();
-                return JsonWrite(optionsFile);
+                return (CreateNewOptionsFile(), true);
             }
         }
     }

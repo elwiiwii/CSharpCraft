@@ -31,6 +31,7 @@
 		<None Remove="Content\Graphics\ArrowV.png" />
 		<None Remove="Content\Graphics\Bandcamp.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
+		<None Remove="Content\Graphics\Checker.png" />
 		<None Remove="Content\Graphics\Credits.png" />
 		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
 		<None Remove="Content\Graphics\Discord.png" />
@@ -143,6 +144,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\Checker.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\MusicNote.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

@@ -61,7 +61,7 @@ namespace CSharpCraft
             // All content loaded will be in a "Content" folder
             Content.RootDirectory = "Content";
 
-            optionsFile = OptionsFile.Initialize();
+            optionsFile = OptionsFile.Initialize().file;
 
             graphics.PreferredBackBufferWidth = optionsFile.Gen_Window_Width;
             graphics.PreferredBackBufferHeight = optionsFile.Gen_Window_Height;
@@ -103,6 +103,12 @@ namespace CSharpCraft
                 elapsedSeconds = 0.0;
             }
 
+            bool er;
+            (optionsFile, er) = OptionsFile.Initialize();
+            if (er) { popup = ("settings file corrupted", 1.5); }
+
+            p8.Update();
+
             KeyboardState state = Keyboard.GetState();
 
             int halfDur = 30;
@@ -122,7 +128,7 @@ namespace CSharpCraft
             if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
             {
                 p8.LoadCart(new TitleScreen(false));
-                popup = ($"quit (ctrl-q)", 1.5);
+                popup = ("quit (ctrl-q)", 1.5);
             }
 
             if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
@@ -160,8 +166,6 @@ namespace CSharpCraft
                 graphics.ToggleFullScreen();
                 popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
             }
-
-            p8.Update();
 
             prevState = state;
 
