@@ -130,22 +130,22 @@ namespace CSharpCraft.OptionsMenu
 
             if (menuSelected > -1)
             {
-                Vector2 position5 = new((x - 5) * cellW, (menuSelected * step + y) * cellH);
+                Vector2 position5 = new((x - 4) * cellW, (menuSelected * step + y) * cellH);
                 p8.Batch.Draw(p8.TextureDictionary["Arrow"], position5, null, p8.colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
             }
 
-            p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y - 4) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y - 5) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             foreach (PropertyInfo property in properties)
             {
                 if (property.Name.StartsWith("Gen_"))
                 {
-                    p8.Print($"{property.Name.Substring(4).ToLower()} : {property.GetValue(p8.OptionsFile).ToString().ToLower()}", x, y, 6);
+                    p8.Print($"{property.Name.Substring(4).ToLower()} : {property.GetValue(p8.OptionsFile).ToString().ToLower()}", x + 1, y, 6);
                     y += step;
                 }
             }
 
-            p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y + 1) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
         }
 
         public string SpriteData => @"";
