@@ -41,12 +41,7 @@ namespace CSharpCraft.Pico8
         private bool prev4;
         private bool prev5;
         private bool prev6;
-        private bool lockout0;
-        private bool lockout1;
-        private bool lockout2;
-        private bool lockout3;
-        private bool lockout4;
-        private bool lockout5;
+        private bool[] lockout;
         private int heldCount0;
         private int heldCount1;
         private int heldCount2;
@@ -85,12 +80,7 @@ namespace CSharpCraft.Pico8
             prev5 = false;
             prev6 = false;
 
-            lockout0 = true;
-            lockout1 = true;
-            lockout2 = true;
-            lockout3 = true;
-            lockout4 = true;
-            lockout5 = true;
+            lockout = [true, true, true, true, true, true, true];
 
             heldCount0 = 0;
             heldCount1 = 0;
@@ -133,12 +123,7 @@ namespace CSharpCraft.Pico8
 
             _cart = cart;
 
-            lockout0 = true;
-            lockout1 = true;
-            lockout2 = true;
-            lockout3 = true;
-            lockout4 = true;
-            lockout5 = true;
+            lockout = [true, true, true, true, true, true, true];
 
             heldCount0 = 0;
             heldCount1 = 0;
@@ -334,12 +319,10 @@ namespace CSharpCraft.Pico8
 
             if (isPaused)
             {
-                if (isPaused && Ptn(0)) { lockout0 = true; } else { lockout0 = false; }
-                if (isPaused && Ptn(1)) { lockout1 = true; } else { lockout1 = false; }
-                if (isPaused && Ptn(2)) { lockout2 = true; } else { lockout2 = false; }
-                if (isPaused && Ptn(3)) { lockout3 = true; } else { lockout3 = false; }
-                if (isPaused && Ptn(4)) { lockout4 = true; } else { lockout4 = false; }
-                if (isPaused && Ptn(5)) { lockout5 = true; } else { lockout5 = false; }
+                for (int i = 0; i <= 6; i++)
+                {
+                    if (Ptn(i)) { lockout[i] = true; } else { lockout[i] = false; }
+                }
 
                 if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)) { menuItems[menuSelected].Function(); }
 
@@ -361,12 +344,10 @@ namespace CSharpCraft.Pico8
             }
             else
             {
-                if (!Ptn(0)) { lockout0 = false; }
-                if (!Ptn(1)) { lockout1 = false; }
-                if (!Ptn(2)) { lockout2 = false; }
-                if (!Ptn(3)) { lockout3 = false; }
-                if (!Ptn(4)) { lockout4 = false; }
-                if (!Ptn(5)) { lockout5 = false; }
+                for (int i = 0; i <= 6; i++)
+                {
+                    if (!Ptn(i)) { lockout[i] = false; }
+                }
 
                 foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
                 {
@@ -639,46 +620,7 @@ namespace CSharpCraft.Pico8
 
         public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
         {
-            switch (i)
-            {
-                case 0:
-                    return (isPaused || !lockout0) && (IsBindingDown(0, OptionsFile.Kbm_Left.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Left.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Left.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Left.Bind2));
-                case 1:
-                    return (isPaused || !lockout1) && (IsBindingDown(0, OptionsFile.Kbm_Right.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Right.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Right.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Right.Bind2));
-                case 2:
-                    return (isPaused || !lockout2) && (IsBindingDown(0, OptionsFile.Kbm_Up.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Up.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Up.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Up.Bind2));
-                case 3:
-                    return (isPaused || !lockout3) && (IsBindingDown(0, OptionsFile.Kbm_Down.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Down.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Down.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Down.Bind2));
-                case 4:
-                    return (isPaused || !lockout4) && (IsBindingDown(0, OptionsFile.Kbm_Menu.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Menu.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Menu.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Menu.Bind2));
-                case 5:
-                    return (isPaused || !lockout5) && (IsBindingDown(0, OptionsFile.Kbm_Use.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Use.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Use.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Use.Bind2));
-                case 6:
-                    return IsBindingDown(0, OptionsFile.Kbm_Pause.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Pause.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Pause.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Pause.Bind2);
-                default:
-                    return false;
-            }
+            return (isPaused || !lockout[i]) && Ptn(i);
         }
 
 
