@@ -10,6 +10,12 @@ namespace CSharpCraft
     {
         public static Dictionary<string, string> keyNames = new()
         {
+            { "LeftButton", "l click" },
+            { "RightButton", "r click" },
+            { "MiddleButton", "m click" },
+            { "XButton1", "extra 1" },
+            { "XButton2", "extra 2" },
+            { "ScrollWheelValue", "scroll" },
             { "None", "none" },
             { "Back", "back" },
             { "Tab", "tab" },
