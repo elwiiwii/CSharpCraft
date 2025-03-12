@@ -44,20 +44,7 @@ namespace CSharpCraft.OptionsMenu
                 {
                     curProperty.SetValue(p8.OptionsFile, !(bool)curProperty.GetValue(p8.OptionsFile));
                     OptionsFile.JsonWrite(p8.OptionsFile);
-                    foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in p8.channelMusic)
-                    {
-                        foreach ((string name, SoundEffectInstance track, bool loop, int group) track in song)
-                        {
-                            track.track.Volume = 0.0f;
-                        }
-                    }
-                    foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([p8.channel0, p8.channel1, p8.channel2, p8.channel3]))
-                    {
-                        foreach (SoundEffectInstance sfx in channel)
-                        {
-                            sfx.Volume = 0.0f;
-                        }
-                    }
+                    p8.Mute();
                 }
                 else if (curProperty.Name == "Gen_Fullscreen")
                 {
@@ -125,7 +112,7 @@ namespace CSharpCraft.OptionsMenu
 
             PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
             int x = 15;
-            int y = 45;
+            int y = 43;
             int step = 8;
 
             if (menuSelected > -1)
@@ -140,7 +127,7 @@ namespace CSharpCraft.OptionsMenu
             {
                 if (property.Name.StartsWith("Gen_"))
                 {
-                    p8.Print($"{property.Name.Substring(4).ToLower()} : {property.GetValue(p8.OptionsFile).ToString().ToLower()}", x + 1, y, 6);
+                    p8.Print($"{property.Name.Substring(4).ToLower()} : {property.GetValue(p8.OptionsFile).ToString().ToLower()}", x + 2, y, 6);
                     y += step;
                 }
             }

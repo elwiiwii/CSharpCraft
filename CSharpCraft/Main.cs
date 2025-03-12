@@ -141,20 +141,7 @@ namespace CSharpCraft
                 PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Sound_On");
                 propertyName.SetValue(p8.OptionsFile, !p8.OptionsFile.Gen_Sound_On);
                 OptionsFile.JsonWrite(p8.OptionsFile);
-                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in p8.channelMusic)
-                {
-                    foreach ((string name, SoundEffectInstance track, bool loop, int group) track in song)
-                    {
-                        track.track.Volume = 0.0f;
-                    }
-                }
-                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([p8.channel0, p8.channel1, p8.channel2, p8.channel3]))
-                {
-                    foreach (SoundEffectInstance sfx in channel)
-                    {
-                        sfx.Volume = 0.0f;
-                    }
-                }
+                p8.Mute();
                 popup = ($"sound {(p8.OptionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
             }
 
