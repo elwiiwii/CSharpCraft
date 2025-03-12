@@ -1502,22 +1502,22 @@ namespace CSharpCraft.Pcraft
 
                 if (!needmap)
                 {
-                    plx = F32.FromInt(500); //F32.Neg1;
-                    ply = F32.FromInt(500); //F32.Neg1;
+                    plx = F32.Neg1;
+                    ply = F32.Neg1;
 
-                    //for (int i = 0; i <= 500; i++)
-                    //{
-                    //    int depx = F32.FloorToInt(levelsx / 8 + p8.Rnd(levelsx * 6 / 8));
-                    //    int depy = F32.FloorToInt(levelsy / 8 + p8.Rnd(levelsy * 6 / 8));
-                    //    F32 c = level[depx][depy];
-                    //
-                    //    if (c == 1 || c == 2)
-                    //    {
-                    //        plx = F32.FromInt(depx * 16 + 8);
-                    //        ply = F32.FromInt(depy * 16 + 8);
-                    //        break;
-                    //    }
-                    //}
+                    for (int i = 0; i <= 500; i++)
+                    {
+                        int depx = F32.FloorToInt(levelsx / 8 + p8.Rnd(levelsx * 6 / 8));
+                        int depy = F32.FloorToInt(levelsy / 8 + p8.Rnd(levelsy * 6 / 8));
+                        F32 c = level[depx][depy];
+                    
+                        if (c == 1 || c == 2)
+                        {
+                            plx = F32.FromInt(depx * 16 + 8);
+                            ply = F32.FromInt(depy * 16 + 8);
+                            break;
+                        }
+                    }
 
                     if (plx < 0)
                     {
