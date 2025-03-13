@@ -20,6 +20,7 @@ namespace CSharpCraft
         static void Main(string[] args)
         {
             Environment.SetEnvironmentVariable("FNA_PLATFORM_BACKEND", "SDL3");
+            Environment.SetEnvironmentVariable("FNA_NO_OPENGL_INTERCEPTION", "1");
             ArgumentNullException.ThrowIfNull(args);
 
             using FNAGame g = new();
@@ -96,13 +97,13 @@ namespace CSharpCraft
 
         protected override void Update(GameTime gameTime)
         {
-            double fps = 1.0 / gameTime.ElapsedGameTime.TotalSeconds;
-            elapsedSeconds += gameTime.ElapsedGameTime.TotalSeconds;
-            if (elapsedSeconds >= 1.0)
-            {
-                Console.WriteLine($"FPS: {fps}");
-                elapsedSeconds = 0.0;
-            }
+            //double fps = 1.0 / gameTime.ElapsedGameTime.TotalSeconds;
+            //elapsedSeconds += gameTime.ElapsedGameTime.TotalSeconds;
+            //if (elapsedSeconds >= 1.0)
+            //{
+            //    Console.WriteLine($"FPS: {fps}");
+            //    elapsedSeconds = 0.0;
+            //}
 
             bool er;
             (p8.OptionsFile, er) = OptionsFile.Initialize();
