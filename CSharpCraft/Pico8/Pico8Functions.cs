@@ -567,6 +567,14 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public Material Add(List<Material> table, Material value, int index = -1) // https://pico-8.fandom.com/wiki/Add
+        {
+            if (index == -1) { table.Add(value); return value; }
+            table.Insert(index, value);
+            return value;
+        }
+
+
         private bool IsBindingDown(int device, string bind)
         {
             KeyboardState Kbm_state = Keyboard.GetState();
@@ -696,6 +704,12 @@ namespace CSharpCraft.Pico8
             int yFlr = F32.FloorToInt(y);
 
             CameraOffset = (xFlr, yFlr);
+        }
+
+
+        public void CartData(string id)
+        {
+
         }
 
 
@@ -897,15 +911,39 @@ namespace CSharpCraft.Pico8
         }
 
 
+        public void Cstore()
+        {
+
+        }
+
+
         public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
         {
             table.Remove(value);
         }
 
 
+        public F32 Dget(int index) // https://pico-8.fandom.com/wiki/Dget
+        {
+            return F32.FromInt(index);
+        }
+
+
+        public void Dset(int index, double value) // https://pico-8.fandom.com/wiki/Dset
+        {
+
+        }
+
+
         public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
         {
             return _flags[n];
+        }
+
+
+        public void Load(string fileName)
+        {
+
         }
 
 
@@ -1126,10 +1164,10 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Pset(double x, double y, double c) // https://pico-8.fandom.com/wiki/Pset
+        public void Pset(F32 x, F32 y, double c) // https://pico-8.fandom.com/wiki/Pset
         {
-            int xFlr = (int)Math.Floor(x);
-            int yFlr = (int)Math.Floor(y);
+            int xFlr = F32.FloorToInt(x);
+            int yFlr = F32.FloorToInt(y);
             //float yFlr = (float)(Math.Floor(y) - 0.5);
             int cFlr = (int)Math.Floor(c);
 
@@ -1183,7 +1221,7 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Reload() // https://pico-8.fandom.com/wiki/Reload
+        public void Reload(int i1 = 0, int i2 = 0, int i3 = 0, string s = "") // https://pico-8.fandom.com/wiki/Reload
         {
             Dispose();
 

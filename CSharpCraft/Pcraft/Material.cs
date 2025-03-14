@@ -15,6 +15,7 @@ namespace CSharpCraft.Pcraft
         public int? GiveLife { get; set; }
         public string? Name { get; set; }
         public int[]? Pal { get; set; }
+        public List<Entity>? Sl { get; set; }
         public int Spr { get; set; }
     }
 
