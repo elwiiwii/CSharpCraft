@@ -86,8 +86,9 @@ namespace CSharpCraft
             UpdateViewport();
 
             scenes.Add(new PcraftSingleplayer());
-            scenes.Add(new DeluxeSingleplayer());
+            //scenes.Add(new DeluxeSingleplayer());
             //scenes.Add(new MainRace());
+
             scenes.Add(new ControlsOptions());
             scenes.Add(new CreditsScene());
             scenes.Add(new ExitScene());

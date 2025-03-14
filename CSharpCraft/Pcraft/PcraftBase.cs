@@ -8,7 +8,7 @@ namespace CSharpCraft.Pcraft
     {
         public abstract string SceneName { get; }
 
-        private Pico8Functions? p8;
+        public Pico8Functions? p8;
 
 #nullable enable
 
@@ -398,7 +398,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
+        public Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
         {
             Level l = new Level { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new F32[8192] };
             SetLevel(l);
@@ -463,8 +463,7 @@ namespace CSharpCraft.Pcraft
                 }
             }
 
-            cave = CreateLevel(64, 0, 32, 32, true);
-            island = CreateLevel(0, 0, 64, 64, false);
+            (cave, island) = CreateWorld();
 
             Entity tmpworkbench = Entity(workbench, plx, ply, F32.Zero, F32.Zero);
             tmpworkbench.HasCol = true;
@@ -472,6 +471,13 @@ namespace CSharpCraft.Pcraft
 
             p8.Add(invent, tmpworkbench);
             p8.Add(invent, Inst(pickuptool));
+        }
+
+        public virtual (Level, Level) CreateWorld()
+        {
+            Level cave = CreateLevel(64, 0, 32, 32, true);
+            Level island = CreateLevel(0, 0, 64, 64, false);
+            return (cave, island);
         }
 
         public virtual void Init(Pico8Functions pico8)
@@ -1476,7 +1482,7 @@ namespace CSharpCraft.Pcraft
             return cur;
         }
 
-        private void CreateMap()
+        public virtual void CreateMap()
         {
             bool needmap = true;
 
