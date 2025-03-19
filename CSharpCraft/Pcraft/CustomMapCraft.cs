@@ -39,13 +39,6 @@ namespace CSharpCraft.Pcraft
             };
         }
 
-        public override (Level, Level) CreateWorld()
-        {
-            Level cave = CreateLevel(64, 0, 32, 32, true);
-            Level island = CreateLevel(0, 0, 64, 64, false);
-            return (new(), new());
-        }
-
         public override void CreateMap()
         {
             for (int i = 0; i < levelsx; i++)

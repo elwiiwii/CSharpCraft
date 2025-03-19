@@ -12,158 +12,158 @@ namespace CSharpCraft.Pcraft
 
 #nullable enable
 
-        private List<Entity>? anvilRecipe;
+        protected List<Entity>? anvilRecipe;
 
-        private F32 banim;
+        protected F32 banim;
 
-        private bool canSwitchLevel = false;
-        private Level? cave;
-        private List<Entity>? chemRecipe;
-        private F32 clx;
-        private F32 cly;
-        private F32 cmx;
-        private F32 cmy;
-        private F32 coffx;
-        private F32 coffy;
-        private Entity? curItem;
-        private Entity? curMenu;
-        private Level? currentLevel;
+        protected bool canSwitchLevel = false;
+        protected Level? cave;
+        protected List<Entity>? chemRecipe;
+        protected F32 clx;
+        protected F32 cly;
+        protected F32 cmx;
+        protected F32 cmy;
+        protected F32 coffx;
+        protected F32 coffy;
+        protected Entity? curItem;
+        protected Entity? curMenu;
+        protected Level? currentLevel;
 
-        private F32[] data = new F32[8192];
+        protected F32[] data = new F32[8192];
 
-        private List<Entity> enemies = [];
-        private List<Entity> entities = [];
+        protected List<Entity> enemies = [];
+        protected List<Entity> entities = [];
 
-        private List<Entity>? factoryRecipe;
+        protected List<Entity>? factoryRecipe;
 
-        private List<Entity>? furnaceRecipe;
+        protected List<Entity>? furnaceRecipe;
 
-        private int holex;
-        private int holey;
+        protected int holex;
+        protected int holey;
 
-        private List<Entity> invent = [];
-        private Level? island;
+        protected List<Entity> invent = [];
+        protected Level? island;
 
-        private F32[][]? level;
-        private int levelsx;
-        private int levelsy;
-        private int levelx;
-        private int levely;
-        private bool levelUnder = false;
-        private F32 llife;
-        private F32 lrot;
-        private F32 lstam;
+        protected F32[][]? level;
+        protected int levelsx;
+        protected int levelsy;
+        protected int levelx;
+        protected int levely;
+        protected bool levelUnder = false;
+        protected F32 llife;
+        protected F32 lrot;
+        protected F32 lstam;
 
-        private Entity? menuInvent;
+        protected Entity? menuInvent;
 
-        private List<Entity>? nearEnemies;
+        protected List<Entity>? nearEnemies;
 
-        private F32 panim;
+        protected F32 panim;
 
-        private F32 plife;
-        private F32 plx;
-        private F32 ply;
-        private F32 prot;
-        private F32 pstam;
+        protected F32 plife;
+        protected F32 plx;
+        protected F32 ply;
+        protected F32 prot;
+        protected F32 pstam;
 
-        private F32[][] Rndwat = new F32[16][];
+        protected F32[][] Rndwat = new F32[16][];
 
-        private int stamCost;
-        private List<Entity>? stonebenchRecipe;
-        private bool switchLevel = false;
+        protected int stamCost;
+        protected List<Entity>? stonebenchRecipe;
+        protected bool switchLevel = false;
 
-        private F32 time;
-        private int toogleMenu;
-        readonly int[] typeCount = new int[11];
+        protected F32 time;
+        protected int toogleMenu;
+        protected readonly int[] typeCount = new int[11];
 
-        private List<Entity>? workbenchRecipe;
+        protected List<Entity>? workbenchRecipe;
 
 #nullable disable
 
         //p.craft
         //by nusan
 
-        private bool lb4 = false;
-        private bool lb5 = false;
-        private bool block5 = false;
+        protected bool lb4 = false;
+        protected bool lb5 = false;
+        protected bool block5 = false;
 
-        private readonly int enstep_Wait = 0;
-        private readonly int enstep_Walk = 1;
-        private readonly int enstep_Chase = 2;
-        private readonly int enstep_Patrol = 3;
+        protected readonly int enstep_Wait = 0;
+        protected readonly int enstep_Walk = 1;
+        protected readonly int enstep_Chase = 2;
+        protected readonly int enstep_Patrol = 3;
 
-        static readonly string[] pwrNames = ["wood", "stone", "iron", "gold", "gem"];
-        static readonly int[][] pwrPal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
+        protected static readonly string[] pwrNames = ["wood", "stone", "iron", "gold", "gem"];
+        protected static readonly int[][] pwrPal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12]];
 
-        static readonly Material haxe = Item("haxe", 98);
-        static readonly Material sword = Item("sword", 99);
-        static readonly Material scythe = Item("scythe", 100);
-        static readonly Material shovel = Item("shovel", 101);
-        static readonly Material pick = Item("pick", 102);
+        protected static readonly Material haxe = Item("haxe", 98);
+        protected static readonly Material sword = Item("sword", 99);
+        protected static readonly Material scythe = Item("scythe", 100);
+        protected static readonly Material shovel = Item("shovel", 101);
+        protected static readonly Material pick = Item("pick", 102);
 
-        static readonly int[] pstone = [0, 1, 5, 13];
-        static readonly int[] piron = [1, 5, 13, 6];
-        static readonly int[] pgold = [1, 9, 10, 7];
+        protected static readonly int[] pstone = [0, 1, 5, 13];
+        protected static readonly int[] piron = [1, 5, 13, 6];
+        protected static readonly int[] pgold = [1, 9, 10, 7];
 
-        static readonly Material wood = Item("wood", 103);
-        static readonly Material sand = Item("sand", 114, [15]);
-        static readonly Material seed = Item("seed", 115);
-        static readonly Material wheat = Item("wheat", 118, [4, 9, 10, 9]);
-        static readonly Material apple = Item("apple", 116);
+        protected static readonly Material wood = Item("wood", 103);
+        protected static readonly Material sand = Item("sand", 114, [15]);
+        protected static readonly Material seed = Item("seed", 115);
+        protected static readonly Material wheat = Item("wheat", 118, [4, 9, 10, 9]);
+        protected static readonly Material apple = Item("apple", 116);
 
-        static readonly Material glass = Item("glass", 117);
-        static readonly Material stone = Item("stone", 118, pstone);
-        static readonly Material iron = Item("iron", 118, piron);
-        static readonly Material gold = Item("gold", 118, pgold);
-        static readonly Material gem = Item("gem", 118, [1, 2, 14, 12]);
+        protected static readonly Material glass = Item("glass", 117);
+        protected static readonly Material stone = Item("stone", 118, pstone);
+        protected static readonly Material iron = Item("iron", 118, piron);
+        protected static readonly Material gold = Item("gold", 118, pgold);
+        protected static readonly Material gem = Item("gem", 118, [1, 2, 14, 12]);
 
-        static readonly Material fabric = Item("fabric", 69);
-        static readonly Material sail = Item("sail", 70);
-        static readonly Material glue = Item("glue", 85, [1, 13, 12, 7]);
-        static readonly Material boat = Item("boat", 86);
-        static readonly Material ichor = Item("ichor", 114, [11]);
-        static readonly Material potion = Item("potion", 85, [1, 2, 8, 14]);
+        protected static readonly Material fabric = Item("fabric", 69);
+        protected static readonly Material sail = Item("sail", 70);
+        protected static readonly Material glue = Item("glue", 85, [1, 13, 12, 7]);
+        protected static readonly Material boat = Item("boat", 86);
+        protected static readonly Material ichor = Item("ichor", 114, [11]);
+        protected static readonly Material potion = Item("potion", 85, [1, 2, 8, 14]);
 
-        static readonly Material ironbar = Item("iron bar", 119, piron);
-        static readonly Material goldbar = Item("gold bar", 119, pgold);
-        static readonly Material bread = Item("bread", 119, [1, 4, 15, 7]);
+        protected static readonly Material ironbar = Item("iron bar", 119, piron);
+        protected static readonly Material goldbar = Item("gold bar", 119, pgold);
+        protected static readonly Material bread = Item("bread", 119, [1, 4, 15, 7]);
 
-        static readonly Material workbench = BigSpr(104, Item("workbench", 89, [1, 4, 9], true));
-        static readonly Material stonebench = BigSpr(104, Item("stonebench", 89, [1, 6, 13], true));
-        static readonly Material furnace = BigSpr(106, Item("furnace", 90, null, true));
-        static readonly Material anvil = BigSpr(108, Item("anvil", 91, null, true));
-        static readonly Material factory = BigSpr(71, Item("factory", 74, null, true));
-        static readonly Material chem = BigSpr(78, Item("chem lab", 76, null, true));
-        static readonly Material chest = BigSpr(110, Item("chest", 92));
+        protected static readonly Material workbench = BigSpr(104, Item("workbench", 89, [1, 4, 9], true));
+        protected static readonly Material stonebench = BigSpr(104, Item("stonebench", 89, [1, 6, 13], true));
+        protected static readonly Material furnace = BigSpr(106, Item("furnace", 90, null, true));
+        protected static readonly Material anvil = BigSpr(108, Item("anvil", 91, null, true));
+        protected static readonly Material factory = BigSpr(71, Item("factory", 74, null, true));
+        protected static readonly Material chem = BigSpr(78, Item("chem lab", 76, null, true));
+        protected static readonly Material chest = BigSpr(110, Item("chest", 92));
 
-        static readonly Material inventary = Item("inventory", 89);
-        static readonly Material pickuptool = Item("pickup tool", 73);
+        protected static readonly Material inventary = Item("inventory", 89);
+        protected static readonly Material pickuptool = Item("pickup tool", 73);
 
-        static readonly Material etext = Item("text", 103);
-        static readonly Material player = Item(null, 1);
-        static readonly Material zombi = Item(null, 2);
+        protected static readonly Material etext = Item("text", 103);
+        protected static readonly Material player = Item(null, 1);
+        protected static readonly Material zombi = Item(null, 2);
 
-        static readonly Ground grwater = new() { Id = 0, Gr = 0 };
-        static readonly Ground grsand = new() { Id = 1, Gr = 1 };
-        static readonly Ground grgrass = new() { Id = 2, Gr = 2 };
-        static readonly Ground grrock = new() { Id = 3, Gr = 3, Mat = stone, Tile = grsand, Life = 15 };
-        static readonly Ground grtree = new() { Id = 4, Gr = 2, Mat = wood, Tile = grgrass, Life = 8, IsTree = true, Pal = [1, 5, 3, 11] };
-        static readonly Ground grfarm = new() { Id = 5, Gr = 1 };
-        static readonly Ground grwheat = new() { Id = 6, Gr = 1 };
-        static readonly Ground grplant = new() { Id = 7, Gr = 2 };
-        static readonly Ground griron = new() { Id = 8, Gr = 1, Mat = iron, Tile = grsand, Life = 45, IsTree = true, Pal = [1, 1, 13, 6] };
-        static readonly Ground grgold = new() { Id = 9, Gr = 1, Mat = gold, Tile = grsand, Life = 80, IsTree = true, Pal = [1, 2, 9, 10] };
-        static readonly Ground grgem = new() { Id = 10, Gr = 1, Mat = gem, Tile = grsand, Life = 160, IsTree = true, Pal = [1, 2, 14, 12] };
-        static readonly Ground grhole = new() { Id = 11, Gr = 1 };
+        protected static readonly Ground grwater = new() { Id = 0, Gr = 0 };
+        protected static readonly Ground grsand = new() { Id = 1, Gr = 1 };
+        protected static readonly Ground grgrass = new() { Id = 2, Gr = 2 };
+        protected static readonly Ground grrock = new() { Id = 3, Gr = 3, Mat = stone, Tile = grsand, Life = 15 };
+        protected static readonly Ground grtree = new() { Id = 4, Gr = 2, Mat = wood, Tile = grgrass, Life = 8, IsTree = true, Pal = [1, 5, 3, 11] };
+        protected static readonly Ground grfarm = new() { Id = 5, Gr = 1 };
+        protected static readonly Ground grwheat = new() { Id = 6, Gr = 1 };
+        protected static readonly Ground grplant = new() { Id = 7, Gr = 2 };
+        protected static readonly Ground griron = new() { Id = 8, Gr = 1, Mat = iron, Tile = grsand, Life = 45, IsTree = true, Pal = [1, 1, 13, 6] };
+        protected static readonly Ground grgold = new() { Id = 9, Gr = 1, Mat = gold, Tile = grsand, Life = 80, IsTree = true, Pal = [1, 2, 9, 10] };
+        protected static readonly Ground grgem = new() { Id = 10, Gr = 1, Mat = gem, Tile = grsand, Life = 160, IsTree = true, Pal = [1, 2, 14, 12] };
+        protected static readonly Ground grhole = new() { Id = 11, Gr = 1 };
 
-        private Ground lastGround = grsand;
+        protected Ground lastGround = grsand;
 
-        private readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
+        protected readonly Ground[] grounds = { grwater, grsand, grgrass, grrock, grtree, grfarm, grwheat, grplant, griron, grgold, grgem, grhole };
 
-        private Entity mainMenu = Cmenu(inventary, null, 128, "by nusan", "2016");
-        private Entity introMenu = Cmenu(inventary, null, 136, "a storm leaved you", "on a deserted island");
-        private Entity deathMenu = Cmenu(inventary, null, 128, "you died", "alone ...");
-        private Entity winMenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
+        protected Entity mainMenu = Cmenu(inventary, null, 128, "by nusan", "2016");
+        protected Entity introMenu = Cmenu(inventary, null, 136, "a storm leaved you", "on a deserted island");
+        protected Entity deathMenu = Cmenu(inventary, null, 128, "you died", "alone ...");
+        protected Entity winMenu = Cmenu(inventary, null, 136, "you successfully escaped", "from the island");
 
         static PcraftBase()
         {
@@ -174,38 +174,38 @@ namespace CSharpCraft.Pcraft
             bread.GiveLife = 40;
         }
 
-        private static Material Item(string n, int s, int[] p = null, bool bc = false)
+        protected static Material Item(string n, int s, int[] p = null, bool bc = false)
         {
             return new() { Name = n, Spr = s, Pal = p, BeCraft = bc };
         }
 
-        private Entity Inst(Material it)
+        protected Entity Inst(Material it)
         {
             return new() { Type = it };
         }
 
-        private Entity Instc(Material it, int? c = null, List<Entity> l = null)
+        protected Entity Instc(Material it, int? c = null, List<Entity> l = null)
         {
             return new() { Type = it, Count = c, List = l };
         }
 
-        private Entity SetPower(int? v, Entity i)
+        protected Entity SetPower(int? v, Entity i)
         {
             i.Power = v;
             return i;
         }
 
-        private Entity Entity(Material it, F32 xx, F32 yy, F32 vxx, F32 vyy)
+        protected Entity Entity(Material it, F32 xx, F32 yy, F32 vxx, F32 vyy)
         {
             return new() { Type = it, X = xx, Y = yy, Vx = vxx, Vy = vyy };
         }
 
-        private Entity Rentity(Material it, F32 xx, F32 yy)
+        protected Entity Rentity(Material it, F32 xx, F32 yy)
         {
             return Entity(it, xx, yy, p8.Rnd(3) - F32.FromDouble(1.5), p8.Rnd(3) - F32.FromDouble(1.5));
         }
 
-        private Entity SetText(string t, int c, F32 time, Entity e)
+        protected Entity SetText(string t, int c, F32 time, Entity e)
         {
             e.Text = t;
             e.Timer = time;
@@ -213,19 +213,19 @@ namespace CSharpCraft.Pcraft
             return e;
         }
 
-        private static Material BigSpr(int spr, Material ent)
+        protected static Material BigSpr(int spr, Material ent)
         {
             ent.BigSpr = spr;
             ent.Drop = true;
             return ent;
         }
 
-        private Entity Recipe(Entity m, List<Entity> require)
+        protected Entity Recipe(Entity m, List<Entity> require)
         {
             return new() { Type = m.Type, Power = m.Power, Count = m.Count, Req = require, List = m.List };
         }
 
-        private bool CanCraft(Entity req)
+        protected bool CanCraft(Entity req)
         {
             bool can = true;
             foreach (Entity e in req.Req)
@@ -239,7 +239,7 @@ namespace CSharpCraft.Pcraft
             return can;
         }
 
-        private void Craft(Entity req)
+        protected void Craft(Entity req)
         {
             foreach (Entity e in req.Req)
             {
@@ -248,7 +248,7 @@ namespace CSharpCraft.Pcraft
             AddItemInList(invent, SetPower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
         }
 
-        private void SetPal(int[] l)
+        protected void SetPal(int[] l)
         {
             for (int i = 0; i < l.Length; i++)
             {
@@ -256,12 +256,12 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private static Entity Cmenu(Material t, List<Entity> l = null, int? s = null, string te1 = null, string te2 = null)
+        protected static Entity Cmenu(Material t, List<Entity> l = null, int? s = null, string te1 = null, string te2 = null)
         {
             return new() { List = l, Type = t, Sel = 0, Off = 0, Spr = s, Text = te1, Text2 = te2 };
         }
 
-        private int HowMany(List<Entity> list, Entity it)
+        protected int HowMany(List<Entity> list, Entity it)
         {
             int count = 0;
             foreach (Entity e in list)
@@ -285,7 +285,7 @@ namespace CSharpCraft.Pcraft
             return count;
         }
 
-        private Entity IsInList(List<Entity> list, Entity it)
+        protected Entity IsInList(List<Entity> list, Entity it)
         {
             foreach (Entity e in list)
             {
@@ -301,7 +301,7 @@ namespace CSharpCraft.Pcraft
             return new();
         }
 
-        private void RemInList(List<Entity> list, Entity elem)
+        protected void RemInList(List<Entity> list, Entity elem)
         {
             Entity it = IsInList(list, elem);
             if (it is null)
@@ -322,7 +322,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void AddItemInList(List<Entity> list, Entity it, int p)
+        protected void AddItemInList(List<Entity> list, Entity it, int p)
         {
             Entity it2 = IsInList(list, it);
             if (it2 is null || it2.Count is null)
@@ -335,7 +335,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void AddPlace(List<Entity> l, Entity e, int p)
+        protected void AddPlace(List<Entity> l, Entity e, int p)
         {
             if (p < l.Count - 1 && p >= 0)
             {
@@ -347,27 +347,27 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private bool IsIn(Entity e, int size)
+        protected bool IsIn(Entity e, int size)
         {
             return e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size;
         }
 
-        private F32 GetInvLen(F32 x, F32 y)
+        protected F32 GetInvLen(F32 x, F32 y)
         {
             return 1 / GetLen(x, y);
         }
 
-        private F32 GetLen(F32 x, F32 y)
+        protected F32 GetLen(F32 x, F32 y)
         {
             return F32.Sqrt(x * x + y * y + F32.FromDouble(0.001));
         }
 
-        private F32 GetRot(F32 dx, F32 dy)
+        protected F32 GetRot(F32 dx, F32 dy)
         {
             return dy >= 0 ? (dx + 3) * F32.FromDouble(0.25) : (1 - dx) * F32.FromDouble(0.25);
         }
 
-        private void FillEne(Level l)
+        protected void FillEne(Level l)
         {
             l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
             enemies = l.Ene;
@@ -410,7 +410,7 @@ namespace CSharpCraft.Pcraft
             return l;
         }
 
-        private void SetLevel(Level l)
+        protected void SetLevel(Level l)
         {
             currentLevel = l;
             levelx = l.X;
@@ -425,7 +425,7 @@ namespace CSharpCraft.Pcraft
             ply = l.Sty;
         }
 
-        private void ResetLevel()
+        protected void ResetLevel()
         {
             p8.Reload();
             p8.Memcpy(0x1000, 0x2000, 0x1000);
@@ -463,7 +463,8 @@ namespace CSharpCraft.Pcraft
                 }
             }
 
-            (cave, island) = CreateWorld();
+            cave = CreateLevel(64, 0, 32, 32, true);
+            island = CreateLevel(0, 0, 64, 64, false);
 
             Entity tmpworkbench = Entity(workbench, plx, ply, F32.Zero, F32.Zero);
             tmpworkbench.HasCol = true;
@@ -471,13 +472,6 @@ namespace CSharpCraft.Pcraft
 
             p8.Add(invent, tmpworkbench);
             p8.Add(invent, Inst(pickuptool));
-        }
-
-        public virtual (Level, Level) CreateWorld()
-        {
-            Level cave = CreateLevel(64, 0, 32, 32, true);
-            Level island = CreateLevel(0, 0, 64, 64, false);
-            return (cave, island);
         }
 
         public virtual void Init(Pico8Functions pico8)
@@ -530,43 +524,43 @@ namespace CSharpCraft.Pcraft
             curMenu = mainMenu;
         }
 
-        private (int x, int y) GetMcoord(F32 x, F32 y)
+        protected (int x, int y) GetMcoord(F32 x, F32 y)
         {
             return (F32.FloorToInt(x / 16), F32.FloorToInt(y / 16));
         }
 
-        private bool IsFree(F32 x, F32 y, Entity e = null)
+        protected bool IsFree(F32 x, F32 y, Entity e = null)
         {
             Ground gr = GetGr(x, y);
             return !(gr.IsTree || gr == grrock);
         }
 
-        private bool IsFreeEnem(F32 x, F32 y, Entity e = null)
+        protected bool IsFreeEnem(F32 x, F32 y, Entity e = null)
         {
             Ground gr = GetGr(x, y);
             return !(gr.IsTree || gr == grrock || gr == grwater);
         }
 
-        private Ground GetGr(F32 x, F32 y)
+        protected Ground GetGr(F32 x, F32 y)
         {
             (int i, int j) = GetMcoord(x, y);
             return GetDirectGr(F32.FromInt(i), F32.FromInt(j));
         }
 
-        private Ground GetDirectGr(F32 i, F32 j)
+        protected Ground GetDirectGr(F32 i, F32 j)
         {
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
             return grounds[p8.Mget(i.Double + levelx, j.Double)];
         }
 
-        private void SetGr(F32 x, F32 y, Ground v)
+        protected void SetGr(F32 x, F32 y, Ground v)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
             p8.Mset(i + levelx, j, v.Id);
         }
 
-        private F32 DirGetData(F32 i, F32 j, F32 @default)
+        protected F32 DirGetData(F32 i, F32 j, F32 @default)
         {
             int g = F32.FloorToInt(i + j * levelsx);
             if (data[g - 1] == 0)
@@ -576,12 +570,7 @@ namespace CSharpCraft.Pcraft
             return data[g - 1];
         }
 
-        private void DirSetData(int i, int j, F32 v)
-        {
-            data[i + j * levelsx - 1] = v;
-        }
-
-        private F32 GetData(F32 x, F32 y, int @default)
+        protected F32 GetData(F32 x, F32 y, int @default)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
@@ -591,17 +580,17 @@ namespace CSharpCraft.Pcraft
             return DirGetData(F32.FromInt(i), F32.FromInt(j), F32.FromInt(@default));
         }
 
-        private void SetData(F32 x, F32 y, F32 v)
+        protected void SetData(F32 x, F32 y, F32 v)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
             {
                 return;
             }
-            DirSetData(i, j, v);
+            data[i + j * levelsx - 1] = v;
         }
 
-        private void Cleardata(F32 x, F32 y)
+        protected void Cleardata(F32 x, F32 y)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
@@ -611,18 +600,18 @@ namespace CSharpCraft.Pcraft
             data[i + j * levelsx - 1] = F32.Zero;
         }
 
-        private int Loop(int sel, List<Entity> l)
+        protected int Loop(int sel, List<Entity> l)
         {
             int lp = l.Count;
             return (sel % lp + lp) % lp;
         }
 
-        private bool EntColFree(F32 x, F32 y, Entity e)
+        protected bool EntColFree(F32 x, F32 y, Entity e)
         {
             return F32.Max(F32.Abs(e.X - x), F32.Abs(e.Y - y)) > 8;
         }
 
-        private (F32 dx, F32 dy) ReflectCol(F32 x, F32 y, F32 dx, F32 dy, Func<F32, F32, Entity, bool> checkfun, F32 dp, Entity e = null)
+        protected (F32 dx, F32 dy) ReflectCol(F32 x, F32 y, F32 dx, F32 dy, Func<F32, F32, Entity, bool> checkfun, F32 dp, Entity e = null)
         {
             F32 newx = x + dx;
             F32 newy = y + dy;
@@ -659,7 +648,7 @@ namespace CSharpCraft.Pcraft
             return (dx, dy);
         }
 
-        private void AddItem(Material mat, int count, F32 hitx, F32 hity)
+        protected void AddItem(Material mat, int count, F32 hitx, F32 hity)
         {
             for (int i = 0; i < count; i++)
             {
@@ -671,7 +660,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void UpGround()
+        protected void UpGround()
         {
             F32 ci = F32.Floor((clx - 64) / 16);
             F32 cj = F32.Floor((cly - 64) / 16);
@@ -692,7 +681,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private F32 UpRot(F32 grot, F32 rot)
+        protected F32 UpRot(F32 grot, F32 rot)
         {
             if (F32.Abs(rot - grot) > F32.Half)
             {
@@ -709,7 +698,7 @@ namespace CSharpCraft.Pcraft
             return p8.Mod(p8.Mod(F32.Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
         }
 
-        private (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
+        protected (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
         {
             int fin = entities.Count;
             for (int i = fin - 1; i >= 0; i--)
@@ -776,7 +765,7 @@ namespace CSharpCraft.Pcraft
             return (dx, dy, canAct);
         }
 
-        private void UpEnemies(F32 ebx, F32 eby)
+        protected void UpEnemies(F32 ebx, F32 eby)
         {
             foreach (Entity e in enemies)
             {
@@ -897,7 +886,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void UpHit(F32 hitx, F32 hity, Ground hit)
+        protected void UpHit(F32 hitx, F32 hity, Ground hit)
         {
             if (nearEnemies.Count > 0)
             {
@@ -1299,7 +1288,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private (int mx, int my) Mirror(F32 rot)
+        protected (int mx, int my) Mirror(F32 rot)
         {
             switch (rot)
             {
@@ -1317,7 +1306,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
+        protected void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
         {
             F32 cr = p8.Cos(rot);
             F32 sr = p8.Sin(rot);
@@ -1392,7 +1381,7 @@ namespace CSharpCraft.Pcraft
 
         }
 
-        private F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep)
+        protected F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep)
         {
             F32[][] n = new F32[sx + 1][];
 
@@ -1444,7 +1433,7 @@ namespace CSharpCraft.Pcraft
             return n;
         }
 
-        private F32[][] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
+        protected F32[][] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
         {
             F32[][] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
             F32[][] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
@@ -1560,39 +1549,39 @@ namespace CSharpCraft.Pcraft
             cmy = ply;
         }
 
-        private bool Comp(F32 i, F32 j, Ground gr)
+        protected bool Comp(F32 i, F32 j, Ground gr)
         {
             Ground gr2 = GetDirectGr(i, j);
             return gr is not null && gr2 is not null && gr.Gr == gr2.Gr;
         }
 
-        private F32 WatVal(F32 i, F32 j)
+        protected F32 WatVal(F32 i, F32 j)
         {
             return Rndwat[F32.FloorToInt(F32.Abs(i * 2) % 16)][F32.FloorToInt(F32.Abs(j * 2) % 16)];
         }
 
-        private void WatAnim(F32 i, F32 j)
+        protected void WatAnim(F32 i, F32 j)
         {
             F32 a = (time * F32.FromDouble(0.6) + WatVal(i, j) / 100) % 1 * 19;
             if (a > 16) { p8.Spr(13 + a.Double - 16, i.Double * 16, j.Double * 16); }
         }
 
-        private F32 RndCenter(F32 i, F32 j)
+        protected F32 RndCenter(F32 i, F32 j)
         {
             return (F32.Floor(WatVal(i, j) / 34) + 18) % 20;
         }
 
-        private int RndSand(F32 i, F32 j)
+        protected int RndSand(F32 i, F32 j)
         {
             return F32.FloorToInt(WatVal(i, j) / 34) + 1;
         }
 
-        private int RndTree(F32 i, F32 j)
+        protected int RndTree(F32 i, F32 j)
         {
             return F32.FloorToInt(WatVal(i, j) / 51) * 32;
         }
 
-        private void Spr4(F32 i, F32 j, F32 gi, F32 gj, int a, int b, int c, int d, int off, Func<F32, F32, int> f)
+        protected void Spr4(F32 i, F32 j, F32 gi, F32 gj, int a, int b, int c, int d, int off, Func<F32, F32, int> f)
         {
             p8.Spr(f(i, j + off) + a, gi.Double, (gj + 2 * off).Double);
             p8.Spr(f(i + F32.Half, j + off) + b, gi.Double + 8, (gj + 2 * off).Double);
@@ -1600,7 +1589,7 @@ namespace CSharpCraft.Pcraft
             p8.Spr(f(i + F32.Half, j + F32.Half + off) + d, gi.Double + 8, (gj + 8 + 2 * off).Double);
         }
 
-        private void DrawBack()
+        protected void DrawBack()
         {
             F32 ci = F32.Floor((clx - 64) / 16);
             F32 cj = F32.Floor((cly - 64) / 16);
@@ -1707,7 +1696,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void Panel(string name, int x, int y, int sx, int sy)
+        protected void Panel(string name, int x, int y, int sx, int sy)
         {
             p8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
             p8.Spr(66, x, y);
@@ -1724,7 +1713,7 @@ namespace CSharpCraft.Pcraft
             p8.Print(name, hx + 1, y + 2, 7);
         }
 
-        private void ItemName(int x, int y, Entity it, int col)
+        protected void ItemName(int x, int y, Entity it, int col)
         {
             Material ty = it.Type;
             p8.Pal();
@@ -1742,7 +1731,7 @@ namespace CSharpCraft.Pcraft
             p8.Print(ty.Name, px + 10, y, col);
         }
 
-        private void List(Entity menu, int x, int y, int sx, int sy, int my)
+        protected void List(Entity menu, int x, int y, int sx, int sy, int my)
         {
             Panel(menu.Type.Name, x, y, sx, sy);
 
@@ -1790,7 +1779,7 @@ namespace CSharpCraft.Pcraft
             p8.Spr(68, x + sx - 10, sely, 1, 1, true);
         }
 
-        private void RequireList(Entity recip, int x, int y, int sx, int sy)
+        protected void RequireList(Entity recip, int x, int y, int sx, int sy)
         {
             Panel("require", x, y, sx, sy);
             int tlist = recip.Req.Count;
@@ -1826,12 +1815,12 @@ namespace CSharpCraft.Pcraft
             p8.Print(t, x, y, c);
         }
 
-        private void Printc(string t, int x, int y, int c)
+        protected void Printc(string t, int x, int y, int c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
         }
 
-        private void Dent()
+        protected void Dent()
         {
             foreach (Entity e in entities)
             {
@@ -1860,7 +1849,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void Sorty(List<Entity> t)
+        protected void Sorty(List<Entity> t)
         {
             int tv = t.Count - 1;
             for (int i = 0; i < tv; i++)
@@ -1875,7 +1864,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void Denemies()
+        protected void Denemies()
         {
             Sorty(enemies);
 
@@ -1902,7 +1891,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void Dbar(int px, int py, F32 v, F32 m, int c, int c2)
+        protected void Dbar(int px, int py, F32 v, F32 m, int c, int c2)
         {
             p8.Pal();
             F32 pe = px + v * F32.FromDouble(0.3);
