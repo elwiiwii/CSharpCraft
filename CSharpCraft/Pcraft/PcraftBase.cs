@@ -398,7 +398,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        public Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
+        protected Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
         {
             Level l = new Level { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new F32[8192] };
             SetLevel(l);
@@ -425,7 +425,7 @@ namespace CSharpCraft.Pcraft
             ply = l.Sty;
         }
 
-        protected void ResetLevel()
+        protected virtual void ResetLevel()
         {
             p8.Reload();
             p8.Memcpy(0x1000, 0x2000, 0x1000);
@@ -1471,7 +1471,7 @@ namespace CSharpCraft.Pcraft
             return cur;
         }
 
-        public virtual void CreateMap()
+        protected virtual void CreateMap()
         {
             bool needmap = true;
 
@@ -1806,7 +1806,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        public void Printb(string t, double x, double y, int c)
+        protected void Printb(string t, double x, double y, int c)
         {
             p8.Print(t, x + 1, y, 1);
             p8.Print(t, x - 1, y, 1);

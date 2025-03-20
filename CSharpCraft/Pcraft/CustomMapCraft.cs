@@ -39,7 +39,7 @@ namespace CSharpCraft.Pcraft
             };
         }
 
-        public override void CreateMap()
+        protected override void CreateMap()
         {
             for (int i = 0; i < levelsx; i++)
             {
