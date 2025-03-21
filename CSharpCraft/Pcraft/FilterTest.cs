@@ -20,8 +20,8 @@ namespace CSharpCraft.Pcraft
         private F32 frameTimer = F32.Zero;
         private string timer = "0:00.00";
 
-        bool found = false;
-        object lockObj = new();
+        private bool found = false;
+        private object lockObj = new();
 
         private class DensityCheck
         {
