@@ -1,6 +1,7 @@
 ﻿using CSharpCraft.Pico8;
 using FixMath;
 using Force.DeepCloner;
+using Google.Protobuf.Reflection;
 
 namespace CSharpCraft.Pcraft
 {
@@ -14,6 +15,11 @@ namespace CSharpCraft.Pcraft
 
         private bool found = false;
         private object lockObj = new();
+        private List<Button> buttonRow1 = [];
+        private List<Button> buttonRow2 = [];
+        private List<Button> buttonRow3 = [];
+        List<DensityCheck> densityChecks = [];
+        List<DensityComparison> densityComparisons = [];
 
         Random random = new();
 
@@ -48,6 +54,16 @@ namespace CSharpCraft.Pcraft
             { "gold", 9 },
             { "gem", 10 },
         };
+
+        private class Button
+        {
+            public string Text { get; set; }
+            public (int X, int Y) Pos { get; set; }
+            public int OutCol { get; set; }
+            public int MidCol { get; set; }
+            public int TextCol { get; set; }
+            public Action Function { get; set; }
+        }
 
         private bool Filter(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons)
         {
@@ -233,8 +249,11 @@ namespace CSharpCraft.Pcraft
 
                         cur[i][j] = F32.FromInt(id);
 
-                        if (densityChecksClone.Count == 0 && densityComparisonsClone.Count == 0) { continue; }
-                        if (i < center - maxRadius || i > center + maxRadius || j < center - maxRadius || j > center + maxRadius) { continue; }
+                        if ((densityChecksClone.Count == 0 && densityComparisonsClone.Count == 0) || 
+                            i < center - maxRadius || 
+                            i > center + maxRadius || 
+                            j < center - maxRadius || 
+                            j > center + maxRadius) { continue; }
                         //if ((i >= center - minRadius && i <= center + minRadius) || (j >= center - minRadius && j <= center + minRadius)) { continue; }
                         int curtile = F32.FloorToInt(cur[i][j]);
                         DensityCount(densityChecksClone, i - center, j - center, curtile);
@@ -269,9 +288,7 @@ namespace CSharpCraft.Pcraft
             while (needmap)
             {
                 needmap = false;
-                List<DensityCheck> densityChecks = [];
-                List<DensityComparison> densityComparisons = [];
-
+                
                 if (levelUnder)
                 {
                     CreateMapStepCheck(densityChecks, densityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10);
@@ -282,10 +299,6 @@ namespace CSharpCraft.Pcraft
                 }
                 else
                 {
-                    densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["water"]], Density = (0, 4) });
-                    densityChecks.Add(new DensityCheck() { Radius = (1, 5), Tiles = [TileNum["sand"]], Density = (20, 100) });
-                    densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["tree"]], Density = (30, 40) });
-
                     CreateMapStepCheck(densityChecks, densityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4);
 
                     if (typeCount[3] < 30) { needmap = true; }
@@ -372,6 +385,58 @@ namespace CSharpCraft.Pcraft
         public override void Init(Pico8Functions pico8)
         {
             base.Init(pico8);
+            AddButtons();
+            densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["water"]], Density = (0, 1) });
+            densityChecks.Add(new DensityCheck() { Radius = (1, 5), Tiles = [TileNum["sand"]], Density = (17, 100) });
+            densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["tree"], TileNum["water"]], Density = (30, 40) });
+            densityComparisons.Add(new DensityComparison() { Tiles1 = [TileNum["water"], TileNum["water"]], Tiles2 = [TileNum["water"]] });
+            }
+
+        private void AddButtons()
+        {
+            void Generate()
+            {
+                ResetLevel();
+                curMenu = null;
+                p8.Music(1);
+            }
+            buttonRow1.Add(new() { Text = "generate", Pos = (6, 9), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Generate() });
+
+            void Save()
+            {
+
+            }
+            buttonRow1.Add(new() { Text = "save", Pos = (62, 9), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Save() });
+
+            void Load()
+            {
+
+            }
+            buttonRow1.Add(new() { Text = "load", Pos = (82, 9), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Load() });
+
+            void NewDensityCheck()
+            {
+                densityChecks.Add(new());
+            }
+            buttonRow2.Add(new() { Text = "new density check", Pos = (6, 19), OutCol = 7, MidCol = 1, TextCol = 6, Function = () => NewDensityCheck() });
+
+            void ClearDensityChecks()
+            {
+                densityChecks.Clear();
+            }
+            buttonRow2.Add(new() { Text = "clear", Pos = (78, 19), OutCol = 7, MidCol = 1, TextCol = 6, Function = () => ClearDensityChecks() });
+
+            void NewRelativeCheck()
+            {
+                densityComparisons.Add(new());
+            }
+            buttonRow3.Add(new() { Text = "new relative check", Pos = (6, 29), OutCol = 7, MidCol = 1, TextCol = 6, Function = () => NewRelativeCheck() });
+
+            void ClearRelativeChecks()
+            {
+                densityComparisons.Clear();
+            }
+            buttonRow3.Add(new() { Text = "clear", Pos = (82, 29), OutCol = 7, MidCol = 1, TextCol = 6, Function = () => ClearRelativeChecks() });
         }
 
         protected override void UpHit(F32 hitx, F32 hity, Ground hit)
@@ -792,10 +857,132 @@ namespace CSharpCraft.Pcraft
             }
         }
 
+        private void DrawDensityCheck(DensityCheck check, int x, int y)
+        {
+            int count = check.Tiles.Count * 6;
+            p8.Rectfill(x, y, x + 92, y + 20 + count, 7);
+            p8.Rectfill(x + 1, y + 1, x + 85, y + 19 + count, 1);
+
+            p8.Rectfill(x + 87, y + 1, x + 91, y + 19 + count, 2);
+            p8.Print("x", x + 88, y + 8 + count / 2, 7);
+
+            p8.Rectfill(x + 2, y + 2, x + 28, y + 10, 7);
+            p8.Rectfill(x + 3, y + 3, x + 27, y + 9, 13);
+            p8.Print("radius", x + 4, y + 4, 7);
+            Printc($"{check.Radius.Lb}-{check.Radius.Ub}", x + 16, y + 13, 7);
+
+            p8.Rectfill(x + 30, y + 2, x + 52, y + 10, 7);
+            p8.Rectfill(x + 31, y + 3, x + 51, y + 9, 13);
+            p8.Print("tiles", x + 32, y + 4, 7);
+            int i = 0;
+            foreach (var tile in check.Tiles)
+            {
+                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, x + 42, y + 13 + i * 6, 7);
+                i++;
+            }
+            Printc("add", x + 42, y + 13 + i * 6, 13);
+
+            p8.Rectfill(x + 54, y + 2, x + 84, y + 10, 7);
+            p8.Rectfill(x + 55, y + 3, x + 83, y + 9, 13);
+            p8.Print("density", x + 56, y + 4, 7);
+            Printc($"{check.Density.Lb}-{check.Density.Ub}", x + 70, y + 13, 7);
+        }
+
+        private void DrawDensityComparison(DensityComparison check, int x, int y)
+        {
+            x = 6;
+            y = 73;
+            int count = Math.Max(check.Tiles1.Count, check.Tiles1.Count) * 6;
+            p8.Rectfill(x, y, x + 114, y + 40 + count, 7);
+            p8.Rectfill(x + 1, y + 1, x + 53, y + 19 + count, 1);
+            p8.Rectfill(x + 55, y + 1, x + 107, y + 19 + count, 1);
+            p8.Rectfill(x + 1, y + 21 + count, x + 107, y + 39 + count, 1);
+            p8.Rectfill(x + 20, y + 21 + count, x + 88, y + 35 + count, 7);
+            p8.Rectfill(x + 21, y + 21 + count, x + 87, y + 34 + count, 1);
+            p8.Rectfill(43, 108 + count, 77, 108 + count, 1);
+            p8.Rectfill(40, 106 + count, 40, 110 + count, 7);
+            p8.Rectfill(41, 107 + count, 41, 109 + count, 7);
+            p8.Rectfill(80, 106 + count, 80, 110 + count, 7);
+            p8.Rectfill(79, 107 + count, 79, 109 + count, 7);
+
+            p8.Rectfill(115, 74, 119, 112 + count, 2);
+            p8.Print("x", 116, 91 + count / 2, 7);
+
+            p8.Rectfill(8, 75, 34, 83, 7);
+            p8.Rectfill(9, 76, 33, 82, 13);
+            p8.Print("radius", 10, 77, 7);
+            Printc($"{check.Radius1.Lb}-{check.Radius1.Ub}", 22, 86, 7);
+
+            p8.Rectfill(36, 75, 58, 83, 7);
+            p8.Rectfill(37, 76, 57, 82, 13);
+            p8.Print("tiles", 38, 77, 7);
+            int i = 0;
+            foreach (var tile in check.Tiles1)
+            {
+                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, 48, 86 + i * 6, 7);
+                i++;
+            }
+            Printc("add", 48, 86 + i * 6, 13);
+
+            p8.Rectfill(62, 75, 88, 83, 7);
+            p8.Rectfill(63, 76, 87, 82, 13);
+            p8.Print("radius", 64, 77, 7);
+            Printc($"{check.Radius2.Lb}-{check.Radius2.Ub}", 76, 86, 7);
+
+            p8.Rectfill(90, 75, 112, 83, 7);
+            p8.Rectfill(91, 76, 111, 82, 13);
+            p8.Print("tiles", 92, 77, 7);
+            i = 0;
+            foreach (var tile in check.Tiles2)
+            {
+                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, 102, 86 + i * 6, 7);
+                i++;
+            }
+            Printc("add", 102, 86 + i * 6, 13);
+
+            p8.Rectfill(45, 95 + count, 59, 103 + count, 7);
+            p8.Rectfill(46, 96 + count, 58, 102 + count, 13);
+            p8.Print("mag", 47, 97 + count, 7);
+            Printc($"{check.Mag}%", 53, 106 + count, 7);
+
+            p8.Rectfill(61, 95 + count, 75, 103 + count, 7);
+            p8.Rectfill(62, 96 + count, 74, 102 + count, 13);
+            p8.Print("opr", 63, 97 + count, 7);
+            p8.Print(check.Opr, 67, 106 + count, 7);
+        }
+
         public override void Draw()
         {
             if (curMenu is not null && curMenu.Spr is not null)
             {
+                if (curMenu == mainMenu)
+                {
+                    p8.Cls(12);
+                    p8.Camera();
+                    p8.Palt(0, false);
+                    List<List<Button>> rows = [buttonRow1, buttonRow2, buttonRow3];
+                    foreach (var row in rows)
+                    {
+                        foreach (var button in row)
+                        {
+                            p8.Rectfill(button.Pos.X, button.Pos.Y, button.Pos.X + button.Text.Length * 4 + 2, button.Pos.Y + 8, button.OutCol);
+                            p8.Rectfill(button.Pos.X + 1, button.Pos.Y + 1, button.Pos.X + button.Text.Length * 4 + 1, button.Pos.Y + 7, button.MidCol);
+                            p8.Print(button.Text, button.Pos.X + 2, button.Pos.Y + 2, button.TextCol);
+                        }
+                    }
+
+                    foreach (var check in densityChecks)
+                    {
+                        DrawDensityCheck(check, 6, 39);
+                    }
+
+                    foreach (var check in densityComparisons)
+                    {
+                        DrawDensityComparison(check, 6, 73);
+                    }
+
+                    return;
+                }
                 p8.Camera();
                 p8.Palt(0, false);
                 p8.Rectfill(0, 0, 128, 46, 12);
