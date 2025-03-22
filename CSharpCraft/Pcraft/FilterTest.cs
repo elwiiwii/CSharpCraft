@@ -283,7 +283,7 @@ namespace CSharpCraft.Pcraft
                 else
                 {
                     densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["water"]], Density = (0, 4) });
-                    densityChecks.Add(new DensityCheck() { Radius = (1, 5), Tiles = [TileNum["sand"]], Density = (15, 100) });
+                    densityChecks.Add(new DensityCheck() { Radius = (1, 5), Tiles = [TileNum["sand"]], Density = (20, 100) });
                     densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["tree"]], Density = (30, 40) });
 
                     CreateMapStepCheck(densityChecks, densityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4);
