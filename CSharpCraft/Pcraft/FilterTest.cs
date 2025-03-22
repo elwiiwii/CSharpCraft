@@ -1,14 +1,6 @@
 ﻿using CSharpCraft.Pico8;
 using FixMath;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Bmp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
-using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
+using Force.DeepCloner;
 
 namespace CSharpCraft.Pcraft
 {
@@ -23,9 +15,11 @@ namespace CSharpCraft.Pcraft
         private bool found = false;
         private object lockObj = new();
 
+        Random random = new();
+
         private class DensityCheck
         {
-            public (int Lb, int Ub) Radius { get; set; } = (2, 2);
+            public (int Lb, int Ub) Radius { get; set; } = (1, 2);
             public List<int> Tiles { get; set; } = [];
             public (double Lb, double Ub) Density { get; set; } = (0, 100);
             public int Count { get; set; } = 0;
@@ -33,10 +27,10 @@ namespace CSharpCraft.Pcraft
 
         private class DensityComparison
         {
-            public (int Lb, int Ub) Radius1 { get; set; } = (2, 2);
+            public (int Lb, int Ub) Radius1 { get; set; } = (1, 2);
             public List<int> Tiles1 { get; set; } = [];
             public int Count1 { get; set; } = 0;
-            public (int Lb, int Ub) Radius2 { get; set; } = (2, 2);
+            public (int Lb, int Ub) Radius2 { get; set; } = (1, 2);
             public List<int> Tiles2 { get; set; } = [];
             public int Count2 { get; set; } = 0;
             public int Mag { get; set; } = 100;
@@ -55,34 +49,18 @@ namespace CSharpCraft.Pcraft
             { "gem", 10 },
         };
 
-        private bool Filter(F32[][] curlevel, List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons)
+        private bool Filter(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons)
         {
-            int maxRadius = Math.Min(levelsx / 2 - 1, MaxRadius(densityChecks, densityComparisons));
-            int minRadius = Math.Min(levelsx / 2 - 1, Math.Max(2, MinRadius(densityChecks, densityComparisons)));
-            int center = levelsx/2;
-
-            for (int i = -maxRadius; i <= maxRadius; i++)
-            {
-                if (Math.Abs(i) < minRadius) { continue; }
-                for (int j = -maxRadius; j <= maxRadius; j++)
-                {
-                    if (Math.Abs(j) < minRadius) { continue; }
-                    int curtile = F32.FloorToInt(curlevel[center + i][center + j]);
-                    if (curtile == 0)
-                    {
-
-                    }
-                    DensityCount(densityChecks, i, j, curtile);
-                    ComparisonCount(densityComparisons, i, j, curtile);
-                }
-            }
-
             foreach (var check in densityChecks)
             {
                 double area = ((check.Radius.Ub + check.Radius.Ub * check.Radius.Ub) - (check.Radius.Lb + check.Radius.Lb * check.Radius.Lb)) * 4;
                 if (check.Count / area < check.Density.Lb / 100.0 || check.Count / area > check.Density.Ub / 100.0)
                 {
                     return true;
+                }
+                else
+                {
+
                 }
             }
 
@@ -120,7 +98,7 @@ namespace CSharpCraft.Pcraft
             return false;
         }
 
-        private static void ComparisonCount(List<DensityComparison> densityComparisons, int i, int j, int curtile)
+        private void ComparisonCount(List<DensityComparison> densityComparisons, int i, int j, int curtile)
         {
             foreach (var check in densityComparisons)
             {
@@ -144,7 +122,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private static void DensityCount(List<DensityCheck> densityChecks, int i, int j, int curtile)
+        private void DensityCount(List<DensityCheck> densityChecks, int i, int j, int curtile)
         {
             foreach (var check in densityChecks)
             {
@@ -206,7 +184,7 @@ namespace CSharpCraft.Pcraft
             return mval;
         }
 
-        protected override void CreateMap()
+        private void CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e)
         {
             Parallel.For(0, int.MaxValue, (index, state) =>
             {
@@ -215,65 +193,56 @@ namespace CSharpCraft.Pcraft
                     return;
                 }
 
-                bool needmap = false;
-                int temp_holex = levelsx / 2 + levelx;
-                int temp_holey = levelsy / 2 + levely;
-                F32[][]? temp_level = new F32[levelsx][];
-                for (int i = 0; i < levelsx; i++)
-                {
-                    temp_level[i] = new F32[levelsy];
-                }
-                F32 temp_plx = plx;
-                F32 temp_ply = ply;
+                bool needmap = true;
+                List<DensityCheck> densityChecksClone = DeepClonerExtensions.DeepClone(densityChecks);
+                List<DensityComparison> densityComparisonsClone = DeepClonerExtensions.DeepClone(densityComparisons);
 
-                if (levelUnder)
-                {
-                    temp_level = CreateMapStep(levelsx, levelsy, 3, 8, 1, 9, 10);
+                F32[][] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
+                F32[][] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
+                F32[][] cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
+                F32[][] cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
 
-                    if (typeCount[8] < 30) { needmap = true; }
-                    if (typeCount[9] < 20) { needmap = true; }
-                    if (typeCount[10] < 15) { needmap = true; }
-                }
-                else
-                {
-                    temp_level = CreateMapStep(levelsx, levelsy, 0, 1, 2, 3, 4);
+                int maxRadius = Math.Min(levelsx / 2 - 1, Math.Max(1, MaxRadius(densityChecksClone, densityComparisonsClone)));
+                int minRadius = Math.Min(levelsx / 2 - 1, Math.Max(1, MinRadius(densityChecksClone, densityComparisonsClone)));
+                int center = levelsx / 2;
+                int[] temp_typeCount = new int[11];
 
-                    if (typeCount[3] < 30) { needmap = true; }
-                    if (typeCount[4] < 30) { needmap = true; }
-                    List<DensityCheck> densityChecks = [];
-                    //densityChecks.Add(new DensityCheck() { Radius = (2, 3), Tiles = [TileNum["water"]], Density = (0.1, 5) });
-                    densityChecks.Add(new DensityCheck() { Radius = (2, 8), Tiles = [TileNum["water"]], Density = (0, 4) });
-                    densityChecks.Add(new DensityCheck() { Radius = (2, 5), Tiles = [TileNum["sand"]], Density = (15, 100) });
-                    densityChecks.Add(new DensityCheck() { Radius = (2, 8), Tiles = [TileNum["tree"]], Density = (30, 40) });
-                    List<DensityComparison> densityComparisons = [];
-                    //densityComparisons.Add(new DensityComparison() { Radius1 = (2, 16), Tiles1 = [TileNum["tree"]], Radius2 = (0, 8), Tiles2 = [TileNum["grass"]], Mag = 15, Opr = "=" });
-                    needmap = Filter(temp_level, densityChecks, densityComparisons);
+                for (int i = 0; i < 11; i++)
+                {
+                    temp_typeCount[i] = 0;
                 }
 
-                if (!needmap)
+                for (int i = 0; i <= sx; i++)
                 {
-                    temp_plx = F32.Neg1;
-                    temp_ply = F32.Neg1;
-
-                    for (int i = 0; i <= 500; i++)
+                    for (int j = 0; j <= sy; j++)
                     {
-                        int depx = F32.FloorToInt(levelsx / 2 - 4 + p8.Rnd(9));
-                        int depy = F32.FloorToInt(levelsy / 2 - 4 + p8.Rnd(9));
-                        F32 c = temp_level[depx][depy];
+                        F32 v = F32.Abs(cur[i][j] - cur2[i][j]);
+                        F32 v2 = F32.Abs(cur[i][j] - cur3[i][j]);
+                        F32 v3 = F32.Abs(cur[i][j] - cur4[i][j]);
+                        F32 dist = F32.Max(F32.Abs(F32.FromDouble((double)i / sx - 0.5)) * 2, F32.Abs(F32.FromDouble((double)j / sy - 0.5)) * 2);
+                        dist = dist * dist * dist * dist;
+                        F32 coast = v * 4 - dist * 4;
 
-                        if ((c == 1 || c == 2) && !(depx == temp_holex && depy == temp_holey))
-                        {
-                            temp_plx = F32.FromInt(depx * 16 + 8);
-                            temp_ply = F32.FromInt(depy * 16 + 8);
-                            break;
-                        }
-                    }
+                        int id = a;
+                        if (coast > F32.FromDouble(0.3)) { id = b; } // sand
+                        if (coast > F32.FromDouble(0.6)) { id = c; } // grass
+                        if (coast > F32.FromDouble(0.3) && v2 > F32.Half) { id = d; } // stone
+                        if (id == c && v3 > F32.Half) { id = e; } // tree
 
-                    if (temp_plx < 0)
-                    {
-                        needmap = true;
+                        temp_typeCount[id]++;
+
+                        cur[i][j] = F32.FromInt(id);
+
+                        if (densityChecksClone.Count == 0 && densityComparisonsClone.Count == 0) { continue; }
+                        if (i < center - maxRadius || i > center + maxRadius || j < center - maxRadius || j > center + maxRadius) { continue; }
+                        //if ((i >= center - minRadius && i <= center + minRadius) || (j >= center - minRadius && j <= center + minRadius)) { continue; }
+                        int curtile = F32.FloorToInt(cur[i][j]);
+                        DensityCount(densityChecksClone, i - center, j - center, curtile);
+                        ComparisonCount(densityComparisonsClone, i - center, j - center, curtile);
                     }
                 }
+
+                needmap = Filter(densityChecksClone, densityComparisonsClone);
 
                 if (!needmap)
                 {
@@ -282,17 +251,88 @@ namespace CSharpCraft.Pcraft
                         if (!found)
                         {
                             found = true;
-                            holex = temp_holex;
-                            holey = temp_holey;
-                            level = temp_level;
-                            plx = temp_plx;
-                            ply = temp_ply;
+                            level = cur;
+                            typeCount = temp_typeCount;
                             state.Stop();
                         }
                     }
                 }
             });
 
+            found = false;
+        }
+
+        protected override void CreateMap()
+        {
+            bool needmap = true;
+
+            while (needmap)
+            {
+                needmap = false;
+                List<DensityCheck> densityChecks = [];
+                List<DensityComparison> densityComparisons = [];
+
+                if (levelUnder)
+                {
+                    CreateMapStepCheck(densityChecks, densityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10);
+
+                    if (typeCount[8] < 30) { needmap = true; }
+                    if (typeCount[9] < 20) { needmap = true; }
+                    if (typeCount[10] < 15) { needmap = true; }
+                }
+                else
+                {
+                    densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["water"]], Density = (0, 4) });
+                    densityChecks.Add(new DensityCheck() { Radius = (1, 5), Tiles = [TileNum["sand"]], Density = (15, 100) });
+                    densityChecks.Add(new DensityCheck() { Radius = (1, 6), Tiles = [TileNum["tree"]], Density = (30, 40) });
+
+                    CreateMapStepCheck(densityChecks, densityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4);
+
+                    if (typeCount[3] < 30) { needmap = true; }
+                    if (typeCount[4] < 30) { needmap = true; }
+
+                }
+
+                if (!needmap)
+                {
+                    plx = F32.Neg1;
+                    ply = F32.Neg1;
+
+                    List<(int x, int y)> spawnableTiles = [];
+
+                    for (int i = -4; i <= 4; i++)
+                    {
+                        if (i == 0) { continue; }
+                        for (int j = -4; j <= 4; j++)
+                        {
+                            if (j == 0) { continue; }
+                            int depx = levelsx / 2 + i;
+                            int depy = levelsy / 2 + j;
+                            F32 c = level[depx][depy];
+
+                            if (c == 1 || c == 2)
+                            {
+                                spawnableTiles.Add((depx, depy));
+                            }
+                        }
+                    }
+
+                    if (spawnableTiles.Count > 0)
+                    {
+                        int indx = random.Next(spawnableTiles.Count);
+                        (int x, int y) tile = spawnableTiles[indx];
+
+                        plx = F32.FromInt(tile.x * 16 + 8);
+                        ply = F32.FromInt(tile.y * 16 + 8);
+                    }
+
+                    if (plx < 0)
+                    {
+                        needmap = true;
+                    }
+                }
+            }
+            
             for (int i = 0; i < levelsx; i++)
             {
                 for (int j = 0; j < levelsy; j++)
@@ -300,6 +340,9 @@ namespace CSharpCraft.Pcraft
                     p8.Mset(i + levelx, j + levely, level[i][j].Double);
                 }
             }
+
+            holex = levelsx / 2 + levelx;
+            holey = levelsy / 2 + levely;
 
             for (int i = -1; i <= 1; i++)
             {
@@ -316,8 +359,6 @@ namespace CSharpCraft.Pcraft
 
             cmx = plx;
             cmy = ply;
-
-            found = false;
         }
 
         protected override void ResetLevel()
@@ -331,6 +372,139 @@ namespace CSharpCraft.Pcraft
         public override void Init(Pico8Functions pico8)
         {
             base.Init(pico8);
+        }
+
+        protected override void UpHit(F32 hitx, F32 hity, Ground hit)
+        {
+            if (nearEnemies.Count > 0)
+            {
+                p8.Sfx(19, 3);
+                F32 pow = F32.One;
+                if (curItem is not null && curItem.Type == sword)
+                {
+                    pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                    pow = F32.Floor(pow);
+                    p8.Sfx(14 + p8.Rnd(2).Double, 3);
+                }
+                foreach (Entity e in nearEnemies)
+                {
+                    e.Life -= pow / nearEnemies.Count;
+                    F32 push = (pow - 1) * F32.Half;
+                    e.Ox += F32.Max(-push, F32.Min(push, e.X - plx));
+                    e.Oy += F32.Max(-push, F32.Min(push, e.Y - ply));
+                    if (e.Life <= 0)
+                    {
+                        p8.Del(enemies, e);
+                        AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                        AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                    }
+                    p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
+                }
+            }
+            else if (hit.Mat is not null)
+            {
+                p8.Sfx(15, 3);
+                F32 pow = F32.One;
+                if (curItem is not null)
+                {
+                    if (hit == grtree)
+                    {
+                        if (curItem.Type == haxe)
+                        {
+                            pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                            stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                            p8.Sfx(12, 3);
+                        }
+                    }
+                    else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
+                    {
+                        pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                        stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                        p8.Sfx(12, 3);
+                    }
+                }
+                pow = F32.Floor(pow);
+
+                F32 d = GetData(hitx, hity, hit.Life);
+                if (d - pow <= 0)
+                {
+                    SetGr(hitx, hity, hit.Tile);
+                    Cleardata(hitx, hity);
+                    AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
+                    if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
+                    {
+                        AddItem(apple, 1, hitx, hity);
+                    }
+                }
+                else
+                {
+                    SetData(hitx, hity, d - pow);
+                }
+                p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
+            }
+            else
+            {
+                p8.Sfx(19, 3);
+                if (curItem is null)
+                {
+                    return;
+                }
+                if (curItem.Power is not null)
+                {
+                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
+                }
+                if (curItem.Type.GiveLife is not null)
+                {
+                    plife = F32.Min(F32.FromInt(100), plife + (int)curItem.Type.GiveLife);
+                    RemInList(invent, Instc(curItem.Type, 1));
+                    p8.Sfx(21, 3);
+                }
+                switch (hit, curItem.Type)
+                {
+                    case (Ground, Material) gm when gm == (grgrass, scythe):
+                        SetGr(hitx, hity, grsand);
+                        if (p8.Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
+                        break;
+                    case (Ground, Material) gm when gm == (grsand, shovel):
+                        if (curItem.Power > 3)
+                        {
+                            SetGr(hitx, hity, grwater);
+                            AddItem(sand, 2, hitx, hity);
+                        }
+                        else
+                        {
+                            SetGr(hitx, hity, grfarm);
+                            SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                            AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
+                        }
+                        break;
+                    case (Ground, Material) gm when gm == (grwater, sand):
+                        SetGr(hitx, hity, grsand);
+                        RemInList(invent, Instc(sand, 1));
+                        break;
+                    case (Ground, Material) gm when gm == (grwater, boat):
+                        p8.Reload();
+                        p8.Memcpy(0x1000, 0x2000, 0x1000);
+                        curMenu = Cmenu(inventary, null, 136, "final time:", timer);
+                        runtimer = 0;
+                        p8.Music(3);
+                        break;
+                    case (Ground, Material) gm when gm == (grfarm, seed):
+                        SetGr(hitx, hity, grwheat);
+                        SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                        RemInList(invent, Instc(seed, 1));
+                        break;
+                    case (Ground, Material) gm when gm == (grwheat, scythe):
+                        SetGr(hitx, hity, grsand);
+                        F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
+                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double)), hitx, hity);
+                        AddItem(seed, 1, hitx, hity);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
 
         public override void Update()
@@ -612,7 +786,8 @@ namespace CSharpCraft.Pcraft
             {
                 p8.Reload();
                 p8.Memcpy(0x1000, 0x2000, 0x1000);
-                curMenu = deathMenu;
+                curMenu = Cmenu(inventary, null, 128, "final time:", timer);
+                runtimer = 0;
                 p8.Music(4);
             }
         }

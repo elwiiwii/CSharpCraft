@@ -59,6 +59,7 @@ namespace CSharpCraft.Pico8
         private int? lastMusicCall;
         private CosDict cosDict = new();
         private SinDict sinDict = new();
+        Random random = new();
 
         public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
         {
@@ -1233,9 +1234,7 @@ namespace CSharpCraft.Pico8
 
         public F32 Rnd(double limit = 1.0) // https://pico-8.fandom.com/wiki/Rnd
         {
-            Random random = new();
-            F32 n = F32.FromDouble(random.NextDouble() * limit);
-            return n;
+            return F32.FromDouble(random.NextDouble() * limit);
         }
 
 

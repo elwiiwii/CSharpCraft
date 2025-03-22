@@ -74,7 +74,7 @@ namespace CSharpCraft.Pcraft
 
         protected F32 time;
         protected int toogleMenu;
-        protected readonly int[] typeCount = new int[11];
+        protected int[] typeCount = new int[11];
 
         protected List<Entity>? workbenchRecipe;
 
@@ -886,7 +886,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void UpHit(F32 hitx, F32 hity, Ground hit)
+        protected virtual void UpHit(F32 hitx, F32 hity, Ground hit)
         {
             if (nearEnemies.Count > 0)
             {
@@ -1402,9 +1402,9 @@ namespace CSharpCraft.Pcraft
                 F32 cscal = scale;
                 if (step == featstep) { cscal = F32.One; }
 
-                for (int i = 0; i <= sx - 1; i += step)
+                for (int i = 0; i < sx; i += step)
                 {
-                    for (int j = 0; j <= sy - 1; j += step)
+                    for (int j = 0; j < sy; j += step)
                     {
                         F32 c1 = n[i][j];
                         F32 c2 = n[i + step][j];
@@ -1414,9 +1414,9 @@ namespace CSharpCraft.Pcraft
                     }
                 }
 
-                for (int i = 0; i <= sx - 1; i += step)
+                for (int i = 0; i < sx; i += step)
                 {
-                    for (int j = 0; j <= sy - 1; j += step)
+                    for (int j = 0; j < sy; j += step)
                     {
                         F32 c1 = n[i][j];
                         F32 c2 = n[i + step][j];
@@ -1433,7 +1433,7 @@ namespace CSharpCraft.Pcraft
             return n;
         }
 
-        protected F32[][] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
+        protected virtual F32[][] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
         {
             F32[][] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
             F32[][] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
