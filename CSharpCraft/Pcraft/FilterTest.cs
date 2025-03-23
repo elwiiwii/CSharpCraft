@@ -394,9 +394,13 @@ namespace CSharpCraft.Pcraft
             camoffy = 0;
             menuY = 0;
             menuX = 0;
+            buttonRow1 = [];
+            buttonRow2 = [];
+            buttonRow3 = [];
             densityChecks = [];
             densityComparisons = [];
             AddButtons();
+            buttonRows = [buttonRow1, buttonRow2, buttonRow3];
         }
 
         private void AddButtons()
@@ -591,8 +595,7 @@ namespace CSharpCraft.Pcraft
             {
                 if (curMenu.Spr is not null)
                 {
-                    buttonRows = [buttonRow1, buttonRow2, buttonRow3];
-
+                    
                     if (menuY < 3)
                     {
                         buttonRows[menuY][menuX].OutCol = 7;
@@ -604,16 +607,20 @@ namespace CSharpCraft.Pcraft
                         if (p8.Btnp(1)) { menuX = Math.Min(buttonRows[menuY].Count - 1, menuX + 1); }
                         if (p8.Btnp(2)) { menuY = Math.Max(0, menuY - 1); }
                         if (p8.Btnp(3)) { menuY += 1; }
+                        if (menuY > buttonRows.Count - 1 && densityChecks.Count + densityComparisons.Count == 0) { menuY = buttonRows.Count - 1; }
                         if (menuY < 3)
                         {
                             if (menuX > buttonRows[menuY].Count - 1) { menuX = buttonRows[menuY].Count - 1; }
                             buttonRows[menuY][menuX].OutCol = 9;
-                            if (p8.Btnp(5)) { buttonRows[menuY][menuX].Function(); }
+                            if (p8.Btnp(4)) { buttonRows[menuY][menuX].Function(); }
                         }
                     }
                     if (menuY > 2)
                     {
-
+                        if (p8.Btnp(0)) {  }
+                        if (p8.Btnp(1)) {  }
+                        if (p8.Btnp(2)) { menuY -= 1; }
+                        if (p8.Btnp(3)) { menuY = Math.Min(buttonRows.Count + densityChecks.Count + densityComparisons.Count - 1, menuY + 1); }
                     }
 
                     //if (p8.Btnp(4) && !lb4)
