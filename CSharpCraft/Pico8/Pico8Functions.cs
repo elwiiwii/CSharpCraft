@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace CSharpCraft.Pico8
 {
@@ -1293,6 +1294,12 @@ namespace CSharpCraft.Pico8
             }
 
             return _sprites[xFlr + yFlr * 128];
+        }
+
+
+        public void Srand(int seed)
+        {
+            random = new(seed);
         }
 
 

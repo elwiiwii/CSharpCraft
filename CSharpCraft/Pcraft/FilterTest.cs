@@ -1,4 +1,6 @@
-﻿using CSharpCraft.Pico8;
+﻿using System;
+using System.Reflection;
+using CSharpCraft.Pico8;
 using FixMath;
 using Force.DeepCloner;
 using Google.Protobuf.Reflection;
@@ -26,6 +28,7 @@ namespace CSharpCraft.Pcraft
 
         private int menuY = 0;
         private int menuX = 0;
+        private int tileIndex = 0;
 
         int camoffy;
 
@@ -298,7 +301,7 @@ namespace CSharpCraft.Pcraft
                 if (levelUnder)
                 {
                     CreateMapStepCheck(densityChecks, densityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10);
-
+                    
                     if (typeCount[8] < 30) { needmap = true; }
                     if (typeCount[9] < 20) { needmap = true; }
                     if (typeCount[10] < 15) { needmap = true; }
@@ -394,6 +397,7 @@ namespace CSharpCraft.Pcraft
             camoffy = 0;
             menuY = 0;
             menuX = 0;
+            tileIndex = 0;
             buttonRow1 = [];
             buttonRow2 = [];
             buttonRow3 = [];
@@ -595,9 +599,10 @@ namespace CSharpCraft.Pcraft
             {
                 if (curMenu.Spr is not null)
                 {
-                    
+                    if (menuY > buttonRows.Count - 1 && densityChecks.Count + densityComparisons.Count == 0) { menuY = buttonRows.Count - 1; }
                     if (menuY < 3)
                     {
+                        if (menuX > buttonRows[menuY].Count - 1) { menuX = buttonRows[menuY].Count - 1; }
                         buttonRows[menuY][menuX].OutCol = 7;
                     }
 
@@ -605,8 +610,8 @@ namespace CSharpCraft.Pcraft
                     {
                         if (p8.Btnp(0)) { menuX = Math.Max(0, menuX - 1); }
                         if (p8.Btnp(1)) { menuX = Math.Min(buttonRows[menuY].Count - 1, menuX + 1); }
-                        if (p8.Btnp(2)) { menuY = Math.Max(0, menuY - 1); }
-                        if (p8.Btnp(3)) { menuY += 1; }
+                        if (p8.Btnp(2)) { menuY = Math.Max(0, menuY - 1); menuX = 0; }
+                        if (p8.Btnp(3)) { menuY += 1; menuX = 0; }
                         if (menuY > buttonRows.Count - 1 && densityChecks.Count + densityComparisons.Count == 0) { menuY = buttonRows.Count - 1; }
                         if (menuY < 3)
                         {
@@ -615,12 +620,291 @@ namespace CSharpCraft.Pcraft
                             if (p8.Btnp(4)) { buttonRows[menuY][menuX].Function(); }
                         }
                     }
-                    if (menuY > 2)
+                    else if (menuY > 2)
                     {
-                        if (p8.Btnp(0)) {  }
-                        if (p8.Btnp(1)) {  }
-                        if (p8.Btnp(2)) { menuY -= 1; }
-                        if (p8.Btnp(3)) { menuY = Math.Min(buttonRows.Count + densityChecks.Count + densityComparisons.Count - 1, menuY + 1); }
+                        if ((p8.Btnp(4) || p8.Btnp(5)) && menuY - buttonRows.Count < densityChecks.Count && menuX == 5) { densityChecks.RemoveAt(menuY - buttonRows.Count); return; }
+                        if ((p8.Btnp(4) || p8.Btnp(5)) && (menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count && menuX == 6) { densityComparisons.RemoveAt(menuY - buttonRows.Count - densityChecks.Count); return; }
+                        if ((p8.Btnp(4) || p8.Btnp(5)) && (menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count && (menuY - buttonRows.Count - densityChecks.Count) % 2 == (buttonRows.Count + densityChecks.Count) % 2 && menuX == 2) { densityComparisons.RemoveAt((menuY - buttonRows.Count - densityChecks.Count) / 2); return; }
+                        
+                        if (p8.Btn(4) || p8.Btn(5))
+                        {
+                            if (p8.Btnp(0) || p8.Btnp(2))
+                            {
+                                if (menuY - buttonRows.Count < densityChecks.Count)
+                                {
+                                    switch (menuX)
+                                    {
+                                        case 0:
+                                            var temp0 = densityChecks[menuY - buttonRows.Count].Radius;
+                                            temp0.Lb -= temp0.Lb > 1 ? 1 : 0;
+                                            densityChecks[menuY - buttonRows.Count].Radius = temp0;
+                                            break;
+                                        case 1:
+                                            var temp1 = densityChecks[menuY - buttonRows.Count].Radius;
+                                            temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0;
+                                            densityChecks[menuY - buttonRows.Count].Radius = temp1;
+                                            break;
+                                        case 2:
+                                            var temp2 = densityChecks[menuY - buttonRows.Count].Tiles;
+                                            int index = 0;
+                                            if (index >= temp2.Count)
+                                            {
+                                                densityChecks[menuY - buttonRows.Count].Tiles.Add(0);
+                                            }
+                                            else
+                                            {
+                                                temp2[index] -= temp2[index] == 8 ? 4 : 1;
+                                                if (temp2[index] < 0) { temp2.RemoveAt(index); }
+                                                densityChecks[menuY - buttonRows.Count].Tiles = temp2;
+                                            }
+                                            break;
+                                        case 3:
+                                            var temp3 = densityChecks[menuY - buttonRows.Count].Density;
+                                            temp3.Lb -= temp3.Lb > 0 ? temp3.Lb <= 1 ? 0.1 : 1 : 0;
+                                            temp3.Lb = Math.Round(temp3.Lb, 1);
+                                            densityChecks[menuY - buttonRows.Count].Density = temp3;
+                                            break;
+                                        case 4:
+                                            var temp4 = densityChecks[menuY - buttonRows.Count].Density;
+                                            temp4.Ub -= temp4.Ub > 0 ? temp4.Ub <= 1 ? 0.1 : 1 : 0;
+                                            temp4.Ub = Math.Round(temp4.Ub, 1);
+                                            densityChecks[menuY - buttonRows.Count].Density = temp4;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    int group = (menuY - buttonRows.Count - densityChecks.Count) / 2;
+                                    switch (menuX)
+                                    {
+                                        case 0:
+                                            if ((menuY - buttonRows.Count - densityChecks.Count) % 2 != (buttonRows.Count + densityChecks.Count) % 2)
+                                            {
+                                                var temp0 = densityComparisons[group].Radius1;
+                                                temp0.Lb -= temp0.Lb > 1 ? 1 : 0;
+                                                densityComparisons[group].Radius1 = temp0;
+                                            }
+                                            else
+                                            {
+                                                var temp0 = densityComparisons[group].Mag;
+                                                temp0 -= temp0 > 0 ? 1 : 0;
+                                                densityComparisons[group].Mag = temp0;
+                                            }
+                                            break;
+                                        case 1:
+                                            if ((menuY - buttonRows.Count - densityChecks.Count) % 2 != (buttonRows.Count + densityChecks.Count) % 2)
+                                            {
+                                                var temp1 = densityComparisons[group].Radius1;
+                                                temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0;
+                                                densityComparisons[group].Radius1 = temp1;
+                                            }
+                                            else
+                                            {
+                                                if (densityComparisons[group].Opr == "<") { densityComparisons[group].Opr = "="; }
+                                                else if (densityComparisons[group].Opr == "=") { densityComparisons[group].Opr = ">"; }
+                                            }
+                                            break;
+                                        case 2:
+                                            var temp2 = densityComparisons[group].Tiles1;
+                                            int index = 0;
+                                            if (index >= temp2.Count)
+                                            {
+                                                densityComparisons[group].Tiles1.Add(0);
+                                            }
+                                            else
+                                            {
+                                                temp2[index] -= temp2[index] == 8 ? 4 : 1;
+                                                if (temp2[index] < 0) { temp2.RemoveAt(index); }
+                                                densityComparisons[group].Tiles1 = temp2;
+                                            }
+                                            break;
+                                        case 3:
+                                            var temp3 = densityComparisons[group].Radius2;
+                                            temp3.Lb -= temp3.Lb > 1 ? 1 : 0;
+                                            densityComparisons[group].Radius2 = temp3;
+                                            break;
+                                        case 4:
+                                            var temp4 = densityComparisons[group].Radius2;
+                                            temp4.Ub -= temp4.Ub > temp4.Lb ? 1 : 0;
+                                            densityComparisons[group].Radius2 = temp4;
+                                            break;
+                                        case 5:
+                                            var temp5 = densityComparisons[group].Tiles2;
+                                            int index2 = 0;
+                                            if (index2 >= temp5.Count)
+                                            {
+                                                densityComparisons[group].Tiles2.Add(0);
+                                            }
+                                            else
+                                            {
+                                                temp5[index2] -= temp5[index2] == 8 ? 4 : 1;
+                                                if (temp5[index2] < 0) { temp5.RemoveAt(index2); }
+                                                densityComparisons[group].Tiles2 = temp5;
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            int lvlRad = 32;
+                            if (p8.Btnp(1) || p8.Btnp(3))
+                            {
+                                if (menuY - buttonRows.Count < densityChecks.Count)
+                                {
+                                    switch (menuX)
+                                    {
+                                        case 0:
+                                            var temp0 = densityChecks[menuY - buttonRows.Count].Radius;
+                                            temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0;
+                                            densityChecks[menuY - buttonRows.Count].Radius = temp0;
+                                            break;
+                                        case 1:
+                                            var temp1 = densityChecks[menuY - buttonRows.Count].Radius;
+                                            temp1.Ub += temp1.Ub <= lvlRad ? 1 : 0;
+                                            densityChecks[menuY - buttonRows.Count].Radius = temp1;
+                                            break;
+                                        case 2:
+                                            var temp2 = densityChecks[menuY - buttonRows.Count].Tiles;
+                                            int index = 0;
+                                            if (index >= temp2.Count)
+                                            {
+                                                densityChecks[menuY - buttonRows.Count].Tiles.Add(0);
+                                            }
+                                            else
+                                            {
+                                                temp2[index] += temp2[index] < 10 ? temp2[index] == 4 ? 4 : 1 : 0;
+                                                densityChecks[menuY - buttonRows.Count].Tiles = temp2;
+                                            }
+                                            break;
+                                        case 3:
+                                            var temp3 = densityChecks[menuY - buttonRows.Count].Density;
+                                            temp3.Lb += temp3.Lb < 100 ? temp3.Lb < 1 ? 0.1 : 1 : 0;
+                                            temp3.Lb = Math.Round(temp3.Lb, 1);
+                                            densityChecks[menuY - buttonRows.Count].Density = temp3;
+                                            break;
+                                        case 4:
+                                            var temp4 = densityChecks[menuY - buttonRows.Count].Density;
+                                            temp4.Ub += temp4.Ub < 100 ? temp4.Ub < 1 ? 0.1 : 1 : 0;
+                                            temp4.Ub = Math.Round(temp4.Ub, 1);
+                                            densityChecks[menuY - buttonRows.Count].Density = temp4;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    int group = (menuY - buttonRows.Count - densityChecks.Count) / 2;
+                                    switch (menuX)
+                                    {
+                                        case 0:
+                                            if ((menuY - buttonRows.Count - densityChecks.Count) % 2 != (buttonRows.Count + densityChecks.Count) % 2)
+                                            {
+                                                var temp0 = densityComparisons[group].Radius1;
+                                                temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0;
+                                                densityComparisons[group].Radius1 = temp0;
+                                            }
+                                            else
+                                            {
+                                                var temp0 = densityComparisons[group].Mag;
+                                                temp0 += temp0 <100 ? 1 : 0;
+                                                densityComparisons[group].Mag = temp0;
+                                            }
+                                            break;
+                                        case 1:
+                                            if ((menuY - buttonRows.Count - densityChecks.Count) % 2 != (buttonRows.Count + densityChecks.Count) % 2)
+                                            {
+                                                var temp1 = densityComparisons[group].Radius1;
+                                                temp1.Ub += temp1.Ub <= lvlRad ? 1 : 0;
+                                                densityComparisons[group].Radius1 = temp1;
+                                            }
+                                            else
+                                            {
+                                                if (densityComparisons[group].Opr == ">") { densityComparisons[group].Opr = "="; }
+                                                else if (densityComparisons[group].Opr == "=") { densityComparisons[group].Opr = "<"; }
+                                            }
+                                            break;
+                                        case 2:
+                                            var temp2 = densityComparisons[group].Tiles1;
+                                            int index = 0;
+                                            if (index >= temp2.Count)
+                                            {
+                                                densityComparisons[group].Tiles1.Add(0);
+                                            }
+                                            else
+                                            {
+                                                temp2[index] += temp2[index] < 10 ? temp2[index] == 4 ? 4 : 1 : 0;
+                                                densityComparisons[group].Tiles1 = temp2;
+                                            }
+                                            break;
+                                        case 3:
+                                            var temp3 = densityComparisons[group].Radius2;
+                                            temp3.Lb += temp3.Lb < temp3.Ub - 1 ? 1 : 0;
+                                            densityComparisons[group].Radius2 = temp3;
+                                            break;
+                                        case 4:
+                                            var temp4 = densityComparisons[group].Radius2;
+                                            temp4.Ub += temp4.Ub <= lvlRad ? 1 : 0;
+                                            densityComparisons[group].Radius2 = temp4;
+                                            break;
+                                        case 5:
+                                            var temp5 = densityComparisons[group].Tiles2;
+                                            int index2 = 0;
+                                            if (index2 >= temp5.Count)
+                                            {
+                                                densityComparisons[group].Tiles2.Add(0);
+                                            }
+                                            else
+                                            {
+                                                temp5[index2] += temp5[index2] < 10 ? temp5[index2] == 4 ? 4 : 1 : 0;
+                                                densityComparisons[group].Tiles2 = temp5;
+                                            }
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (p8.Btnp(0)) { menuX -= 1; tileIndex = 0; }
+                            if (p8.Btnp(1)) { menuX += 1; tileIndex = 0; }
+                            if (p8.Btnp(2))
+                            {
+                                if ((menuY - buttonRows.Count < densityChecks.Count && menuX == 2) ||
+                                    (menuY - buttonRows.Count >= densityChecks.Count && (menuX == 2 || menuX == 5)))
+                                {
+                                    tileIndex -= tileIndex > 1 ? 1 : 0;
+                                }
+                                else
+                                {
+                                    menuY -= 1;
+                                    menuX = 0;
+                                }
+                            }
+                            if (p8.Btnp(3))
+                            {
+                                int group = (menuY - buttonRows.Count - densityChecks.Count) / 2;
+                                if (menuY - buttonRows.Count < densityChecks.Count && menuX == 2)
+                                {
+                                    //tileIndex += tileIndex < densityChecks ? 1 : 0;
+                                }
+                                else if (menuY - buttonRows.Count >= densityChecks.Count && (menuX == 2 || menuX == 5))
+                                {
+                                    tileIndex += tileIndex > 1 ? 1 : 0;
+                                }
+                                else
+                                {
+                                    menuY = Math.Min(buttonRows.Count + densityChecks.Count + densityComparisons.Count * 2 - 1, menuY + 1);
+                                    menuX = 0;
+                                }
+                            }
+                        }
                     }
 
                     //if (p8.Btnp(4) && !lb4)
@@ -896,19 +1180,23 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void DrawDensityCheck(DensityCheck check, int x, int y)
+        private void DrawDensityCheck(int index, int x, int y)
         {
+            DensityCheck check = densityChecks[index];
             int count = check.Tiles.Count * 6;
+            bool selected = menuY == buttonRows.Count + index;
             p8.Rectfill(x, y, x + 92, y + 20 + count, 7);
             p8.Rectfill(x + 1, y + 1, x + 85, y + 19 + count, 1);
 
-            p8.Rectfill(x + 87, y + 1, x + 91, y + 19 + count, 2);
+            p8.Rectfill(x + 87, y + 1, x + 91, y + 19 + count, selected && menuX == 5 ? 8 : 2);
             p8.Print("x", x + 88, y + 8 + count / 2, 7);
 
             p8.Rectfill(x + 2, y + 2, x + 28, y + 10, 7);
             p8.Rectfill(x + 3, y + 3, x + 27, y + 9, 13);
             p8.Print("radius", x + 4, y + 4, 7);
-            Printc($"{check.Radius.Lb}-{check.Radius.Ub}", x + 16, y + 13, 7);
+            Printc($"{check.Radius.Lb} {(check.Radius.Ub < 10 ? " " : "  ")}", x + 16, y + 13, selected && menuX == 0 ? 9 : 7);
+            Printc($"{(check.Radius.Lb < 10 ? " " : "  ")}-{(check.Radius.Ub < 10 ? " " : "  ")}", x + 16, y + 13, 7);
+            Printc($"{(check.Radius.Lb < 10 ? " " : "  ")} {check.Radius.Ub}", x + 16, y + 13, selected && menuX == 1 ? 9 : 7);
 
             p8.Rectfill(x + 30, y + 2, x + 52, y + 10, 7);
             p8.Rectfill(x + 31, y + 3, x + 51, y + 9, 13);
@@ -916,20 +1204,25 @@ namespace CSharpCraft.Pcraft
             int i = 0;
             foreach (var tile in check.Tiles)
             {
-                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, x + 42, y + 13 + i * 6, 7);
+                Printc(TileNum.FirstOrDefault(val => val.Value == tile).Key, x + 42, y + 13 + i * 6, selected && menuX == 2 ? 9 : 7);
                 i++;
             }
-            Printc("add", x + 42, y + 13 + i * 6, 13);
+            Printc("add", x + 42, y + 13 + i * 6, selected && menuX == 2 ? 9 : 13);
 
             p8.Rectfill(x + 54, y + 2, x + 84, y + 10, 7);
             p8.Rectfill(x + 55, y + 3, x + 83, y + 9, 13);
             p8.Print("density", x + 56, y + 4, 7);
-            Printc($"{check.Density.Lb}-{check.Density.Ub}", x + 70, y + 13, 7);
+            Printc($"{check.Density.Lb} {new string(' ', check.Density.Ub.ToString().Length)}", x + 70, y + 13, selected && menuX == 3 ? 9 : 7);
+            Printc($"{new string(' ', check.Density.Lb.ToString().Length)}-{new string(' ', check.Density.Ub.ToString().Length)}", x + 70, y + 13, 7);
+            Printc($"{new string(' ', check.Density.Lb.ToString().Length)} {check.Density.Ub}", x + 70, y + 13, selected && menuX == 4 ? 9 : 7);
         }
 
-        private void DrawDensityComparison(DensityComparison check, int x, int y)
+        private void DrawDensityComparison(int index, int x, int y)
         {
-            int count = Math.Max(check.Tiles1.Count, check.Tiles1.Count) * 6;
+            DensityComparison check = densityComparisons[index / 2];
+            int count = Math.Max(check.Tiles1.Count, check.Tiles2.Count) * 6;
+            bool selected1 = menuY == buttonRows.Count + densityChecks.Count + index;
+            bool selected2 = menuY == buttonRows.Count + densityChecks.Count + index + 1;
             p8.Rectfill(x, y, x + 114, y + 40 + count, 7);
             p8.Rectfill(x + 1, y + 1, x + 53, y + 19 + count, 1);
             p8.Rectfill(x + 55, y + 1, x + 107, y + 19 + count, 1);
@@ -942,13 +1235,15 @@ namespace CSharpCraft.Pcraft
             p8.Rectfill(x + 74, y + 33 + count, x + 74, y + 37 + count, 7);
             p8.Rectfill(x + 73, y + 34 + count, x + 73, y + 36 + count, 7);
 
-            p8.Rectfill(x + 109, y + 1, x + 113, y + 39 + count, 2);
+            p8.Rectfill(x + 109, y + 1, x + 113, y + 39 + count, (selected1 && menuX == 6 || selected2 && menuX == 2) ? 8 : 2);
             p8.Print("x", x + 110, y + 18 + count / 2, 7);
 
             p8.Rectfill(x + 2, y + 2, x + 28, y + 10, 7);
             p8.Rectfill(x + 3, y + 3, x + 27, y + 9, 13);
             p8.Print("radius", x + 4, y + 4, 7);
-            Printc($"{check.Radius1.Lb}-{check.Radius1.Ub}", x + 16, y + 13, 7);
+            Printc($"{check.Radius1.Lb} {(check.Radius1.Ub < 10 ? " " : "  ")}", x + 16, y + 13, selected1 && menuX == 0 ? 9 : 7);
+            Printc($"{(check.Radius1.Lb < 10 ? " " : "  ")}-{(check.Radius1.Ub < 10 ? " " : "  ")}", x + 16, y + 13, 7);
+            Printc($"{(check.Radius1.Lb < 10 ? " " : "  ")} {check.Radius1.Ub}", x + 16, y + 13, selected1 && menuX == 1 ? 9 : 7);
 
             p8.Rectfill(x + 30, y + 2, x + 52, y + 10, 7);
             p8.Rectfill(x + 31, y + 3, x + 51, y + 9, 13);
@@ -956,15 +1251,17 @@ namespace CSharpCraft.Pcraft
             int i = 0;
             foreach (var tile in check.Tiles1)
             {
-                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, x + 42, y + 13 + i * 6, 7);
+                Printc(TileNum.FirstOrDefault(val => val.Value == tile).Key, x + 42, y + 13 + i * 6, selected1 && menuX == 2 ? 9 : 7);
                 i++;
             }
-            Printc("add", x + 42, y + 13 + i * 6, 13);
+            Printc("add", x + 42, y + 13 + i * 6, selected1 && menuX == 2 ? 9 : 13);
 
             p8.Rectfill(x + 56, y + 2, x + 82, y + 10, 7);
             p8.Rectfill(x + 57, y + 3, x + 81, y + 9, 13);
             p8.Print("radius", x + 58, y + 4, 7);
-            Printc($"{check.Radius2.Lb}-{check.Radius2.Ub}", x + 70, y + 13, 7);
+            Printc($"{check.Radius2.Lb} {(check.Radius2.Ub < 10 ? " " : "  ")}", x + 70, y + 13, selected1 && menuX == 3 ? 9 : 7);
+            Printc($"{(check.Radius2.Lb < 10 ? " " : "  ")}-{(check.Radius2.Ub < 10 ? " " : "  ")}", x + 70, y + 13, 7);
+            Printc($"{(check.Radius2.Lb < 10 ? " " : "  ")} {check.Radius2.Ub}", x + 70, y + 13, selected1 && menuX == 4 ? 9 : 7);
 
             p8.Rectfill(x + 84, y + 2, x + 106, y + 10, 7);
             p8.Rectfill(x + 85, y + 3, x + 105, y + 9, 13);
@@ -972,20 +1269,20 @@ namespace CSharpCraft.Pcraft
             i = 0;
             foreach (var tile in check.Tiles2)
             {
-                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, x + 96, y + 13 + i * 6, 7);
+                Printc(TileNum.FirstOrDefault(x => x.Value == tile).Key, x + 96, y + 13 + i * 6, selected1 && menuX == 5 ? 9 : 7);
                 i++;
             }
-            Printc("add", x + 96, y + 13 + i * 6, 13);
+            Printc("add", x + 96, y + 13 + i * 6, selected1 && menuX == 5 ? 9 : 13);
 
             p8.Rectfill(x + 39, y + 22 + count, x + 53, y + 30 + count, 7);
             p8.Rectfill(x + 40, y + 23 + count, x + 52, y + 29 + count, 13);
             p8.Print("mag", x + 41, y + 24 + count, 7);
-            Printc($"{check.Mag}%", x + 47, y + 33 + count, 7);
+            Printc($"{check.Mag}%", x + 47, y + 33 + count, selected2 && menuX == 0 ? 9 : 7);
 
             p8.Rectfill(x + 55, y + 22 + count, x + 69, y + 30 + count, 7);
             p8.Rectfill(x + 56, y + 23 + count, x + 68, y + 29 + count, 13);
             p8.Print("opr", x + 57, y + 24 + count, 7);
-            p8.Print(check.Opr, x + 61, y + 33 + count, 7);
+            p8.Print(check.Opr, x + 61, y + 33 + count, selected2 && menuX == 1 ? 9 : 7);
         }
 
         public override void Draw()
@@ -1008,16 +1305,16 @@ namespace CSharpCraft.Pcraft
                     }
 
                     int y = 39;
-                    foreach (var check in densityChecks)
+                    for (int i = 0; i < densityChecks.Count; i++)
                     {
-                        DrawDensityCheck(check, 6, y);
-                        y += 21 + check.Tiles.Count * 6 + 1;
+                        DrawDensityCheck(i, 6, y);
+                        y += 21 + densityChecks[i].Tiles.Count * 6 + 1;
                     }
 
-                    foreach (var check in densityComparisons)
+                    for (int i = 0; i < densityComparisons.Count; i++)
                     {
-                        DrawDensityComparison(check, 6, y);
-                        y += 41 + Math.Max(check.Tiles1.Count, check.Tiles2.Count) * 6 + 1;
+                        DrawDensityComparison(i * 2, 6, y);
+                        y += 41 + Math.Max(densityComparisons[i].Tiles1.Count, densityComparisons[i].Tiles2.Count) * 6 + 1;
                     }
 
                     return;
