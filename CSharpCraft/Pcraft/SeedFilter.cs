@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Reflection;
 using CSharpCraft.Pico8;
 using FixMath;
 using Force.DeepCloner;
-using Google.Protobuf.Reflection;
 using Microsoft.Xna.Framework.Input;
+using System.IO;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace CSharpCraft.Pcraft
 {
-    public class FilterTest : PcraftBase
+    public class SeedFilter : PcraftBase, IDisposable
     {
         public override string SceneName => "filter";
 
@@ -40,6 +41,8 @@ namespace CSharpCraft.Pcraft
 
         int caveFailCount = 0;
         int surfaceFailCount = 0;
+
+        CancellationTokenSource cts = new();
 
         private class DensityCheck
         {
@@ -220,7 +223,7 @@ namespace CSharpCraft.Pcraft
             return mval;
         }
 
-        private async Task CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e)
+        private async Task CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, CancellationToken ct)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -230,8 +233,9 @@ namespace CSharpCraft.Pcraft
                 {
                     Parallel.For(0, int.MaxValue, (index, state) =>
                     {
-                        if (found)
+                        if (ct.IsCancellationRequested || found)
                         {
+                            state.Stop();
                             return;
                         }
 
@@ -309,25 +313,25 @@ namespace CSharpCraft.Pcraft
                 {
                     if (!tcs.Task.IsCompleted) { tcs.TrySetResult(false); }
                 }
-            });
+            }, ct);
 
             await tcs.Task;
             found = false;
         }
 
-        private async Task<Level> CreateLevelAsync(int xx, int yy, int sizex, int sizey, bool IsUnderground)
+        private async Task<Level> CreateLevelAsync(int xx, int yy, int sizex, int sizey, bool IsUnderground, CancellationToken ct)
         {
             Level l = new Level { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new F32[8192] };
             SetLevel(l);
             levelUnder = IsUnderground;
-            await CreateMapAsync();
+            await CreateMapAsync(ct);
             FillEne(l);
             l.Stx = F32.FromInt((holex - levelx) * 16 + 8);
             l.Sty = F32.FromInt((holey - levely) * 16 + 8);
             return l;
         }
 
-        private async Task CreateMapAsync()
+        private async Task CreateMapAsync(CancellationToken ct)
         {
             bool needmap = true;
 
@@ -339,7 +343,7 @@ namespace CSharpCraft.Pcraft
                 {
                     List<DensityCheck> caveDensityChecks = densityChecks.Where(check => check.IsCave).ToList();
                     List<DensityComparison> caveDensityComparisons = densityComparisons.Where(check => check.IsCave).ToList();
-                    await CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10);
+                    await CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, ct);
                     
                     if (typeCount[8] < 30) { needmap = true; }
                     if (typeCount[9] < 20) { needmap = true; }
@@ -350,7 +354,7 @@ namespace CSharpCraft.Pcraft
                 {
                     List<DensityCheck> surfaceDensityChecks = densityChecks.Where(check => !check.IsCave).ToList();
                     List<DensityComparison> surfaceDensityComparisons = densityComparisons.Where(check => !check.IsCave).ToList();
-                    await CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4);
+                    await CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, ct);
 
                     if (typeCount[3] < 30) { needmap = true; }
                     if (typeCount[4] < 30) { needmap = true; }
@@ -426,7 +430,7 @@ namespace CSharpCraft.Pcraft
             cmy = ply;
         }
 
-        private new async Task ResetLevelAsync()
+        private async Task ResetLevelAsync(CancellationToken ct)
         {
             runtimer = 0;
             frameTimer = F32.Zero;
@@ -468,8 +472,8 @@ namespace CSharpCraft.Pcraft
                 }
             }
 
-            cave = await CreateLevelAsync(64, 0, 32, 32, true);
-            island = await CreateLevelAsync(0, 0, 64, 64, false);
+            cave = await CreateLevelAsync(64, 0, 32, 32, true, ct);
+            island = await CreateLevelAsync(0, 0, 64, 64, false, ct);
 
             Entity tmpworkbench = Entity(workbench, plx, ply, F32.Zero, F32.Zero);
             tmpworkbench.HasCol = true;
@@ -493,32 +497,50 @@ namespace CSharpCraft.Pcraft
             buttonRow3 = [];
             buttonRow4 = [];
             buttonRow5 = [];
-            densityChecks = [];
-            densityComparisons = [];
             AddButtons();
             buttonRows = [buttonRow1, buttonRow2, buttonRow3, buttonRow4, buttonRow5];
+
+            void SaveSeed()
+            {
+                using (var image = new Image<Rgba32>(128, 64))
+                {
+                    for (int x = 0; x < 128; x++)
+                    {
+                        for (int y = 0; y < 64; y++)
+                        {
+                            var col = p8.colors[p8.Mget(x, y) % 16];
+                            image[x, y] = new Rgba32(col.R, col.G, col.B, col.A);
+                        }
+                    }
+
+                    string path = Path.Combine($"{AppContext.BaseDirectory}seeds", $"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png");
+                    image.SaveAsPng(path);
+                }
+            }
+            p8.Menuitem(1, () => "save seed", () => SaveSeed());
         }
 
         private void AddButtons()
         {
             void Generate()
             {
-                ResetLevelTask = Task.Run(ResetLevelAsync);
+                cts = new();
+                ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
                 curMenu = introMenu;
             }
             buttonRow1.Add(new() { Text = "generate", Pos = (5, 5), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Generate() });
 
-            void Save()
-            {
-
-            }
-            buttonRow1.Add(new() { Text = "save", Pos = (69, 5), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Save() });
-
-            void Load()
-            {
-
-            }
-            buttonRow1.Add(new() { Text = "load", Pos = (89, 5), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Load() });
+            //void Save()
+            //{
+            //
+            //}
+            //buttonRow1.Add(new() { Text = "save", Pos = (69, 5), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Save() });
+            //
+            //void Load()
+            //{
+            //
+            //}
+            //buttonRow1.Add(new() { Text = "load", Pos = (89, 5), OutCol = 7, MidCol = 2, TextCol = 7, Function = () => Load() });
 
             void NewSurfaceDensity()
             {
@@ -1099,19 +1121,19 @@ namespace CSharpCraft.Pcraft
             {
                 case 0:
                     var temp0 = densityChecks[menuY - buttonRows.Count].Radius;
-                    if (p8.Btnp(0) || p8.Btn(2)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(3)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
+                    if (p8.Btnp(0) || p8.Btn(3)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
+                    else if (p8.Btnp(1) || p8.Btn(2)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
                     densityChecks[menuY - buttonRows.Count].Radius = temp0;
                     break;
                 case 1:
                     var temp1 = densityChecks[menuY - buttonRows.Count].Radius;
-                    if (p8.Btnp(0) || p8.Btn(2)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(3)) { temp1.Ub += temp1.Ub <= (densityChecks[menuY - buttonRows.Count].IsCave ? 16 : 32) ? 1 : 0; }
+                    if (p8.Btnp(0) || p8.Btn(3)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
+                    else if (p8.Btnp(1) || p8.Btn(2)) { temp1.Ub += temp1.Ub <= (densityChecks[menuY - buttonRows.Count].IsCave ? 16 : 32) ? 1 : 0; }
                     densityChecks[menuY - buttonRows.Count].Radius = temp1;
                     break;
                 case 2:
                     var temp2 = densityChecks[menuY - buttonRows.Count].Tiles;
-                    if (p8.Btnp(0) || p8.Btn(2))
+                    if (p8.Btnp(0) || p8.Btn(3))
                     {
                         if (tileIndex >= temp2.Count)
                         {
@@ -1129,7 +1151,7 @@ namespace CSharpCraft.Pcraft
                             densityChecks[menuY - buttonRows.Count].Tiles = temp2;
                         }
                     }
-                    else if (p8.Btnp(1) || p8.Btn(3))
+                    else if (p8.Btnp(1) || p8.Btn(2))
                     {
                         if (tileIndex >= temp2.Count)
                         {
@@ -1150,15 +1172,15 @@ namespace CSharpCraft.Pcraft
                     break;
                 case 3:
                     var temp3 = densityChecks[menuY - buttonRows.Count].Density;
-                    if (p8.Btnp(0) || p8.Btn(2)) { temp3.Lb -= temp3.Lb > 0 ? temp3.Lb <= 1 ? 0.1 : 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(3)) { temp3.Lb += temp3.Lb < 100 ? temp3.Lb < 1 ? 0.1 : 1 : 0; }
+                    if (p8.Btnp(0) || p8.Btn(3)) { temp3.Lb -= temp3.Lb > 0 ? temp3.Lb <= 1 ? 0.1 : 1 : 0; }
+                    else if (p8.Btnp(1) || p8.Btn(2)) { temp3.Lb += temp3.Lb < 100 ? temp3.Lb < 1 ? 0.1 : 1 : 0; }
                     temp3.Lb = Math.Round(temp3.Lb, 1);
                     densityChecks[menuY - buttonRows.Count].Density = temp3;
                     break;
                 case 4:
                     var temp4 = densityChecks[menuY - buttonRows.Count].Density;
-                    if (p8.Btnp(0) || p8.Btn(2)) { temp4.Ub -= temp4.Ub > 0 ? temp4.Ub <= 1 ? 0.1 : 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(3)) { temp4.Ub += temp4.Ub < 100 ? temp4.Ub < 1 ? 0.1 : 1 : 0; }
+                    if (p8.Btnp(0) || p8.Btn(3)) { temp4.Ub -= temp4.Ub > 0 ? temp4.Ub <= 1 ? 0.1 : 1 : 0; }
+                    else if (p8.Btnp(1) || p8.Btn(2)) { temp4.Ub += temp4.Ub < 100 ? temp4.Ub < 1 ? 0.1 : 1 : 0; }
                     temp4.Ub = Math.Round(temp4.Ub, 1);
                     densityChecks[menuY - buttonRows.Count].Density = temp4;
                     break;
@@ -1176,15 +1198,15 @@ namespace CSharpCraft.Pcraft
                     if ((menuY - buttonRows.Count - densityChecks.Count) % 2 == 0)
                     {
                         var temp0 = densityComparisons[group].Radius1;
-                        if (p8.Btnp(0) || p8.Btn(2)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
-                        else if (p8.Btnp(1) || p8.Btn(3)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
+                        if (p8.Btnp(0) || p8.Btn(3)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
+                        else if (p8.Btnp(1) || p8.Btn(2)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
                         densityComparisons[group].Radius1 = temp0;
                     }
                     else
                     {
                         var temp0 = densityComparisons[group].Mag;
-                        if (p8.Btnp(0) || p8.Btn(2)) { temp0 -= temp0 > 0 ? 1 : 0; }
-                        else if (p8.Btnp(1) || p8.Btn(3)) { temp0 += temp0 < 100 ? 1 : 0; }
+                        if (p8.Btnp(0) || p8.Btn(3)) { temp0 -= temp0 > 0 ? 1 : 0; }
+                        else if (p8.Btnp(1) || p8.Btn(2)) { temp0 += temp0 < 100 ? 1 : 0; }
                         densityComparisons[group].Mag = temp0;
                     }
                     break;
@@ -1192,18 +1214,18 @@ namespace CSharpCraft.Pcraft
                     if ((menuY - buttonRows.Count - densityChecks.Count) % 2 == 0)
                     {
                         var temp1 = densityComparisons[group].Radius1;
-                        if (p8.Btnp(0) || p8.Btn(2)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
-                        else if (p8.Btnp(1) || p8.Btn(3)) { temp1.Ub += temp1.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
+                        if (p8.Btnp(0) || p8.Btn(3)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
+                        else if (p8.Btnp(1) || p8.Btn(2)) { temp1.Ub += temp1.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
                         densityComparisons[group].Radius1 = temp1;
                     }
                     else
                     {
-                        if (p8.Btnp(0) || p8.Btn(2))
+                        if (p8.Btnp(0) || p8.Btn(3))
                         {
                             if (densityComparisons[group].Opr == "<") { densityComparisons[group].Opr = "="; }
                             else if (densityComparisons[group].Opr == "=") { densityComparisons[group].Opr = ">"; }
                         }
-                        else if (p8.Btnp(1) || p8.Btn(3))
+                        else if (p8.Btnp(1) || p8.Btn(2))
                         {
                             if (densityComparisons[group].Opr == ">") { densityComparisons[group].Opr = "="; }
                             else if (densityComparisons[group].Opr == "=") { densityComparisons[group].Opr = "<"; }
@@ -1212,7 +1234,7 @@ namespace CSharpCraft.Pcraft
                     break;
                 case 2:
                     var temp2 = densityComparisons[group].Tiles1;
-                    if (p8.Btnp(0) || p8.Btn(2))
+                    if (p8.Btnp(0) || p8.Btn(3))
                     {
                         if (tileIndex >= temp2.Count)
                         {
@@ -1230,7 +1252,7 @@ namespace CSharpCraft.Pcraft
                             densityComparisons[group].Tiles1 = temp2;
                         }
                     }
-                    else if (p8.Btnp(1) || p8.Btn(3))
+                    else if (p8.Btnp(1) || p8.Btn(2))
                     {
                         if (tileIndex >= temp2.Count)
                         {
@@ -1251,20 +1273,20 @@ namespace CSharpCraft.Pcraft
                     break;
                 case 3:
                     var temp3 = densityComparisons[group].Radius2;
-                    if (p8.Btnp(0) || p8.Btn(2)) { temp3.Lb -= temp3.Lb > 1 ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(3)) { temp3.Lb += temp3.Lb < temp3.Ub - 1 ? 1 : 0; }
+                    if (p8.Btnp(0) || p8.Btn(3)) { temp3.Lb -= temp3.Lb > 1 ? 1 : 0; }
+                    else if (p8.Btnp(1) || p8.Btn(2)) { temp3.Lb += temp3.Lb < temp3.Ub - 1 ? 1 : 0; }
                     densityComparisons[group].Radius2 = temp3;
                     break;
                 case 4:
                     var temp4 = densityComparisons[group].Radius2;
-                    if (p8.Btnp(0) || p8.Btn(2)) { temp4.Ub -= temp4.Ub > temp4.Lb ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(3)) { temp4.Ub += temp4.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
+                    if (p8.Btnp(0) || p8.Btn(3)) { temp4.Ub -= temp4.Ub > temp4.Lb ? 1 : 0; }
+                    else if (p8.Btnp(1) || p8.Btn(2)) { temp4.Ub += temp4.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
                     densityComparisons[group].Radius2 = temp4;
                     break;
                 case 5:
                     var temp5 = densityComparisons[group].Tiles2;
                     int index2 = 0;
-                    if (p8.Btnp(0) || p8.Btn(2))
+                    if (p8.Btnp(0) || p8.Btn(3))
                     {
                         if (index2 >= temp5.Count)
                         {
@@ -1282,7 +1304,7 @@ namespace CSharpCraft.Pcraft
                             densityComparisons[group].Tiles2 = temp5;
                         }
                     }
-                    else if (p8.Btnp(1) || p8.Btn(3))
+                    else if (p8.Btnp(1) || p8.Btn(2))
                     {
                         if (index2 >= temp5.Count)
                         {
@@ -1535,6 +1557,12 @@ namespace CSharpCraft.Pcraft
             {
                 List(curMenu, 4, 24, 84, 96, 10);
             }
+        }
+
+        public override void Dispose()
+        {
+            cts.Cancel();
+            cts.Dispose();
         }
     }
 }

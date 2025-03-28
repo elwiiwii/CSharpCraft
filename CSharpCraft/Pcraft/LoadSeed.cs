@@ -4,13 +4,12 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
-using System.IO;
 
 namespace CSharpCraft.Pcraft
 {
-    public class CustomMapCraft : PcraftBase
+    public class LoadSeed : PcraftBase
     {
-        public override string SceneName => "custom map";
+        public override string SceneName => "load seed";
 
         private byte[] surfaceArray = [];
         private byte[] caveArray = [];
@@ -41,16 +40,16 @@ namespace CSharpCraft.Pcraft
 
         protected override void CreateMap()
         {
-            for (int i = 0; i < levelsx; i++)
+            for (int x = 0; x < 128; x++)
             {
-                for (int j = 0; j < levelsy; j++)
+                for (int y = 0; y < 64; y++)
                 {
-                    p8.Mset(i + levelx, j + levely, level[i][j].Double);
+                    p8.Mset(x, y, 0);
                 }
             }
         }
 
-        public override void Init(Pico8Functions pico8)
+        public override async void Init(Pico8Functions pico8)
         {
             base.Init(pico8);
         }

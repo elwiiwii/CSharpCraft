@@ -9,6 +9,10 @@
 		<PublishSingleFile>true</PublishSingleFile>
 	</PropertyGroup>
 
+	<Target Name="CreateSeedsFolder" BeforeTargets="Build">
+		<MakeDir Directories="$(OutputPath)Seeds" />
+	</Target>
+
 	<ItemGroup>
 		<None Remove="Content\Graphics\0.png" />
 		<None Remove="Content\Graphics\1.png" />

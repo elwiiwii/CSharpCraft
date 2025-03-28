@@ -371,9 +371,9 @@ namespace CSharpCraft.Pcraft
         {
             l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
             enemies = l.Ene;
-            for (F32 i = F32.Zero; i <= levelsx - 1; i++)
+            for (F32 i = F32.Zero; i < levelsx; i++)
             {
-                for (F32 j = F32.Zero; j <= levelsy - 1; j++)
+                for (F32 j = F32.Zero; j < levelsy; j++)
                 {
                     Ground c = GetDirectGr(i, j);
                     F32 r = p8.Rnd(100);
@@ -2247,7 +2247,7 @@ f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
             },
         };
 
-        public void Dispose()
+        public virtual void Dispose()
         {
 
         }

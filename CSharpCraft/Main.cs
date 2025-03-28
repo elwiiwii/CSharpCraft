@@ -88,7 +88,8 @@ namespace CSharpCraft
             scenes.Add(new PcraftSingleplayer());
             //scenes.Add(new DeluxeSingleplayer());
             //scenes.Add(new MainRace());
-            scenes.Add(new FilterTest());
+            scenes.Add(new SeedFilter());
+            scenes.Add(new LoadSeed());
             scenes.Add(new ControlsOptions());
             scenes.Add(new CreditsScene());
             scenes.Add(new ExitScene());
