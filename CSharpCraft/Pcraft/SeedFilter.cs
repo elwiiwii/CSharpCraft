@@ -11,11 +11,7 @@ namespace CSharpCraft.Pcraft
 {
     public class SeedFilter : PcraftBase, IDisposable
     {
-        public override string SceneName => "filter";
-
-        private int runtimer = 0;
-        private F32 frameTimer = F32.Zero;
-        private string timer = "0:00.00";
+        public override string SceneName => "seed filter";
 
         private bool found = false;
         private object lockObj = new();
@@ -432,10 +428,6 @@ namespace CSharpCraft.Pcraft
 
         private async Task ResetLevelAsync(CancellationToken ct)
         {
-            runtimer = 0;
-            frameTimer = F32.Zero;
-            timer = "0:00.00";
-
             p8.Reload();
             p8.Memcpy(0x1000, 0x2000, 0x1000);
 
@@ -591,147 +583,8 @@ namespace CSharpCraft.Pcraft
             buttonRow5.Add(new() { Text = "clear", Pos = (61, 45), OutCol = 7, MidCol = 1, TextCol = 6, Function = () => ClearCaveComp() });
         }
 
-        protected override void UpHit(F32 hitx, F32 hity, Ground hit)
-        {
-            if (nearEnemies.Count > 0)
-            {
-                p8.Sfx(19, 3);
-                F32 pow = F32.One;
-                if (curItem is not null && curItem.Type == sword)
-                {
-                    pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
-                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                    pow = F32.Floor(pow);
-                    p8.Sfx(14 + p8.Rnd(2).Double, 3);
-                }
-                foreach (Entity e in nearEnemies)
-                {
-                    e.Life -= pow / nearEnemies.Count;
-                    F32 push = (pow - 1) * F32.Half;
-                    e.Ox += F32.Max(-push, F32.Min(push, e.X - plx));
-                    e.Oy += F32.Max(-push, F32.Min(push, e.Y - ply));
-                    if (e.Life <= 0)
-                    {
-                        p8.Del(enemies, e);
-                        AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
-                        AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
-                    }
-                    p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
-                }
-            }
-            else if (hit.Mat is not null)
-            {
-                p8.Sfx(15, 3);
-                F32 pow = F32.One;
-                if (curItem is not null)
-                {
-                    if (hit == grtree)
-                    {
-                        if (curItem.Type == haxe)
-                        {
-                            pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
-                            stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                            p8.Sfx(12, 3);
-                        }
-                    }
-                    else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
-                    {
-                        pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power);
-                        stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                        p8.Sfx(12, 3);
-                    }
-                }
-                pow = F32.Floor(pow);
-
-                F32 d = GetData(hitx, hity, hit.Life);
-                if (d - pow <= 0)
-                {
-                    SetGr(hitx, hity, hit.Tile);
-                    Cleardata(hitx, hity);
-                    AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
-                    if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
-                    {
-                        AddItem(apple, 1, hitx, hity);
-                    }
-                }
-                else
-                {
-                    SetData(hitx, hity, d - pow);
-                }
-                p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
-            }
-            else
-            {
-                p8.Sfx(19, 3);
-                if (curItem is null)
-                {
-                    return;
-                }
-                if (curItem.Power is not null)
-                {
-                    stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                }
-                if (curItem.Type.GiveLife is not null)
-                {
-                    plife = F32.Min(F32.FromInt(100), plife + (int)curItem.Type.GiveLife);
-                    RemInList(invent, Instc(curItem.Type, 1));
-                    p8.Sfx(21, 3);
-                }
-                switch (hit, curItem.Type)
-                {
-                    case (Ground, Material) gm when gm == (grgrass, scythe):
-                        SetGr(hitx, hity, grsand);
-                        if (p8.Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
-                        break;
-                    case (Ground, Material) gm when gm == (grsand, shovel):
-                        if (curItem.Power > 3)
-                        {
-                            SetGr(hitx, hity, grwater);
-                            AddItem(sand, 2, hitx, hity);
-                        }
-                        else
-                        {
-                            SetGr(hitx, hity, grfarm);
-                            SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                            AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
-                        }
-                        break;
-                    case (Ground, Material) gm when gm == (grwater, sand):
-                        SetGr(hitx, hity, grsand);
-                        RemInList(invent, Instc(sand, 1));
-                        break;
-                    case (Ground, Material) gm when gm == (grwater, boat):
-                        p8.Reload();
-                        p8.Memcpy(0x1000, 0x2000, 0x1000);
-                        curMenu = Cmenu(inventary, null, 136, "final time:", timer);
-                        runtimer = 0;
-                        p8.Music(3);
-                        break;
-                    case (Ground, Material) gm when gm == (grfarm, seed):
-                        SetGr(hitx, hity, grwheat);
-                        SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                        RemInList(invent, Instc(seed, 1));
-                        break;
-                    case (Ground, Material) gm when gm == (grwheat, scythe):
-                        SetGr(hitx, hity, grsand);
-                        F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
-                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double)), hitx, hity);
-                        AddItem(seed, 1, hitx, hity);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
         public override void Update()
         {
-            if (runtimer == 1)
-            {
-                frameTimer += F32.FromRaw(1);
-            }
-            timer = $"{F32.FloorToInt(frameTimer / F32.FromRaw(1800))}:{$"{100.001 + (frameTimer % F32.FromRaw(1800) / F32.FromRaw(30)).Double}".Substring(1, 5)}";
-
             if (curMenu is not null)
             {
                 if (curMenu.Spr is not null && curMenu == mainMenu)
@@ -933,14 +786,6 @@ namespace CSharpCraft.Pcraft
                 return;
             }
 
-            for (int i = 0; i <= 5; i++)
-            {
-                if (p8.Btnp(i))
-                {
-                    runtimer = 1;
-                }
-            }
-
             if (switchLevel)
             {
                 if (currentLevel == cave) { SetLevel(island); }
@@ -1109,8 +954,7 @@ namespace CSharpCraft.Pcraft
             {
                 p8.Reload();
                 p8.Memcpy(0x1000, 0x2000, 0x1000);
-                curMenu = Cmenu(inventary, null, 128, "final time:", timer);
-                runtimer = 0;
+                curMenu = deathMenu;
                 p8.Music(4);
             }
         }
@@ -1509,8 +1353,6 @@ namespace CSharpCraft.Pcraft
             p8.Camera();
             Dbar(4, 4, plife, llife, 8, 2);
             Dbar(4, 9, F32.Max(F32.Zero, pstam), lstam, 11, 3);
-
-            Printb(timer, 124 - timer.Length * 4, curMenu is not null ? 41 : 118, 7);
 
             if (curItem is not null)
             {

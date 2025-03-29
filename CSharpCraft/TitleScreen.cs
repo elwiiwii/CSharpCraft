@@ -68,7 +68,7 @@ namespace CSharpCraft
             Texture2D logo = p8.TextureDictionary["CSharpCraftLogo"];
             p8.Batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-            if (frame >= 5) { p8.Print("c# craft 1.0.0", 0, 18, 6); }
+            if (frame >= 5) { p8.Print("c# craft 1.1.0", 0, 18, 6); }
             if (frame >= 6) { p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
             if (frame >= 7) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(3 * cellWidth, 36 * cellHeight), null, p8.colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
