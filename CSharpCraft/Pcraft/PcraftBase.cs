@@ -367,7 +367,7 @@ namespace CSharpCraft.Pcraft
             return dy >= 0 ? (dx + 3) * F32.FromDouble(0.25) : (1 - dx) * F32.FromDouble(0.25);
         }
 
-        protected void FillEne(Level l)
+        protected virtual void FillEne(Level l)
         {
             l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
             enemies = l.Ene;
@@ -648,7 +648,7 @@ namespace CSharpCraft.Pcraft
             return (dx, dy);
         }
 
-        protected void AddItem(Material mat, int count, F32 hitx, F32 hity)
+        protected virtual void AddItem(Material mat, int count, F32 hitx, F32 hity)
         {
             for (int i = 0; i < count; i++)
             {

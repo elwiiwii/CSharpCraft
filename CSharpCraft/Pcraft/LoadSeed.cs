@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using CSharpCraft.RaceMode;
 using FixMath;
 using NativeFileDialogs.Net;
 using SixLabors.ImageSharp;
@@ -15,6 +16,45 @@ namespace CSharpCraft.Pcraft
         private string timer = "0:00.00";
 
         int[] loadedSeed = null;
+        int rngSeed = 0;
+
+        Random? sandDrops = null;
+        Random? grassDrops = null;
+        Random? stoneDrops = null;
+        Random? treeDrops = null;
+        Random? ironDrops = null;
+        Random? goldDrops = null;
+        Random? gemDrops = null;
+        Random? zombieDrops = null;
+        
+        Random? sandSpread = null;
+        Random? grassSpread = null;
+        Random? stoneSpread = null;
+        Random? treeSpread = null;
+        Random? ironSpread = null;
+        Random? goldSpread = null;
+        Random? gemSpread = null;
+        Random? zombieSpread = null;
+        
+        Random? sandTimer = null;
+        Random? grassTimer = null;
+        Random? stoneTimer = null;
+        Random? treeTimer = null;
+        Random? ironTimer = null;
+        Random? goldTimer = null;
+        Random? gemTimer = null;
+        Random? zombieTimer = null;
+        
+        Random? sandDamage = null;
+        Random? grassDamage = null;
+        Random? stoneDamage = null;
+        Random? treeDamage = null;
+        Random? ironDamage = null;
+        Random? goldDamage = null;
+        Random? gemDamage = null;
+        Random? zombieDamage = null;
+        
+        Random? spawnRng = null;
 
         public int[] ImageToByteArray(string imagePath)
         {
@@ -49,6 +89,16 @@ namespace CSharpCraft.Pcraft
         {
             string path = Path.Combine($"{AppContext.BaseDirectory}seeds");
             var result = Nfd.OpenDialog(out path, null);
+
+            string filename = path.Split("\\").Last();
+            string extension = Path.GetExtension(filename);
+            filename = filename.Replace(extension, "");
+            char[] rngSeedChar = filename.ToCharArray();
+            rngSeed = rngSeedChar[0] + 1;
+            for (int i = 1; i < rngSeedChar.Length; i++)
+            {
+                rngSeed += rngSeed + (rngSeedChar[i] + 1) * (i + 1);
+            }
 
             if (result == NfdStatus.Ok)
             {
@@ -109,11 +159,152 @@ namespace CSharpCraft.Pcraft
             cmy = ply;
         }
 
+        protected virtual void AddItem(Material mat, int count, F32 hitx, F32 hity)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                Entity gi = Entity(mat, F32.Floor(hitx / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, F32.Floor(hity / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5), p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5));
+                gi.GiveItem = mat;
+                gi.HasCol = true;
+                gi.Timer = 110 + p8.Rnd(20, spreadDict[mat]);
+                p8.Add(entities, gi);
+            }
+        }
+
+        protected virtual void FillEne(Level l)
+        {
+            l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
+            enemies = l.Ene;
+            for (F32 i = F32.Zero; i < levelsx; i++)
+            {
+                for (F32 j = F32.Zero; j < levelsy; j++)
+                {
+                    Ground c = GetDirectGr(i, j);
+                    F32 r = p8.Rnd(100, spawnRng);
+                    F32 ex = i * 16 + 8;
+                    F32 ey = j * 16 + 8;
+                    F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
+                    if (r < 3 && c != grwater && c != grrock && !c.IsTree && dist > 50)
+                    {
+                        Entity newe = Entity(zombi, ex, ey, F32.Zero, F32.Zero);
+                        newe.Life = F32.FromInt(10);
+                        newe.Prot = F32.Zero;
+                        newe.Lrot = F32.Zero;
+                        newe.Panim = F32.Zero;
+                        newe.Banim = F32.Zero;
+                        newe.Dtim = F32.Zero;
+                        newe.Step = 0;
+                        newe.Ox = F32.Zero;
+                        newe.Oy = F32.Zero;
+                        p8.Add(l.Ene, newe);
+                    }
+                }
+            }
+        }
+
+        private Dictionary<Material, Random?> dropsDict = new()
+        {
+            { sand, null },
+            { seed, null },
+            { wheat, null },
+            { stone, null },
+            { wood, null },
+            { apple, null },
+            { iron, null },
+            { gold, null },
+            { gem, null },
+            { ichor, null },
+            { fabric, null }
+        };
+
+        private Dictionary<Material, Random?> spreadDict = new()
+        {
+            { haxe, null },
+            { sword, null },
+            { scythe, null },
+            { shovel, null },
+            { pick, null },
+
+            { wood, null },
+            { sand, null },
+            { seed, null },
+            { wheat, null },
+            { apple, null },
+
+            { glass, null },
+            { stone, null },
+            { iron, null },
+            { gold, null },
+            { gem, null },
+
+            { fabric, null },
+            { sail, null },
+            { glue, null },
+            { boat, null },
+            { ichor, null },
+            { potion, null },
+
+            { ironbar, null },
+            { goldbar, null },
+            { bread, null },
+
+            { workbench, null },
+            { stonebench, null },
+            { furnace, null },
+            { anvil, null },
+            { factory, null },
+            { chem, null },
+            { chest, null },
+
+            { inventary, null },
+            { pickuptool, null },
+
+            { etext, null },
+            { player, null },
+            { zombi, null }
+        };
+        
         protected override void ResetLevel()
         {
             runtimer = 0;
             frameTimer = F32.Zero;
             timer = "0:00.00";
+
+            sandDrops = new(rngSeed);
+            grassDrops = new(rngSeed);
+            stoneDrops = new(rngSeed);
+            treeDrops = new(rngSeed);
+            ironDrops = new(rngSeed);
+            goldDrops = new(rngSeed);
+            gemDrops = new(rngSeed);
+            zombieDrops = new(rngSeed);
+
+            sandSpread = new(rngSeed);
+            grassSpread = new(rngSeed);
+            stoneSpread = new(rngSeed);
+            treeSpread = new(rngSeed);
+            ironSpread = new(rngSeed);
+            goldSpread = new(rngSeed);
+            gemSpread = new(rngSeed);
+            zombieSpread = new(rngSeed);
+
+            sandTimer = new(rngSeed);
+            grassTimer = new(rngSeed);
+            stoneTimer = new(rngSeed);
+            treeTimer = new(rngSeed);
+            ironTimer = new(rngSeed);
+            goldTimer = new(rngSeed);
+            gemTimer = new(rngSeed);
+            zombieTimer = new(rngSeed);
+
+            sandDamage = new(rngSeed);
+            grassDamage = new(rngSeed);
+            stoneDamage = new(rngSeed);
+            treeDamage = new(rngSeed);
+            ironDamage = new(rngSeed);
+            goldDamage = new(rngSeed);
+            gemDamage = new(rngSeed);
+            zombieDamage = new(rngSeed);
 
             base.ResetLevel();
         }

@@ -1233,9 +1233,10 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public F32 Rnd(double limit = 1.0) // https://pico-8.fandom.com/wiki/Rnd
+        public F32 Rnd(double limit = 1.0, Random? r = null) // https://pico-8.fandom.com/wiki/Rnd
         {
-            return F32.FromDouble(random.NextDouble() * limit);
+            if (r is null) { r = random; }
+            return F32.FromDouble(r.NextDouble() * limit);
         }
 
 

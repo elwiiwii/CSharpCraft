@@ -491,6 +491,7 @@ namespace CSharpCraft.Pcraft
             buttonRow5 = [];
             AddButtons();
             buttonRows = [buttonRow1, buttonRow2, buttonRow3, buttonRow4, buttonRow5];
+            cts = new();
 
             void SaveSeed()
             {
