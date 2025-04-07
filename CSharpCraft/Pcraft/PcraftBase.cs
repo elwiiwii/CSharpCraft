@@ -765,7 +765,7 @@ namespace CSharpCraft.Pcraft
             return (dx, dy, canAct);
         }
 
-        protected void UpEnemies(F32 ebx, F32 eby)
+        protected virtual void UpEnemies(F32 ebx, F32 eby)
         {
             foreach (Entity e in enemies)
             {

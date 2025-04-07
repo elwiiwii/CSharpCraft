@@ -18,189 +18,31 @@ namespace CSharpCraft.Pcraft
         int[] loadedSeed = null;
         int rngSeed = 0;
 
-        Random? sandDrops = null;
-        Random? grassDrops = null;
-        Random? stoneDrops = null;
-        Random? treeDrops = null;
-        Random? ironDrops = null;
-        Random? goldDrops = null;
-        Random? gemDrops = null;
-        Random? zombieDrops = null;
-        
-        Random? sandSpread = null;
-        Random? grassSpread = null;
-        Random? stoneSpread = null;
-        Random? treeSpread = null;
-        Random? ironSpread = null;
-        Random? goldSpread = null;
-        Random? gemSpread = null;
-        Random? zombieSpread = null;
-        
+        List<Random?> zombiePosRng = [];
+        List<Random?> zombieTimer = [];
+
         Random? sandTimer = null;
-        Random? grassTimer = null;
-        Random? stoneTimer = null;
-        Random? treeTimer = null;
-        Random? ironTimer = null;
-        Random? goldTimer = null;
-        Random? gemTimer = null;
-        Random? zombieTimer = null;
-        
-        Random? sandDamage = null;
-        Random? grassDamage = null;
-        Random? stoneDamage = null;
-        Random? treeDamage = null;
-        Random? ironDamage = null;
-        Random? goldDamage = null;
-        Random? gemDamage = null;
-        Random? zombieDamage = null;
+        Random? wheatTimer = null;
         
         Random? spawnRng = null;
+        Random? waterRng = null;
 
-        public int[] ImageToByteArray(string imagePath)
+        Random? zombieDamage = null;
+        private Dictionary<Ground, List<Random?>> damageDict = new()
         {
-            loadedSeed = new int[128 * 64];
-            using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath))
-            {
-                image.ProcessPixelRows(accessor =>
-                {
-                    for (int y = 0; y < 64; y++)
-                    {
-                        Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
-                        for (int x = 0; x < 128; x++)
-                        {
-                            ref Rgba32 pixel = ref pixelRow[x];
-                            Microsoft.Xna.Framework.Color col = new(pixel.R, pixel.G, pixel.B);
-                            for (int i = 0; i < 16; i++)
-                            {
-                                if (col == p8.colors[i])
-                                {
-                                    loadedSeed[x + y * 128] = i;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            return loadedSeed;
-        }
-
-        private void OpenFileDialog()
-        {
-            string path = Path.Combine($"{AppContext.BaseDirectory}seeds");
-            var result = Nfd.OpenDialog(out path, null);
-
-            string filename = path.Split("\\").Last();
-            string extension = Path.GetExtension(filename);
-            filename = filename.Replace(extension, "");
-            char[] rngSeedChar = filename.ToCharArray();
-            rngSeed = rngSeedChar[0] + 1;
-            for (int i = 1; i < rngSeedChar.Length; i++)
-            {
-                rngSeed += rngSeed + (rngSeedChar[i] + 1) * (i + 1);
-            }
-
-            if (result == NfdStatus.Ok)
-            {
-                loadedSeed = ImageToByteArray(path);
-            }
-        }
-
-        protected override void CreateMap()
-        {
-            plx = F32.FromInt((levelsx / 2 + 1) * 16 + 8);
-            ply = F32.FromInt((levelsy / 2) * 16 + 8);
-
-            List<(int x, int y)> spawnableTiles = [];
-
-            for (int i = -4; i <= 4; i++)
-            {
-                if (i == 0) { continue; }
-                for (int j = -4; j <= 4; j++)
-                {
-                    if (j == 0) { continue; }
-                    int depx = levelsx / 2 + i;
-                    int depy = levelsy / 2 + j;
-                    F32 c = F32.FromInt(loadedSeed[depx + depy * 128]);
-
-                    if (c == 1 || c == 2)
-                    {
-                        spawnableTiles.Add((depx, depy));
-                    }
-                }
-            }
-
-            if (spawnableTiles.Count > 0)
-            {
-                int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count));
-                (int x, int y) tile = spawnableTiles[indx];
-            
-                plx = F32.FromInt(tile.x * 16 + 8);
-                ply = F32.FromInt(tile.y * 16 + 8);
-            }
-
-            for (int i = 0; i < levelsx; i++)
-            {
-                for (int j = 0; j < levelsy; j++)
-                {
-                    p8.Mset(i + levelx, j + levely, loadedSeed[i + levelx + (j + levely) * 128]);
-                    if (loadedSeed[i + levelx + (j + levely) * 128] == 11)
-                    {
-                        holex = i + levelx;
-                        holey = j + levely;
-                    }
-                }
-            }
-
-            clx = plx;
-            cly = ply;
-
-            cmx = plx;
-            cmy = ply;
-        }
-
-        protected virtual void AddItem(Material mat, int count, F32 hitx, F32 hity)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                Entity gi = Entity(mat, F32.Floor(hitx / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, F32.Floor(hity / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5), p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5));
-                gi.GiveItem = mat;
-                gi.HasCol = true;
-                gi.Timer = 110 + p8.Rnd(20, spreadDict[mat]);
-                p8.Add(entities, gi);
-            }
-        }
-
-        protected virtual void FillEne(Level l)
-        {
-            l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
-            enemies = l.Ene;
-            for (F32 i = F32.Zero; i < levelsx; i++)
-            {
-                for (F32 j = F32.Zero; j < levelsy; j++)
-                {
-                    Ground c = GetDirectGr(i, j);
-                    F32 r = p8.Rnd(100, spawnRng);
-                    F32 ex = i * 16 + 8;
-                    F32 ey = j * 16 + 8;
-                    F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
-                    if (r < 3 && c != grwater && c != grrock && !c.IsTree && dist > 50)
-                    {
-                        Entity newe = Entity(zombi, ex, ey, F32.Zero, F32.Zero);
-                        newe.Life = F32.FromInt(10);
-                        newe.Prot = F32.Zero;
-                        newe.Lrot = F32.Zero;
-                        newe.Panim = F32.Zero;
-                        newe.Banim = F32.Zero;
-                        newe.Dtim = F32.Zero;
-                        newe.Step = 0;
-                        newe.Ox = F32.Zero;
-                        newe.Oy = F32.Zero;
-                        p8.Add(l.Ene, newe);
-                    }
-                }
-            }
-        }
+            { grwater, [] },
+            { grsand, [] },
+            { grgrass, [] },
+            { grrock, [] },
+            { grtree, [] },
+            { grfarm, [] },
+            { grwheat, [] },
+            { grplant, [] },
+            { griron, [] },
+            { grgold, [] },
+            { grgem, [] },
+            { grhole, [] }
+        };
 
         private Dictionary<Material, Random?> dropsDict = new()
         {
@@ -263,55 +105,315 @@ namespace CSharpCraft.Pcraft
             { player, null },
             { zombi, null }
         };
-        
+
+        public int[] ImageToByteArray(string imagePath)
+        {
+            loadedSeed = new int[128 * 64];
+            using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath))
+            {
+                image.ProcessPixelRows(accessor =>
+                {
+                    for (int y = 0; y < 64; y++)
+                    {
+                        Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+                        for (int x = 0; x < 128; x++)
+                        {
+                            ref Rgba32 pixel = ref pixelRow[x];
+                            Microsoft.Xna.Framework.Color col = new(pixel.R, pixel.G, pixel.B);
+                            for (int i = 0; i < 16; i++)
+                            {
+                                if (col == p8.colors[i])
+                                {
+                                    loadedSeed[x + y * 128] = i;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            return loadedSeed;
+        }
+
+        private void OpenFileDialog()
+        {
+            string path = Path.Combine($"{AppContext.BaseDirectory}seeds");
+            var result = Nfd.OpenDialog(out path, null);
+
+            if (result == NfdStatus.Ok)
+            {
+                loadedSeed = ImageToByteArray(path);
+
+                string filename = path.Split("\\").Last();
+                string extension = Path.GetExtension(filename);
+                filename = filename.Replace(extension, "");
+                char[] rngSeedChar = filename.ToCharArray();
+                rngSeed = rngSeedChar[0] + 1;
+                for (int i = 1; i < rngSeedChar.Length; i++)
+                {
+                    rngSeed += rngSeed + (rngSeedChar[i] + 1) * (i + 1);
+                }
+            }
+        }
+
+        protected override void FillEne(Level l)
+        {
+            l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
+            enemies = l.Ene;
+            zombiePosRng = [null];
+            zombieTimer = [null];
+            for (F32 i = F32.Zero; i < levelsx; i++)
+            {
+                for (F32 j = F32.Zero; j < levelsy; j++)
+                {
+                    Ground c = GetDirectGr(i, j);
+                    F32 r = p8.Rnd(100, spawnRng);
+                    F32 ex = i * 16 + 8;
+                    F32 ey = j * 16 + 8;
+                    F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
+                    if (r < 3 && c != grwater && c != grrock && !c.IsTree && dist > 50)
+                    {
+                        Entity newe = Entity(zombi, ex, ey, F32.Zero, F32.Zero);
+                        newe.Life = F32.FromInt(10);
+                        newe.Prot = F32.Zero;
+                        newe.Lrot = F32.Zero;
+                        newe.Panim = F32.Zero;
+                        newe.Banim = F32.Zero;
+                        newe.Dtim = F32.Zero;
+                        newe.Step = 0;
+                        newe.Ox = F32.Zero;
+                        newe.Oy = F32.Zero;
+                        p8.Add(l.Ene, newe);
+                        zombiePosRng.Add(new Random(spawnRng.Next()));
+                        zombieTimer.Add(new Random(spawnRng.Next()));
+                    }
+                }
+            }
+        }
+
         protected override void ResetLevel()
         {
             runtimer = 0;
             frameTimer = F32.Zero;
             timer = "0:00.00";
 
-            sandDrops = new(rngSeed);
-            grassDrops = new(rngSeed);
-            stoneDrops = new(rngSeed);
-            treeDrops = new(rngSeed);
-            ironDrops = new(rngSeed);
-            goldDrops = new(rngSeed);
-            gemDrops = new(rngSeed);
-            zombieDrops = new(rngSeed);
+            zombiePosRng = [];
+            zombieTimer = [];
 
-            sandSpread = new(rngSeed);
-            grassSpread = new(rngSeed);
-            stoneSpread = new(rngSeed);
-            treeSpread = new(rngSeed);
-            ironSpread = new(rngSeed);
-            goldSpread = new(rngSeed);
-            gemSpread = new(rngSeed);
-            zombieSpread = new(rngSeed);
+            int incr = 0;
+            spawnRng = new Random(rngSeed + incr);
+            incr++;
+            foreach (var key in dropsDict.Keys)
+            {
+                dropsDict[key] = new Random(rngSeed + incr);
+                incr++;
+            }
+            foreach (var key in spreadDict.Keys)
+            {
+                spreadDict[key] = new Random(rngSeed + incr);
+                incr++;
+            }
+            foreach (var key in damageDict.Keys)
+            {
+                damageDict[key] = [];
+                for (int i = 0; i < pwrNames.Length; i++)
+                {
+                    damageDict[key].Add(new Random(rngSeed + incr));
+                    incr++;
+                }
+            }
+            zombieDamage = new Random(rngSeed + incr);
+            incr++;
+            sandTimer = new Random(rngSeed + incr);
+            incr++;
+            wheatTimer = new Random(rngSeed + incr);
+            incr++;
+            waterRng = new Random(rngSeed + incr);
 
-            sandTimer = new(rngSeed);
-            grassTimer = new(rngSeed);
-            stoneTimer = new(rngSeed);
-            treeTimer = new(rngSeed);
-            ironTimer = new(rngSeed);
-            goldTimer = new(rngSeed);
-            gemTimer = new(rngSeed);
-            zombieTimer = new(rngSeed);
+            p8.Reload();
+            p8.Memcpy(0x1000, 0x2000, 0x1000);
 
-            sandDamage = new(rngSeed);
-            grassDamage = new(rngSeed);
-            stoneDamage = new(rngSeed);
-            treeDamage = new(rngSeed);
-            ironDamage = new(rngSeed);
-            goldDamage = new(rngSeed);
-            gemDamage = new(rngSeed);
-            zombieDamage = new(rngSeed);
+            prot = F32.Zero;
+            lrot = F32.Zero;
 
-            base.ResetLevel();
+            panim = F32.Zero;
+
+            pstam = F32.FromInt(100);
+            lstam = pstam;
+            plife = F32.FromInt(100);
+            llife = plife;
+
+            banim = F32.Zero;
+
+            coffx = F32.Zero;
+            coffy = F32.Zero;
+
+            time = F32.Zero;
+
+            toogleMenu = 0;
+            invent = [];
+            curItem = null;
+            switchLevel = false;
+            canSwitchLevel = false;
+            menuInvent = Cmenu(inventary, invent);
+
+            for (int i = 0; i <= 15; i++)
+            {
+                Rndwat[i] = new F32[16];
+                for (int j = 0; j <= 15; j++)
+                {
+                    Rndwat[i][j] = p8.Rnd(100, waterRng);
+                }
+            }
+
+            cave = CreateLevel(64, 0, 32, 32, true);
+            island = CreateLevel(0, 0, 64, 64, false);
+
+            Entity tmpworkbench = Entity(workbench, plx, ply, F32.Zero, F32.Zero);
+            tmpworkbench.HasCol = true;
+            tmpworkbench.List = workbenchRecipe;
+
+            p8.Add(invent, tmpworkbench);
+            p8.Add(invent, Inst(pickuptool));
+        }
+
+        protected override void AddItem(Material mat, int count, F32 hitx, F32 hity)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                Entity gi = Entity(mat, F32.Floor(hitx / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, F32.Floor(hity / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5), p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5));
+                gi.GiveItem = mat;
+                gi.HasCol = true;
+                gi.Timer = 110 + p8.Rnd(20, spreadDict[mat]);
+                p8.Add(entities, gi);
+            }
         }
 
         public override void Init(Pico8Functions pico8)
         {
             base.Init(pico8);
+        }
+
+        protected override void UpEnemies(F32 ebx, F32 eby)
+        {
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                Entity e = enemies[i];
+                if (!IsIn(e, 100))
+                {
+                    continue;
+                }
+                if (e.Type == player)
+                {
+                    e.X = plx;
+                    e.Y = ply;
+                    continue;
+                }
+
+                F32 distp = GetLen(e.X - plx, e.Y - ply);
+                F32 mspeed = F32.FromDouble(0.8);
+
+                F32 disten = GetLen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
+                if (disten < 10)
+                {
+                    p8.Add(nearEnemies, e);
+                }
+                if (distp < 8)
+                {
+                    e.Ox += F32.Max(F32.FromDouble(-0.4), F32.Min(F32.FromDouble(0.4), e.X - plx));
+                    e.Oy += F32.Max(F32.FromDouble(-0.4), F32.Min(F32.FromDouble(0.4), e.Y - ply));
+                }
+
+                if (e.Dtim <= 0)
+                {
+                    if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
+                    {
+                        e.Step = enstep_Walk;
+                        e.Dx = p8.Rnd(2, zombiePosRng[i]) - 1;
+                        e.Dy = p8.Rnd(2, zombiePosRng[i]) - 1;
+                        e.Dtim = 30 + p8.Rnd(60, zombieTimer[i]);
+                    }
+                    else if (e.Step == enstep_Walk)
+                    {
+                        e.Step = enstep_Wait;
+                        e.Dx = F32.Zero;
+                        e.Dy = F32.Zero;
+                        e.Dtim = 30 + p8.Rnd(60, zombieTimer[i]);
+                    }
+                    else // chase
+                    {
+                        e.Dtim = 10 + p8.Rnd(60, zombieTimer[i]);
+                    }
+                }
+                else
+                {
+                    if (e.Step == enstep_Chase)
+                    {
+                        if (distp > 10)
+                        {
+                            e.Dx += plx - e.X;
+                            e.Dy += ply - e.Y;
+                            e.Banim = F32.Zero;
+                        }
+                        else
+                        {
+                            e.Dx = F32.Zero;
+                            e.Dy = F32.Zero;
+                            e.Banim -= 1;
+                            e.Banim = p8.Mod(e.Banim, 8);
+                            int pow = 10;
+                            if (e.Banim == 4)
+                            {
+                                plife -= pow;
+                                p8.Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
+                                p8.Sfx(14 + p8.Rnd(2).Double, 3);
+                            }
+                            plife = F32.Max(F32.Zero, plife);
+                        }
+                        mspeed = F32.FromDouble(1.4);
+                        if (distp > 70)
+                        {
+                            e.Step = enstep_Patrol;
+                            e.Dtim = 30 + p8.Rnd(60, zombieTimer[i]);
+                        }
+                    }
+                    else
+                    {
+                        if (distp < 40)
+                        {
+                            e.Step = enstep_Chase;
+                            e.Dtim = 10 + p8.Rnd(60, zombieTimer[i]);
+                        }
+                    }
+                    e.Dtim -= 1;
+                }
+
+                F32 dl = mspeed * GetInvLen(e.Dx, e.Dy);
+                e.Dx *= dl;
+                e.Dy *= dl;
+
+                F32 fx = e.Dx + e.Ox;
+                F32 fy = e.Dy + e.Oy;
+                (fx, fy) = ReflectCol(e.X, e.Y, fx, fy, IsFreeEnem, F32.Zero);
+
+                if (F32.Abs(e.Dx) > 0 || F32.Abs(e.Dy) > 0)
+                {
+                    e.Lrot = GetRot(e.Dx, e.Dy);
+                    e.Panim += F32.FromDouble(1.0 / 33.0);
+                }
+                else
+                {
+                    e.Panim = F32.Zero;
+                }
+
+                e.X += fx;
+                e.Y += fy;
+
+                e.Ox *= F32.FromDouble(0.9);
+                e.Oy *= F32.FromDouble(0.9);
+
+                e.Prot = UpRot(e.Lrot, e.Prot);
+            }
         }
 
         protected override void UpHit(F32 hitx, F32 hity, Ground hit)
@@ -322,7 +424,7 @@ namespace CSharpCraft.Pcraft
                 F32 pow = F32.One;
                 if (curItem is not null && curItem.Type == sword)
                 {
-                    pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                    pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power, zombieDamage);
                     stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                     pow = F32.Floor(pow);
                     p8.Sfx(14 + p8.Rnd(2).Double, 3);
@@ -336,8 +438,8 @@ namespace CSharpCraft.Pcraft
                     if (e.Life <= 0)
                     {
                         p8.Del(enemies, e);
-                        AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
-                        AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                        AddItem(ichor, F32.FloorToInt(p8.Rnd(3, dropsDict[ichor])), e.X, e.Y);
+                        AddItem(fabric, F32.FloorToInt(p8.Rnd(3, dropsDict[fabric])), e.X, e.Y);
                     }
                     p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
                 }
@@ -352,14 +454,14 @@ namespace CSharpCraft.Pcraft
                     {
                         if (curItem.Type == haxe)
                         {
-                            pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                            pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power, damageDict[hit][(int)curItem.Power - 1]);
                             stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                             p8.Sfx(12, 3);
                         }
                     }
                     else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
                     {
-                        pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                        pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power, damageDict[hit][(int)curItem.Power - 1]);
                         stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                         p8.Sfx(12, 3);
                     }
@@ -371,8 +473,8 @@ namespace CSharpCraft.Pcraft
                 {
                     SetGr(hitx, hity, hit.Tile);
                     Cleardata(hitx, hity);
-                    AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
-                    if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
+                    AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3, dropsDict[hit.Mat]) + 2), hitx, hity);
+                    if (hit == grtree && p8.Rnd(1, dropsDict[apple]) > F32.FromDouble(0.7))
                     {
                         AddItem(apple, 1, hitx, hity);
                     }
@@ -404,7 +506,7 @@ namespace CSharpCraft.Pcraft
                 {
                     case (Ground, Material) gm when gm == (grgrass, scythe):
                         SetGr(hitx, hity, grsand);
-                        if (p8.Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
+                        if (p8.Rnd(1, dropsDict[seed]) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
                         break;
                     case (Ground, Material) gm when gm == (grsand, shovel):
                         if (curItem.Power > 3)
@@ -415,8 +517,8 @@ namespace CSharpCraft.Pcraft
                         else
                         {
                             SetGr(hitx, hity, grfarm);
-                            SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                            AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
+                            SetData(hitx, hity, time + 15 + p8.Rnd(5, sandTimer));
+                            AddItem(sand, F32.FloorToInt(p8.Rnd(2, dropsDict[sand])), hitx, hity);
                         }
                         break;
                     case (Ground, Material) gm when gm == (grwater, sand):
@@ -432,13 +534,13 @@ namespace CSharpCraft.Pcraft
                         break;
                     case (Ground, Material) gm when gm == (grfarm, seed):
                         SetGr(hitx, hity, grwheat);
-                        SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                        SetData(hitx, hity, time + 15 + p8.Rnd(5, wheatTimer));
                         RemInList(invent, Instc(seed, 1));
                         break;
                     case (Ground, Material) gm when gm == (grwheat, scythe):
                         SetGr(hitx, hity, grsand);
                         F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
-                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double)), hitx, hity);
+                        AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double, dropsDict[wheat])), hitx, hity);
                         AddItem(seed, 1, hitx, hity);
                         break;
                     default:
@@ -737,6 +839,59 @@ namespace CSharpCraft.Pcraft
                 runtimer = 0;
                 p8.Music(4);
             }
+        }
+
+        protected override void CreateMap()
+        {
+            plx = F32.FromInt((levelsx / 2 + 1) * 16 + 8);
+            ply = F32.FromInt((levelsy / 2) * 16 + 8);
+
+            List<(int x, int y)> spawnableTiles = [];
+
+            for (int i = -4; i <= 4; i++)
+            {
+                if (i == 0) { continue; }
+                for (int j = -4; j <= 4; j++)
+                {
+                    if (j == 0) { continue; }
+                    int depx = levelsx / 2 + i;
+                    int depy = levelsy / 2 + j;
+                    F32 c = F32.FromInt(loadedSeed[depx + depy * 128]);
+
+                    if (c == 1 || c == 2)
+                    {
+                        spawnableTiles.Add((depx, depy));
+                    }
+                }
+            }
+
+            if (spawnableTiles.Count > 0)
+            {
+                int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, spawnRng));
+                (int x, int y) tile = spawnableTiles[indx];
+
+                plx = F32.FromInt(tile.x * 16 + 8);
+                ply = F32.FromInt(tile.y * 16 + 8);
+            }
+
+            for (int i = 0; i < levelsx; i++)
+            {
+                for (int j = 0; j < levelsy; j++)
+                {
+                    p8.Mset(i + levelx, j + levely, loadedSeed[i + levelx + (j + levely) * 128]);
+                    if (loadedSeed[i + levelx + (j + levely) * 128] == 11)
+                    {
+                        holex = i + levelx;
+                        holey = j + levely;
+                    }
+                }
+            }
+
+            clx = plx;
+            cly = ply;
+
+            cmx = plx;
+            cmy = ply;
         }
 
         public override void Draw()
