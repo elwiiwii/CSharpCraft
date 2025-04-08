@@ -15,19 +15,27 @@ namespace CSharpCraft.Pcraft
         private F32 frameTimer = F32.Zero;
         private string timer = "0:00.00";
 
-        int[] loadedSeed = null;
-        int rngSeed = 0;
+        private int[]? loadedSeed = null;
+        private int rngSeed = 0;
 
-        List<Random?> zombiePosRng = [];
-        List<Random?> zombieTimer = [];
+        private int ladderResets = 0;
+        private int missedHits = 0;
+        private int[] wastedHits = new int[pwrNames.Length + 6];
+        private bool pickupAction = false;
+        private bool placeAction = false;
 
-        Random? sandTimer = null;
-        Random? wheatTimer = null;
-        
-        Random? spawnRng = null;
-        Random? waterRng = null;
+        private int zReset = 0;
 
-        Random? zombieDamage = null;
+        private List<Random?> zombiePosRng = [];
+        private List<Random?> zombieTimer = [];
+
+        private Random? sandTimer = null;
+        private Random? wheatTimer = null;
+
+        private Random? spawnRng = null;
+        private Random? waterRng = null;
+
+        private Random? zombieDamage = null;
         private Dictionary<Ground, List<Random?>> damageDict = new()
         {
             { grwater, [] },
@@ -156,6 +164,16 @@ namespace CSharpCraft.Pcraft
             }
         }
 
+        protected virtual void Craft(Entity req)
+        {
+            foreach (Entity e in req.Req)
+            {
+                RemInList(invent, e);
+            }
+            AddItemInList(invent, SetPower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
+            if (req.Type == sword && req.Power == 2 && zReset == 0) { zReset = 1; }
+        }
+
         protected override void FillEne(Level l)
         {
             l.Ene = [Entity(player, F32.Zero, F32.Zero, F32.Zero, F32.Zero)];
@@ -197,7 +215,13 @@ namespace CSharpCraft.Pcraft
             frameTimer = F32.Zero;
             timer = "0:00.00";
 
-            zombiePosRng = [];
+            ladderResets = 0;
+            missedHits = 0;
+            wastedHits = new int[pwrNames.Length + 6];
+            pickupAction = false;
+            placeAction = false;
+
+            zReset = 0;zombiePosRng = [];
             zombieTimer = [];
 
             int incr = 0;
@@ -292,6 +316,74 @@ namespace CSharpCraft.Pcraft
         public override void Init(Pico8Functions pico8)
         {
             base.Init(pico8);
+        }
+
+        protected override (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
+        {
+            int fin = entities.Count;
+            for (int i = fin - 1; i >= 0; i--)
+            {
+                Entity e = entities[i];
+                if (e.HasCol)
+                {
+                    (e.Vx, e.Vy) = ReflectCol(e.X, e.Y, e.Vx, e.Vy, IsFree, F32.FromDouble(0.9));
+                }
+                e.X += e.Vx;
+                e.Y += e.Vy;
+                e.Vx *= F32.FromDouble(0.95);
+                e.Vy *= F32.FromDouble(0.95);
+
+                if (e.Timer is not null && e.Timer < 1)
+                {
+                    p8.Del(entities, e);
+                    continue;
+                }
+
+                if (e.Timer is not null) { e.Timer -= 1; }
+
+                F32 dist = F32.Max(F32.Abs(e.X - plx), F32.Abs(e.Y - ply));
+                if (e.GiveItem is not null)
+                {
+                    if (dist < 5 && (e.Timer is null || e.Timer < 115))
+                    {
+                        Entity newIt = Instc(e.GiveItem, 1);
+                        AddItemInList(invent, newIt, -1);
+                        p8.Del(entities, e);
+                        p8.Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
+                        p8.Sfx(18, 3);
+                    }
+                    continue;
+                }
+
+                if (e.HasCol)
+                {
+                    (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, F32.Zero, e);
+                }
+                if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
+                {
+                    if (curItem is not null && curItem.Type == pickuptool)
+                    {
+                        if (e.Type == chest || e.Type.BeCraft)
+                        {
+                            pickupAction = true;
+                            AddItemInList(invent, e, -1);
+                            curItem = e;
+                            p8.Del(entities, e);
+                        }
+                        canAct = false;
+                        continue;
+                    }
+
+                    if (e.Type == chest || e.Type.BeCraft)
+                    {
+                        toogleMenu = 0;
+                        curMenu = Cmenu(e.Type, e.List);
+                        p8.Sfx(13, 3);
+                    }
+                    canAct = false;
+                }
+            }
+            return (dx, dy, canAct);
         }
 
         protected override void UpEnemies(F32 ebx, F32 eby)
@@ -416,8 +508,89 @@ namespace CSharpCraft.Pcraft
             }
         }
 
+        private void MissedHitsCheck(Ground hit, bool hasAxe)
+        {
+            if (curItem is not null)
+            {
+                if (!(curItem.Type == haxe && hit == grtree) &&
+                    !(curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock)) &&
+                    !(curItem.Type == sword && nearEnemies.Count > 0) &&
+                    !(curItem.Type == shovel && hit == grsand) &&
+                    !(curItem.Type == scythe && (hit == grgrass || hit == grplant || hit == grwheat)) &&
+                    !(hit == grtree && !hasAxe) &&
+                    !(curItem.Type == seed && hit == grfarm) &&
+                    !(curItem.Type == sand && hit == grwater) &&
+                    !(curItem.Type.GiveLife is not null && nearEnemies.Count <= 0 && hit != grtree && hit != grrock && !hit.IsTree) &&
+                    !(pickupAction) &&
+                    !(placeAction))
+                {
+                    missedHits++;
+                    Console.WriteLine(missedHits);
+                }
+            }
+            else if ((hit == grtree && !hasAxe) ||
+                pickupAction ||
+                placeAction)
+            {
+
+            }
+            else
+            {
+                missedHits++;
+                Console.WriteLine(missedHits);
+            }
+        }
+
+        private void WastedHitsCheck(Ground hit, bool hasAxe)
+        {
+            if (curItem is not null)
+            {
+                if ((curItem.Type == haxe && hit == grtree) ||
+                    (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock)) ||
+                    (curItem.Type == sword && nearEnemies.Count > 0) ||
+                    (curItem.Type == shovel && hit == grsand) ||
+                    (curItem.Type == scythe && (hit == grgrass || hit == grplant || hit == grwheat)))
+                {
+                    wastedHits[(int)curItem.Power]++;
+                }
+                else if (hit == grtree && !hasAxe)
+                {
+                    wastedHits[0]++;
+                }
+                else if (curItem.Type == seed && hit == grfarm)
+                {
+                    wastedHits[pwrNames.Length + 1]++;
+                }
+                else if (curItem.Type == sand && hit == grwater)
+                {
+                    wastedHits[pwrNames.Length + 2]++;
+                }
+                else if (curItem.Type.GiveLife is not null && nearEnemies.Count <= 0 && hit != grtree && hit != grrock && !hit.IsTree)
+                {
+                    wastedHits[pwrNames.Length + 3]++;
+                }
+                else if (pickupAction)
+                {
+                    wastedHits[pwrNames.Length + 4]++;
+                }
+                else if (placeAction)
+                {
+                    wastedHits[pwrNames.Length + 5]++;
+                }
+            }
+        }
+
         protected override void UpHit(F32 hitx, F32 hity, Ground hit)
         {
+            bool hasAxe = false;
+            for (int i = 0; i < pwrNames.Length; i++)
+            {
+                if (HowMany(invent, SetPower(i, Inst(haxe))) > 0) { hasAxe = true; break; }
+            }
+            MissedHitsCheck(hit, hasAxe);
+            WastedHitsCheck(hit, hasAxe);
+            pickupAction = false;
+            placeAction = false;
             if (nearEnemies.Count > 0)
             {
                 p8.Sfx(19, 3);
@@ -669,8 +842,25 @@ namespace CSharpCraft.Pcraft
 
             if (switchLevel)
             {
-                if (currentLevel == cave) { SetLevel(island); }
-                else { SetLevel(cave); }
+                ladderResets++;
+                if (currentLevel == cave)
+                {
+                    if (zReset == 1)
+                    {
+                        spawnRng = new Random(rngSeed - 1);
+                        zReset = 2;
+                    }
+                    SetLevel(island);
+                }
+                else
+                {
+                    if (zReset == 1 || zReset == 2)
+                    {
+                        spawnRng = new Random(rngSeed - 2);
+                        zReset = 3;
+                    }
+                    SetLevel(cave);
+                }
                 plx = currentLevel.Stx;
                 ply = currentLevel.Sty;
                 FillEne(currentLevel);
@@ -756,6 +946,7 @@ namespace CSharpCraft.Pcraft
 
                 if (!lb5 && curItem is not null && curItem.Type.Drop && (hit == grsand || hit == grgrass))
                 {
+                    placeAction = true;
                     if (curItem.List is null) { curItem.List = []; }
                     curItem.HasCol = true;
 

@@ -239,7 +239,7 @@ namespace CSharpCraft.Pcraft
             return can;
         }
 
-        protected void Craft(Entity req)
+        protected virtual void Craft(Entity req)
         {
             foreach (Entity e in req.Req)
             {
@@ -698,7 +698,7 @@ namespace CSharpCraft.Pcraft
             return p8.Mod(p8.Mod(F32.Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
         }
 
-        protected (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
+        protected virtual (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
         {
             int fin = entities.Count;
             for (int i = fin - 1; i >= 0; i--)
