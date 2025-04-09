@@ -34,6 +34,6 @@ namespace CSharpCraft.Pcraft
         public F32 Vy { get; set; }
         public F32 X { get; set; }
         public F32 Y { get; set; }
+        public int[] Hits { get; set; } = new int[6];
     }
-
 }

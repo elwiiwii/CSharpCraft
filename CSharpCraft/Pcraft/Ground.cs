@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace CSharpCraft.Pcraft
 {
-
     public class Ground
     {
         public int Gr { get; set; }
@@ -16,6 +15,6 @@ namespace CSharpCraft.Pcraft
         public Material? Mat { get; set; }
         public int[]? Pal { get; set; }
         public Ground? Tile { get; set; }
+        public int[] Hits { get; set; } = new int[6];
     }
-
 }

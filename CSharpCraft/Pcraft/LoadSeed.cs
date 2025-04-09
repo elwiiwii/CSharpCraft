@@ -541,20 +541,25 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        private void WastedHitsCheck(Ground hit, bool hasAxe)
+        private void WastedHitsCheck(F32 hitx, F32 hity, Ground hit, bool hasAxe)
         {
             if (curItem is not null)
             {
-                if ((curItem.Type == haxe && hit == grtree) ||
+                if (curItem.Type == sword && nearEnemies.Count > 0)
+                {
+                    wastedHits[(int)curItem.Power]++;
+                }
+                else if ((curItem.Type == haxe && hit == grtree) ||
                     (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock)) ||
-                    (curItem.Type == sword && nearEnemies.Count > 0) ||
                     (curItem.Type == shovel && hit == grsand) ||
                     (curItem.Type == scythe && (hit == grgrass || hit == grplant || hit == grwheat)))
                 {
+                    hit.Hits[(int)curItem.Power]++;
                     wastedHits[(int)curItem.Power]++;
                 }
                 else if (hit == grtree && !hasAxe)
                 {
+                    hit.Hits[0]++;
                     wastedHits[0]++;
                 }
                 else if (curItem.Type == seed && hit == grfarm)
@@ -588,7 +593,7 @@ namespace CSharpCraft.Pcraft
                 if (HowMany(invent, SetPower(i, Inst(haxe))) > 0) { hasAxe = true; break; }
             }
             MissedHitsCheck(hit, hasAxe);
-            WastedHitsCheck(hit, hasAxe);
+            WastedHitsCheck(hitx, hity, hit, hasAxe);
             pickupAction = false;
             placeAction = false;
             if (nearEnemies.Count > 0)
