@@ -179,33 +179,33 @@ namespace CSharpCraft.Pcraft
             return new() { Name = n, Spr = s, Pal = p, BeCraft = bc };
         }
 
-        protected Entity Inst(Material it)
+        protected virtual Entity Inst(Material it)
         {
             return new() { Type = it };
         }
 
-        protected Entity Instc(Material it, int? c = null, List<Entity> l = null)
+        protected virtual Entity Instc(Material it, int? c = null, List<Entity> l = null)
         {
             return new() { Type = it, Count = c, List = l };
         }
 
-        protected Entity SetPower(int? v, Entity i)
+        protected virtual Entity SetPower(int? v, Entity i)
         {
             i.Power = v;
             return i;
         }
 
-        protected Entity Entity(Material it, F32 xx, F32 yy, F32 vxx, F32 vyy)
+        protected virtual Entity Entity(Material it, F32 xx, F32 yy, F32 vxx, F32 vyy)
         {
             return new() { Type = it, X = xx, Y = yy, Vx = vxx, Vy = vyy };
         }
 
-        protected Entity Rentity(Material it, F32 xx, F32 yy)
+        protected virtual Entity Rentity(Material it, F32 xx, F32 yy)
         {
             return Entity(it, xx, yy, p8.Rnd(3) - F32.FromDouble(1.5), p8.Rnd(3) - F32.FromDouble(1.5));
         }
 
-        protected Entity SetText(string t, int c, F32 time, Entity e)
+        protected virtual Entity SetText(string t, int c, F32 time, Entity e)
         {
             e.Text = t;
             e.Timer = time;
@@ -220,12 +220,12 @@ namespace CSharpCraft.Pcraft
             return ent;
         }
 
-        protected Entity Recipe(Entity m, List<Entity> require)
+        protected virtual Entity Recipe(Entity m, List<Entity> require)
         {
             return new() { Type = m.Type, Power = m.Power, Count = m.Count, Req = require, List = m.List };
         }
 
-        protected bool CanCraft(Entity req)
+        protected virtual bool CanCraft(Entity req)
         {
             bool can = true;
             foreach (Entity e in req.Req)
@@ -248,7 +248,7 @@ namespace CSharpCraft.Pcraft
             AddItemInList(invent, SetPower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
         }
 
-        protected void SetPal(int[] l)
+        protected virtual void SetPal(int[] l)
         {
             for (int i = 0; i < l.Length; i++)
             {
@@ -261,7 +261,7 @@ namespace CSharpCraft.Pcraft
             return new() { List = l, Type = t, Sel = 0, Off = 0, Spr = s, Text = te1, Text2 = te2 };
         }
 
-        protected int HowMany(List<Entity> list, Entity it)
+        protected virtual int HowMany(List<Entity> list, Entity it)
         {
             int count = 0;
             foreach (Entity e in list)
@@ -285,7 +285,7 @@ namespace CSharpCraft.Pcraft
             return count;
         }
 
-        protected Entity IsInList(List<Entity> list, Entity it)
+        protected virtual Entity IsInList(List<Entity> list, Entity it)
         {
             foreach (Entity e in list)
             {
@@ -301,7 +301,7 @@ namespace CSharpCraft.Pcraft
             return new();
         }
 
-        protected void RemInList(List<Entity> list, Entity elem)
+        protected virtual void RemInList(List<Entity> list, Entity elem)
         {
             Entity it = IsInList(list, elem);
             if (it is null)
@@ -322,7 +322,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void AddItemInList(List<Entity> list, Entity it, int p)
+        protected virtual void AddItemInList(List<Entity> list, Entity it, int p)
         {
             Entity it2 = IsInList(list, it);
             if (it2 is null || it2.Count is null)
@@ -335,7 +335,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void AddPlace(List<Entity> l, Entity e, int p)
+        protected virtual void AddPlace(List<Entity> l, Entity e, int p)
         {
             if (p < l.Count - 1 && p >= 0)
             {
@@ -347,22 +347,22 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected bool IsIn(Entity e, int size)
+        protected virtual bool IsIn(Entity e, int size)
         {
             return e.X > clx - size && e.X < clx + size && e.Y > cly - size && e.Y < cly + size;
         }
 
-        protected F32 GetInvLen(F32 x, F32 y)
+        protected virtual F32 GetInvLen(F32 x, F32 y)
         {
             return 1 / GetLen(x, y);
         }
 
-        protected F32 GetLen(F32 x, F32 y)
+        protected virtual F32 GetLen(F32 x, F32 y)
         {
             return F32.Sqrt(x * x + y * y + F32.FromDouble(0.001));
         }
 
-        protected F32 GetRot(F32 dx, F32 dy)
+        protected virtual F32 GetRot(F32 dx, F32 dy)
         {
             return dy >= 0 ? (dx + 3) * F32.FromDouble(0.25) : (1 - dx) * F32.FromDouble(0.25);
         }
@@ -398,7 +398,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
+        protected virtual Level CreateLevel(int xx, int yy, int sizex, int sizey, bool IsUnderground)
         {
             Level l = new Level { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new F32[8192] };
             SetLevel(l);
@@ -410,7 +410,7 @@ namespace CSharpCraft.Pcraft
             return l;
         }
 
-        protected void SetLevel(Level l)
+        protected virtual void SetLevel(Level l)
         {
             currentLevel = l;
             levelx = l.X;
@@ -524,43 +524,43 @@ namespace CSharpCraft.Pcraft
             curMenu = mainMenu;
         }
 
-        protected (int x, int y) GetMcoord(F32 x, F32 y)
+        protected virtual (int x, int y) GetMcoord(F32 x, F32 y)
         {
             return (F32.FloorToInt(x / 16), F32.FloorToInt(y / 16));
         }
 
-        protected bool IsFree(F32 x, F32 y, Entity e = null)
+        protected virtual bool IsFree(F32 x, F32 y, Entity e = null)
         {
             Ground gr = GetGr(x, y);
             return !(gr.IsTree || gr == grrock);
         }
 
-        protected bool IsFreeEnem(F32 x, F32 y, Entity e = null)
+        protected virtual bool IsFreeEnem(F32 x, F32 y, Entity e = null)
         {
             Ground gr = GetGr(x, y);
             return !(gr.IsTree || gr == grrock || gr == grwater);
         }
 
-        protected Ground GetGr(F32 x, F32 y)
+        protected virtual Ground GetGr(F32 x, F32 y)
         {
             (int i, int j) = GetMcoord(x, y);
             return GetDirectGr(F32.FromInt(i), F32.FromInt(j));
         }
 
-        protected Ground GetDirectGr(F32 i, F32 j)
+        protected virtual Ground GetDirectGr(F32 i, F32 j)
         {
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
             return grounds[p8.Mget(i.Double + levelx, j.Double)];
         }
 
-        protected void SetGr(F32 x, F32 y, Ground v)
+        protected virtual void SetGr(F32 x, F32 y, Ground v)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
             p8.Mset(i + levelx, j, v.Id);
         }
 
-        protected F32 DirGetData(F32 i, F32 j, F32 @default)
+        protected virtual F32 DirGetData(F32 i, F32 j, F32 @default)
         {
             int g = F32.FloorToInt(i + j * levelsx);
             if (data[g - 1] == 0)
@@ -570,7 +570,7 @@ namespace CSharpCraft.Pcraft
             return data[g - 1];
         }
 
-        protected F32 GetData(F32 x, F32 y, int @default)
+        protected virtual F32 GetData(F32 x, F32 y, int @default)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
@@ -580,7 +580,7 @@ namespace CSharpCraft.Pcraft
             return DirGetData(F32.FromInt(i), F32.FromInt(j), F32.FromInt(@default));
         }
 
-        protected void SetData(F32 x, F32 y, F32 v)
+        protected virtual void SetData(F32 x, F32 y, F32 v)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
@@ -590,7 +590,7 @@ namespace CSharpCraft.Pcraft
             data[i + j * levelsx - 1] = v;
         }
 
-        protected void Cleardata(F32 x, F32 y)
+        protected virtual void Cleardata(F32 x, F32 y)
         {
             (int i, int j) = GetMcoord(x, y);
             if (i < 0 || j < 0 || i > levelsx - 1 || j > levelsy - 1)
@@ -600,18 +600,18 @@ namespace CSharpCraft.Pcraft
             data[i + j * levelsx - 1] = F32.Zero;
         }
 
-        protected int Loop(int sel, List<Entity> l)
+        protected virtual int Loop(int sel, List<Entity> l)
         {
             int lp = l.Count;
             return (sel % lp + lp) % lp;
         }
 
-        protected bool EntColFree(F32 x, F32 y, Entity e)
+        protected virtual bool EntColFree(F32 x, F32 y, Entity e)
         {
             return F32.Max(F32.Abs(e.X - x), F32.Abs(e.Y - y)) > 8;
         }
 
-        protected (F32 dx, F32 dy) ReflectCol(F32 x, F32 y, F32 dx, F32 dy, Func<F32, F32, Entity, bool> checkfun, F32 dp, Entity e = null)
+        protected virtual (F32 dx, F32 dy) ReflectCol(F32 x, F32 y, F32 dx, F32 dy, Func<F32, F32, Entity, bool> checkfun, F32 dp, Entity e = null)
         {
             F32 newx = x + dx;
             F32 newy = y + dy;
@@ -660,7 +660,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void UpGround()
+        protected virtual void UpGround()
         {
             F32 ci = F32.Floor((clx - 64) / 16);
             F32 cj = F32.Floor((cly - 64) / 16);
@@ -681,7 +681,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected F32 UpRot(F32 grot, F32 rot)
+        protected virtual F32 UpRot(F32 grot, F32 rot)
         {
             if (F32.Abs(rot - grot) > F32.Half)
             {
@@ -1288,7 +1288,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected (int mx, int my) Mirror(F32 rot)
+        protected virtual (int mx, int my) Mirror(F32 rot)
         {
             switch (rot)
             {
@@ -1306,7 +1306,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
+        protected virtual void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
         {
             F32 cr = p8.Cos(rot);
             F32 sr = p8.Sin(rot);
@@ -1381,7 +1381,7 @@ namespace CSharpCraft.Pcraft
 
         }
 
-        protected F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep)
+        protected virtual F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep)
         {
             F32[][] n = new F32[sx + 1][];
 
@@ -1549,39 +1549,39 @@ namespace CSharpCraft.Pcraft
             cmy = ply;
         }
 
-        protected bool Comp(F32 i, F32 j, Ground gr)
+        protected virtual bool Comp(F32 i, F32 j, Ground gr)
         {
             Ground gr2 = GetDirectGr(i, j);
             return gr is not null && gr2 is not null && gr.Gr == gr2.Gr;
         }
 
-        protected F32 WatVal(F32 i, F32 j)
+        protected virtual F32 WatVal(F32 i, F32 j)
         {
             return Rndwat[F32.FloorToInt(F32.Abs(i * 2) % 16)][F32.FloorToInt(F32.Abs(j * 2) % 16)];
         }
 
-        protected void WatAnim(F32 i, F32 j)
+        protected virtual void WatAnim(F32 i, F32 j)
         {
             F32 a = (time * F32.FromDouble(0.6) + WatVal(i, j) / 100) % 1 * 19;
             if (a > 16) { p8.Spr(13 + a.Double - 16, i.Double * 16, j.Double * 16); }
         }
 
-        protected F32 RndCenter(F32 i, F32 j)
+        protected virtual F32 RndCenter(F32 i, F32 j)
         {
             return (F32.Floor(WatVal(i, j) / 34) + 18) % 20;
         }
 
-        protected int RndSand(F32 i, F32 j)
+        protected virtual int RndSand(F32 i, F32 j)
         {
             return F32.FloorToInt(WatVal(i, j) / 34) + 1;
         }
 
-        protected int RndTree(F32 i, F32 j)
+        protected virtual int RndTree(F32 i, F32 j)
         {
             return F32.FloorToInt(WatVal(i, j) / 51) * 32;
         }
 
-        protected void Spr4(F32 i, F32 j, F32 gi, F32 gj, int a, int b, int c, int d, int off, Func<F32, F32, int> f)
+        protected virtual void Spr4(F32 i, F32 j, F32 gi, F32 gj, int a, int b, int c, int d, int off, Func<F32, F32, int> f)
         {
             p8.Spr(f(i, j + off) + a, gi.Double, (gj + 2 * off).Double);
             p8.Spr(f(i + F32.Half, j + off) + b, gi.Double + 8, (gj + 2 * off).Double);
@@ -1589,7 +1589,7 @@ namespace CSharpCraft.Pcraft
             p8.Spr(f(i + F32.Half, j + F32.Half + off) + d, gi.Double + 8, (gj + 8 + 2 * off).Double);
         }
 
-        protected void DrawBack()
+        protected virtual void DrawBack()
         {
             F32 ci = F32.Floor((clx - 64) / 16);
             F32 cj = F32.Floor((cly - 64) / 16);
@@ -1696,7 +1696,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void Panel(string name, int x, int y, int sx, int sy)
+        protected virtual void Panel(string name, int x, int y, int sx, int sy)
         {
             p8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
             p8.Spr(66, x, y);
@@ -1713,7 +1713,7 @@ namespace CSharpCraft.Pcraft
             p8.Print(name, hx + 1, y + 2, 7);
         }
 
-        protected void ItemName(int x, int y, Entity it, int col)
+        protected virtual void ItemName(int x, int y, Entity it, int col)
         {
             Material ty = it.Type;
             p8.Pal();
@@ -1731,7 +1731,7 @@ namespace CSharpCraft.Pcraft
             p8.Print(ty.Name, px + 10, y, col);
         }
 
-        protected void List(Entity menu, int x, int y, int sx, int sy, int my)
+        protected virtual void List(Entity menu, int x, int y, int sx, int sy, int my)
         {
             Panel(menu.Type.Name, x, y, sx, sy);
 
@@ -1779,7 +1779,7 @@ namespace CSharpCraft.Pcraft
             p8.Spr(68, x + sx - 10, sely, 1, 1, true);
         }
 
-        protected void RequireList(Entity recip, int x, int y, int sx, int sy)
+        protected virtual void RequireList(Entity recip, int x, int y, int sx, int sy)
         {
             Panel("require", x, y, sx, sy);
             int tlist = recip.Req.Count;
@@ -1806,7 +1806,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void Printb(string t, double x, double y, int c)
+        protected virtual void Printb(string t, double x, double y, int c)
         {
             p8.Print(t, x + 1, y, 1);
             p8.Print(t, x - 1, y, 1);
@@ -1815,12 +1815,12 @@ namespace CSharpCraft.Pcraft
             p8.Print(t, x, y, c);
         }
 
-        protected void Printc(string t, int x, int y, int c)
+        protected virtual void Printc(string t, int x, int y, int c)
         {
             p8.Print(t, x - t.Length * 2, y, c);
         }
 
-        protected void Dent()
+        protected virtual void Dent()
         {
             foreach (Entity e in entities)
             {
@@ -1849,7 +1849,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void Sorty(List<Entity> t)
+        protected virtual void Sorty(List<Entity> t)
         {
             int tv = t.Count - 1;
             for (int i = 0; i < tv; i++)
@@ -1864,7 +1864,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void Denemies()
+        protected virtual void Denemies()
         {
             Sorty(enemies);
 
@@ -1891,7 +1891,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        protected void Dbar(int px, int py, F32 v, F32 m, int c, int c2)
+        protected virtual void Dbar(int px, int py, F32 v, F32 m, int c, int c2)
         {
             p8.Pal();
             F32 pe = px + v * F32.FromDouble(0.3);

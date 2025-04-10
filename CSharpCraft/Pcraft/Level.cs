@@ -6,6 +6,7 @@ namespace CSharpCraft.Pcraft
     public class Level
     {
         public F32[]? Dat { get; set; }
+        public DataItem[]? DatIt { get; set; }
         public List<Entity>? Ene { get; set; }
         public List<Entity>? Ent { get; set; }
         public bool IsUnder { get; set; }
