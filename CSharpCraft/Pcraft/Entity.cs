@@ -36,5 +36,6 @@ namespace CSharpCraft.Pcraft
         public F32 Y { get; set; }
         public Random? PosRnd { get; set; } = null;
         public Random? TimRnd { get; set; } = null;
+        public int MenuFrames { get; set; } = 0;
     }
 }

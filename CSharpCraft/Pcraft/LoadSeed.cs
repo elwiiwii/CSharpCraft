@@ -1,4 +1,5 @@
-﻿using CSharpCraft.Pico8;
+﻿using System.Reflection.Metadata.Ecma335;
+using CSharpCraft.Pico8;
 using CSharpCraft.RaceMode;
 using FixMath;
 using NativeFileDialogs.Net;
@@ -18,7 +19,17 @@ namespace CSharpCraft.Pcraft
         private int[]? loadedSeed = null;
         private int rngSeed = 0;
 
-        private int ladderResets = 0;
+        private bool collectStats = true;
+        private bool stdPlayerSpawn = true;
+        private bool stdZombieSpawns = true;
+        private bool stdZombieMovement = true;
+        private bool stdDrops = true;
+        private bool stdSpread = true;
+        private bool stdDamage = true;
+
+        private int zombiesKilled = 0;
+        private int[] barFull = new int[7];
+        private int[] ladderResets = new int[2];
         private int missedHits = 0;
         private int[] wastedHits = new int[pwrNames.Length + 6];
         private bool pickupAction = false;
@@ -30,9 +41,11 @@ namespace CSharpCraft.Pcraft
 
         private Random? sandTimer = null;
         private Random? wheatTimer = null;
+        private Random? WatRng = null;
 
-        private Random? spawnRng = null;
-        private Random? waterRng = null;
+        private Random? pSpawnRng = null;
+        private Random? zSpawnRng = null;
+        private Random? zMoveRng = null;
 
         private Random? zombieDamage = null;
         private Dictionary<Ground, List<Random?>> damageDict = new()
@@ -182,11 +195,11 @@ namespace CSharpCraft.Pcraft
                 for (F32 j = F32.Zero; j < levelsy; j++)
                 {
                     Ground c = GetDirectGr(i, j);
-                    F32 r = p8.Rnd(100, spawnRng);
+                    F32 r = p8.Rnd(100, zSpawnRng);
                     F32 ex = i * 16 + 8;
                     F32 ey = j * 16 + 8;
                     F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
-                    int newRngSeed = spawnRng.Next();
+                    int? newRngSeed = zMoveRng is not null ? zMoveRng.Next() : null;
                     if (r < 3 && c != grwater && c != grrock && !c.IsTree && dist > 50)
                     {
                         Entity newe = Entity(zombi, ex, ey, F32.Zero, F32.Zero);
@@ -199,8 +212,8 @@ namespace CSharpCraft.Pcraft
                         newe.Step = 0;
                         newe.Ox = F32.Zero;
                         newe.Oy = F32.Zero;
-                        newe.PosRnd = new Random(newRngSeed);
-                        newe.TimRnd = new Random(newRngSeed);
+                        newe.PosRnd = newRngSeed is not null ? new Random((int)newRngSeed) : null;
+                        newe.TimRnd = newRngSeed is not null ? new Random((int)newRngSeed + 1) : null;
                         p8.Add(l.Ene, newe);
                     }
                 }
@@ -240,7 +253,9 @@ namespace CSharpCraft.Pcraft
             frameTimer = F32.Zero;
             timer = "0:00.00";
 
-            ladderResets = 0;
+            zombiesKilled = 0;
+            barFull = new int[7];
+            ladderResets = new int[2];
             missedHits = 0;
             wastedHits = new int[pwrNames.Length + 6];
             pickupAction = false;
@@ -249,16 +264,22 @@ namespace CSharpCraft.Pcraft
             zReset = 0;
 
             int incr = 0;
-            spawnRng = new Random(rngSeed + incr);
+            WatRng = new Random(rngSeed + incr);
+            incr++;
+            pSpawnRng = stdPlayerSpawn ? new Random(rngSeed + incr) : null;
+            incr++;
+            zSpawnRng = stdZombieSpawns ? new Random(rngSeed + incr) : null;
+            incr++;
+            zMoveRng = stdZombieMovement ? new Random(rngSeed + incr) : null;
             incr++;
             foreach (var key in dropsDict.Keys)
             {
-                dropsDict[key] = new Random(rngSeed + incr);
+                dropsDict[key] = stdDrops ? new Random(rngSeed + incr) : null;
                 incr++;
             }
             foreach (var key in spreadDict.Keys)
             {
-                spreadDict[key] = new Random(rngSeed + incr);
+                spreadDict[key] = stdSpread ? new Random(rngSeed + incr) : null;
                 incr++;
             }
             foreach (var key in damageDict.Keys)
@@ -266,17 +287,20 @@ namespace CSharpCraft.Pcraft
                 damageDict[key] = [];
                 for (int i = 0; i < pwrNames.Length; i++)
                 {
-                    damageDict[key].Add(new Random(rngSeed + incr));
+                    damageDict[key].Add(stdDamage ? new Random(rngSeed + incr) : null);
                     incr++;
                 }
             }
-            zombieDamage = new Random(rngSeed + incr);
+            zombieDamage = stdDamage ? new Random(rngSeed + incr) : null;
             incr++;
-            sandTimer = new Random(rngSeed + incr);
+            sandTimer = stdSpread ? new Random(rngSeed + incr) : null;
             incr++;
-            wheatTimer = new Random(rngSeed + incr);
-            incr++;
-            waterRng = new Random(rngSeed + incr);
+            wheatTimer = stdSpread ? new Random(rngSeed + incr) : null;
+            
+            foreach (Ground ground in grounds)
+            {
+                ground.MinedCount = 0;
+            }
 
             p8.Reload();
             p8.Memcpy(0x1000, 0x2000, 0x1000);
@@ -310,7 +334,7 @@ namespace CSharpCraft.Pcraft
                 Rndwat[i] = new F32[16];
                 for (int j = 0; j <= 15; j++)
                 {
-                    Rndwat[i][j] = p8.Rnd(100, waterRng);
+                    Rndwat[i][j] = p8.Rnd(100, WatRng);
                 }
             }
 
@@ -609,7 +633,6 @@ namespace CSharpCraft.Pcraft
                     !(placeAction))
                 {
                     missedHits++;
-                    Console.WriteLine(missedHits);
                 }
             }
             else if ((hit == grtree && !hasAxe) ||
@@ -621,7 +644,6 @@ namespace CSharpCraft.Pcraft
             else
             {
                 missedHits++;
-                Console.WriteLine(missedHits);
             }
         }
 
@@ -697,6 +719,7 @@ namespace CSharpCraft.Pcraft
                     e.Oy += F32.Max(-push, F32.Min(push, e.Y - ply));
                     if (e.Life <= 0)
                     {
+                        zombiesKilled++;
                         p8.Del(enemies, e);
                         AddItem(ichor, F32.FloorToInt(p8.Rnd(3, dropsDict[ichor])), e.X, e.Y);
                         AddItem(fabric, F32.FloorToInt(p8.Rnd(3, dropsDict[fabric])), e.X, e.Y);
@@ -729,23 +752,26 @@ namespace CSharpCraft.Pcraft
                 pow = F32.Floor(pow);
 
                 DataItem d = GetData(hitx, hity, hit.Life);
-                if (d.Val - pow <= 0)
-                {
-                    if ((curItem is not null && curItem.Power is not null) &&
+                if ((curItem is not null && curItem.Power is not null) &&
                         ((curItem.Type == haxe && hit == grtree) ||
                         (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock))) && nearEnemies.Count <= 0)
-                    {
-                        d.Hits[(int)curItem.Power]++;
-                    }
-                    else if ((curItem is null || curItem.Power is null) &&
-                        hit == grtree && !hasAxe)
-                    {
-                        d.Hits[0]++;
-                    }
+                {
+                    d.Hits[(int)curItem.Power]++;
+                }
+                else if ((curItem is null || curItem.Power is null) &&
+                    hit == grtree && !hasAxe)
+                {
+                    d.Hits[0]++;
+                }
+
+                if (d.Val - pow <= 0)
+                {
                     for (int i = 0; i <= pwrNames.Length; i++)
                     {
                         wastedHits[i] -= d.Hits[i];
                     }
+                    hit.MinedCount++;
+                    Console.WriteLine(hit.MinedCount);
                     SetGr(hitx, hity, hit.Tile);
                     Cleardata(hitx, hity);
                     AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3, dropsDict[hit.Mat]) + 2), hitx, hity);
@@ -757,17 +783,6 @@ namespace CSharpCraft.Pcraft
                 else
                 {
                     d.Val -= pow;
-                    if ((curItem is not null && curItem.Power is not null) &&
-                        ((curItem.Type == haxe && hit == grtree) ||
-                        (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock))) && nearEnemies.Count <= 0)
-                    {
-                        d.Hits[(int)curItem.Power]++;
-                    }
-                    else if ((curItem is null || curItem.Power is null) &&
-                        hit == grtree && !hasAxe)
-                    {
-                        d.Hits[0]++;
-                    }
                     SetDataItem(hitx, hity, d);
                 }
                 p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
@@ -792,10 +807,14 @@ namespace CSharpCraft.Pcraft
                 switch (hit, curItem.Type)
                 {
                     case (Ground, Material) gm when gm == (grgrass, scythe):
+                        hit.MinedCount++;
+                        Console.WriteLine(hit.MinedCount);
                         SetGr(hitx, hity, grsand);
                         if (p8.Rnd(1, dropsDict[seed]) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
                         break;
                     case (Ground, Material) gm when gm == (grsand, shovel):
+                        hit.MinedCount++;
+                        Console.WriteLine(hit.MinedCount);
                         if (curItem.Power > 3)
                         {
                             SetGr(hitx, hity, grwater);
@@ -825,6 +844,8 @@ namespace CSharpCraft.Pcraft
                         RemInList(invent, Instc(seed, 1));
                         break;
                     case (Ground, Material) gm when gm == (grwheat, scythe):
+                        hit.MinedCount++;
+                        Console.WriteLine(hit.MinedCount);
                         SetGr(hitx, hity, grsand);
                         F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0).Val - time)));
                         AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double, dropsDict[wheat])), hitx, hity);
@@ -871,6 +892,8 @@ namespace CSharpCraft.Pcraft
                     lb4 = p8.Btn(4);
                     return;
                 }
+
+                curMenu.MenuFrames++;
 
                 Entity intMenu = curMenu;
                 Entity othMenu = menuInvent;
@@ -956,14 +979,14 @@ namespace CSharpCraft.Pcraft
 
             if (switchLevel)
             {
-                ladderResets++;
+                if (zReset == 0) { ladderResets[0]++; } else { ladderResets[1]++; }
                 if (currentLevel == cave)
                 {
                     if (zReset == 1)
                     {
-                        spawnRng = new Random(rngSeed - 1);
+                        zSpawnRng = new Random(rngSeed - 1);
+                        zMoveRng = new Random(rngSeed - 10);
                         zReset = 2;
-                        ladderResets = 0;
                     }
                     SetLevel(island);
                 }
@@ -971,9 +994,9 @@ namespace CSharpCraft.Pcraft
                 {
                     if (zReset == 1 || zReset == 2)
                     {
-                        spawnRng = new Random(rngSeed - 2);
+                        zSpawnRng = new Random(rngSeed - 2);
+                        zMoveRng = new Random(rngSeed - 20);
                         zReset = 3;
-                        ladderResets = 1;
                     }
                     SetLevel(cave);
                 }
@@ -1094,6 +1117,44 @@ namespace CSharpCraft.Pcraft
             {
                 pstam = F32.Min(F32.FromInt(100), pstam + 1);
             }
+            if (pstam >= 100 && runtimer == 1)
+            {
+                if (curItem is not null)
+                {
+                    if (curItem.Power is null)
+                    {
+                        barFull[0]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power == 1)
+                    {
+                        barFull[1]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == haxe)
+                    {
+                        barFull[2]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == pick)
+                    {
+                        barFull[3]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == sword)
+                    {
+                        barFull[4]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == shovel)
+                    {
+                        barFull[5]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == scythe)
+                    {
+                        barFull[6]++;
+                    }
+                }
+                else
+                {
+                    barFull[0]++;
+                }
+            }
 
             int m = 16;
             F32 msp = F32.FromInt(4);
@@ -1148,7 +1209,6 @@ namespace CSharpCraft.Pcraft
                 runtimer = 0;
                 p8.Music(4);
             }
-            Console.WriteLine($"{wastedHits[0]} {wastedHits[1]} {wastedHits[2]} {wastedHits[3]} {wastedHits[4]} {wastedHits[5]} {wastedHits[6]} {wastedHits[7]} {wastedHits[8]} {wastedHits[9]} {wastedHits[10]}");
         }
 
         protected override void CreateMap()
@@ -1177,7 +1237,7 @@ namespace CSharpCraft.Pcraft
 
             if (spawnableTiles.Count > 0)
             {
-                int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, spawnRng));
+                int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, pSpawnRng));
                 (int x, int y) tile = spawnableTiles[indx];
 
                 plx = F32.FromInt(tile.x * 16 + 8);
@@ -1319,9 +1379,24 @@ namespace CSharpCraft.Pcraft
                 p8.Palt(0, false);
                 p8.Rectfill(0, 0, 128, 46, 12);
                 p8.Rectfill(0, 46, 128, 128, 1);
-                p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
-                Printc(curMenu.Text, 64, 80, 6);
-                Printc(curMenu.Text2, 64, 90, 6);
+                if (!collectStats || curMenu == mainMenu)
+                {
+                    p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+                    Printc(curMenu.Text, 64, 80, 6);
+                    Printc(curMenu.Text2, 64, 90, 6);
+                }
+                else if (curMenu == winMenu || curMenu == deathMenu)
+                {
+                    //file name
+                    //rng seed
+                    //missed hits
+                    //wasted hits
+                    //mined counts
+                    //bar full
+                    //menu time
+                    //ladder resets
+                    //time
+                }
                 if (curMenu == mainMenu)
                 {
                     Printc("btn 0 to change seed", 64, 108, F32.FloorToInt(6 + time % 2));
