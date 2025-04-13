@@ -15,23 +15,27 @@ namespace CSharpCraft.Pcraft
         private int runtimer = 0;
         private F32 frameTimer = F32.Zero;
         private string timer = "0:00.00";
+        private int yStart = 1;
 
+        private string fileName = "no seed loaded";
         private int[]? loadedSeed = null;
         private int rngSeed = 0;
 
         private bool collectStats = true;
         private bool stdPlayerSpawn = true;
         private bool stdZombieSpawns = true;
-        private bool stdZombieMovement = true;
+        private bool stdZombieMovement = false;
         private bool stdDrops = true;
         private bool stdSpread = true;
         private bool stdDamage = true;
 
         private int zombiesKilled = 0;
+        private (int ichor, int fabric) zombiesDroppedCount = (0, 0);
         private int[] barFull = new int[7];
+        private int[] menuTime = new int[8];
         private int[] ladderResets = new int[2];
-        private int missedHits = 0;
-        private int[] wastedHits = new int[pwrNames.Length + 6];
+        private int[] missedHits = new int[7];
+        private int[] wastedHits = new int[9];
         private bool pickupAction = false;
         private bool placeAction = false;
 
@@ -164,10 +168,11 @@ namespace CSharpCraft.Pcraft
             {
                 loadedSeed = ImageToByteArray(path);
 
-                string filename = path.Split("\\").Last();
-                string extension = Path.GetExtension(filename);
-                filename = filename.Replace(extension, "");
-                char[] rngSeedChar = filename.ToCharArray();
+                fileName = path.Split("\\").Last();
+                string tempName = fileName;
+                string extension = Path.GetExtension(tempName);
+                tempName = tempName.Replace(extension, "");
+                char[] rngSeedChar = tempName.ToCharArray();
                 rngSeed = rngSeedChar[0] + 1;
                 for (int i = 1; i < rngSeedChar.Length; i++)
                 {
@@ -254,10 +259,12 @@ namespace CSharpCraft.Pcraft
             timer = "0:00.00";
 
             zombiesKilled = 0;
+            zombiesDroppedCount = (0, 0);
             barFull = new int[7];
+            menuTime = new int[8];
             ladderResets = new int[2];
-            missedHits = 0;
-            wastedHits = new int[pwrNames.Length + 6];
+            missedHits = new int[7];
+            wastedHits = new int[9];
             pickupAction = false;
             placeAction = false;
 
@@ -300,6 +307,7 @@ namespace CSharpCraft.Pcraft
             foreach (Ground ground in grounds)
             {
                 ground.MinedCount = 0;
+                ground.DroppedCount = (0, 0);
             }
 
             p8.Reload();
@@ -620,22 +628,56 @@ namespace CSharpCraft.Pcraft
         {
             if (curItem is not null)
             {
-                if (!(curItem.Type == haxe && hit == grtree) &&
-                    !(curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock)) &&
+                if (!(curItem.Type == haxe && hit == grtree && nearEnemies.Count <= 0) &&
+                    !(curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock) && nearEnemies.Count <= 0) &&
                     !(curItem.Type == sword && nearEnemies.Count > 0) &&
-                    !(curItem.Type == shovel && hit == grsand) &&
-                    !(curItem.Type == scythe && (hit == grgrass || hit == grplant || hit == grwheat)) &&
-                    !(hit == grtree && !hasAxe) &&
-                    !(curItem.Type == seed && hit == grfarm) &&
-                    !(curItem.Type == sand && hit == grwater) &&
+                    !(curItem.Type == shovel && hit == grsand && nearEnemies.Count <= 0) &&
+                    !(curItem.Type == scythe && (hit == grgrass || hit == grplant || hit == grwheat) && nearEnemies.Count <= 0) &&
+                    !(hit == grtree && !hasAxe && nearEnemies.Count <= 0) &&
+                    !(curItem.Type == seed && hit == grfarm && nearEnemies.Count <= 0) &&
+                    !(curItem.Type == sand && hit == grwater && nearEnemies.Count <= 0) &&
                     !(curItem.Type.GiveLife is not null && nearEnemies.Count <= 0 && hit != grtree && hit != grrock && !hit.IsTree) &&
                     !(pickupAction) &&
                     !(placeAction))
                 {
-                    missedHits++;
+                    if (curItem is not null)
+                    {
+                        if (curItem.Power is null)
+                        {
+                            missedHits[0]++;
+                        }
+                        else if (curItem.Power is not null && curItem.Power == 1)
+                        {
+                            missedHits[1]++;
+                        }
+                        else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == haxe)
+                        {
+                            missedHits[2]++;
+                        }
+                        else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == pick)
+                        {
+                            missedHits[3]++;
+                        }
+                        else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == sword)
+                        {
+                            missedHits[4]++;
+                        }
+                        else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == shovel)
+                        {
+                            missedHits[5]++;
+                        }
+                        else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == scythe)
+                        {
+                            missedHits[6]++;
+                        }
+                    }
+                    else
+                    {
+                        missedHits[0]++;
+                    }
                 }
             }
-            else if ((hit == grtree && !hasAxe) ||
+            else if ((hit == grtree && !hasAxe && nearEnemies.Count <= 0) ||
                 pickupAction ||
                 placeAction)
             {
@@ -643,7 +685,41 @@ namespace CSharpCraft.Pcraft
             }
             else
             {
-                missedHits++;
+                if (curItem is not null)
+                {
+                    if (curItem.Power is null)
+                    {
+                        missedHits[0]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power == 1)
+                    {
+                        missedHits[1]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == haxe)
+                    {
+                        missedHits[2]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == pick)
+                    {
+                        missedHits[3]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == sword)
+                    {
+                        missedHits[4]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == shovel)
+                    {
+                        missedHits[5]++;
+                    }
+                    else if (curItem.Power is not null && curItem.Power > 1 && curItem.Type == scythe)
+                    {
+                        missedHits[6]++;
+                    }
+                }
+                else
+                {
+                    missedHits[0]++;
+                }
             }
         }
 
@@ -651,43 +727,48 @@ namespace CSharpCraft.Pcraft
         {
             if (curItem is not null)
             {
-                if (((curItem.Type == haxe && hit == grtree) ||
-                    (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock))) && nearEnemies.Count <= 0)
+                if (curItem.Type == haxe && hit == grtree && nearEnemies.Count <= 0)
                 {
-                    wastedHits[(int)curItem.Power]++;
+                    if (curItem.Power is not null && curItem.Power == 1) { wastedHits[1]++; }
+                    else if (curItem.Power is not null && curItem.Power > 1) { wastedHits[2]++; }
                 }
-                else if (hit == grtree && !hasAxe)
+                else if (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock) && nearEnemies.Count <= 0)
+                {
+                    if (curItem.Power is not null && curItem.Power == 1) { wastedHits[1]++; }
+                    else if (curItem.Power is not null && curItem.Power > 1) { wastedHits[3]++; }
+                }
+                else if (hit == grtree && !hasAxe && nearEnemies.Count <= 0)
                 {
                     wastedHits[0]++;
                 }
-                else if (curItem.Type == seed && hit == grfarm)
+                else if (curItem.Type == seed && hit == grfarm && nearEnemies.Count <= 0)
                 {
-                    wastedHits[pwrNames.Length + 1]++;
+                    wastedHits[4]++;
                 }
-                else if (curItem.Type == sand && hit == grwater)
+                else if (curItem.Type == sand && hit == grwater && nearEnemies.Count <= 0)
                 {
-                    wastedHits[pwrNames.Length + 2]++;
+                    wastedHits[5]++;
                 }
                 else if (curItem.Type.GiveLife is not null && nearEnemies.Count <= 0 && hit != grtree && hit != grrock && !hit.IsTree)
                 {
-                    wastedHits[pwrNames.Length + 3]++;
+                    wastedHits[6]++;
                 }
                 else if (pickupAction)
                 {
-                    wastedHits[pwrNames.Length + 4]++;
+                    wastedHits[7]++;
                 }
                 else if (placeAction)
                 {
-                    wastedHits[pwrNames.Length + 5]++;
+                    wastedHits[8]++;
                 }
             }
-            else if (hit == grtree && !hasAxe)
+            else if (hit == grtree && !hasAxe && nearEnemies.Count <= 0)
             {
                 wastedHits[0]++;
             }
             else if (placeAction)
             {
-                wastedHits[pwrNames.Length + 5]++;
+                wastedHits[8]++;
             }
         }
 
@@ -700,6 +781,8 @@ namespace CSharpCraft.Pcraft
             }
             MissedHitsCheck(hit, hasAxe);
             WastedHitsCheck(hitx, hity, hit, hasAxe);
+            pickupAction = false;
+            placeAction = false;
             if (nearEnemies.Count > 0)
             {
                 p8.Sfx(19, 3);
@@ -721,8 +804,12 @@ namespace CSharpCraft.Pcraft
                     {
                         zombiesKilled++;
                         p8.Del(enemies, e);
-                        AddItem(ichor, F32.FloorToInt(p8.Rnd(3, dropsDict[ichor])), e.X, e.Y);
-                        AddItem(fabric, F32.FloorToInt(p8.Rnd(3, dropsDict[fabric])), e.X, e.Y);
+                        int dropCount = F32.FloorToInt(p8.Rnd(3, dropsDict[ichor]));
+                        zombiesDroppedCount.ichor += dropCount;
+                        AddItem(ichor, dropCount, e.X, e.Y);
+                        dropCount = F32.FloorToInt(p8.Rnd(3, dropsDict[fabric]));
+                        zombiesDroppedCount.fabric += dropCount;
+                        AddItem(fabric, dropCount, e.X, e.Y);
                     }
                     p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
                 }
@@ -752,31 +839,46 @@ namespace CSharpCraft.Pcraft
                 pow = F32.Floor(pow);
 
                 DataItem d = GetData(hitx, hity, hit.Life);
-                if ((curItem is not null && curItem.Power is not null) &&
-                        ((curItem.Type == haxe && hit == grtree) ||
-                        (curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock))) && nearEnemies.Count <= 0)
+                if (curItem is not null && curItem.Type == haxe && hit == grtree && nearEnemies.Count <= 0)
                 {
-                    d.Hits[(int)curItem.Power]++;
+                    if (curItem.Power is not null && curItem.Power == 1) { d.Hits[1]++; }
+                    else if (curItem.Power is not null && curItem.Power > 1) { d.Hits[2]++; }
                 }
-                else if ((curItem is null || curItem.Power is null) &&
-                    hit == grtree && !hasAxe)
+                else if (curItem is not null && curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock) && nearEnemies.Count <= 0)
+                {
+                    if (curItem.Power is not null && curItem.Power == 1) { d.Hits[1]++; }
+                    else if (curItem.Power is not null && curItem.Power > 1) { d.Hits[3]++; }
+                }
+                else if (hit == grtree && !hasAxe && nearEnemies.Count <= 0)
                 {
                     d.Hits[0]++;
                 }
 
                 if (d.Val - pow <= 0)
                 {
-                    for (int i = 0; i <= pwrNames.Length; i++)
+                    if (curItem is not null && curItem.Type == haxe && hit == grtree && nearEnemies.Count <= 0)
                     {
-                        wastedHits[i] -= d.Hits[i];
+                        if (curItem.Power is not null && curItem.Power == 1) { wastedHits[1] -= d.Hits[1]; }
+                        else if (curItem.Power is not null && curItem.Power > 1) { wastedHits[2] -= d.Hits[2]; }
+                    }
+                    else if (curItem is not null && curItem.Type == pick && hit != grtree && (hit.IsTree || hit == grrock) && nearEnemies.Count <= 0)
+                    {
+                        if (curItem.Power is not null && curItem.Power == 1) { wastedHits[1] -= d.Hits[1]; }
+                        else if (curItem.Power is not null && curItem.Power > 1) { wastedHits[3] -= d.Hits[3]; }
+                    }
+                    else if (hit == grtree && !hasAxe && nearEnemies.Count <= 0)
+                    {
+                        wastedHits[0] -= d.Hits[0];
                     }
                     hit.MinedCount++;
-                    Console.WriteLine(hit.MinedCount);
                     SetGr(hitx, hity, hit.Tile);
                     Cleardata(hitx, hity);
-                    AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3, dropsDict[hit.Mat]) + 2), hitx, hity);
+                    int dropCount = F32.FloorToInt(p8.Rnd(3, dropsDict[hit.Mat]) + 2);
+                    hit.DroppedCount = (hit.DroppedCount.a + dropCount, hit.DroppedCount.b);
+                    AddItem(hit.Mat, dropCount, hitx, hity);
                     if (hit == grtree && p8.Rnd(1, dropsDict[apple]) > F32.FromDouble(0.7))
                     {
+                        hit.DroppedCount = (hit.DroppedCount.a, hit.DroppedCount.b + 1);
                         AddItem(apple, 1, hitx, hity);
                     }
                 }
@@ -808,15 +910,14 @@ namespace CSharpCraft.Pcraft
                 {
                     case (Ground, Material) gm when gm == (grgrass, scythe):
                         hit.MinedCount++;
-                        Console.WriteLine(hit.MinedCount);
                         SetGr(hitx, hity, grsand);
-                        if (p8.Rnd(1, dropsDict[seed]) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
+                        if (p8.Rnd(1, dropsDict[seed]) > F32.FromDouble(0.4)) { hit.DroppedCount = (hit.DroppedCount.a + 1, hit.DroppedCount.b); AddItem(seed, 1, hitx, hity); }
                         break;
                     case (Ground, Material) gm when gm == (grsand, shovel):
                         hit.MinedCount++;
-                        Console.WriteLine(hit.MinedCount);
                         if (curItem.Power > 3)
                         {
+                            hit.DroppedCount = (hit.DroppedCount.a + 2, hit.DroppedCount.b);
                             SetGr(hitx, hity, grwater);
                             AddItem(sand, 2, hitx, hity);
                         }
@@ -824,7 +925,9 @@ namespace CSharpCraft.Pcraft
                         {
                             SetGr(hitx, hity, grfarm);
                             SetDataItem(hitx, hity, new DataItem { Val = time + 15 + p8.Rnd(5, sandTimer) });
-                            AddItem(sand, F32.FloorToInt(p8.Rnd(2, dropsDict[sand])), hitx, hity);
+                            int sDropCount = F32.FloorToInt(p8.Rnd(2, dropsDict[sand]));
+                            hit.DroppedCount = (hit.DroppedCount.a + sDropCount, hit.DroppedCount.b);
+                            AddItem(sand, sDropCount, hitx, hity);
                         }
                         break;
                     case (Ground, Material) gm when gm == (grwater, sand):
@@ -834,7 +937,8 @@ namespace CSharpCraft.Pcraft
                     case (Ground, Material) gm when gm == (grwater, boat):
                         p8.Reload();
                         p8.Memcpy(0x1000, 0x2000, 0x1000);
-                        curMenu = Cmenu(inventary, null, 136, "final time:", timer);
+                        winMenu = Cmenu(inventary, null, 136, "you escaped!", timer);
+                        curMenu = winMenu;
                         runtimer = 0;
                         p8.Music(3);
                         break;
@@ -845,10 +949,12 @@ namespace CSharpCraft.Pcraft
                         break;
                     case (Ground, Material) gm when gm == (grwheat, scythe):
                         hit.MinedCount++;
-                        Console.WriteLine(hit.MinedCount);
                         SetGr(hitx, hity, grsand);
                         F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0).Val - time)));
+                        int dropCount = F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double, dropsDict[wheat]));
+                        hit.DroppedCount = (hit.DroppedCount.a + dropCount, hit.DroppedCount.b);
                         AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double, dropsDict[wheat])), hitx, hity);
+                        hit.DroppedCount = (hit.DroppedCount.a, hit.DroppedCount.b + 1);
                         AddItem(seed, 1, hitx, hity);
                         break;
                     default:
@@ -889,11 +995,44 @@ namespace CSharpCraft.Pcraft
                             p8.Music(1);
                         }
                     }
+                    else if (p8.Btnp(2)) { yStart = 1; }
+                    else if (p8.Btnp(3)) { yStart = -40; }
                     lb4 = p8.Btn(4);
                     return;
                 }
 
-                curMenu.MenuFrames++;
+                if (curMenu == menuInvent)
+                {
+                    menuTime[0]++;
+                }
+                else if (curMenu.Type == workbench)
+                {
+                    menuTime[1]++;
+                }
+                else if (curMenu.Type == stonebench)
+                {
+                    menuTime[2]++;
+                }
+                else if (curMenu.Type == furnace)
+                {
+                    menuTime[3]++;
+                }
+                else if (curMenu.Type == anvil)
+                {
+                    menuTime[4]++;
+                }
+                else if (curMenu.Type == chem)
+                {
+                    menuTime[5]++;
+                }
+                else if (curMenu.Type == factory)
+                {
+                    menuTime[6]++;
+                }
+                else if (curMenu.Type == chest)
+                {
+                    menuTime[7]++;
+                }
 
                 Entity intMenu = curMenu;
                 Entity othMenu = menuInvent;
@@ -1105,9 +1244,7 @@ namespace CSharpCraft.Pcraft
                     pstam -= stamCost;
                 }
             }
-            pickupAction = false;
-            placeAction = false;
-
+            
             if (banim > 0)
             {
                 banim -= 1;
@@ -1205,7 +1342,8 @@ namespace CSharpCraft.Pcraft
             {
                 p8.Reload();
                 p8.Memcpy(0x1000, 0x2000, 0x1000);
-                curMenu = Cmenu(inventary, null, 128, "final time:", timer);
+                deathMenu = Cmenu(inventary, null, 128, "you died!", timer);
+                curMenu = deathMenu;
                 runtimer = 0;
                 p8.Music(4);
             }
@@ -1371,6 +1509,27 @@ namespace CSharpCraft.Pcraft
             }
         }
 
+        private int DrawStats(int xpos, int ypos, string title, int[] data, int[] sprites, int[][] pals, (int a, int b)[]? data2 = null)
+        {
+            int xstart = xpos;
+            p8.Print($"{title}", xpos, ypos, 7);
+            xpos += title.Length * 4 + 3;
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] > 0)
+                {
+                    if (xpos > 127 - data[i].ToString().Length * 4 - (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) - 10) { xpos = xstart; ypos += 9; }
+                    p8.Pal();
+                    SetPal(pals[i]);
+                    p8.Spr(sprites[i], xpos, ypos - 2);
+                    xpos += 9;
+                    p8.Print($"{data[i]}{(data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}" : "")}", xpos, ypos, 7);
+                    xpos += data[i].ToString().Length * 4 + (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) + 3;
+                }
+            }
+            return ypos;
+        }
+
         public override void Draw()
         {
             if (curMenu is not null && curMenu.Spr is not null)
@@ -1379,30 +1538,67 @@ namespace CSharpCraft.Pcraft
                 p8.Palt(0, false);
                 p8.Rectfill(0, 0, 128, 46, 12);
                 p8.Rectfill(0, 46, 128, 128, 1);
-                if (!collectStats || curMenu == mainMenu)
+                if (!collectStats || (curMenu == mainMenu || curMenu == introMenu))
                 {
                     p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
                     Printc(curMenu.Text, 64, 80, 6);
                     Printc(curMenu.Text2, 64, 90, 6);
                 }
-                else if (curMenu == winMenu || curMenu == deathMenu)
+                else if (collectStats && (curMenu == winMenu || curMenu == deathMenu))
                 {
+                    int ypos = yStart;
                     //file name
+                    string s = $"file name: {fileName}";
+                    IEnumerable<string> chunks = s.Chunk(127/4).Select(c => new string(c));
+                    foreach (string chunk in chunks)
+                    {
+                        p8.Print(chunk, 1, ypos, 7);
+                        ypos += 6;
+                    }
+                    ypos ++;
                     //rng seed
-                    //missed hits
-                    //wasted hits
-                    //mined counts
-                    //bar full
-                    //menu time
-                    //ladder resets
+                    p8.Print($"rng seed: {rngSeed}", 1, ypos, 7);
+                    ypos += 7;
+                    //standardisation toggles
+                    p8.Print($"Pspawn={(stdPlayerSpawn ? "s" : "r")} Zspawn={(stdZombieSpawns ? "s" : "r")} Zmove={(stdZombieMovement ? "s" : "r")}", 1, ypos, 7);
+                    ypos += 7;
+                    p8.Print($"drops={(stdDrops ? "s" : "r")} spread={(stdSpread ? "s" : "r")} dmg={(stdDamage ? "s" : "r")}", 1, ypos, 7);
+                    ypos += 7;
                     //time
+                    p8.Print($"{curMenu.Text} {curMenu.Text2}", 1, ypos, 7);
+                    ypos += 8;
+                    //missed hits
+                    ypos = DrawStats(1, ypos, "missed hits:", missedHits, [75, 102, 98, 102, 99, 101, 100], [[], pwrPal[0], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1]]);
+                    ypos += 10;
+                    //wasted hits
+                    ypos = DrawStats(1, ypos, "wasted hits:", wastedHits, [75, 102, 98, 102, 115, 114, 116, 73, 89], [[], pwrPal[0], pwrPal[1], pwrPal[1], [], [15], [], [], workbench.Pal]);
+                    ypos += 10;
+                    //mined counts
+                    int[] mCounts = new int[grounds.Length + 1];
+                    for (int i = 0; i < grounds.Length + 1; i++)
+                    {
+                        if (i == 0) { mCounts[i] = zombiesKilled; }
+                        else { mCounts[i] = grounds[i - 1].MinedCount; }
+                    }
+                    ypos = DrawStats(1, ypos, "mined/drops:", mCounts, [75, 43, 2, 52, 56, 96, 5, 8, 9, 96, 96, 96, 47], [[1,8,3,1,5,6,7,8,9,10,11,12,13,14,3], [], [], [], [], grtree.Pal, [], [3, 3, 3, 9], [1, 3, 3, 3], griron.Pal, grgold.Pal, grgem.Pal, []], [zombiesDroppedCount, grwater.DroppedCount, grsand.DroppedCount, grgrass.DroppedCount, grrock.DroppedCount, grtree.DroppedCount, grfarm.DroppedCount, grwheat.DroppedCount, grplant.DroppedCount, griron.DroppedCount, grgold.DroppedCount, grgem.DroppedCount, grhole.DroppedCount]);
+                    ypos += 10;
+                    //bar full
+                    ypos = DrawStats(1, ypos, "bar full:", barFull, [75, 102, 98, 102, 99, 101, 100], [[], pwrPal[0], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1]]);
+                    ypos += 10;
+                    //menu time
+                    ypos = DrawStats(1, ypos, "menu time:", menuTime, [66, 89, 89, 90, 91, 76, 74, 92], [[], workbench.Pal, stonebench.Pal, [], [], [], [], []]);
+                    ypos += 10;
+                    //ladder resets
+                    ypos = DrawStats(1, ypos, "ladder resets:", ladderResets, [75, 99], [[], pwrPal[1]]);
+                    ypos += 10;
+                    Printc("press button 1", 64, Math.Max(ypos, 112), F32.FloorToInt(6 + time % 2));
                 }
                 if (curMenu == mainMenu)
                 {
                     Printc("btn 0 to change seed", 64, 108, F32.FloorToInt(6 + time % 2));
                     Printc(loadedSeed is not null ? "btn 1 to play" : "", 64, 116, F32.FloorToInt(6 + time % 2));
                 }
-                else
+                else if (!collectStats || curMenu == introMenu)
                 {
                     Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
                 }

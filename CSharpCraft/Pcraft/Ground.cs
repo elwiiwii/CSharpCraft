@@ -16,5 +16,6 @@ namespace CSharpCraft.Pcraft
         public int[]? Pal { get; set; }
         public Ground? Tile { get; set; }
         public int MinedCount { get; set; } = 0;
+        public (int a, int b) DroppedCount { get; set; } = (0, 0);
     }
 }

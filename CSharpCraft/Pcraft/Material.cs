@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace CSharpCraft.Pcraft
 {
-
     public class Material
     {
         public bool BeCraft { get; set; }
@@ -18,5 +17,4 @@ namespace CSharpCraft.Pcraft
         public List<Entity>? Sl { get; set; }
         public int Spr { get; set; }
     }
-
 }
