@@ -2,6 +2,7 @@
 using CSharpCraft.Pico8;
 using CSharpCraft.RaceMode;
 using FixMath;
+using Microsoft.Xna.Framework.Input;
 using NativeFileDialogs.Net;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -16,10 +17,14 @@ namespace CSharpCraft.Pcraft
         private F32 frameTimer = F32.Zero;
         private string timer = "0:00.00";
         private int yStart = 1;
+        private int menuX = 8;
+        private bool introActive = false;
 
         private string fileName = "no seed loaded";
         private int[]? loadedSeed = null;
         private int rngSeed = 0;
+        private string seedInput = "";
+        private KeyboardState prevState;
 
         private bool collectStats = true;
         private bool stdPlayerSpawn = true;
@@ -179,10 +184,11 @@ namespace CSharpCraft.Pcraft
                 {
                     rngSeed += rngSeed + (rngSeedChar[i] + 1) * (i + 1);
                 }
+                seedInput = rngSeed.ToString();
             }
         }
 
-        protected virtual void Craft(Entity req)
+        protected override void Craft(Entity req)
         {
             foreach (Entity e in req.Req)
             {
@@ -360,6 +366,9 @@ namespace CSharpCraft.Pcraft
 
         public override void Init(Pico8Functions pico8)
         {
+            TextInputEXT.StartTextInput();
+            TextInputEXT.TextInput += OnTextInput;
+            menuX = 8;
             base.Init(pico8);
         }
 
@@ -972,6 +981,25 @@ namespace CSharpCraft.Pcraft
             }
         }
 
+        private void OnTextInput(char c)
+        {
+            if (curMenu == introMenu && menuX == 0 && char.IsDigit(c) && seedInput.Length < 10)
+            {
+                string potential = string.IsNullOrEmpty(seedInput) ? c.ToString() : seedInput + c;
+                if (long.TryParse(potential, out long test) && test < int.MaxValue)
+                {
+                    seedInput = potential;
+                    UpdateRngSeed();
+                }
+
+            }
+        }
+
+        private void UpdateRngSeed()
+        {
+            rngSeed = string.IsNullOrEmpty(seedInput) ? 0 : Convert.ToInt32(seedInput);
+        }
+
         public override void Update()
         {
             if (runtimer == 1)
@@ -991,11 +1019,70 @@ namespace CSharpCraft.Pcraft
                             OpenFileDialog();
                         }
                     }
-                    else if (p8.Btnp(4) && !lb4 && loadedSeed is not null)
+                    else if (((p8.Btnp(4) && !lb4) || introActive) && loadedSeed is not null)
                     {
                         if (curMenu == mainMenu)
                         {
                             curMenu = introMenu;
+                            introActive = true;
+                        }
+                        else if (curMenu == introMenu)
+                        {
+                            if (menuX == 0)
+                            {
+                                KeyboardState state = Keyboard.GetState();
+                                if (state.GetPressedKeys().Length > 0)
+                                {
+                                    if (state.IsKeyDown(Keys.Back) && prevState.IsKeyUp(Keys.Back) && seedInput.Length > 0)
+                                    {
+                                        seedInput = seedInput.Remove(seedInput.Length - 1);
+                                        UpdateRngSeed();
+                                    }
+                                }
+                                prevState = state;
+                            }
+                            else if (p8.Btnp(4))
+                            {
+                                if (menuX == 8)
+                                {
+                                    introActive = false;
+                                    ResetLevel();
+                                    curMenu = null;
+                                    p8.Music(1);
+                                }
+                                else
+                                {
+                                    switch (menuX)
+                                    {
+                                        case 1:
+                                            collectStats = !collectStats;
+                                            break;
+                                        case 2:
+                                            stdPlayerSpawn = !stdPlayerSpawn;
+                                            break;
+                                        case 3:
+                                            stdZombieSpawns = !stdZombieSpawns;
+                                            break;
+                                        case 4:
+                                            stdZombieMovement = !stdZombieMovement;
+                                            break;
+                                        case 5:
+                                            stdDrops = !stdDrops;
+                                            break;
+                                        case 6:
+                                            stdSpread = !stdSpread;
+                                            break;
+                                        case 7:
+                                            stdDamage = !stdDamage;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+
+                            if (p8.Btnp(2)) { menuX = Math.Max(menuX - 1, 0); }
+                            else if (p8.Btnp(3)) { menuX = Math.Min(menuX + 1, 8); }
                         }
                         else
                         {
@@ -1134,8 +1221,8 @@ namespace CSharpCraft.Pcraft
                 {
                     if (zReset == 1)
                     {
-                        zSpawnRng = new Random(rngSeed - 1);
-                        zMoveRng = new Random(rngSeed - 10);
+                        zSpawnRng = stdZombieSpawns ? new Random(rngSeed - 1) : null;
+                        zMoveRng = stdZombieSpawns ? new Random(rngSeed - 10) : null;
                         zReset = 2;
                     }
                     SetLevel(island);
@@ -1144,8 +1231,8 @@ namespace CSharpCraft.Pcraft
                 {
                     if (zReset == 1 || zReset == 2)
                     {
-                        zSpawnRng = new Random(rngSeed - 2);
-                        zMoveRng = new Random(rngSeed - 20);
+                        zSpawnRng = stdZombieSpawns ? new Random(rngSeed - 2) : null;
+                        zMoveRng = stdZombieSpawns ? new Random(rngSeed - 20) : null;
                         zReset = 3;
                     }
                     SetLevel(cave);
@@ -1414,7 +1501,7 @@ namespace CSharpCraft.Pcraft
             cmy = ply;
         }
 
-        protected virtual void DrawBack()
+        protected override void DrawBack()
         {
             F32 ci = F32.Floor((clx - 64) / 16);
             F32 cj = F32.Floor((cly - 64) / 16);
@@ -1528,8 +1615,8 @@ namespace CSharpCraft.Pcraft
             xpos += title.Length * 4 + 3;
             for (int i = 0; i < data.Length; i++)
             {
-                //if (data[i] > 0)
-                //{
+                if (data[i] > 0)
+                {
                     if (xpos > 127 - data[i].ToString().Length * 4 - (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) - 10) { xpos = xstart; ypos += 9; }
                     p8.Pal();
                     SetPal(pals[i]);
@@ -1537,7 +1624,7 @@ namespace CSharpCraft.Pcraft
                     xpos += 9;
                     p8.Print($"{data[i]}{(data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}" : "")}", xpos, ypos, 7);
                     xpos += data[i].ToString().Length * 4 + (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) + 3;
-                //}
+                }
             }
             return ypos;
         }
@@ -1553,10 +1640,51 @@ namespace CSharpCraft.Pcraft
                 if (!collectStats || (curMenu == mainMenu || curMenu == introMenu))
                 {
                     p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+                }
+                if (curMenu == introMenu)
+                {
+                    int y = 3;
+                    string s1 = "rng seed ";
+                    string s2 = $"{rngSeed}";
+                    p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 2, y, 64 + (s1 + s2).Length * 2, y + 8, menuX == 0 ? 7 : 6);
+                    p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 1, y + 1, 64 + (s1 + s2).Length * 2 - 1, y + 7, 12);
+                    Printc(s1 + s2, 64, y + 2, menuX == 0 ? 7 : 6);
+
+                    Printc($"collect stats: {collectStats.ToString().ToLower()}", 64, 67, menuX == 1 ? 7 : 6);
+                    Printc($"player spawn: {(stdPlayerSpawn ? "std" : "rnd")}", 64, 74, menuX == 2 ? 7 : 6);
+                    Printc($"zombie spawns: {(stdZombieSpawns ? "std" : "rnd")}", 64, 81, menuX == 3 ? 7 : 6);
+                    Printc($"zombie movement: {(stdZombieMovement ? "std" : "rnd")}", 64, 88, menuX == 4 ? 7 : 6);
+                    Printc($"drops: {(stdDrops ? "std" : "rnd")}", 64, 95, menuX == 5 ? 7 : 6);
+                    Printc($"item spreads: {(stdSpread ? "std" : "rnd")}", 64, 102, menuX == 6 ? 7 : 6);
+                    Printc($"damage: {(stdDamage ? "std" : "rnd")}", 64, 109, menuX == 7 ? 7 : 6);
+
+                    Printc($"load seed", 64, 121, menuX == 8 ? 7 : 6);
+                }
+                else if (!collectStats || curMenu == mainMenu)
+                {
                     Printc(curMenu.Text, 64, 80, 6);
                     Printc(curMenu.Text2, 64, 90, 6);
                 }
-                else if (collectStats && (curMenu == winMenu || curMenu == deathMenu))
+                if (curMenu == introMenu)
+                {
+                    int y = 3;
+                    string s1 = "rng seed ";
+                    string s2 = $"{rngSeed}";
+                    p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 2, y, 64 + (s1 + s2).Length * 2, y + 8, menuX == 0 ? 7 : 6);
+                    p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 1, y + 1, 64 + (s1 + s2).Length * 2 - 1, y + 7, 12);
+                    Printc(s1 + s2, 64, y + 2, menuX == 0 ? 7 : 6);
+
+                    Printc($"collect stats: {collectStats.ToString().ToLower()}", 64, 67, menuX == 1 ? 7 : 6);
+                    Printc($"player spawn: {(stdPlayerSpawn ? "std" : "rnd")}", 64, 74, menuX == 2 ? 7 : 6);
+                    Printc($"zombie spawns: {(stdZombieSpawns ? "std" : "rnd")}", 64, 81, menuX == 3 ? 7 : 6);
+                    Printc($"zombie movement: {(stdZombieMovement ? "std" : "rnd")}", 64, 88, menuX == 4 ? 7 : 6);
+                    Printc($"drops: {(stdDrops ? "std" : "rnd")}", 64, 95, menuX == 5 ? 7 : 6);
+                    Printc($"item spreads: {(stdSpread ? "std" : "rnd")}", 64, 102, menuX == 6 ? 7 : 6);
+                    Printc($"damage: {(stdDamage ? "std" : "rnd")}", 64, 109, menuX == 7 ? 7 : 6);
+
+                    Printc($"load seed", 64, 121, menuX == 8 ? 7 : 6);
+                }
+                if (collectStats && (curMenu == winMenu || curMenu == deathMenu))
                 {
                     int ypos = yStart;
                     //file name
@@ -1610,7 +1738,7 @@ namespace CSharpCraft.Pcraft
                     Printc("btn 0 to change seed", 64, 108, F32.FloorToInt(6 + time % 2));
                     Printc(loadedSeed is not null ? "btn 1 to play" : "", 64, 116, F32.FloorToInt(6 + time % 2));
                 }
-                else if (!collectStats || curMenu == introMenu)
+                else if (!collectStats && curMenu != introMenu)
                 {
                     Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
                 }
@@ -1679,6 +1807,12 @@ namespace CSharpCraft.Pcraft
             {
                 List(curMenu, 4, 24, 84, 96, 10);
             }
+        }
+
+        public override void Dispose()
+        {
+            TextInputEXT.StopTextInput();
+            base.Dispose();
         }
     }
 }

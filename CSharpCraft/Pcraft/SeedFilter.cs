@@ -64,6 +64,18 @@ namespace CSharpCraft.Pcraft
             {
                 Interlocked.Increment(ref _failCount);
             }
+
+            private int _tryCount = 0;
+            public int TryCount
+            {
+                get => _tryCount;
+                set => _tryCount = value;
+            }
+            public void IncrementTryCount()
+            {
+                Interlocked.Increment(ref _tryCount);
+            }
+
             public DensityCheck Clone()
             {
                 return new DensityCheck
@@ -73,7 +85,8 @@ namespace CSharpCraft.Pcraft
                     Tiles = new(this.Tiles),
                     Density = this.Density,
                     Count = 0,
-                    FailCount = 0
+                    FailCount = 0,
+                    TryCount = 0
                 };
             }
         }
@@ -100,6 +113,18 @@ namespace CSharpCraft.Pcraft
             {
                 Interlocked.Increment(ref _failCount);
             }
+
+            private int _tryCount = 0;
+            public int TryCount
+            {
+                get => _tryCount;
+                set => _tryCount = value;
+            }
+            public void IncrementTryCount()
+            {
+                Interlocked.Increment(ref _tryCount);
+            }
+
             public DensityComparison Clone()
             {
                 return new DensityComparison
@@ -113,7 +138,8 @@ namespace CSharpCraft.Pcraft
                     Count2 = 0,
                     Mag = this.Mag,
                     Opr = this.Opr,
-                    FailCount = 0
+                    FailCount = 0,
+                    TryCount = 0
                 };
             }
         }
@@ -144,6 +170,7 @@ namespace CSharpCraft.Pcraft
         {
             foreach (var check in densityChecks)
             {
+                check.IncrementTryCount();
                 double area = ((check.Radius.Ub + check.Radius.Ub * check.Radius.Ub) - (check.Radius.Lb + check.Radius.Lb * check.Radius.Lb)) * 4;
                 if (check.Count / area < check.Density.Lb / 100.0 || check.Count / area > check.Density.Ub / 100.0)
                 {
@@ -154,6 +181,7 @@ namespace CSharpCraft.Pcraft
 
             foreach (var check in densityComparisons)
             {
+                check.IncrementTryCount();
                 double area1 = ((check.Radius1.Ub + check.Radius1.Ub * check.Radius1.Ub) - (check.Radius1.Lb + check.Radius1.Lb * check.Radius1.Lb)) * 4;
                 double area2 = ((check.Radius2.Ub + check.Radius2.Ub * check.Radius2.Ub) - (check.Radius2.Lb + check.Radius2.Lb * check.Radius2.Lb)) * 4;
                 double density1 = check.Count1 / area1;
@@ -350,6 +378,10 @@ namespace CSharpCraft.Pcraft
 
                         for (int i = 0; i < densityChecks.Count; i++)
                         {
+                            if (densityChecksClone[i].TryCount == 1)
+                            {
+                                densityChecks[i].IncrementTryCount();
+                            }
                             if (densityChecksClone[i].FailCount == 1)
                             {
                                 densityChecks[i].IncrementFailCount();
@@ -358,6 +390,10 @@ namespace CSharpCraft.Pcraft
                         }
                         for (int i = 0; i < densityComparisons.Count; i++)
                         {
+                            if (densityComparisonsClone[i].TryCount == 1)
+                            {
+                                densityChecks[i].IncrementTryCount();
+                            }
                             if (densityComparisonsClone[i].FailCount == 1)
                             {
                                 densityComparisons[i].IncrementFailCount();
@@ -575,10 +611,12 @@ namespace CSharpCraft.Pcraft
                 foreach (var check in densityChecks)
                 {
                     check.FailCount = 0;
+                    check.TryCount = 0;
                 }
                 foreach (var check in densityComparisons)
                 {
                     check.FailCount = 0;
+                    check.TryCount = 0;
                 }
                 cts = new();
                 ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
@@ -1458,37 +1496,37 @@ namespace CSharpCraft.Pcraft
                         if (!check.IsCave) { surfaceComps.Add(check); }
                     }
                     //
-                    p8.Print($"cave gen failed - {caveChecks.Sum(x => x.FailCount) + caveComps.Sum(x => x.FailCount)}", 2, ypos, 7);
+                    p8.Print($"cave gen failed - {Math.Max(caveChecks.Count > 0 ? caveChecks.Max(x => x.TryCount) : 0, caveComps.Count > 0 ? caveComps.Max(x => x.TryCount) : 0)}", 2, ypos, 7);
                     ypos += 7;
                     int i = 0;
                     foreach (var check in caveChecks)
                     {
-                        p8.Print($"check {i} - {check.FailCount}", 2, ypos, 7);
+                        p8.Print($"check {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                         ypos += 7;
                         i++;
                     }
                     i = 0;
                     foreach (var check in caveComps)
                     {
-                        p8.Print($"comp {i} - {check.FailCount}", 2, ypos, 7);
+                        p8.Print($"comp {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                         ypos += 7;
                         i++;
                     }
                     ypos += 7;
                     //
-                    p8.Print($"surface gen failed - {surfaceChecks.Sum(x => x.FailCount) + surfaceComps.Sum(x => x.FailCount)}", 2, ypos, 7);
+                    p8.Print($"surface gen failed - {Math.Max(surfaceChecks.Count > 0 ? surfaceChecks.Max(x => x.TryCount) : 0, surfaceComps.Count > 0 ? surfaceComps.Max(x => x.TryCount) : 0)}", 2, ypos, 7);
                     ypos += 7;
                     i = 0;
                     foreach (var check in surfaceChecks)
                     {
-                        p8.Print($"check {i} - {check.FailCount}", 2, ypos, 7);
+                        p8.Print($"check {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                         ypos += 7;
                         i++;
                     }
                     i = 0;
                     foreach (var check in surfaceComps)
                     {
-                        p8.Print($"comp {i} - {check.FailCount}", 2, ypos, 7);
+                        p8.Print($"comp {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                         ypos += 7;
                         i++;
                     }
