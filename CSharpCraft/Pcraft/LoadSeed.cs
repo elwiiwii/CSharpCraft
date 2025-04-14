@@ -138,32 +138,62 @@ namespace CSharpCraft.Pcraft
 
         public int[]? ImageToByteArray(string imagePath)
         {
-            loadedSeed = new int[128 * 64];
-            using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath))
+            try
             {
-                if (image.Width != 128 || image.Height != 64) { return null; }
-                image.ProcessPixelRows(accessor =>
+                if (!File.Exists(imagePath))
                 {
-                    for (int y = 0; y < 64; y++)
+                    Console.WriteLine($"File not found: {imagePath}");
+                    return null;
+                }
+
+                loadedSeed = new int[128 * 64];
+
+                using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath))
+                {
+                    if (image.Width != 128 || image.Height != 64)
                     {
-                        Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
-                        for (int x = 0; x < 128; x++)
+                        Console.WriteLine($"Invalid image dimensions. Expected 128x64, got {image.Width}x{image.Height}");
+                        return null;
+                    }
+
+                    image.ProcessPixelRows(accessor =>
+                    {
+                        for (int y = 0; y < 64; y++)
                         {
-                            ref Rgba32 pixel = ref pixelRow[x];
-                            Microsoft.Xna.Framework.Color col = new(pixel.R, pixel.G, pixel.B);
-                            for (int i = 0; i < 16; i++)
+                            Span<Rgba32> pixelRow = accessor.GetRowSpan(y);
+                            for (int x = 0; x < 128; x++)
                             {
-                                if (col == p8.colors[i])
+                                ref Rgba32 pixel = ref pixelRow[x];
+                                Microsoft.Xna.Framework.Color col = new(pixel.R, pixel.G, pixel.B);
+                                for (int i = 0; i < 16; i++)
                                 {
-                                    loadedSeed[x + y * 128] = i;
-                                    break;
+                                    if (col == p8.colors[i])
+                                    {
+                                        loadedSeed[x + y * 128] = i;
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
+                return loadedSeed;
             }
-            return loadedSeed;
+            catch (UnknownImageFormatException ex)
+            {
+                Console.WriteLine($"Unsupported image format: {ex.Message}");
+                return null;
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"File not found: {ex.FileName}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading image: {ex.Message}");
+                return null;
+            }
         }
 
         private void OpenFileDialog()
