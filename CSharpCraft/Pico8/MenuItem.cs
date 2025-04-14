@@ -10,6 +10,7 @@ namespace CSharpCraft.Pico8
     {
         public Func<string> GetName { get; }
         public Action Function { get; }
+        public MenuItem Clone() => new(this.GetName, this.Function);
 
         public MenuItem(Func<string> getName, Action function)
         {

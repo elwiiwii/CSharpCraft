@@ -13,6 +13,9 @@ namespace CSharpCraft.Pcraft
     {
         public override string SceneName => "seed filter";
 
+        private SavedMap curMap = new();
+        private SavedMap prevMap = new();
+
         private bool found = false;
         private object lockObj = new();
         private List<Button> buttonRow1 = [];
@@ -35,10 +38,13 @@ namespace CSharpCraft.Pcraft
         MouseState prevState = new();
         int camoffy;
 
-        int caveFailCount = 0;
-        int surfaceFailCount = 0;
-
         CancellationTokenSource cts = new();
+
+        private class SavedMap
+        {
+            public int[] Map { get; set; } = new int[8192];
+            public bool Saved { get; set; } = false;
+        }
 
         private class DensityCheck
         {
@@ -47,6 +53,29 @@ namespace CSharpCraft.Pcraft
             public List<int> Tiles { get; set; } = [];
             public (double Lb, double Ub) Density { get; set; } = (0, 100);
             public int Count { get; set; } = 0;
+
+            private int _failCount = 0;
+            public int FailCount
+            {
+                get => _failCount;
+                set => _failCount = value;
+            }
+            public void IncrementFailCount()
+            {
+                Interlocked.Increment(ref _failCount);
+            }
+            public DensityCheck Clone()
+            {
+                return new DensityCheck
+                {
+                    IsCave = this.IsCave,
+                    Radius = this.Radius,
+                    Tiles = new(this.Tiles),
+                    Density = this.Density,
+                    Count = 0,
+                    FailCount = 0
+                };
+            }
         }
 
         private class DensityComparison
@@ -60,6 +89,33 @@ namespace CSharpCraft.Pcraft
             public int Count2 { get; set; } = 0;
             public int Mag { get; set; } = 100;
             public string Opr { get; set; } = "=";
+
+            private int _failCount = 0;
+            public int FailCount
+            {
+                get => _failCount;
+                set => _failCount = value;
+            }
+            public void IncrementFailCount()
+            {
+                Interlocked.Increment(ref _failCount);
+            }
+            public DensityComparison Clone()
+            {
+                return new DensityComparison
+                {
+                    IsCave = this.IsCave,
+                    Radius1 = this.Radius1,
+                    Tiles1 = new(this.Tiles1),
+                    Count1 = 0,
+                    Radius2 = this.Radius2,
+                    Tiles2 = new(this.Tiles2),
+                    Count2 = 0,
+                    Mag = this.Mag,
+                    Opr = this.Opr,
+                    FailCount = 0
+                };
+            }
         }
 
         private Dictionary<string, int> TileNum = new()
@@ -91,7 +147,7 @@ namespace CSharpCraft.Pcraft
                 double area = ((check.Radius.Ub + check.Radius.Ub * check.Radius.Ub) - (check.Radius.Lb + check.Radius.Lb * check.Radius.Lb)) * 4;
                 if (check.Count / area < check.Density.Lb / 100.0 || check.Count / area > check.Density.Ub / 100.0)
                 {
-                    if (check.IsCave) caveFailCount++; else surfaceFailCount++;
+                    check.IncrementFailCount();
                     return true;
                 }
             }
@@ -107,21 +163,21 @@ namespace CSharpCraft.Pcraft
                     case ">":
                         if (density1 - density2 < check.Mag / 100.0)
                         {
-                            if (check.IsCave) caveFailCount++; else surfaceFailCount++;
+                            check.IncrementFailCount();
                             return true;
                         }
                         return false;
                     case "=":
                         if (Math.Abs(density1 - density2) > check.Mag / 2.0 / 100.0)
                         {
-                            if (check.IsCave) caveFailCount++; else surfaceFailCount++;
+                            check.IncrementFailCount();
                             return true;
                         }
                         return false;
                     case "<":
                         if (density1 - density2 > -check.Mag / 100.0)
                         {
-                            if (check.IsCave) caveFailCount++; else surfaceFailCount++;
+                            check.IncrementFailCount();
                             return true;
                         }
                         return false;
@@ -236,8 +292,11 @@ namespace CSharpCraft.Pcraft
                         }
 
                         bool needmap = true;
-                        List<DensityCheck> densityChecksClone = DeepClonerExtensions.DeepClone(densityChecks);
-                        List<DensityComparison> densityComparisonsClone = DeepClonerExtensions.DeepClone(densityComparisons);
+                        //List<DensityCheck> densityChecksClone = DeepClonerExtensions.DeepClone(densityChecks);
+                        //List<DensityComparison> densityComparisonsClone = DeepClonerExtensions.DeepClone(densityComparisons);
+
+                        List<DensityCheck> densityChecksClone = densityChecks.Select(c => c.Clone()).ToList();
+                        List<DensityComparison> densityComparisonsClone = densityComparisons.Select(c => c.Clone()).ToList();
 
                         F32[][] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
                         F32[][] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
@@ -288,6 +347,23 @@ namespace CSharpCraft.Pcraft
                         }
 
                         needmap = Filter(densityChecksClone, densityComparisonsClone);
+
+                        for (int i = 0; i < densityChecks.Count; i++)
+                        {
+                            if (densityChecksClone[i].FailCount == 1)
+                            {
+                                densityChecks[i].IncrementFailCount();
+                                break;
+                            }
+                        }
+                        for (int i = 0; i < densityComparisons.Count; i++)
+                        {
+                            if (densityComparisonsClone[i].FailCount == 1)
+                            {
+                                densityComparisons[i].IncrementFailCount();
+                                break;
+                            }
+                        }
 
                         if (!needmap)
                         {
@@ -344,7 +420,7 @@ namespace CSharpCraft.Pcraft
                     if (typeCount[8] < 30) { needmap = true; }
                     if (typeCount[9] < 20) { needmap = true; }
                     if (typeCount[10] < 15) { needmap = true; }
-                    if (needmap) caveFailCount++;
+                    //if (needmap) caveFailCount++;
                 }
                 else
                 {
@@ -354,7 +430,7 @@ namespace CSharpCraft.Pcraft
 
                     if (typeCount[3] < 30) { needmap = true; }
                     if (typeCount[4] < 30) { needmap = true; }
-                    if (needmap) surfaceFailCount++;
+                    //if (needmap) surfaceFailCount++;
                 }
 
                 if (!needmap)
@@ -393,7 +469,7 @@ namespace CSharpCraft.Pcraft
                     if (plx < 0)
                     {
                         needmap = true;
-                        surfaceFailCount++;
+                        //surfaceFailCount++;
                     }
                 }
             }
@@ -481,8 +557,6 @@ namespace CSharpCraft.Pcraft
             camoffy = 0;
             menuY = 0;
             menuX = 0;
-            caveFailCount = 0;
-            surfaceFailCount = 0;
             tileIndex = 0;
             buttonRow1 = [];
             buttonRow2 = [];
@@ -492,31 +566,20 @@ namespace CSharpCraft.Pcraft
             AddButtons();
             buttonRows = [buttonRow1, buttonRow2, buttonRow3, buttonRow4, buttonRow5];
             cts = new();
-
-            void SaveSeed()
-            {
-                using (var image = new Image<Rgba32>(128, 64))
-                {
-                    for (int x = 0; x < 128; x++)
-                    {
-                        for (int y = 0; y < 64; y++)
-                        {
-                            var col = p8.colors[p8.Mget(x, y) % 16];
-                            image[x, y] = new Rgba32(col.R, col.G, col.B, col.A);
-                        }
-                    }
-
-                    string path = Path.Combine($"{AppContext.BaseDirectory}seeds", $"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png");
-                    image.SaveAsPng(path);
-                }
-            }
-            p8.Menuitem(1, () => "save seed", () => SaveSeed());
         }
 
         private void AddButtons()
         {
             void Generate()
             {
+                foreach (var check in densityChecks)
+                {
+                    check.FailCount = 0;
+                }
+                foreach (var check in densityComparisons)
+                {
+                    check.FailCount = 0;
+                }
                 cts = new();
                 ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
                 curMenu = introMenu;
@@ -630,8 +693,23 @@ namespace CSharpCraft.Pcraft
                         }
                         else
                         {
-                            if (p8.Btnp(0)) { menuX -= 1; tileIndex = 0; }
-                            if (p8.Btnp(1)) { menuX += 1; tileIndex = 0; }
+                            if (p8.Btnp(0))
+                            {
+                                menuX = Math.Max(menuX - 1, 0);
+                                tileIndex = 0;
+                            }
+                            if (p8.Btnp(1))
+                            {
+                                if (menuY - buttonRows.Count < densityChecks.Count)
+                                {
+                                    menuX = Math.Min(menuX + 1, 5);
+                                }
+                                else if ((menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count)
+                                {
+                                    menuX = Math.Min(menuX + 1, (menuY - buttonRows.Count - densityChecks.Count) % 2 == 0 ? 6 : 2);
+                                }
+                                tileIndex = 0;
+                            }
                             if (p8.Btnp(2))
                             {
                                 if (((menuY - buttonRows.Count < densityChecks.Count && menuX == 2) ||
@@ -707,6 +785,30 @@ namespace CSharpCraft.Pcraft
                         {
                             curMenu = null;
                             p8.Music(1);
+
+                            prevMap = curMap.DeepClone();
+                            curMap = new() { Map = p8._map, Saved = false };
+
+                            void SaveSeed(SavedMap map)
+                            {
+                                using (var image = new Image<Rgba32>(128, 64))
+                                {
+                                    for (int x = 0; x < 128; x++)
+                                    {
+                                        for (int y = 0; y < 64; y++)
+                                        {
+                                            var col = p8.colors[map.Map[x + y * 128] % 16];
+                                            image[x, y] = new Rgba32(col.R, col.G, col.B, col.A);
+                                        }
+                                    }
+
+                                    string path = Path.Combine($"{AppContext.BaseDirectory}seeds", $"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png");
+                                    image.SaveAsPng(path);
+                                }
+                                map.Saved = true;
+                            }
+                            if (!curMap.Map.All(x => x == 0)) { p8.Menuitem(1, () => $"{(curMap.Saved == false ? "save cur seed" : "cur saved")}", () => SaveSeed(curMap)); }
+                            if (!prevMap.Map.All(x => x == 0)) { p8.Menuitem(2, () => $"{(prevMap.Saved == false ? "save prev seed" : "prev saved")}", () => SaveSeed(prevMap)); }
                         }
                         lb4 = p8.Btn(4);
                     }
@@ -1328,16 +1430,85 @@ namespace CSharpCraft.Pcraft
 
                     return;
                 }
-                p8.Cls(1);
+                else if (curMenu == introMenu)
+                {
+                    p8.Cls(1);
+                    p8.Camera();
+                    p8.Palt(0, false);
+
+                    int ypos = 2;
+                    List<DensityCheck> caveChecks = [];
+                    foreach (var check in densityChecks)
+                    {
+                        if (check.IsCave) { caveChecks.Add(check); }
+                    }
+                    List<DensityComparison> caveComps = [];
+                    foreach (var check in densityComparisons)
+                    {
+                        if (check.IsCave) { caveComps.Add(check); }
+                    }
+                    List<DensityCheck> surfaceChecks = [];
+                    foreach (var check in densityChecks)
+                    {
+                        if (!check.IsCave) { surfaceChecks.Add(check); }
+                    }
+                    List<DensityComparison> surfaceComps = [];
+                    foreach (var check in densityComparisons)
+                    {
+                        if (!check.IsCave) { surfaceComps.Add(check); }
+                    }
+                    //
+                    p8.Print($"cave gen failed - {caveChecks.Sum(x => x.FailCount) + caveComps.Sum(x => x.FailCount)}", 2, ypos, 7);
+                    ypos += 7;
+                    int i = 0;
+                    foreach (var check in caveChecks)
+                    {
+                        p8.Print($"check {i} - {check.FailCount}", 2, ypos, 7);
+                        ypos += 7;
+                        i++;
+                    }
+                    i = 0;
+                    foreach (var check in caveComps)
+                    {
+                        p8.Print($"comp {i} - {check.FailCount}", 2, ypos, 7);
+                        ypos += 7;
+                        i++;
+                    }
+                    ypos += 7;
+                    //
+                    p8.Print($"surface gen failed - {surfaceChecks.Sum(x => x.FailCount) + surfaceComps.Sum(x => x.FailCount)}", 2, ypos, 7);
+                    ypos += 7;
+                    i = 0;
+                    foreach (var check in surfaceChecks)
+                    {
+                        p8.Print($"check {i} - {check.FailCount}", 2, ypos, 7);
+                        ypos += 7;
+                        i++;
+                    }
+                    i = 0;
+                    foreach (var check in surfaceComps)
+                    {
+                        p8.Print($"comp {i} - {check.FailCount}", 2, ypos, 7);
+                        ypos += 7;
+                        i++;
+                    }
+                    //
+                    if (ResetLevelTask.Status == TaskStatus.RanToCompletion)
+                    {
+                        Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
+                        time += F32.FromDouble(0.1);
+                    }
+                    return;
+                } 
                 p8.Camera();
                 p8.Palt(0, false);
-                p8.Print($"cave gen failed - {caveFailCount}", 2, 2, 7);
-                p8.Print($"surface gen failed - {surfaceFailCount}", 2, 9, 7);
-                if (ResetLevelTask.Status == TaskStatus.RanToCompletion)
-                {
-                    Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
-                    time += F32.FromDouble(0.1);
-                }
+                p8.Rectfill(0, 0, 128, 46, 12);
+                p8.Rectfill(0, 46, 128, 128, 1);
+                p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+                Printc(curMenu.Text, 64, 80, 6);
+                Printc(curMenu.Text2, 64, 90, 6);
+                Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
+                time += F32.FromDouble(0.1);
                 return;
             }
 

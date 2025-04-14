@@ -8,6 +8,7 @@ using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Reflection;
 using System.Security.Cryptography;
+using Force.DeepCloner;
 
 namespace CSharpCraft.Pico8
 {
@@ -24,7 +25,7 @@ namespace CSharpCraft.Pico8
         public Dictionary<string, Texture2D> TextureDictionary { get; }
 
         private int[] _flags;
-        private int[] _map;
+        public int[] _map;
         private int[] _sprites;
         private Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> _music;
         private Dictionary<string, Dictionary<int, string>> _sfx;
@@ -51,7 +52,8 @@ namespace CSharpCraft.Pico8
         private int heldCount5;
         private bool isPaused;
         private Dictionary<int[], Texture2D> spriteTextures = new(new EqualityComparer());
-        private List<MenuItem> menuItems;
+        private List<MenuItem> mainMenuItems;
+        private List<MenuItem> curMenuItems;
         private int menuSelected;
         private int curSoundtrack;
         private int curSfxPack;
@@ -105,7 +107,8 @@ namespace CSharpCraft.Pico8
             _map = [];
             _music = [];
             _sfx = [];
-            menuItems = [];
+            mainMenuItems = [];
+            curMenuItems = [];
 
             LoadCart(cart);
         }
@@ -121,7 +124,8 @@ namespace CSharpCraft.Pico8
             _map = [];
             _music = cart.Music;
             _sfx = cart.Sfx;
-            menuItems = [];
+            mainMenuItems = [];
+            curMenuItems = [];
 
             _cart = cart;
 
@@ -143,14 +147,19 @@ namespace CSharpCraft.Pico8
                     isPaused = false;
                 }
             }
-            Menuitem(0, () => "continue", () => Continue());
+            Menuitem(0, () => "continue", () => Continue(), mainMenuItems);
 
             void Options()
             {
                 if (Btnp(4) || Btnp(5))
                 {
                     menuSelected = 0;
-                    menuItems.Clear();
+                    mainMenuItems.Clear();
+                    foreach (var item in curMenuItems)
+                    {
+                        mainMenuItems.Add(item.Clone());
+                    }
+                    curMenuItems.Clear();
 
                     void Sound()
                     {
@@ -163,7 +172,7 @@ namespace CSharpCraft.Pico8
                             if (!OptionsFile.Gen_Sound_On) { Mute(); }
                         }
                     }
-                    Menuitem(0, () => $"sound:{(OptionsFile.Gen_Sound_On ? "on" : "off")}", () => Sound());
+                    Menuitem(0, () => $"sound:{(OptionsFile.Gen_Sound_On ? "on" : "off")}", () => Sound(), curMenuItems);
 
                     void MusicVol()
                     {
@@ -182,7 +191,7 @@ namespace CSharpCraft.Pico8
                             OptionsFile.JsonWrite(OptionsFile);
                         }
                     }
-                    Menuitem(1, () => $"music vol:{OptionsFile.Gen_Music_Vol}%", () => MusicVol());
+                    Menuitem(1, () => $"music vol:{OptionsFile.Gen_Music_Vol}%", () => MusicVol(), curMenuItems);
 
                     void SfxVol()
                     {
@@ -201,7 +210,7 @@ namespace CSharpCraft.Pico8
                             OptionsFile.JsonWrite(OptionsFile);
                         }
                     }
-                    Menuitem(2, () => $"sfx vol:{OptionsFile.Gen_Sfx_Vol}%", () => SfxVol());
+                    Menuitem(2, () => $"sfx vol:{OptionsFile.Gen_Sfx_Vol}%", () => SfxVol(), curMenuItems);
 
                     void Fullscreen()
                     {
@@ -214,21 +223,21 @@ namespace CSharpCraft.Pico8
                             Graphics.ToggleFullScreen();
                         }
                     }
-                    Menuitem(3, () => $"fullscreen:{(OptionsFile.Gen_Fullscreen ? "on" : "off")}", () => Fullscreen());
+                    Menuitem(3, () => $"fullscreen:{(OptionsFile.Gen_Fullscreen ? "on" : "off")}", () => Fullscreen(), curMenuItems);
 
                     void Back()
                     {
                         if (Btnp(4) || Btnp(5))
                         {
                             menuSelected = 0;
-                            menuItems.Clear();
-                            Menuitem(0, () => "continue", () => Continue());
-                            Menuitem(1, () => "options", () => Options());
-                            Menuitem(2, () => "reset cart", () => ResetCart());
-                            Menuitem(3, () => "exit", () => Exit());
+                            curMenuItems.Clear();
+                            foreach (var item in mainMenuItems)
+                            {
+                                curMenuItems.Add(item.Clone());
+                            }
                         }
                     }
-                    Menuitem(4, () => "back", () => Back());
+                    Menuitem(4, () => "back", () => Back(), curMenuItems);
 
                     void Sfx()
                     {
@@ -248,7 +257,7 @@ namespace CSharpCraft.Pico8
                     }
                     if (_sfx.Count > 1)
                     {
-                        Menuitem(3, () => $"sfx:{_sfx.ElementAt(OptionsFile.Pcraft_Sfx_Pack).Key}", () => Sfx());
+                        Menuitem(3, () => $"sfx:{_sfx.ElementAt(OptionsFile.Pcraft_Sfx_Pack).Key}", () => Sfx(), curMenuItems);
                     }
 
                     void Soundtrack()
@@ -274,11 +283,11 @@ namespace CSharpCraft.Pico8
                     }
                     if (_music.Count > 1)
                     {
-                        Menuitem(3, () => $"music:{_music.ElementAt(OptionsFile.Pcraft_Soundtrack).Key}", () => Soundtrack());
+                        Menuitem(3, () => $"music:{_music.ElementAt(OptionsFile.Pcraft_Soundtrack).Key}", () => Soundtrack(), curMenuItems);
                     }
                 }
             }
-            Menuitem(1, () => "options", () => Options());
+            Menuitem(1, () => "options", () => Options(), mainMenuItems);
 
             void ResetCart()
             {
@@ -287,7 +296,7 @@ namespace CSharpCraft.Pico8
                     LoadCart(_cart);
                 }
             }
-            Menuitem(2, () => "reset cart", () => ResetCart());
+            Menuitem(2, () => "reset cart", () => ResetCart(), mainMenuItems);
 
             void Exit()
             {
@@ -296,7 +305,13 @@ namespace CSharpCraft.Pico8
                     LoadCart(new TitleScreen(false));
                 }
             }
-            Menuitem(3, () => "exit", () => Exit());
+            Menuitem(3, () => "exit", () => Exit(), mainMenuItems);
+
+            curMenuItems.Clear();
+            foreach (var item in mainMenuItems)
+            {
+                curMenuItems.Add(item.Clone());
+            }
 
             Reload();
             Init();
@@ -326,11 +341,11 @@ namespace CSharpCraft.Pico8
                     if (Ptn(i)) { lockout[i] = true; } else { lockout[i] = false; }
                 }
 
-                if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)) { menuItems[menuSelected].Function(); }
+                if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)) { curMenuItems[menuSelected].Function(); }
 
                 if (Btnp(2)) { menuSelected -= 1; }
                 if (Btnp(3)) { menuSelected += 1; }
-                menuSelected = GeneralFunctions.Loop(menuSelected, menuItems);
+                menuSelected = GeneralFunctions.Loop(menuSelected, curMenuItems);
 
                 foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
                 {
@@ -442,19 +457,19 @@ namespace CSharpCraft.Pico8
 
                 Vector2 size = new(cellW, cellH);
 
-                int i = (int)Math.Floor(64 - (menuItems.Count / 2.0) * 8);
+                int i = (int)Math.Floor(64 - (curMenuItems.Count / 2.0) * 8);
 
                 int xborder = 23;
-                Rectfill(0 + xborder, i - 7, 127 - xborder, i + menuItems.Count * 8 + 2, 0);
-                Rectfill(0 + xborder + 1, i - 7 + 1, 127 - xborder - 1, i + menuItems.Count * 8 + 2 - 1, 7);
-                Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + menuItems.Count * 8 + 2 - 2, 0);
+                Rectfill(0 + xborder, i - 7, 127 - xborder, i + curMenuItems.Count * 8 + 2, 0);
+                Rectfill(0 + xborder + 1, i - 7 + 1, 127 - xborder - 1, i + curMenuItems.Count * 8 + 2 - 1, 7);
+                Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + curMenuItems.Count * 8 + 2 - 2, 0);
 
                 Batch.Draw(TextureDictionary["PauseArrow"], new Vector2((xborder + 4) * cellW, (i - 1 + menuSelected * 8) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-                for(int j = 0; j < menuItems.Count; j++)
+                for(int j = 0; j < curMenuItems.Count; j++)
                 {
                     int indent = menuSelected == j ? 1 : 0;
-                    Print(menuItems[j].GetName(), xborder + indent + 12, i, 7);
+                    Print(curMenuItems[j].GetName(), xborder + indent + 12, i, 7);
                     i += 8;
                 }
             }
@@ -982,9 +997,10 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Menuitem(int pos, Func<string> getName, Action function)
+        public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null)
         {
-            menuItems.Insert(pos, new MenuItem(getName, function));
+            if (list == null) { list = curMenuItems; }
+            list.Insert(pos, new MenuItem(getName, function));
         }
 
 

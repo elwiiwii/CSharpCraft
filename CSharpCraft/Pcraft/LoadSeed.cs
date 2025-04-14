@@ -24,17 +24,18 @@ namespace CSharpCraft.Pcraft
         private bool collectStats = true;
         private bool stdPlayerSpawn = true;
         private bool stdZombieSpawns = true;
-        private bool stdZombieMovement = false;
+        private bool stdZombieMovement = true;
         private bool stdDrops = true;
         private bool stdSpread = true;
         private bool stdDamage = true;
 
+        private bool exitMenu = false;
         private int zombiesKilled = 0;
         private (int ichor, int fabric) zombiesDroppedCount = (0, 0);
         private int[] barFull = new int[7];
         private int[] menuTime = new int[8];
         private int[] ladderResets = new int[2];
-        private int[] missedHits = new int[7];
+        private int[] missedHits = new int[8];
         private int[] wastedHits = new int[9];
         private bool pickupAction = false;
         private bool placeAction = false;
@@ -263,7 +264,7 @@ namespace CSharpCraft.Pcraft
             barFull = new int[7];
             menuTime = new int[8];
             ladderResets = new int[2];
-            missedHits = new int[7];
+            missedHits = new int[8];
             wastedHits = new int[9];
             pickupAction = false;
             placeAction = false;
@@ -640,7 +641,11 @@ namespace CSharpCraft.Pcraft
                     !(pickupAction) &&
                     !(placeAction))
                 {
-                    if (curItem is not null)
+                    if (exitMenu)
+                    {
+                        missedHits[7]++;
+                    }
+                    else if (curItem is not null)
                     {
                         if (curItem.Power is null)
                         {
@@ -685,7 +690,11 @@ namespace CSharpCraft.Pcraft
             }
             else
             {
-                if (curItem is not null)
+                if (exitMenu)
+                {
+                    missedHits[7]++;
+                }
+                else if (curItem is not null)
                 {
                     if (curItem.Power is null)
                     {
@@ -1094,6 +1103,7 @@ namespace CSharpCraft.Pcraft
                             curMenu = null;
                             block5 = true;
                             p8.Sfx(16, 3);
+                            exitMenu = true;
                         }
                     }
                 }
@@ -1102,6 +1112,7 @@ namespace CSharpCraft.Pcraft
                 {
                     curMenu = null;
                     p8.Sfx(17, 3);
+                    exitMenu = true;
                 }
                 lb4 = p8.Btn(4);
                 lb5 = p8.Btn(5);
@@ -1244,7 +1255,8 @@ namespace CSharpCraft.Pcraft
                     pstam -= stamCost;
                 }
             }
-            
+            exitMenu = false;
+
             if (banim > 0)
             {
                 banim -= 1;
@@ -1516,8 +1528,8 @@ namespace CSharpCraft.Pcraft
             xpos += title.Length * 4 + 3;
             for (int i = 0; i < data.Length; i++)
             {
-                if (data[i] > 0)
-                {
+                //if (data[i] > 0)
+                //{
                     if (xpos > 127 - data[i].ToString().Length * 4 - (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) - 10) { xpos = xstart; ypos += 9; }
                     p8.Pal();
                     SetPal(pals[i]);
@@ -1525,7 +1537,7 @@ namespace CSharpCraft.Pcraft
                     xpos += 9;
                     p8.Print($"{data[i]}{(data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}" : "")}", xpos, ypos, 7);
                     xpos += data[i].ToString().Length * 4 + (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) + 3;
-                }
+                //}
             }
             return ypos;
         }
@@ -1568,7 +1580,7 @@ namespace CSharpCraft.Pcraft
                     p8.Print($"{curMenu.Text} {curMenu.Text2}", 1, ypos, 7);
                     ypos += 8;
                     //missed hits
-                    ypos = DrawStats(1, ypos, "missed hits:", missedHits, [75, 102, 98, 102, 99, 101, 100], [[], pwrPal[0], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1]]);
+                    ypos = DrawStats(1, ypos, "missed hits:", missedHits, [75, 102, 98, 102, 99, 101, 100, 89], [[], pwrPal[0], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], workbench.Pal]);
                     ypos += 10;
                     //wasted hits
                     ypos = DrawStats(1, ypos, "wasted hits:", wastedHits, [75, 102, 98, 102, 115, 114, 116, 73, 89], [[], pwrPal[0], pwrPal[1], pwrPal[1], [], [15], [], [], workbench.Pal]);
