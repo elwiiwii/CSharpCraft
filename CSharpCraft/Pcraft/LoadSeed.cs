@@ -136,11 +136,12 @@ namespace CSharpCraft.Pcraft
             { zombi, null }
         };
 
-        public int[] ImageToByteArray(string imagePath)
+        public int[]? ImageToByteArray(string imagePath)
         {
             loadedSeed = new int[128 * 64];
             using (Image<Rgba32> image = Image.Load<Rgba32>(imagePath))
             {
+                if (image.Width != 128 || image.Height != 64) { return null; }
                 image.ProcessPixelRows(accessor =>
                 {
                     for (int y = 0; y < 64; y++)
@@ -173,6 +174,7 @@ namespace CSharpCraft.Pcraft
             if (result == NfdStatus.Ok)
             {
                 loadedSeed = ImageToByteArray(path);
+                if (loadedSeed == null) { return; }
 
                 fileName = path.Split("\\").Last();
                 string tempName = fileName;
