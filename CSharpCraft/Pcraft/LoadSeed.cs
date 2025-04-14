@@ -227,7 +227,7 @@ namespace CSharpCraft.Pcraft
                 RemInList(invent, e);
             }
             AddItemInList(invent, SetPower(req.Power, Instc(req.Type, req.Count, req.List)), -1);
-            if (req.Type == sword && req.Power == 2 && zReset == 0) { zReset = 1; }
+            if (req.Type == sword && req.Power >= 2 && zReset == 0) { zReset = 1; }
         }
 
         protected override void FillEne(Level l)
