@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using System.IO;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Reflection.Metadata.Ecma335;
 
 namespace CSharpCraft.Pcraft
 {
@@ -858,6 +859,17 @@ namespace CSharpCraft.Pcraft
                         }
                         lb4 = p8.Btn(4);
                     }
+                    return;
+                }
+                else if (curMenu.Spr is not null)
+                {
+                    if (p8.Btnp(4) && !lb4)
+                    {
+                        ResetLevel();
+                        curMenu = null;
+                        p8.Music(1);
+                    }
+                    lb4 = p8.Btn(4);
                     return;
                 }
 
