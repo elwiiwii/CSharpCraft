@@ -393,7 +393,7 @@ namespace CSharpCraft.Pcraft
                         {
                             if (densityComparisonsClone[i].TryCount == 1)
                             {
-                                densityChecks[i].IncrementTryCount();
+                                densityComparisons[i].IncrementTryCount();
                             }
                             if (densityComparisonsClone[i].FailCount == 1)
                             {
@@ -1290,40 +1290,39 @@ namespace CSharpCraft.Pcraft
                     break;
                 case 5:
                     var temp5 = densityComparisons[group].Tiles2;
-                    int index2 = 0;
                     if (p8.Btnp(0) || p8.Btn(3))
                     {
-                        if (index2 >= temp5.Count)
+                        if (tileIndex >= temp5.Count)
                         {
                             densityComparisons[group].Tiles2.Add(densityComparisons[group].IsCave ? 10 : 4);
                         }
                         else
                         {
-                            temp5[index2] -= 1;
+                            temp5[tileIndex] -= 1;
                             if (densityComparisons[group].IsCave)
                             {
-                                if (temp5[index2] == 7) { temp5[index2] = 3; }
-                                if (temp5[index2] == 2) { temp5[index2] = 1; }
+                                if (temp5[tileIndex] == 7) { temp5[tileIndex] = 3; }
+                                if (temp5[tileIndex] == 2) { temp5[tileIndex] = 1; }
                             }
-                            if (temp5[index2] < 0) { temp5.RemoveAt(index2); }
+                            if (temp5[tileIndex] < 0) { temp5.RemoveAt(tileIndex); }
                             densityComparisons[group].Tiles2 = temp5;
                         }
                     }
                     else if (p8.Btnp(1) || p8.Btn(2))
                     {
-                        if (index2 >= temp5.Count)
+                        if (tileIndex >= temp5.Count)
                         {
                             densityComparisons[group].Tiles2.Add(0);
                         }
                         else
                         {
-                            temp5[index2] += 1;
+                            temp5[tileIndex] += 1;
                             if (densityComparisons[group].IsCave)
                             {
-                                if (temp5[index2] == 4) { temp5[index2] = 8; }
-                                if (temp5[index2] == 2) { temp5[index2] = 3; }
+                                if (temp5[tileIndex] == 4) { temp5[tileIndex] = 8; }
+                                if (temp5[tileIndex] == 2) { temp5[tileIndex] = 3; }
                             }
-                            if (temp5[index2] > (densityComparisons[group].IsCave ? 10 : 4)) { temp5.RemoveAt(index2); }
+                            if (temp5[tileIndex] > (densityComparisons[group].IsCave ? 10 : 4)) { temp5.RemoveAt(tileIndex); }
                             densityComparisons[group].Tiles2 = temp5;
                         }
                     }
@@ -1630,6 +1629,31 @@ namespace CSharpCraft.Pcraft
                 List(curMenu, 4, 24, 84, 96, 10);
             }
         }
+
+        public override Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new()
+        {
+            { "original", [
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
+                ([("pcraft_og_surface", true)], 1),
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
+                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
+            },
+            { "new!", [
+                ([("menu", true)], 0),
+                ([("pcraft_new_surface", true)], 1),
+                ([("pcraft_new_cave", true)], 1),
+                ([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
+                ([("pcraft_new_cave", true)], 3)]
+            },
+            { "pog edition", [
+                ([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
+                ([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
+                ([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
+                ([("pcraft_pe_win", false)], 3),
+                ([("pcraft_pe_death", true)], 4)]
+            }
+        };
 
         public override void Dispose()
         {

@@ -1979,7 +1979,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        public string SpriteData => @"
+        public virtual string SpriteData => @"
 00000000ffffffffffffffffffffffffffffffff44fff44ffff44fff020121000004200002031000fff55fffffff555ff5555fff000000000001000000101000
 00000000ffffffffffffffffffffffffffff444fff4ffff4ff4fffff310310200303102041420000ff56655ffff56665f56665ff000100000011100001000100
 00000000fff4fffff4ffffffff4fffff4444fffffff444ff44fff44f205200024002001030310410f566665ffff566655666665f001110000110110010000100
@@ -2110,9 +2110,9 @@ dffffffffff2255555d55d535224224224423b52242555555555ffffff2fffddccccccccccccc1d1
 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ".Replace("\n", "").Replace("\r", "");
 
-        public string FlagData => @"";
+        public virtual string FlagData => @"";
 
-        public string MapData => @"
+        public virtual string MapData => @"
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc4fcccccccccccccccccccccccccccc
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfc44ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfcc4cccccccccccccccccccccccccccc
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc4fc4cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc77cccccccccc4fcccccccccccccccccccccccccccccc
@@ -2179,7 +2179,7 @@ f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
 1111111121111111222211221111221122111111221121121111111111221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ".Replace("\n", "").Replace("\r", "");
 
-        public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new()
+        public virtual Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new()
         {
             { "original", [
                 ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
@@ -2204,7 +2204,7 @@ f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
             }
         };
 
-        public Dictionary<string, Dictionary<int, string>> Sfx => new()
+        public virtual Dictionary<string, Dictionary<int, string>> Sfx => new()
         {
             { "original", new() {
                 { 11, "pcraft_og_11" },
