@@ -198,7 +198,7 @@ namespace CSharpCraft.Pcraft
 
         private void OpenFileDialog()
         {
-            string path = Path.Combine($"{AppContext.BaseDirectory}seeds");
+            string path = Path.Combine($"{AppContext.BaseDirectory}Seeds");
             var result = Nfd.OpenDialog(out path, null);
 
             if (result == NfdStatus.Ok)

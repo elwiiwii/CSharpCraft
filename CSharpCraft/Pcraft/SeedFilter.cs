@@ -840,8 +840,16 @@ namespace CSharpCraft.Pcraft
                                         }
                                     }
 
-                                    string path = Path.Combine($"{AppContext.BaseDirectory}seeds", $"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png");
-                                    image.SaveAsPng(path);
+                                    string path = Path.Combine($"{AppContext.BaseDirectory}Seeds", $"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.png");
+                                    try 
+                                    {
+                                        image.SaveAsPng(path);
+                                    }
+                                    catch (DirectoryNotFoundException)
+                                    {
+                                        Directory.CreateDirectory(Path.Combine($"{AppContext.BaseDirectory}Seeds"));
+                                        image.SaveAsPng(path);
+                                    }
                                 }
                                 map.Saved = true;
                             }
