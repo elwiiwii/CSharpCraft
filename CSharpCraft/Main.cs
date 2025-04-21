@@ -85,6 +85,7 @@ namespace CSharpCraft
 
             UpdateViewport();
 
+            scenes.Add(new Competitive());
             scenes.Add(new PcraftSingleplayer());
             //scenes.Add(new DeluxeSingleplayer());
             //scenes.Add(new MainRace());
@@ -179,7 +180,7 @@ namespace CSharpCraft
             p8.Draw();
 
             int clampFrame = Math.Abs((int)Math.Floor(popup.frame)) > 7 ? 7 : Math.Abs((int)Math.Floor(popup.frame));
-            if (popup.frame > 0) { Popup(popup.text, 0, 128 - clampFrame, 127, 128 - clampFrame + 7); }
+            if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, 128 - clampFrame, 127, 128 - clampFrame + 7); }
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
