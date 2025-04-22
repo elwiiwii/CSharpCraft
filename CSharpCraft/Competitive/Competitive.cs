@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
 
-namespace CSharpCraft
+namespace CSharpCraft.Competitive
 {
     public class Competitive : IScene
     {
