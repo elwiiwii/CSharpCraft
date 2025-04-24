@@ -34,6 +34,7 @@
 		<None Remove="Content\Graphics\Comptest.png" />
 		<None Remove="Content\Graphics\Credits.png" />
 		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
+		<None Remove="Content\Graphics\Cursor.png" />
 		<None Remove="Content\Graphics\Discord.png" />
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
@@ -168,6 +169,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\Comptest.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Cursor.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\ModeShadow.png">

@@ -23,6 +23,7 @@ namespace CSharpCraft.Pico8
         public List<IScene> Scenes { get; }
         public Dictionary<string, SoundEffect> SoundEffectDictionary { get; }
         public Dictionary<string, Texture2D> TextureDictionary { get; }
+        public GameWindow Window { get; }
 
         private int[] _flags;
         public int[] _map;
@@ -64,7 +65,7 @@ namespace CSharpCraft.Pico8
         private SinDict sinDict = new();
         Random random = new();
 
-        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, OptionsFile _optionsFile)
+        public Pico8Functions(IScene cart, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, GameWindow _window, OptionsFile _optionsFile)
         {
             Batch = _batch;
             Graphics = _graphics;
@@ -75,6 +76,7 @@ namespace CSharpCraft.Pico8
             Scenes = _scenes;
             SoundEffectDictionary = _soundEffectDictionary;
             TextureDictionary = _textureDictionary;
+            Window = _window;
 
             prev0 = false;
             prev1 = false;

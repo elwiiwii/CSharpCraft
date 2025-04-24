@@ -3,6 +3,7 @@ using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
 using CSharpCraft.RaceMode;
 using CSharpCraft.Credits;
+using CSharpCraft.Competitive;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -72,6 +73,7 @@ namespace CSharpCraft
             this.IsFixedTimeStep = true;
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
             graphics.SynchronizeWithVerticalRetrace = true;
+            IsMouseVisible = true;
 
             prevState = Keyboard.GetState();
         }
@@ -85,7 +87,7 @@ namespace CSharpCraft
 
             UpdateViewport();
 
-            scenes.Add(new Competitive());
+            scenes.Add(new CompetitiveScene());
             scenes.Add(new PcraftSingleplayer());
             //scenes.Add(new DeluxeSingleplayer());
             //scenes.Add(new MainRace());
@@ -245,7 +247,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(new TitleScreen(true), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, optionsFile);
+            p8 = new Pico8Functions(new TitleScreen(true), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile);
         }
 
 
