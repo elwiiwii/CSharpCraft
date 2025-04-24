@@ -30,6 +30,7 @@
 		<None Remove="Content\Graphics\Bandcamp.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
 		<None Remove="Content\Graphics\Checker.png" />
+		<None Remove="Content\Graphics\CompetitiveBackground.png" />
 		<None Remove="Content\Graphics\Comptest.png" />
 		<None Remove="Content\Graphics\Credits.png" />
 		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
@@ -41,7 +42,10 @@
 		<None Remove="Content\Graphics\Itchio.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\LobbyBackground.png" />
+		<None Remove="Content\Graphics\ModeShadow.png" />
 		<None Remove="Content\Graphics\MusicNote.png" />
+		<None Remove="Content\Graphics\NameBubbleCenter.png" />
+		<None Remove="Content\Graphics\NameBubbleEdge.png" />
 		<None Remove="Content\Graphics\OptionsBackground0.png" />
 		<None Remove="Content\Graphics\OptionsBackground1.png" />
 		<None Remove="Content\Graphics\OptionsBackground2.png" />
@@ -54,6 +58,14 @@
 		<None Remove="Content\Graphics\PauseArrow.png" />
 		<None Remove="Content\Graphics\Pico8.png" />
 		<None Remove="Content\Graphics\PlayerIcon.png" />
+		<None Remove="Content\Graphics\PrivateIcon.png" />
+		<None Remove="Content\Graphics\ProfileIcon.png" />
+		<None Remove="Content\Graphics\ProfileShadow.png" />
+		<None Remove="Content\Graphics\RankedIcon.png" />
+		<None Remove="Content\Graphics\ReplaysIcon.png" />
+		<None Remove="Content\Graphics\ReplaysShadow.png" />
+		<None Remove="Content\Graphics\SearchIcon.png" />
+		<None Remove="Content\Graphics\SearchShadow.png" />
 		<None Remove="Content\Graphics\SeedCross.png" />
 		<None Remove="Content\Graphics\SeedGreyOut.png" />
 		<None Remove="Content\Graphics\SeedQuestion.png" />
@@ -75,15 +87,21 @@
 		<None Remove="Content\Graphics\SelectorBorder.png" />
 		<None Remove="Content\Graphics\SelectorCenter.png" />
 		<None Remove="Content\Graphics\SelectorHalf.png" />
+		<None Remove="Content\Graphics\SettingsIcon.png" />
+		<None Remove="Content\Graphics\SettingsShadow.png" />
 		<None Remove="Content\Graphics\SmallNameBanner.png" />
 		<None Remove="Content\Graphics\SmallSelector.png" />
 		<None Remove="Content\Graphics\SpectatorIcon.png" />
+		<None Remove="Content\Graphics\SpeedrunIcon.png" />
 		<None Remove="Content\Graphics\Spotify.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
+		<None Remove="Content\Graphics\StatisticsIcon.png" />
+		<None Remove="Content\Graphics\StatisticsShadow.png" />
 		<None Remove="Content\Graphics\Steam.png" />
 		<None Remove="Content\Graphics\Tick.png" />
 		<None Remove="Content\Graphics\Twitch.png" />
 		<None Remove="Content\Graphics\Twitter.png" />
+		<None Remove="Content\Graphics\UnrankedIcon.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Graphics\Website.png" />
 		<None Remove="Content\Graphics\Youtube.png" />
@@ -146,10 +164,64 @@
 	  <Content Include="Content\Graphics\Checker.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\CompetitiveBackground.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\Comptest.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\ModeShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\MusicNote.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\NameBubbleCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\NameBubbleEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\PrivateIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\ProfileIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\ProfileShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\RankedIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\ReplaysIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\ReplaysShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SearchIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SearchShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SettingsIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SettingsShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SpeedrunIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\StatisticsIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\StatisticsShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\UnrankedIcon.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Music\menu.wav">
