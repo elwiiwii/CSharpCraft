@@ -73,7 +73,7 @@ namespace CSharpCraft
             this.IsFixedTimeStep = true;
             this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
             graphics.SynchronizeWithVerticalRetrace = true;
-            IsMouseVisible = true;
+            //IsMouseVisible = true;
 
             prevState = Keyboard.GetState();
         }
@@ -247,7 +247,7 @@ namespace CSharpCraft
                 }
             }
 
-            p8 = new Pico8Functions(new TitleScreen(true), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile);
+            p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile);
         }
 
 

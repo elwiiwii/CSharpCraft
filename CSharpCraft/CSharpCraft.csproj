@@ -27,6 +27,8 @@
 		<None Remove="Content\Graphics\Arrow.png" />
 		<None Remove="Content\Graphics\Arrow5.png" />
 		<None Remove="Content\Graphics\ArrowV.png" />
+		<None Remove="Content\Graphics\BackIcon.png" />
+		<None Remove="Content\Graphics\BackShadow.png" />
 		<None Remove="Content\Graphics\Bandcamp.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
 		<None Remove="Content\Graphics\Checker.png" />
@@ -162,6 +164,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\BackIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\BackShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\Checker.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

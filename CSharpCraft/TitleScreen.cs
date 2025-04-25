@@ -9,7 +9,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft
 {
-    public class TitleScreen(bool animation) : IScene, IDisposable
+    public class TitleScreen(bool animation = false) : IScene, IDisposable
     {
         public string SceneName { get => "TitleScreen"; }
         private Pico8Functions p8;
