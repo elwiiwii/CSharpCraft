@@ -65,6 +65,7 @@ namespace CSharpCraft.Competitive
             int w = viewportWidth / 128;
             int h = viewportHeight / 128;
 
+            curIcon = null;
             foreach (Icon icon in icons)
             {
                 if (cursorX > icon.StartPos.x * w && cursorX < icon.EndPos.x * w && cursorY > icon.StartPos.y * h && cursorY < icon.EndPos.y * h) { curIcon = icon; break; }
@@ -108,14 +109,14 @@ namespace CSharpCraft.Competitive
                 bool sel = cursorX > icon.StartPos.x * w && cursorX < icon.EndPos.x * w && cursorY > icon.StartPos.y * h && cursorY < icon.EndPos.y * h;
                 if (icon.ShadowTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.ShadowTexture], new(icon.StartPos.x * w, icon.StartPos.y * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
                 if (icon.IconTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.IconTexture], new((icon.StartPos.x - (sel ? off : 0)) * w, (icon.StartPos.y - (sel ? off : 0)) * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-                if (sel) { curLabel = icon.Label; labelLength = curLabel.Length * 4; }
-                else if (curLabel == "") { labelLength = Math.Max(labelLength - 1.3f, 0); }
             }
 
-            if (labelLength > 0) { p8.Batch.Draw(p8.TextureDictionary["NameBubbleCenter"], new((63 - labelLength / 2) * w, 108 * h), null, Color.White, 0, Vector2.Zero, new Vector2(w * (labelLength + 1), h), SpriteEffects.None, 0); }
-            p8.Batch.Draw(p8.TextureDictionary["NameBubbleEdge"], new((63 - 5 - labelLength / 2 - (labelLength == 0 ? 0 : 1)) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary["NameBubbleEdge"], new((63 + labelLength / 2 + (labelLength == 0 ? 0 : 1)) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-            Printcb(curLabel, 63, 111, 15, 1);
+            if (curIcon is not null) { labelLength = curIcon.Label.Length * 4; }
+            else { labelLength = Math.Max(labelLength - labelLength / 3, 0); }
+            p8.Batch.Draw(p8.TextureDictionary["NameBubbleCenter"], new((63 - labelLength / 2) * w, 108 * h), null, Color.White, 0, Vector2.Zero, new Vector2(w * (labelLength + 1), h), SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["NameBubbleEdge"], new((63 - 5 - labelLength / 2 - 1) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["NameBubbleEdge"], new((63 + labelLength / 2 + 1) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+            if (curIcon is not null) { Printcb(curIcon.Label, 63, 111, 15, 1); }
 
             p8.Batch.Draw(p8.TextureDictionary["Cursor"], new(cursorX - 15 * (w / 2.0f), cursorY - 15 * (h / 2.0f)), null, Color.White, 0, Vector2.Zero, halfsize, SpriteEffects.None, 0);
         }
