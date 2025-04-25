@@ -30,6 +30,7 @@
 		<None Remove="Content\Graphics\BackIcon.png" />
 		<None Remove="Content\Graphics\BackShadow.png" />
 		<None Remove="Content\Graphics\Bandcamp.png" />
+		<None Remove="Content\Graphics\BlankBackground.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
 		<None Remove="Content\Graphics\Checker.png" />
 		<None Remove="Content\Graphics\CompetitiveBackground.png" />
@@ -61,9 +62,11 @@
 		<None Remove="Content\Graphics\PauseArrow.png" />
 		<None Remove="Content\Graphics\Pico8.png" />
 		<None Remove="Content\Graphics\PlayerIcon.png" />
+		<None Remove="Content\Graphics\PrivateBackground.png" />
 		<None Remove="Content\Graphics\PrivateIcon.png" />
 		<None Remove="Content\Graphics\ProfileIcon.png" />
 		<None Remove="Content\Graphics\ProfileShadow.png" />
+		<None Remove="Content\Graphics\RankedBackground.png" />
 		<None Remove="Content\Graphics\RankedIcon.png" />
 		<None Remove="Content\Graphics\ReplaysIcon.png" />
 		<None Remove="Content\Graphics\ReplaysShadow.png" />
@@ -95,6 +98,7 @@
 		<None Remove="Content\Graphics\SmallNameBanner.png" />
 		<None Remove="Content\Graphics\SmallSelector.png" />
 		<None Remove="Content\Graphics\SpectatorIcon.png" />
+		<None Remove="Content\Graphics\SpeedrunBackground.png" />
 		<None Remove="Content\Graphics\SpeedrunIcon.png" />
 		<None Remove="Content\Graphics\Spotify.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
@@ -104,6 +108,7 @@
 		<None Remove="Content\Graphics\Tick.png" />
 		<None Remove="Content\Graphics\Twitch.png" />
 		<None Remove="Content\Graphics\Twitter.png" />
+		<None Remove="Content\Graphics\UnrankedBackground.png" />
 		<None Remove="Content\Graphics\UnrankedIcon.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Graphics\Website.png" />
@@ -170,6 +175,9 @@
 	  <Content Include="Content\Graphics\BackShadow.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\BlankBackground.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\Checker.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -194,6 +202,9 @@
 	  <Content Include="Content\Graphics\NameBubbleEdge.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\PrivateBackground.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\PrivateIcon.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -201,6 +212,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\ProfileShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\RankedBackground.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\RankedIcon.png">
@@ -224,6 +238,9 @@
 	  <Content Include="Content\Graphics\SettingsShadow.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\SpeedrunBackground.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\SpeedrunIcon.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -231,6 +248,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\StatisticsShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\UnrankedBackground.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\UnrankedIcon.png">
