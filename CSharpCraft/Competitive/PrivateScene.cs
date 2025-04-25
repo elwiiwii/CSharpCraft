@@ -38,11 +38,13 @@ namespace CSharpCraft.Competitive
             search = new() { StartPos = (112, 78), EndPos = (124, 90), Label = "search", ShadowTexture = "SearchShadow", IconTexture = "SearchIcon", Scene = new SearchScene(this) };
             profile = new() { StartPos = (112, 93), EndPos = (124, 108), Label = "profile", ShadowTexture = "ProfileShadow", IconTexture = "ProfileIcon", Scene = new ProfileScene(this) };
             settings = new() { StartPos = (111, 111), EndPos = (125, 125), Label = "settings", ShadowTexture = "SettingsShadow", IconTexture = "SettingsIcon", Scene = new SettingsScene(this) };
-            newRoom = new() { StartPos = (-1, 114), EndPos = (40, 124), Offset = (0.6f, 0), IconTexture = "NewRoomIcon", Scene = new MainRace() };
+            newRoom = new() { StartPos = (-1, 114), EndPos = (40, 124), Offset = (1, 0), IconTexture = "NewRoomIcon", Scene = new MainRace() };
             icons = [back, replays, statistics, search, profile, settings, newRoom];
 
             curIcon = null;
             prevState = Mouse.GetState();
+            cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
+            cursorY = prevState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
         }
 
         public void Update()

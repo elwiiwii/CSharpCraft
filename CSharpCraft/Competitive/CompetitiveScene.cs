@@ -48,6 +48,8 @@ namespace CSharpCraft.Competitive
             labelLength = 0;
             curIcon = null;
             prevState = Mouse.GetState();
+            cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
+            cursorY = prevState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
         }
 
         public void Update()
