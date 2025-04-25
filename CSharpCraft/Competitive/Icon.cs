@@ -10,6 +10,7 @@ namespace CSharpCraft.Competitive
     {
         public (int x, int y) StartPos { get; init; }
         public (int x, int y) EndPos { get; init; }
+        public (float x, float y) Offset { get; init; } = (-0.6f, -0.6f);
         public string Label { get; init; } = "";
         public string? ShadowTexture { get; init; }
         public string? IconTexture { get; init; }

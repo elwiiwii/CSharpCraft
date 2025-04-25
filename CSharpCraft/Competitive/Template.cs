@@ -48,18 +48,7 @@ namespace CSharpCraft.Competitive
             cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
             cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
-            // Get the size of the viewport
-            int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-            int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int w = viewportWidth / 128;
-            int h = viewportHeight / 128;
-
-            foreach (Icon icon in icons)
-            {
-                if (cursorX > icon.StartPos.x * w && cursorX < icon.EndPos.x * w && cursorY > icon.StartPos.y * h && cursorY < icon.EndPos.y * h) { curIcon = icon; break; }
-            }
+            curIcon = Shared.IconUpdate(p8, icons, cursorX, cursorY);
 
             if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.LoadCart(curIcon.Scene); }
             prevState = state;
@@ -78,24 +67,12 @@ namespace CSharpCraft.Competitive
             int h = viewportHeight / 128;
 
             Vector2 size = new(w, h);
-            Vector2 halfsize = new(w / 2.0f, h / 2.0f);
-
-            MouseState state = Mouse.GetState();
-            float cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-            float cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
             p8.Batch.Draw(p8.TextureDictionary["BlankBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            
-            float off = 0.6f;
 
-            foreach (Icon icon in icons)
-            {
-                bool sel = cursorX > icon.StartPos.x * w && cursorX < icon.EndPos.x * w && cursorY > icon.StartPos.y * h && cursorY < icon.EndPos.y * h;
-                if (icon.ShadowTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.ShadowTexture], new(icon.StartPos.x * w, icon.StartPos.y * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-                if (icon.IconTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.IconTexture], new((icon.StartPos.x - (sel ? off : 0)) * w, (icon.StartPos.y - (sel ? off : 0)) * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-            }
+            Shared.DrawIcons(p8, icons, cursorX, cursorY);
 
-            p8.Batch.Draw(p8.TextureDictionary["Cursor"], new(cursorX - 15 * (w / 2.0f), cursorY - 15 * (h / 2.0f)), null, Color.White, 0, Vector2.Zero, halfsize, SpriteEffects.None, 0);
+            Shared.DrawCursor(p8, cursorX, cursorY);
         }
 
         public string SpriteData => @"";

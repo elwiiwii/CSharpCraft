@@ -50,6 +50,7 @@
 		<None Remove="Content\Graphics\MusicNote.png" />
 		<None Remove="Content\Graphics\NameBubbleCenter.png" />
 		<None Remove="Content\Graphics\NameBubbleEdge.png" />
+		<None Remove="Content\Graphics\NewRoomIcon.png" />
 		<None Remove="Content\Graphics\OptionsBackground0.png" />
 		<None Remove="Content\Graphics\OptionsBackground1.png" />
 		<None Remove="Content\Graphics\OptionsBackground2.png" />
@@ -96,6 +97,8 @@
 		<None Remove="Content\Graphics\SettingsIcon.png" />
 		<None Remove="Content\Graphics\SettingsShadow.png" />
 		<None Remove="Content\Graphics\SmallNameBanner.png" />
+		<None Remove="Content\Graphics\SmallNameBubbleCenter.png" />
+		<None Remove="Content\Graphics\SmallNameBubbleEdge.png" />
 		<None Remove="Content\Graphics\SmallSelector.png" />
 		<None Remove="Content\Graphics\SpectatorIcon.png" />
 		<None Remove="Content\Graphics\SpeedrunBackground.png" />
@@ -202,6 +205,9 @@
 	  <Content Include="Content\Graphics\NameBubbleEdge.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\NewRoomIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\PrivateBackground.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -236,6 +242,12 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SettingsShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SmallNameBubbleCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SmallNameBubbleEdge.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SpeedrunBackground.png">
