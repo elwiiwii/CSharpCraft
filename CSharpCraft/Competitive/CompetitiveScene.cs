@@ -48,6 +48,7 @@ namespace CSharpCraft.Competitive
 
             labelLength = 0;
             curIcon = null;
+            prevState = Mouse.GetState();
         }
 
         public void Update()

@@ -31,14 +31,15 @@ namespace CSharpCraft.Competitive
         {
             p8 = pico8;
             back = new() { StartPos = (120, 3), EndPos = (126, 11), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = prevScene };
-            replays = new() { StartPos = (111, 46), EndPos = (126, 60), Label = "replays", ShadowTexture = "ReplaysShadow", IconTexture = "ReplaysIcon", Scene = new ReplaysScene(this) };
-            statistics = new() { StartPos = (111, 63), EndPos = (126, 76), Label = "statistics", ShadowTexture = "StatisticsShadow", IconTexture = "StatisticsIcon", Scene = new StatisticsScene(this) };
-            search = new() { StartPos = (112, 78), EndPos = (125, 91), Label = "search", ShadowTexture = "SearchShadow", IconTexture = "SearchIcon", Scene = new SearchScene(this) };
-            profile = new() { StartPos = (112, 93), EndPos = (125, 109), Label = "profile", ShadowTexture = "ProfileShadow", IconTexture = "ProfileIcon", Scene = new ProfileScene(this) };
-            settings = new() { StartPos = (111, 111), EndPos = (126, 126), Label = "settings", ShadowTexture = "SettingsShadow", IconTexture = "SettingsIcon", Scene = new SettingsScene(this) };
+            replays = new() { StartPos = (111, 46), EndPos = (126, 60), Label = "replays", ShadowTexture = "ReplaysShadow", IconTexture = "ReplaysIcon", Scene = new ReplaysScene(prevScene) };
+            statistics = new() { StartPos = (111, 63), EndPos = (126, 76), Label = "statistics", ShadowTexture = "StatisticsShadow", IconTexture = "StatisticsIcon", Scene = new StatisticsScene(prevScene) };
+            search = new() { StartPos = (112, 78), EndPos = (125, 91), Label = "search", ShadowTexture = "SearchShadow", IconTexture = "SearchIcon", Scene = new SearchScene(prevScene) };
+            profile = new() { StartPos = (112, 93), EndPos = (125, 109), Label = "profile", ShadowTexture = "ProfileShadow", IconTexture = "ProfileIcon", Scene = new ProfileScene(prevScene) };
+            settings = new() { StartPos = (111, 111), EndPos = (126, 126), Label = "settings", ShadowTexture = "SettingsShadow", IconTexture = "SettingsIcon" };
             icons = [back, replays, statistics, search, profile, settings];
 
             curIcon = null;
+            prevState = Mouse.GetState();
         }
 
         public void Update()

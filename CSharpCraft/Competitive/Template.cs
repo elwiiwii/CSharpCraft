@@ -39,6 +39,7 @@ namespace CSharpCraft.Competitive
             icons = [back, replays, statistics, search, profile, settings];
 
             curIcon = null;
+            prevState = Mouse.GetState();
         }
 
         public void Update()
@@ -83,7 +84,7 @@ namespace CSharpCraft.Competitive
             float cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
             float cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
-            p8.Batch.Draw(p8.TextureDictionary["CompetitiveBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["BlankBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             
             float off = 0.6f;
 

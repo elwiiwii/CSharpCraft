@@ -39,6 +39,7 @@ namespace CSharpCraft.Competitive
             icons = [back, replays, statistics, search, profile, settings];
 
             curIcon = null;
+            prevState = Mouse.GetState();
         }
 
         public void Update()
