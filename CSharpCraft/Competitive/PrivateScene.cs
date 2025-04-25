@@ -75,10 +75,7 @@ namespace CSharpCraft.Competitive
 
             p8.Batch.Draw(p8.TextureDictionary["PrivateBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-            p8.Batch.Draw(p8.TextureDictionary["SmallNameBubbleEdge"], new(48 * w, 25 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary["SmallNameBubbleCenter"], new(53 * w, 25 * h), null, Color.White, 0, Vector2.Zero, new Vector2 (21 * w, h), SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary["SmallNameBubbleEdge"], new(74 * w, 25 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-            p8.Print("rooms", 54, 27, 15);
+            Shared.DrawNameBubble(p8, "rooms", 63, 25);
 
             Shared.DrawIcons(p8, icons, cursorX, cursorY);
 
