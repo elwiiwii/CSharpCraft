@@ -629,8 +629,8 @@
 
 	<ItemGroup>
 	  <PackageReference Include="DeepCloner" Version="0.10.4" />
-	  <PackageReference Include="Google.Protobuf" Version="3.30.1" />
-	  <PackageReference Include="Grpc.Net.Client" Version="2.70.0" />
+	  <PackageReference Include="Google.Protobuf" Version="3.30.2" />
+	  <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
 	  <PackageReference Include="Grpc.Tools" Version="2.71.0">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -646,6 +646,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Protobuf Include="..\RaceServer\Protos\accountservice.proto">
+	    <Link>accountservice.proto</Link>
+	  </Protobuf>
 	  <Protobuf Include="..\RaceServer\Protos\gameservice.proto">
 	    <Link>Protos\gameservice.proto</Link>
 	  </Protobuf>
