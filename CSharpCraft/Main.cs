@@ -87,9 +87,10 @@ namespace CSharpCraft
 
             UpdateViewport();
 
+            scenes.Add(new HoloCraft());
             scenes.Add(new CompetitiveScene());
             scenes.Add(new PcraftSingleplayer());
-            //scenes.Add(new DeluxeSingleplayer());
+            scenes.Add(new DeluxeSingleplayer());
             //scenes.Add(new MainRace());
             scenes.Add(new SeedFilter());
             scenes.Add(new LoadSeed());
