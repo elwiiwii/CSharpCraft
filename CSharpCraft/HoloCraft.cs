@@ -18,8 +18,13 @@ public class HoloCraft : PcraftBase
         private F32 lhunger;
         private F32 manim;
         private F32 hungercost;
+        protected static new readonly string[] pwrNames = ["wood", "stone", "iron", "gold", "gem", "ruby"];
+        protected static new readonly int[][] pwrPal = [[2, 2, 4, 4], [5, 2, 4, 13], [13, 5, 13, 6], [9, 2, 9, 10], [13, 2, 14, 12], [13, 1, 13, 12]];
+        protected static readonly Material ruby = Item("ruby", 118, [1, 2, 14, 12]);
         private F32 phealthregen;
         private F32 stamwost;
+
+        
         public override void Init(Pico8Functions pico8)
         {
             base.Init(pico8);
@@ -46,11 +51,11 @@ public class HoloCraft : PcraftBase
 
             Material[] tooltypes = [haxe, pick, sword, shovel, scythe];
             int[] quant = [5, 5, 7, 5, 7];
-            int[] pows = [1, 2, 3, 4, 5];
-            Material[] materials = [wood, stone, ironbar, goldbar, gem];
-            int[] mult = [1, 1, 1, 1, 3];
-            List<Entity>[] crafter = [workbenchRecipe, stonebenchRecipe, anvilRecipe, anvilRecipe, anvilRecipe];
-            for (int j = 0; j < pows.Length; j++)
+            int[] pows = [1, 2, 3, 4, 5, 6];
+            Material[] materials = [wood, stone, ironbar, goldbar, gem, ruby];
+            int[] mult = [1, 1, 1, 1, 3, 4];
+            List<Entity>[] crafter = [workbenchRecipe, stonebenchRecipe, anvilRecipe, anvilRecipe, anvilRecipe, workbenchRecipe];
+            for (int j = 0; j < materials.Length; j++)
             {
                 for (int i = 0; i < tooltypes.Length; i++)
                 {
