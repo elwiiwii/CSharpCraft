@@ -27,7 +27,7 @@ namespace CSharpCraft
         {
             
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

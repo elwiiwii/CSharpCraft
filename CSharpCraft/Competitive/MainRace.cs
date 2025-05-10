@@ -162,7 +162,7 @@ namespace CSharpCraft.RaceMode
                 dummyIndex++;
             }
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

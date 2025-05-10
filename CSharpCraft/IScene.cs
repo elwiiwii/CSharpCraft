@@ -13,6 +13,7 @@ namespace CSharpCraft
         void Init(Pico8Functions p8);
         void Update();
         void Draw();
+        string SpriteImage { get; }
         string SpriteData { get; }
         string FlagData { get; }
         string MapData { get; }

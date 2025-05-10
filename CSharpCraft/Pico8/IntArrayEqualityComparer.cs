@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CSharpCraft.Pico8
 {
-    public class EqualityComparer : IEqualityComparer<int[]>
+    public class IntArrayEqualityComparer : IEqualityComparer<int[]>
     {
         public bool Equals(int[]? x, int[]? y)
         {

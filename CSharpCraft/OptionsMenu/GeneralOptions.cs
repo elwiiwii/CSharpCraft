@@ -134,7 +134,7 @@ namespace CSharpCraft.OptionsMenu
 
             p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y + 1) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

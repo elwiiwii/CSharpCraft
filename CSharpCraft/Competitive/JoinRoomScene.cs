@@ -205,7 +205,7 @@ namespace CSharpCraft.RaceMode
 
             _ = Task.Run(mainRace.ReadRoomStream, mainRace.cancellationTokenSource.Token);
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

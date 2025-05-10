@@ -51,7 +51,7 @@ namespace CSharpCraft.OptionsMenu
             p8.Batch.Draw(p8.TextureDictionary["OptionsBackground2"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

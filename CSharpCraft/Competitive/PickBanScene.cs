@@ -344,7 +344,7 @@ namespace CSharpCraft.RaceMode
                 DrawInitialSeedSelection(turns[3], 3);
             }
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

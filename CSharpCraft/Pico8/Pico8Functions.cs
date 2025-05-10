@@ -9,6 +9,10 @@ using FixMath;
 using System.Reflection;
 using System.Security.Cryptography;
 using Force.DeepCloner;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.ColorSpaces.Conversion;
+using System.Drawing;
 
 namespace CSharpCraft.Pico8
 {
@@ -28,7 +32,7 @@ namespace CSharpCraft.Pico8
 
         private int[] _flags;
         public int[] _map;
-        private int[] _sprites;
+        private Color[] _sprites;
         private Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> _music;
         private Dictionary<string, Dictionary<int, string>> _sfx;
         private (int, int) CameraOffset = (0, 0);
@@ -53,7 +57,7 @@ namespace CSharpCraft.Pico8
         private int heldCount4;
         private int heldCount5;
         private bool isPaused;
-        private Dictionary<int[], Texture2D> spriteTextures = new(new EqualityComparer());
+        private Dictionary<int[], Texture2D> spriteTextures = new(new IntArrayEqualityComparer());
         private List<MenuItem> mainMenuItems;
         private List<MenuItem> curMenuItems;
         private int menuSelected;
@@ -479,6 +483,34 @@ namespace CSharpCraft.Pico8
             }
         }
 
+        public Color[] ImageToColorArray(string filename)
+        {
+            Texture2D texture = TextureDictionary[filename];
+            
+            if (texture == null)
+                throw new ArgumentNullException(nameof(texture));
+
+            if (texture.Format != SurfaceFormat.Color)
+                throw new ArgumentException("Texture must use SurfaceFormat.Color");
+
+            Color[] colorArray = new Color[texture.Width * texture.Height];
+
+            texture.GetData(colorArray);
+
+            return colorArray;
+        }
+
+        private Color[] DataToColorArray(string s)
+        {
+            Color[] val = new Color[s.Length];
+            for (int i = 0; i < s.Length; i++)
+            {
+                val[i] = colors[Convert.ToInt32($"0x{s.Substring(i, 1)}", 16)];
+            }
+
+            return val;
+        }
+
 
         private static int[] DataToArray(string s, int n)
         {
@@ -514,7 +546,7 @@ namespace CSharpCraft.Pico8
 
 
         // pico-8 colors https://pico-8.fandom.com/wiki/Palette
-        public Color[] colors =
+        public List<Color> colors =
         [
             HexToColor("000000"), // 00 black
             HexToColor("1D2B53"), // 01 dark-blue
@@ -552,10 +584,16 @@ namespace CSharpCraft.Pico8
             HexToColor("FF9D81"), // 31 peach
             */
         ];
-        public int[] palColors = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        public class PalCol
+        {
+            public Color c0 { get; set; }
+            public Color c1 { get; set; }
+            public bool trans { get; set; } = false;
+        }
+        public List<PalCol> palColors = [new() { c0 = Color.Black, c1 = Color.Black, trans = true }];
 
 
-        private Texture2D CreateTextureFromSpriteData(int[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
+        private Texture2D CreateTextureFromSpriteData(Color[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
         {
             Texture2D texture = new(GraphicsDevice, spriteWidth, spriteHeight);
 
@@ -563,12 +601,14 @@ namespace CSharpCraft.Pico8
 
             for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
             {
-                int index = spriteData[i] % 16;
-                int palSwapCol = palColors[index];
-                if (palSwapCol != -1)
+                Color col = palColors.FindAll(x => x.c0 == spriteData[i]).Count > 0 ? palColors.First(x => x.c0 == spriteData[i]).c1 : spriteData[i];
+                if (palColors.FindAll(x => x.c0 == spriteData[i]).Count > 0 && palColors.First(x => x.c0 == spriteData[i]).trans == false)
                 {
-                    Color color = colors[(int)palSwapCol];
-                    colorData[j] = color;
+                    colorData[j] = palColors.First(x => x.c0 == spriteData[i]).c1;
+                }
+                else if (palColors.FindAll(x => x.c0 == spriteData[i]).Count <= 0)
+                {
+                    colorData[j] = spriteData[i];
                 }
 
                 if (j % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
@@ -741,7 +781,7 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
+            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -776,7 +816,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -791,7 +831,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
+            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -826,7 +866,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -840,7 +880,7 @@ namespace CSharpCraft.Pico8
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
+            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -867,7 +907,7 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
@@ -881,7 +921,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
-            int drawCol = palColors[c] == -1 ? c : (int)palColors[c];
+            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -908,19 +948,17 @@ namespace CSharpCraft.Pico8
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
-                        Batch.Draw(Pixel, position, null, colors[drawCol], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                        Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
             }
         }
 
 
-        public void Cls(double color = 0) // https://pico-8.fandom.com/wiki/Cls
+        public void Cls(int col = 0) // https://pico-8.fandom.com/wiki/Cls
         {
-            int colorFlr = (int)Math.Floor(color);
-
-            int clearCol = palColors[colorFlr] == -1 ? colorFlr : (int)palColors[colorFlr];
-            GraphicsDevice.Clear(colors[clearCol]);
+            Color clearCol = palColors.FindAll(x => x.c0 == colors[col]).Count > 0 ? palColors.First(x => x.c0 == colors[col]).c1 : colors[col];
+            GraphicsDevice.Clear(clearCol);
         }
 
 
@@ -992,12 +1030,12 @@ namespace CSharpCraft.Pico8
 
         public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
         {
-            if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
-            {
-                Dispose();
-                int[] secondHalf = DataToArray(MapFlip(_cart.MapData.Substring(0, 8192)), 1);
-                secondHalf.CopyTo(_sprites, 8192);
-            }
+            //if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
+            //{
+            //    Dispose();
+            //    int[] secondHalf = DataToArray(MapFlip(_cart.MapData.Substring(0, 8192)), 1);
+            //    secondHalf.CopyTo(_sprites, 8192);
+            //}
         }
 
 
@@ -1110,37 +1148,41 @@ namespace CSharpCraft.Pico8
 
         public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
-            palColors = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            palColors.Clear();
+            palColors.Add(new() { c0 = colors[0], c1 = colors[0], trans = true });
         }
 
 
-        public void Pal(double c0, double c1) // https://pico-8.fandom.com/wiki/Pal
+        public void Pal(int c0, int c1) // https://pico-8.fandom.com/wiki/Pal
         {
-            int c0Flr = (int)Math.Floor(c0);
-            int c1Flr = (int)Math.Floor(c1);
+            palColors.FindAll(x => x.c0 == colors[c0]).ForEach(x => palColors.Remove(x));
+            palColors.Add(new() { c0 = colors[c0], c1 = colors[c1] });
+        }
 
-            palColors[c0Flr] = c1Flr;
+
+        public void Pal(Color c0, Color c1) // https://pico-8.fandom.com/wiki/Pal
+        {
+            palColors.FindAll(x => x.c0 == c0).ForEach(x => palColors.Remove(x));
+            palColors.Add(new() { c0 = c0, c1 = c1 });
         }
 
 
         public void Palt() // https://pico-8.fandom.com/wiki/Palt
         {
-            palColors = [-1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            palColors.ForEach(x => x.trans = false);
+            palColors[0].trans = true;
         }
 
 
-        public void Palt(double col, bool t) // https://pico-8.fandom.com/wiki/Palt
+        public void Palt(int col, bool t) // https://pico-8.fandom.com/wiki/Palt
         {
-            int colFlr = (int)Math.Floor(col);
+            palColors.FindAll(x => x.c0 == colors[col]).ForEach(x => x.trans = t);
+        }
 
-            if (t)
-            {
-                palColors[colFlr] = -1;
-            }
-            else
-            {
-                palColors[colFlr] = colFlr;
-            }
+
+        public void Palt(Color col, bool t) // https://pico-8.fandom.com/wiki/Palt
+        {
+            palColors.FindAll(x => x.c0 == col).ForEach(x => x.trans = t);
         }
 
 
@@ -1247,7 +1289,8 @@ namespace CSharpCraft.Pico8
         {
             Dispose();
 
-            _sprites = DataToArray(_cart.SpriteData, 1);
+            _sprites = !string.IsNullOrEmpty(_cart.SpriteImage) ? ImageToColorArray(_cart.SpriteImage) : _sprites;
+            _sprites = !string.IsNullOrEmpty(_cart.SpriteData) ? DataToColorArray(_cart.SpriteData) : _sprites;
             _flags = DataToArray(_cart.FlagData, 2);
             _map = DataToArray(_cart.MapData, 2);
         }
@@ -1314,7 +1357,12 @@ namespace CSharpCraft.Pico8
                 return 0;
             }
 
-            return _sprites[xFlr + yFlr * 128];
+            Color col = _sprites[xFlr + yFlr * 128];
+            if (colors.Contains(col))
+            {
+                return colors.IndexOf(col);
+            }
+            return 0;
         }
 
 
@@ -1332,7 +1380,7 @@ namespace CSharpCraft.Pico8
 
             if (xFlr < 0 || yFlr < 0 || xFlr > 127 || yFlr > 127)
             {
-                _sprites[xFlr + yFlr * 128] = colFlr;
+                _sprites[xFlr + yFlr * 128] = colors[colFlr];
             }
         }
 
@@ -1350,9 +1398,14 @@ namespace CSharpCraft.Pico8
             int spriteX = spriteNumberFlr % 16 * spriteWidth;
             int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
-            int[] cache = palColors;
-            Array.Resize(ref cache, 17);
-            cache[16] = spriteNumberFlr;
+            List<int> cacheList = [];
+            for (int i  = 0; i < palColors.Count; i++)
+            {
+                cacheList.Add((int)palColors[i].c0.PackedValue);
+                cacheList.Add((int)palColors[i].c1.PackedValue);
+            }
+            cacheList.Add(spriteNumberFlr);
+            int[] cache = cacheList.ToArray();
             if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
@@ -1391,9 +1444,14 @@ namespace CSharpCraft.Pico8
 
             int spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
 
-            int[] cache = palColors;
-            Array.Resize(ref cache, 17);
-            cache[16] = spriteNumberFlr;
+            List<int> cacheList = [];
+            for (int i = 0; i < palColors.Count; i++)
+            {
+                cacheList.Add((int)palColors[i].c0.PackedValue);
+                cacheList.Add((int)palColors[i].c1.PackedValue);
+            }
+            cacheList.Add(spriteNumberFlr);
+            int[] cache = cacheList.ToArray();
             if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
             {
                 texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);

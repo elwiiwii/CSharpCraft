@@ -76,7 +76,7 @@ namespace CSharpCraft.Competitive
 
             Shared.DrawCursor(p8, cursorX, cursorY);
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

@@ -200,7 +200,7 @@ namespace CSharpCraft.Credits
                 ypos += 9;
             }
         }
-
+        public virtual string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
         public string MapData => @"";

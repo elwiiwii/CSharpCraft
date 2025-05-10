@@ -2340,6 +2340,8 @@ namespace CSharpCraft.Pcraft
             }
         }
 
+        public virtual string SpriteImage => "";
+
         public string SpriteData => @"
 00aaaa00ffffffffffffffffffffffffffffffff44fff44ffff44fff020121000004200002031000166666610099944000111100000000000001000000101000
 0a2888a0ffffffffffffffffffffffffffff444fff4ffff4ff4fffff31031020030310204142000016eeee610995594401aaaa10000100000011100001000100
