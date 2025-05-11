@@ -9,12 +9,15 @@ public static class Pico8Utils
     public static Color[] ImageToColorArray(Pico8Functions p8, string filename)
     {
         Texture2D texture = p8.TextureDictionary[filename];
-
+        
         if (texture is null)
             throw new ArgumentNullException(nameof(filename));
 
         if (texture.Format != SurfaceFormat.Color)
             throw new ArgumentException("Texture must use SurfaceFormat.Color");
+
+        if (texture.Width % 8 != 0 && texture.Height % 8 != 0)
+            throw new FileLoadException("Texture must be a multiple of 8 in both dimensions");
 
         Color[] colorArray = new Color[texture.Width * texture.Height];
 
@@ -35,6 +38,19 @@ public static class Pico8Utils
         return val;
     }
 
+    public static Color[] MapDataToColorArray(Pico8Functions p8, string s)
+    {
+        Color[] val = new Color[s.Length / 2];
+        for (int i = 0; i < s.Length / 2; i++)
+        {
+            char[] chunk = s.Substring(i * 2, 2).ToCharArray();
+            int index = (chunk[0] - 35) * 91 + chunk[1] - 35;
+            val[i] = p8.Colors[index % 16];
+        }
+
+        return val;
+    }
+
 
     public static int[] DataToArray(string s, int n)
     {
@@ -44,6 +60,18 @@ public static class Pico8Utils
             val[i] = Convert.ToInt32($"0x{s.Substring(i * n, n)}", 16);
         }
 
+        return val;
+    }
+
+    public static int[] MapDataToArray(string s)
+    {
+        int[] val = new int[s.Length / 2];
+        for (int i = 0; i < s.Length / 2; i++)
+        {
+            char[] chunk = s.Substring(i * 2, 2).ToCharArray();
+            int sprNum = (chunk[0] - 35) * 91 + chunk[1] - 35;
+            val[i] = sprNum;
+        }
         return val;
     }
 

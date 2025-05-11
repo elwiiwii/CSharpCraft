@@ -22,9 +22,9 @@ public class DeluxeSingleplayer : DeluxeBase
     }
 }
 
-public class PcraftRaceplayer : PcraftBase
+public class PcraftSpeedrun : SpeedrunBase
 {
-    public override string SceneName => "race";
+    public override string SceneName => "speedrun";
 
     public override void Init(Pico8Functions pico8)
     {

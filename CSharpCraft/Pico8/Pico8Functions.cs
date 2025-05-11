@@ -668,8 +668,8 @@ public class Pico8Functions : IDisposable
         if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
         {
             Dispose();
-            Color[] secondHalf = Pico8Utils.DataToColorArray(this, Pico8Utils.MapFlip(_cart.MapData.Substring(0, 8192)), 1);
-            secondHalf.CopyTo(_sprites, 8192);
+            Color[] secondHalf = Pico8Utils.MapDataToColorArray(this, _cart.MapData.Substring(0, _cart.MapDimensions.x * _cart.MapDimensions.y));
+            secondHalf.CopyTo(_sprites, _cart.MapDimensions.x * _cart.MapDimensions.y);
         }
     }
 
@@ -686,7 +686,7 @@ public class Pico8Functions : IDisposable
         int xFlr = Math.Abs((int)Math.Floor(celx));
         int yFlr = Math.Abs((int)Math.Floor(cely));
 
-        return _map[xFlr + yFlr * 128];
+        return _map[xFlr + yFlr * _cart.MapDimensions.x];
     }
 
 
@@ -703,7 +703,7 @@ public class Pico8Functions : IDisposable
         int yFlr = (int)Math.Floor(cely);
         int sFlr = (int)Math.Floor(snum);
 
-        _map[xFlr + yFlr * 128] = sFlr;
+        _map[xFlr + yFlr * _cart.MapDimensions.x] = sFlr;
     }
 
 
@@ -929,7 +929,9 @@ public class Pico8Functions : IDisposable
         _sprites = !string.IsNullOrEmpty(_cart.SpriteData) ? Pico8Utils.DataToColorArray(this, _cart.SpriteData, 1) : _sprites;
         _sprites = !string.IsNullOrEmpty(_cart.SpriteImage) ? Pico8Utils.ImageToColorArray(this, _cart.SpriteImage) : _sprites;
         _flags = Pico8Utils.DataToArray(_cart.FlagData, 2);
-        _map = Pico8Utils.DataToArray(_cart.MapData, 2);
+        if (_cart.MapDimensions.x * _cart.MapDimensions.y != _cart.MapData.Length / 2)
+            throw new Exception($"Map dimensions do not match map data length. Map dimensions: {_cart.MapDimensions.x}x{_cart.MapDimensions.y}, Map data length: {_cart.MapData.Length / 2}");
+        _map = Pico8Utils.MapDataToArray(_cart.MapData);
     }
 
 

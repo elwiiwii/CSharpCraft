@@ -82,9 +82,10 @@ class FNAGame : Game
         //optionsFile = OptionsFile.Initialize();
 
         UpdateViewport();
-
+        
         scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
+        scenes.Add(new PcraftSpeedrun());
         scenes.Add(new DeluxeSingleplayer());
         //scenes.Add(new MainRace());
         scenes.Add(new SeedFilter());
