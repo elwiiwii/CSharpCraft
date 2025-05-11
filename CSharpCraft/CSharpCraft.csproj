@@ -105,7 +105,6 @@
 		<None Remove="Content\Graphics\SpeedrunIcon.png" />
 		<None Remove="Content\Graphics\Spotify.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
-		<None Remove="Content\Graphics\SpriteTest.png" />
 		<None Remove="Content\Graphics\StatisticsIcon.png" />
 		<None Remove="Content\Graphics\StatisticsShadow.png" />
 		<None Remove="Content\Graphics\Steam.png" />
@@ -255,9 +254,6 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SpeedrunIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SpriteTest.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\StatisticsIcon.png">

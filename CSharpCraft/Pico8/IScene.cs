@@ -9,7 +9,7 @@ public interface IScene
     string SpriteImage { get; }
     string SpriteData { get; }
     string FlagData { get; }
-    string MapImage { get; }
+    (int x, int y) MapDimensions { get; }
     string MapData { get; }
     Dictionary<string, List<SongInst>> Music { get; }
     Dictionary<string, Dictionary<int, string>> Sfx { get; }

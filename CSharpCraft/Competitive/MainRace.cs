@@ -155,7 +155,7 @@ public class MainRace : IScene, IDisposable
     public string SpriteImage => "";
     public string SpriteData => @"";
     public string FlagData => @"";
-    public string MapImage => "";
+    public (int x, int y) MapDimensions => (0, 0);
     public string MapData => @"";
     public Dictionary<string, List<SongInst>> Music => new();
     public Dictionary<string, Dictionary<int, string>> Sfx => new();
