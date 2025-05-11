@@ -83,7 +83,6 @@ class FNAGame : Game
 
         UpdateViewport();
 
-        scenes.Add(new HoloCraft());
         scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
         scenes.Add(new DeluxeSingleplayer());
