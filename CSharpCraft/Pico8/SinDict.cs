@@ -1,9 +1,9 @@
-﻿namespace CSharpCraft.Pico8
+﻿namespace CSharpCraft.Pico8;
+
+public class SinDict
 {
-    public class SinDict
+    public readonly Dictionary<double, double> LookupTable = new()
     {
-        public readonly Dictionary<double, double> LookupTable = new()
-        {
 { 0, 0 },
 { 0.1, 0 },
 { 0.2, -2.5 },
@@ -65541,6 +65541,5 @@
 { 6553.4, 0 },
 { 6553.5, 0 },
 { 6553.6, 0 }
-        };
-    }
+    };
 }

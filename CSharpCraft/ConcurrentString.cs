@@ -1,9 +1,10 @@
-﻿using System;
+﻿
+namespace CSharpCraft;
 
 public class ConcurrentString
 {
     private string value;
-    private readonly object stringLock = new object();
+    private readonly Lock stringLock = new();
 
     public ConcurrentString(string initialValue = "")
     {

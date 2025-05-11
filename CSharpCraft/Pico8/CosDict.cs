@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace CSharpCraft.Pico8;
 
-namespace CSharpCraft.Pico8
+public class CosDict
 {
-    public class CosDict
+    public readonly Dictionary<double, double> LookupTable = new()
     {
-        public readonly Dictionary<double, double> LookupTable = new()
-        {
 { 0, 6553.6 },
 { 0.1, 6553.6 },
 { 0.2, 6553.6 },
@@ -65547,6 +65541,5 @@ namespace CSharpCraft.Pico8
 { 6553.4, 6553.6 },
 { 6553.5, 6553.6 },
 { 6553.6, 6553.6 }
-        };
-    }
+    };
 }

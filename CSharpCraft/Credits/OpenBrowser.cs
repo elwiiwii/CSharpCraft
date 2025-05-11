@@ -1,62 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CSharpCraft.Credits.Credits
+namespace CSharpCraft.Credits.Credits;
+
+public class OpenBrowser
 {
-    public class OpenBrowser
+    public static void OpenUrl(string url)
     {
-        public static void OpenUrl(string url)
+        try
         {
-            try
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                try
                 {
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-                    }
-                    catch
-                    {
-                        return;
-                    }
+                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                catch
                 {
-                    try
-                    {
-                        Process.Start("xdg-open", url);
-                    }
-                    catch
-                    {
-                        return;
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    try
-                    {
-                        Process.Start("open", url);
-                    }
-                    catch
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    throw new PlatformNotSupportedException("OS not supported");
+                    return;
                 }
             }
-            catch (Exception ex)
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                Console.WriteLine($"Failed to open URL: {ex.Message}");
-                throw;
+                try
+                {
+                    Process.Start("xdg-open", url);
+                }
+                catch
+                {
+                    return;
+                }
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                try
+                {
+                    Process.Start("open", url);
+                }
+                catch
+                {
+                    return;
+                }
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("OS not supported");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to open URL: {ex.Message}");
+            throw;
         }
     }
 }

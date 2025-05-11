@@ -1,43 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace CSharpCraft.Pico8;
 
-namespace CSharpCraft.Pico8
+public class IntArrayEqualityComparer : IEqualityComparer<int[]>
 {
-    public class IntArrayEqualityComparer : IEqualityComparer<int[]>
+    public bool Equals(int[]? x, int[]? y)
     {
-        public bool Equals(int[]? x, int[]? y)
+        if (x is not null && y is not null)
         {
-            if (x is not null && y is not null)
+            if (x.Length != y.Length)
             {
-                if (x.Length != y.Length)
+                return false;
+            }
+            for (int i = 0; i < x.Length; i++)
+            {
+                if (x[i] != y[i])
                 {
                     return false;
                 }
-                for (int i = 0; i < x.Length; i++)
-                {
-                    if (x[i] != y[i])
-                    {
-                        return false;
-                    }
-                }
             }
-            return true;
         }
+        return true;
+    }
 
-        public int GetHashCode(int[] obj)
+    public int GetHashCode(int[] obj)
+    {
+        int result = 17;
+        for (int i = 0; i < obj.Length; i++)
         {
-            int result = 17;
-            for (int i = 0; i < obj.Length; i++)
+            unchecked
             {
-                unchecked
-                {
-                    result = result * 23 + obj[i];
-                }
+                result = result * 23 + obj[i];
             }
-            return result;
         }
+        return result;
     }
 }
