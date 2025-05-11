@@ -1630,28 +1630,28 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        public override Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new()
+        public override Dictionary<string, List<SongInst>> Music => new()
         {
             { "original", [
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
-                ([("pcraft_og_surface", true)], 1),
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
+                new([("pcraft_og_surface", true)], 1),
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
             },
             { "new!", [
-                ([("menu", true)], 0),
-                ([("pcraft_new_surface", true)], 1),
-                ([("pcraft_new_cave", true)], 1),
-                ([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
-                ([("pcraft_new_cave", true)], 3)]
+                new([("menu", true)], 0),
+                new([("pcraft_new_surface", true)], 1),
+                new([("pcraft_new_cave", true)], 1),
+                new([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
+                new([("pcraft_new_cave", true)], 3)]
             },
             { "pog edition", [
-                ([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
-                ([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
-                ([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
-                ([("pcraft_pe_win", false)], 3),
-                ([("pcraft_pe_death", true)], 4)]
+                new([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
+                new([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
+                new([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
+                new([("pcraft_pe_win", false)], 3),
+                new([("pcraft_pe_death", true)], 4)]
             }
         };
 

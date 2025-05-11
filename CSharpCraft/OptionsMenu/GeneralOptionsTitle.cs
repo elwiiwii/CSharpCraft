@@ -51,11 +51,12 @@ namespace CSharpCraft.OptionsMenu
             p8.Batch.Draw(p8.TextureDictionary["OptionsBackground3"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         }
-        public virtual string SpriteImage => "";
+        public string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
+        public string MapImage => "";
         public string MapData => @"";
-        public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new();
+        public Dictionary<string, List<SongInst>> Music => new();
         public Dictionary<string, Dictionary<int, string>> Sfx => new();
         public void Dispose()
         {

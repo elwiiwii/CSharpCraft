@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CSharpCraft.Pico8;
-
-namespace CSharpCraft
+﻿namespace CSharpCraft.Pico8
 {
     public interface IScene
     {
@@ -16,8 +9,9 @@ namespace CSharpCraft
         string SpriteImage { get; }
         string SpriteData { get; }
         string FlagData { get; }
+        string MapImage { get; }
         string MapData { get; }
-        Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music { get; }
+        Dictionary<string, List<SongInst>> Music { get; }
         Dictionary<string, Dictionary<int, string>> Sfx { get; }
         void Dispose();
     }

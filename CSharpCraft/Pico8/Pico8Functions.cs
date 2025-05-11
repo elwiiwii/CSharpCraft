@@ -1,18 +1,10 @@
 ﻿using CSharpCraft.OptionsMenu;
-using CSharpCraft.Pcraft;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Reflection;
-using System.Security.Cryptography;
-using Force.DeepCloner;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.ColorSpaces.Conversion;
-using System.Drawing;
 
 namespace CSharpCraft.Pico8
 {
@@ -30,32 +22,60 @@ namespace CSharpCraft.Pico8
         public TitleScreen TitleScreen { get; }
         public GameWindow Window { get; }
 
+        // pico-8 colors https://pico-8.fandom.com/wiki/Palette
+        public List<Color> colors { get; } =
+        [
+            Pico8Utils.HexToColor("000000"), // 00 black
+            Pico8Utils.HexToColor("1D2B53"), // 01 dark-blue
+            Pico8Utils.HexToColor("7E2553"), // 02 dark-purple
+            Pico8Utils.HexToColor("008751"), // 03 dark-green
+            Pico8Utils.HexToColor("AB5236"), // 04 brown
+            Pico8Utils.HexToColor("5F574F"), // 05 dark-grey
+            Pico8Utils.HexToColor("C2C3C7"), // 06 light-grey
+            Pico8Utils.HexToColor("FFF1E8"), // 07 white
+            Pico8Utils.HexToColor("FF004D"), // 08 red
+            Pico8Utils.HexToColor("FFA300"), // 09 orange
+            Pico8Utils.HexToColor("FFEC27"), // 10 yellow
+            Pico8Utils.HexToColor("00E436"), // 11 green
+            Pico8Utils.HexToColor("29ADFF"), // 12 blue
+            Pico8Utils.HexToColor("83769C"), // 13 lavender
+            Pico8Utils.HexToColor("FF77A8"), // 14 pink
+            Pico8Utils.HexToColor("FFCCAA"), // 15 light-peach
+            
+            /*
+            Pico8Utils.HexToColor("291814"), // 16 brownish-black
+            Pico8Utils.HexToColor("111D35"), // 17 darker-blue
+            Pico8Utils.HexToColor("422136"), // 18 darker-purple
+            Pico8Utils.HexToColor("125359"), // 19 blue-green
+            Pico8Utils.HexToColor("742F29"), // 20 dark-brown
+            Pico8Utils.HexToColor("49333B"), // 21 darker-grey
+            Pico8Utils.HexToColor("A28879"), // 22 medium-grey
+            Pico8Utils.HexToColor("F3EF7D"), // 23 light-yellow
+            Pico8Utils.HexToColor("BE1250"), // 24 dark-red
+            Pico8Utils.HexToColor("FF6C24"), // 25 dark-orange
+            Pico8Utils.HexToColor("A8E72E"), // 26 lime-green
+            Pico8Utils.HexToColor("00B543"), // 27 medium-green
+            Pico8Utils.HexToColor("065AB5"), // 28 true-blue
+            Pico8Utils.HexToColor("754665"), // 29 mauve
+            Pico8Utils.HexToColor("FF6E59"), // 30 dark-peach
+            Pico8Utils.HexToColor("FF9D81"), // 31 peach
+            */
+        ];
+        public List<PalCol> palColors { get; } = [new(Color.Black, Color.Black, true)];
+
         private int[] _flags;
         public int[] _map;
         private Color[] _sprites;
-        private Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> _music;
+        private Dictionary<string, List<SongInst>> _music;
         private Dictionary<string, Dictionary<int, string>> _sfx;
-        private (int, int) CameraOffset = (0, 0);
+        private (int x, int y) CameraOffset = (0, 0);
         public IScene _cart;
-        public List<List<(string name, SoundEffectInstance track, bool loop, int group)>> channelMusic = [];
+        public List<List<MusicInst>> channelMusic = [];
         public List<SoundEffectInstance> channel0 = [];
         public List<SoundEffectInstance> channel1 = [];
         public List<SoundEffectInstance> channel2 = [];
         public List<SoundEffectInstance> channel3 = [];
-        private bool prev0;
-        private bool prev1;
-        private bool prev2;
-        private bool prev3;
-        private bool prev4;
-        private bool prev5;
-        private bool prev6;
-        private bool[] lockout;
-        private int heldCount0;
-        private int heldCount1;
-        private int heldCount2;
-        private int heldCount3;
-        private int heldCount4;
-        private int heldCount5;
+        private P8Btns buttons;
         private bool isPaused;
         private Dictionary<int[], Texture2D> spriteTextures = new(new IntArrayEqualityComparer());
         private List<MenuItem> mainMenuItems;
@@ -84,22 +104,8 @@ namespace CSharpCraft.Pico8
             TitleScreen = _titleScreen;
             Window = _window;
 
-            prev0 = false;
-            prev1 = false;
-            prev2 = false;
-            prev3 = false;
-            prev4 = false;
-            prev5 = false;
-            prev6 = false;
-
-            lockout = [true, true, true, true, true, true, true];
-
-            heldCount0 = 0;
-            heldCount1 = 0;
-            heldCount2 = 0;
-            heldCount3 = 0;
-            heldCount4 = 0;
-            heldCount5 = 0;
+            buttons = new();
+            buttons.Reset(this);
 
             isPaused = false;
 
@@ -137,14 +143,7 @@ namespace CSharpCraft.Pico8
 
             _cart = cart;
 
-            lockout = [true, true, true, true, true, true, true];
-
-            heldCount0 = 0;
-            heldCount1 = 0;
-            heldCount2 = 0;
-            heldCount3 = 0;
-            heldCount4 = 0;
-            heldCount5 = 0;
+            buttons.Reset(this);
 
             SoundDispose();
 
@@ -340,14 +339,11 @@ namespace CSharpCraft.Pico8
                 isPaused = !isPaused;
                 menuSelected = 0;
             }
-            prev6 = Btn(6);
+            buttons.UpPause(this);
 
             if (isPaused)
             {
-                for (int i = 0; i <= 6; i++)
-                {
-                    if (Ptn(i)) { lockout[i] = true; } else { lockout[i] = false; }
-                }
+                buttons.UpLockout(this, isPaused);
 
                 if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)) { curMenuItems[menuSelected].Function(); }
 
@@ -355,98 +351,77 @@ namespace CSharpCraft.Pico8
                 if (Btnp(3)) { menuSelected += 1; }
                 menuSelected = GeneralFunctions.Loop(menuSelected, curMenuItems);
 
-                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
-                {
-                    song[curTrack].track.Pause();
-                }
-                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
-                {
-                    foreach (SoundEffectInstance sfx in channel)
-                    {
-                        sfx.Pause();
-                    }
-                }
+                PlayPauseSound();
             }
             else
             {
-                for (int i = 0; i <= 6; i++)
-                {
-                    if (!Ptn(i)) { lockout[i] = false; }
-                }
+                buttons.UpLockout(this, isPaused);
 
-                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
-                {
-                    if (song[curTrack].track.State == SoundState.Paused) { song[curTrack].track.Play(); }
-                }
-                foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
-                {
-                    foreach (SoundEffectInstance sfx in channel)
-                    {
-                        if (sfx.State == SoundState.Paused) { sfx.Play(); }
-                    }
-                }
+                PlayPauseSound();
 
                 _cart.Update();
             }
-            
-            prev0 = Btn(0);
-            prev1 = Btn(1);
-            prev2 = Btn(2);
-            prev3 = Btn(3);
-            prev4 = Btn(4);
-            prev5 = Btn(5);
 
-            heldCount0 = prev0 ? heldCount0 + 1 : 0;
-            heldCount1 = prev1 ? heldCount1 + 1 : 0;
-            heldCount2 = prev2 ? heldCount2 + 1 : 0;
-            heldCount3 = prev3 ? heldCount3 + 1 : 0;
-            heldCount4 = prev4 ? heldCount4 + 1 : 0;
-            heldCount5 = prev5 ? heldCount5 + 1 : 0;
+            buttons.Update(this);
 
             float fadeStep = OptionsFile.Gen_Music_Vol / 1600.0f;
 
-            foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
+            foreach (List<MusicInst> song in channelMusic)
             {
-                if (song[curTrack].track.State == SoundState.Stopped)
+                if (song[curTrack].Track.State == SoundState.Stopped)
                 {
                     if (song.Count <= curTrack + 2)
                     {
                         curTrack += 1;
-                        song[curTrack].track.IsLooped = song[curTrack].loop;
-                        song[curTrack].track.Play();
-                        if (OptionsFile.Gen_Sound_On) { song[curTrack].track.Volume = OptionsFile.Gen_Music_Vol / 100.0f; }
+                        song[curTrack].Track.IsLooped = song[curTrack].Loop;
+                        song[curTrack].Track.Play();
+                        if (OptionsFile.Gen_Sound_On) { song[curTrack].Track.Volume = OptionsFile.Gen_Music_Vol / 100.0f; }
                     }
                 }
 
-                if (musicTransition.Item1 is null || musicTransition.Item2 is null)
+                if (musicTransition.fromSong is null || musicTransition.toSong is null)
                 {
                     musicTransition = new();
-                    if (OptionsFile.Gen_Sound_On && lastMusicCall is not null && song[curTrack].name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].tracks[curTrack].name)
+                    if (OptionsFile.Gen_Sound_On && lastMusicCall is not null && song[curTrack].Name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].Tracks[curTrack].name)
                     {
-                        song[curTrack].track.Volume = OptionsFile.Gen_Music_Vol / 100.0f;
+                        song[curTrack].Track.Volume = OptionsFile.Gen_Music_Vol / 100.0f;
                     }
                 }
             }
 
-            if (OptionsFile.Gen_Sound_On && musicTransition.Item1 is not null && musicTransition.Item2 is not null && musicTransition.Item1[curTrack].State == SoundState.Playing && musicTransition.Item2[curTrack].State == SoundState.Playing)
+            if (OptionsFile.Gen_Sound_On && musicTransition.fromSong is not null && musicTransition.toSong is not null && musicTransition.fromSong[curTrack].State == SoundState.Playing && musicTransition.toSong[curTrack].State == SoundState.Playing)
             {
-                if (musicTransition.Item1[curTrack].Volume > 0.0f)
+                if (musicTransition.fromSong[curTrack].Volume > 0.0f)
                 {
-                    musicTransition.Item1[curTrack].Volume -= fadeStep;
+                    musicTransition.fromSong[curTrack].Volume -= fadeStep;
                 }
-                if (musicTransition.Item2[curTrack].Volume < OptionsFile.Gen_Music_Vol / 100.0f)
+                if (musicTransition.toSong[curTrack].Volume < OptionsFile.Gen_Music_Vol / 100.0f)
                 {
-                    musicTransition.Item2[curTrack].Volume += fadeStep;
+                    musicTransition.toSong[curTrack].Volume += fadeStep;
                 }
-                if (musicTransition.Item1[curTrack].Volume <= 0.0f && musicTransition.Item2[curTrack].Volume >= OptionsFile.Gen_Music_Vol / 100.0f)
+                if (musicTransition.fromSong[curTrack].Volume <= 0.0f && musicTransition.toSong[curTrack].Volume >= OptionsFile.Gen_Music_Vol / 100.0f)
                 {
-                    musicTransition.Item1[curTrack].Volume = 0.0f;
-                    musicTransition.Item2[curTrack].Volume = OptionsFile.Gen_Music_Vol / 100.0f;
+                    musicTransition.fromSong[curTrack].Volume = 0.0f;
+                    musicTransition.toSong[curTrack].Volume = OptionsFile.Gen_Music_Vol / 100.0f;
                     musicTransition = new();
                 }
             }
         }
 
+        private void PlayPauseSound()
+        {
+            foreach (List<MusicInst> song in channelMusic)
+            {
+                if (song[curTrack].Track.State == SoundState.Paused) { song[curTrack].Track.Play(); } else { song[curTrack].Track.Pause(); }
+            }
+            foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
+            {
+                foreach (SoundEffectInstance sfx in channel)
+                {
+                    if (sfx.State == SoundState.Paused) { sfx.Play(); } else { sfx.Pause(); }
+                }
+            }
+        }
 
         public void Draw()
         {
@@ -483,258 +458,18 @@ namespace CSharpCraft.Pico8
             }
         }
 
-        public Color[] ImageToColorArray(string filename)
-        {
-            Texture2D texture = TextureDictionary[filename];
-            
-            if (texture == null)
-                throw new ArgumentNullException(nameof(texture));
 
-            if (texture.Format != SurfaceFormat.Color)
-                throw new ArgumentException("Texture must use SurfaceFormat.Color");
-
-            Color[] colorArray = new Color[texture.Width * texture.Height];
-
-            texture.GetData(colorArray);
-
-            return colorArray;
-        }
-
-        private Color[] DataToColorArray(string s)
-        {
-            Color[] val = new Color[s.Length];
-            for (int i = 0; i < s.Length; i++)
-            {
-                val[i] = colors[Convert.ToInt32($"0x{s.Substring(i, 1)}", 16)];
-            }
-
-            return val;
-        }
-
-
-        private static int[] DataToArray(string s, int n)
-        {
-            int[] val = new int[s.Length / n];
-            for (int i = 0; i < s.Length / n; i++)
-            {
-                val[i] = Convert.ToInt32($"0x{s.Substring(i * n, n)}", 16);
-            }
-            
-            return val;
-        }
-
-        private string MapFlip(string s)
-        {
-            return string.Concat(
-                Enumerable.Range(0, (int)Math.Ceiling(s.Length / 2.0))
-                    .Select(i => new string(s
-                        .Skip(i * 2)
-                        .Take(2)
-                        .Reverse()
-                        .ToArray()))
-            );
-        }
-
-        private static Color HexToColor(string hex)
-        {
-            hex = hex.TrimStart('#');
-            byte r = Convert.ToByte(hex.Substring(0, 2), 16);
-            byte g = Convert.ToByte(hex.Substring(2, 2), 16);
-            byte b = Convert.ToByte(hex.Substring(4, 2), 16);
-            return new Color(r, g, b);
-        }
-
-
-        // pico-8 colors https://pico-8.fandom.com/wiki/Palette
-        public List<Color> colors =
-        [
-            HexToColor("000000"), // 00 black
-            HexToColor("1D2B53"), // 01 dark-blue
-            HexToColor("7E2553"), // 02 dark-purple
-            HexToColor("008751"), // 03 dark-green
-            HexToColor("AB5236"), // 04 brown
-            HexToColor("5F574F"), // 05 dark-grey
-            HexToColor("C2C3C7"), // 06 light-grey
-            HexToColor("FFF1E8"), // 07 white
-            HexToColor("FF004D"), // 08 red
-            HexToColor("FFA300"), // 09 orange
-            HexToColor("FFEC27"), // 10 yellow
-            HexToColor("00E436"), // 11 green
-            HexToColor("29ADFF"), // 12 blue
-            HexToColor("83769C"), // 13 lavender
-            HexToColor("FF77A8"), // 14 pink
-            HexToColor("FFCCAA"), // 15 light-peach
-            
-            /*
-            HexToColor("291814"), // 16 brownish-black
-            HexToColor("111D35"), // 17 darker-blue
-            HexToColor("422136"), // 18 darker-purple
-            HexToColor("125359"), // 19 blue-green
-            HexToColor("742F29"), // 20 dark-brown
-            HexToColor("49333B"), // 21 darker-grey
-            HexToColor("A28879"), // 22 medium-grey
-            HexToColor("F3EF7D"), // 23 light-yellow
-            HexToColor("BE1250"), // 24 dark-red
-            HexToColor("FF6C24"), // 25 dark-orange
-            HexToColor("A8E72E"), // 26 lime-green
-            HexToColor("00B543"), // 27 medium-green
-            HexToColor("065AB5"), // 28 true-blue
-            HexToColor("754665"), // 29 mauve
-            HexToColor("FF6E59"), // 30 dark-peach
-            HexToColor("FF9D81"), // 31 peach
-            */
-        ];
-        public class PalCol
-        {
-            public Color c0 { get; set; }
-            public Color c1 { get; set; }
-            public bool trans { get; set; } = false;
-        }
-        public List<PalCol> palColors = [new() { c0 = Color.Black, c1 = Color.Black, trans = true }];
-
-
-        private Texture2D CreateTextureFromSpriteData(Color[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
-        {
-            Texture2D texture = new(GraphicsDevice, spriteWidth, spriteHeight);
-
-            Color[] colorData = new Color[spriteWidth * spriteHeight];
-
-            for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
-            {
-                Color col = palColors.FindAll(x => x.c0 == spriteData[i]).Count > 0 ? palColors.First(x => x.c0 == spriteData[i]).c1 : spriteData[i];
-                if (palColors.FindAll(x => x.c0 == spriteData[i]).Count > 0 && palColors.First(x => x.c0 == spriteData[i]).trans == false)
-                {
-                    colorData[j] = palColors.First(x => x.c0 == spriteData[i]).c1;
-                }
-                else if (palColors.FindAll(x => x.c0 == spriteData[i]).Count <= 0)
-                {
-                    colorData[j] = spriteData[i];
-                }
-
-                if (j % spriteWidth == spriteWidth - 1) { i += 128 - spriteWidth; }
-            }
-
-            texture.SetData(colorData);
-
-            return texture;
-        }
-
-
-        public Entity Add(List<Entity> table, Entity value, int index = -1) // https://pico-8.fandom.com/wiki/Add
+        public T Add<T>(List<T> table, T value, int index = -1) // https://pico-8.fandom.com/wiki/Add
         {
             if (index == -1) { table.Add(value); return value; }
             table.Insert(index, value);
             return value;
-        }
-
-
-        public Material Add(List<Material> table, Material value, int index = -1) // https://pico-8.fandom.com/wiki/Add
-        {
-            if (index == -1) { table.Add(value); return value; }
-            table.Insert(index, value);
-            return value;
-        }
-
-
-        private bool IsBindingDown(int device, string bind)
-        {
-            KeyboardState Kbm_state = Keyboard.GetState();
-            GamePadState con_state = GamePad.GetState(PlayerIndex.One);
-
-            if (device == 0)
-            {
-                if (Enum.TryParse(bind, out Keys key))
-                {
-                    return Kbm_state.IsKeyDown(key);
-                }
-
-                if (IsMouseButton(bind))
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                if (Enum.TryParse(bind, out Buttons button))
-                {
-                    return con_state.IsButtonDown(button);
-                }
-            }
-
-            return false;
-        }
-
-
-        private bool IsMouseButton(string bind)
-        {
-            MouseState mouse_state = Mouse.GetState();
-
-            switch (bind)
-            {
-                case "LeftButton":
-                    return mouse_state.LeftButton == ButtonState.Pressed;
-                case "RightButton":
-                    return mouse_state.RightButton == ButtonState.Pressed;
-                case "MiddleButton":
-                    return mouse_state.MiddleButton == ButtonState.Pressed;
-                case "XButton1":
-                    return mouse_state.XButton1 == ButtonState.Pressed;
-                case "XButton2":
-                    return mouse_state.XButton2 == ButtonState.Pressed;
-                default:
-                    return false;
-            }
         }
 
 
         public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
         {
-            return (isPaused || !lockout[i]) && Ptn(i);
-        }
-
-
-        private bool Ptn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
-        {
-            switch (i)
-            {
-                case 0:
-                    return IsBindingDown(0, OptionsFile.Kbm_Left.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Left.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Left.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Left.Bind2);
-                case 1:
-                    return IsBindingDown(0, OptionsFile.Kbm_Right.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Right.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Right.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Right.Bind2);
-                case 2:
-                    return IsBindingDown(0, OptionsFile.Kbm_Up.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Up.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Up.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Up.Bind2);
-                case 3:
-                    return IsBindingDown(0, OptionsFile.Kbm_Down.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Down.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Down.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Down.Bind2);
-                case 4:
-                    return IsBindingDown(0, OptionsFile.Kbm_Menu.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Menu.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Menu.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Menu.Bind2);
-                case 5:
-                    return IsBindingDown(0, OptionsFile.Kbm_Use.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Use.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Use.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Use.Bind2);
-                case 6:
-                    return IsBindingDown(0, OptionsFile.Kbm_Pause.Bind1) ||
-                        IsBindingDown(0, OptionsFile.Kbm_Pause.Bind2) ||
-                        IsBindingDown(1, OptionsFile.Con_Pause.Bind1) ||
-                        IsBindingDown(1, OptionsFile.Con_Pause.Bind2);
-                default:
-                    return false;
-            }
+            return (isPaused || !buttons.Lockout[i]) && Pico8Utils.Ptn(this, i);
         }
 
 
@@ -742,13 +477,8 @@ namespace CSharpCraft.Pico8
         {
             int initDelay = 15;
             int repDelay = 4;
-            if (i == 0 && Btn(i) && (!prev0 || heldCount0 == initDelay || heldCount0 > initDelay && (heldCount0 - initDelay) % repDelay == 0)) { return true; }
-            if (i == 1 && Btn(i) && (!prev1 || heldCount1 == initDelay || heldCount1 > initDelay && (heldCount1 - initDelay) % repDelay == 0)) { return true; }
-            if (i == 2 && Btn(i) && (!prev2 || heldCount2 == initDelay || heldCount2 > initDelay && (heldCount2 - initDelay) % repDelay == 0)) { return true; }
-            if (i == 3 && Btn(i) && (!prev3 || heldCount3 == initDelay || heldCount3 > initDelay && (heldCount3 - initDelay) % repDelay == 0)) { return true; }
-            if (i == 4 && Btn(i) && (!prev4 || heldCount4 == initDelay || heldCount4 > initDelay && (heldCount4 - initDelay) % repDelay == 0)) { return true; }
-            if (i == 5 && Btn(i) && (!prev5 || heldCount5 == initDelay || heldCount5 > initDelay && (heldCount5 - initDelay) % repDelay == 0)) { return true; }
-            if (i == 6 && Btn(i) && !prev6) { return true; }
+            if (i != 6 && Btn(i) && (!buttons.Prev[i] || buttons.HeldCount[i] == initDelay || buttons.HeldCount[i] > initDelay && (buttons.HeldCount[i] - initDelay) % repDelay == 0)) { return true; }
+            else if (i == 6 && Btn(i) && !buttons.Prev[6]) { return true; }
             return false;
         }
 
@@ -768,59 +498,9 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void CartData(string id)
+        public void CartData(string id) // https://pico-8.fandom.com/wiki/Cartdata
         {
 
-        }
-
-
-        public void Circ(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
-        {
-            if (r < 0) return;
-
-            int xFlr = (int)Math.Floor(x);
-            int yFlr = (int)Math.Floor(y);
-            int rFlr = (int)Math.Floor(r);
-            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
-
-            // Get the size of the viewport
-            int viewportWidth = GraphicsDevice.Viewport.Width;
-            int viewportHeight = GraphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-            
-            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
-            {
-                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
-                {
-                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = i < xFlr ? 0.35D : -0.35D;
-                    double offsetY = j < yFlr ? 0.35D : -0.35D;
-                    double gridCenterX = i + offsetX;
-                    double gridCenterY = j + offsetY;
-
-                    bool isCurrentInCircle = Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr;
-
-                    // Check all four adjacent grid spaces
-                    bool isRightOutsideCircle = Math.Pow(i + 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
-                    bool isLeftOutsideCircle = Math.Pow(i - 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
-                    bool isUpOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j + 1 + offsetY - yFlr, 2) > rFlr * rFlr;
-                    bool isDownOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j - 1 + offsetY - yFlr, 2) > rFlr * rFlr;
-
-                    if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
-                    {
-                        // Calculate the position and size of the line
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
-                        Vector2 size = new(cellWidth, cellHeight);
-
-                        // Draw the line
-                        Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                    }
-                }
-            }
-            
         }
 
 
@@ -831,7 +511,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
-            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
+            Color drawCol = palColors.FindAll(x => x.C0 == colors[c]).Count > 0 ? palColors.First(x => x.C0 == colors[c]).C1 : colors[c];
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -862,51 +542,10 @@ namespace CSharpCraft.Pico8
                     if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                     {
                         // Calculate the position and size of the line
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 position = new((i - CameraOffset.x) * cellWidth, (j - CameraOffset.y) * cellHeight);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw the line
-                        Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                    }
-                }
-            }
-        }
-
-
-        public void Circfill(double x, double y, double r, int c) // https://pico-8.fandom.com/wiki/Circfill
-        {
-            if (r < 0) return;
-
-            int xFlr = (int)Math.Floor(x);
-            int yFlr = (int)Math.Floor(y);
-            int rFlr = (int)Math.Floor(r);
-            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
-
-            // Get the size of the viewport
-            int viewportWidth = GraphicsDevice.Viewport.Width;
-            int viewportHeight = GraphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellWidth = viewportWidth / 128;
-            int cellHeight = viewportHeight / 128;
-
-            for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
-            {
-                for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
-                {
-                    // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                    double offsetX = i < xFlr ? 0.35D : -0.35D;
-                    double offsetY = j < yFlr ? 0.35D : -0.35D;
-                    double gridCenterX = i + offsetX;
-                    double gridCenterY = j + offsetY;
-
-                    if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
-                    {
-                        // Calculate the position and size
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
-                        Vector2 size = new(cellWidth, cellHeight);
-
-                        // Draw
                         Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
                 }
@@ -921,7 +560,7 @@ namespace CSharpCraft.Pico8
             int xFlr = F32.FloorToInt(x);
             int yFlr = F32.FloorToInt(y);
             int rFlr = (int)Math.Floor(r);
-            Color drawCol = palColors.FindAll(x => x.c0 == colors[c]).Count > 0 ? palColors.First(x => x.c0 == colors[c]).c1 : colors[c];
+            Color drawCol = palColors.FindAll(x => x.C0 == colors[c]).Count > 0 ? palColors.First(x => x.C0 == colors[c]).C1 : colors[c];
 
             // Get the size of the viewport
             int viewportWidth = GraphicsDevice.Viewport.Width;
@@ -944,7 +583,7 @@ namespace CSharpCraft.Pico8
                     if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                     {
                         // Calculate the position and size
-                        Vector2 position = new((i - CameraOffset.Item1) * cellWidth, (j - CameraOffset.Item2) * cellHeight);
+                        Vector2 position = new((i - CameraOffset.x) * cellWidth, (j - CameraOffset.y) * cellHeight);
                         Vector2 size = new(cellWidth, cellHeight);
 
                         // Draw
@@ -957,7 +596,7 @@ namespace CSharpCraft.Pico8
 
         public void Cls(int col = 0) // https://pico-8.fandom.com/wiki/Cls
         {
-            Color clearCol = palColors.FindAll(x => x.c0 == colors[col]).Count > 0 ? palColors.First(x => x.c0 == colors[col]).c1 : colors[col];
+            Color clearCol = palColors.FindAll(x => x.C0 == colors[col]).Count > 0 ? palColors.First(x => x.C0 == colors[col]).C1 : colors[col];
             GraphicsDevice.Clear(clearCol);
         }
 
@@ -970,7 +609,7 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Cstore()
+        public void Cstore() // https://pico-8.fandom.com/wiki/Cstore
         {
 
         }
@@ -1030,16 +669,16 @@ namespace CSharpCraft.Pico8
 
         public void Memcpy(int destaddr, int sourceaddr, int len) // https://pico-8.fandom.com/wiki/Memcpy - https://pico-8.fandom.com/wiki/Memory
         {
-            //if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
-            //{
-            //    Dispose();
-            //    int[] secondHalf = DataToArray(MapFlip(_cart.MapData.Substring(0, 8192)), 1);
-            //    secondHalf.CopyTo(_sprites, 8192);
-            //}
+            if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
+            {
+                Dispose();
+                Color[] secondHalf = Pico8Utils.DataToColorArray(this, Pico8Utils.MapFlip(_cart.MapData.Substring(0, 8192)), 1);
+                secondHalf.CopyTo(_sprites, 8192);
+            }
         }
 
 
-        public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null)
+        public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null) // https://pico-8.fandom.com/wiki/Menuitem
         {
             if (list == null) { list = curMenuItems; }
             list.Insert(pos, new MenuItem(getName, function));
@@ -1075,26 +714,26 @@ namespace CSharpCraft.Pico8
         public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
         {
             lastMusicCall = n;
-            (List<(string name, bool loop)> tracks, int group) curSong = _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value[n];
+            SongInst curSong = _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value[n];
 
-            if (channelMusic.Count > 0 && channelMusic[0][0].group == curSong.group)
+            if (channelMusic.Count > 0 && channelMusic[0][0].Group == curSong.Group)
             {
-                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> item in channelMusic)
+                foreach (List<MusicInst> item in channelMusic)
                 {
-                    if (item[0].name != curSong.tracks[0].name)
+                    if (item[0].Name != curSong.Tracks[0].name)
                     {
-                        foreach ((string name, SoundEffectInstance track, bool loop, int group) sfxInst in item)
+                        foreach (MusicInst sfxInst in item)
                         {
                             musicTransition.fromSong = [];
-                            musicTransition.fromSong.Add(sfxInst.track);
+                            musicTransition.fromSong.Add(sfxInst.Track);
                         }
                     }
                     else
                     {
-                        foreach ((string name, SoundEffectInstance track, bool loop, int group) sfxInst in item)
+                        foreach (MusicInst sfxInst in item)
                         {
                             musicTransition.toSong = [];
-                            musicTransition.toSong.Add(sfxInst.track);
+                            musicTransition.toSong.Add(sfxInst.Track);
                         }
                     }
                 }
@@ -1103,24 +742,24 @@ namespace CSharpCraft.Pico8
             {
                 SoundDispose();
 
-                foreach ((List<(string name, bool loop)> tracks, int group) song in _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value)
+                foreach (SongInst song in _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value)
                 {
-                    if (song.group == curSong.group)
+                    if (song.Group == curSong.Group)
                     {
-                        List<(string name, SoundEffectInstance track, bool loop, int group)> listOfTracks = [];
-                        foreach ((string name, bool loop) track in song.tracks)
+                        List<MusicInst> listOfTracks = [];
+                        foreach ((string name, bool loop) track in song.Tracks)
                         {
-                            listOfTracks.Add((track.name, MusicDictionary[track.name].CreateInstance(), track.loop, song.group));
+                            listOfTracks.Add(new(track.name, MusicDictionary[track.name].CreateInstance(), track.loop, song.Group));
                         }
                         channelMusic.Add(listOfTracks);
                     }
                 }
 
-                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> item in channelMusic)
+                foreach (List<MusicInst> item in channelMusic)
                 {
-                    item[0].track.IsLooped = item[0].loop;
-                    item[0].track.Play();
-                    item[0].track.Volume = item[0].name == curSong.tracks[0].name ? OptionsFile.Gen_Sound_On ? OptionsFile.Gen_Music_Vol / 100.0f : 0 : 0;
+                    item[0].Track.IsLooped = item[0].Loop;
+                    item[0].Track.Play();
+                    item[0].Track.Volume = item[0].Name == curSong.Tracks[0].name ? OptionsFile.Gen_Sound_On ? OptionsFile.Gen_Music_Vol / 100.0f : 0 : 0;
                     curTrack = 0;
                 }
             }
@@ -1129,11 +768,11 @@ namespace CSharpCraft.Pico8
 
         public void Mute()
         {
-            foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> song in channelMusic)
+            foreach (List<MusicInst> song in channelMusic)
             {
-                foreach ((string name, SoundEffectInstance track, bool loop, int group) track in song)
+                foreach (MusicInst track in song)
                 {
-                    track.track.Volume = 0.0f;
+                    track.Track.Volume = 0.0f;
                 }
             }
             foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
@@ -1149,40 +788,40 @@ namespace CSharpCraft.Pico8
         public void Pal() // https://pico-8.fandom.com/wiki/Pal
         {
             palColors.Clear();
-            palColors.Add(new() { c0 = colors[0], c1 = colors[0], trans = true });
+            palColors.Add(new(colors[0], colors[0], true));
         }
 
 
         public void Pal(int c0, int c1) // https://pico-8.fandom.com/wiki/Pal
         {
-            palColors.FindAll(x => x.c0 == colors[c0]).ForEach(x => palColors.Remove(x));
-            palColors.Add(new() { c0 = colors[c0], c1 = colors[c1] });
+            palColors.FindAll(x => x.C0 == colors[c0]).ForEach(x => palColors.Remove(x));
+            palColors.Add(new(colors[c0], colors[c1], false));
         }
 
 
         public void Pal(Color c0, Color c1) // https://pico-8.fandom.com/wiki/Pal
         {
-            palColors.FindAll(x => x.c0 == c0).ForEach(x => palColors.Remove(x));
-            palColors.Add(new() { c0 = c0, c1 = c1 });
+            palColors.FindAll(x => x.C0 == c0).ForEach(x => palColors.Remove(x));
+            palColors.Add(new(c0, c1, false));
         }
 
 
         public void Palt() // https://pico-8.fandom.com/wiki/Palt
         {
-            palColors.ForEach(x => x.trans = false);
-            palColors[0].trans = true;
+            palColors.ForEach(x => x.Trans = false);
+            palColors[0].Trans = true;
         }
 
 
         public void Palt(int col, bool t) // https://pico-8.fandom.com/wiki/Palt
         {
-            palColors.FindAll(x => x.c0 == colors[col]).ForEach(x => x.trans = t);
+            palColors.FindAll(x => x.C0 == colors[col]).ForEach(x => x.Trans = t);
         }
 
 
         public void Palt(Color col, bool t) // https://pico-8.fandom.com/wiki/Palt
         {
-            palColors.FindAll(x => x.c0 == col).ForEach(x => x.trans = t);
+            palColors.FindAll(x => x.C0 == col).ForEach(x => x.Trans = t);
         }
 
 
@@ -1213,9 +852,9 @@ namespace CSharpCraft.Pico8
                     {
                         if (Font.chars[letter][i, j] == 1)
                         {
-                            int charStartX = (s * charWidth + xFlr + j - CameraOffset.Item1) * cellWidth;
-                            //int charEndX = charStartX + cellWidth - CameraOffset.Item1;
-                            int charStartY = (yFlr + i - CameraOffset.Item2) * cellHeight;
+                            int charStartX = (s * charWidth + xFlr + j - CameraOffset.x) * cellWidth;
+                            //int charEndX = charStartX + cellWidth - CameraOffset.x;
+                            int charStartY = (yFlr + i - CameraOffset.y) * cellHeight;
 
                             Vector2 position = new(charStartX, charStartY);
                             Vector2 size = new(cellWidth, cellHeight);
@@ -1244,7 +883,7 @@ namespace CSharpCraft.Pico8
             int cellHeight = viewportHeight / 128;
 
             // Calculate the position and size of the line
-            Vector2 position = new((xFlr - CameraOffset.Item1) * cellWidth, (yFlr - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new((xFlr - CameraOffset.x) * cellWidth, (yFlr - CameraOffset.y) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
 
             // Draw the line
@@ -1268,13 +907,13 @@ namespace CSharpCraft.Pico8
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            int rectStartX = (x1Flr - CameraOffset.Item1) * cellWidth;
-            int rectStartY = (y1Flr - CameraOffset.Item2) * cellHeight;
+            int rectStartX = (x1Flr - CameraOffset.x) * cellWidth;
+            int rectStartY = (y1Flr - CameraOffset.y) * cellHeight;
 
             int rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
             int rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
 
-            //int rectEndX = (x2Flr - CameraOffset.Item1) * cellWidth;
+            //int rectEndX = (x2Flr - CameraOffset.x) * cellWidth;
             //int rectThickness = (y2Flr - y1Flr) * cellHeight;
             //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
 
@@ -1289,10 +928,10 @@ namespace CSharpCraft.Pico8
         {
             Dispose();
 
-            _sprites = !string.IsNullOrEmpty(_cart.SpriteImage) ? ImageToColorArray(_cart.SpriteImage) : _sprites;
-            _sprites = !string.IsNullOrEmpty(_cart.SpriteData) ? DataToColorArray(_cart.SpriteData) : _sprites;
-            _flags = DataToArray(_cart.FlagData, 2);
-            _map = DataToArray(_cart.MapData, 2);
+            _sprites = !string.IsNullOrEmpty(_cart.SpriteData) ? Pico8Utils.DataToColorArray(this, _cart.SpriteData, 1) : _sprites;
+            _sprites = !string.IsNullOrEmpty(_cart.SpriteImage) ? Pico8Utils.ImageToColorArray(this, _cart.SpriteImage) : _sprites;
+            _flags = Pico8Utils.DataToArray(_cart.FlagData, 2);
+            _map = Pico8Utils.DataToArray(_cart.MapData, 2);
         }
 
 
@@ -1335,7 +974,6 @@ namespace CSharpCraft.Pico8
             {
                 return;
             }
-
         }
 
 
@@ -1347,7 +985,7 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public int Sget(double x, double y)
+        public int Sget(double x, double y) // https://pico-8.fandom.com/wiki/Sget
         {
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -1366,13 +1004,13 @@ namespace CSharpCraft.Pico8
         }
 
 
-        public void Srand(int seed)
+        public void Srand(int seed) // https://pico-8.fandom.com/wiki/Srand
         {
             random = new(seed);
         }
 
 
-        public void Sset(double x, double y, double col)
+        public void Sset(double x, double y, double col) // https://pico-8.fandom.com/wiki/Sset
         {
             int xFlr = (int)Math.Floor(x);
             int yFlr = (int)Math.Floor(y);
@@ -1401,14 +1039,14 @@ namespace CSharpCraft.Pico8
             List<int> cacheList = [];
             for (int i  = 0; i < palColors.Count; i++)
             {
-                cacheList.Add((int)palColors[i].c0.PackedValue);
-                cacheList.Add((int)palColors[i].c1.PackedValue);
+                cacheList.Add((int)palColors[i].C0.PackedValue);
+                cacheList.Add((int)palColors[i].C1.PackedValue);
             }
             cacheList.Add(spriteNumberFlr);
             int[] cache = cacheList.ToArray();
             if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
             {
-                texture = CreateTextureFromSpriteData(_sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
+                texture = Pico8Utils.CreateTextureFromSpriteData(this, _sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
                 spriteTextures[cache] = texture;
             }
 
@@ -1420,7 +1058,7 @@ namespace CSharpCraft.Pico8
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.x) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.y) * cellHeight);
             Vector2 size = new(cellWidth, cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
@@ -1447,14 +1085,14 @@ namespace CSharpCraft.Pico8
             List<int> cacheList = [];
             for (int i = 0; i < palColors.Count; i++)
             {
-                cacheList.Add((int)palColors[i].c0.PackedValue);
-                cacheList.Add((int)palColors[i].c1.PackedValue);
+                cacheList.Add((int)palColors[i].C0.PackedValue);
+                cacheList.Add((int)palColors[i].C1.PackedValue);
             }
             cacheList.Add(spriteNumberFlr);
             int[] cache = cacheList.ToArray();
             if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
             {
-                texture = CreateTextureFromSpriteData(_sprites, sxFlr, syFlr, swFlr, shFlr);
+                texture = Pico8Utils.CreateTextureFromSpriteData(this, _sprites, sxFlr, syFlr, swFlr, shFlr);
                 spriteTextures[cache] = texture;
             }
 
@@ -1466,7 +1104,7 @@ namespace CSharpCraft.Pico8
             int cellWidth = viewportWidth / 128;
             int cellHeight = viewportHeight / 128;
 
-            Vector2 position = new(((flip_x ? dxFlr + 2 * spriteWidth * swFlr - spriteWidth : dxFlr + spriteWidth) - CameraOffset.Item1) * cellWidth, ((flip_y ? dyFlr + 2 * spriteHeight * shFlr - spriteHeight : dyFlr + spriteHeight) - CameraOffset.Item2) * cellHeight);
+            Vector2 position = new(((flip_x ? dxFlr + 2 * spriteWidth * swFlr - spriteWidth : dxFlr + spriteWidth) - CameraOffset.x) * cellWidth, ((flip_y ? dyFlr + 2 * spriteHeight * shFlr - spriteHeight : dyFlr + spriteHeight) - CameraOffset.y) * cellHeight);
             Vector2 size = new(dwFlr * cellWidth, dhFlr * cellHeight);
             SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
@@ -1488,11 +1126,11 @@ namespace CSharpCraft.Pico8
         {
             if (channelMusic is not null)
             {
-                foreach (List<(string name, SoundEffectInstance track, bool loop, int group)> songList in channelMusic)
+                foreach (List<MusicInst> songList in channelMusic)
                 {
-                    foreach ((string name, SoundEffectInstance track, bool loop, int group) song in songList)
+                    foreach (MusicInst song in songList)
                     {
-                        song.track.Dispose();
+                        song.Track.Dispose();
                     }
                 }
                 channelMusic = [];

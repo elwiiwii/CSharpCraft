@@ -1979,7 +1979,7 @@ namespace CSharpCraft.Pcraft
             }
         }
 
-        public virtual string SpriteImage => "SpriteTest";
+        public virtual string SpriteImage => "";
 
         public virtual string SpriteData => @"
 00000000ffffffffffffffffffffffffffffffff44fff44ffff44fff020121000004200002031000fff55fffffff555ff5555fff000000000001000000101000
@@ -2114,6 +2114,8 @@ dffffffffff2255555d55d535224224224423b52242555555555ffffff2fffddccccccccccccc1d1
 
         public virtual string FlagData => @"";
 
+        public virtual string MapImage => "";
+
         public virtual string MapData => @"
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc4fcccccccccccccccccccccccccccc
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfc44ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccfcc4cccccccccccccccccccccccccccc
@@ -2181,28 +2183,28 @@ f22f1121ff2f11f2ffff22ff1221ff22ff121121ff12f22f1111111121ff12111111111111111111
 1111111121111111222211221111221122111111221121121111111111221111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ".Replace("\n", "").Replace("\r", "");
 
-        public virtual Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new()
+        public virtual Dictionary<string, List<SongInst>> Music => new()
         {
             { "original", [
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
-                ([("pcraft_og_surface", true)], 1),
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
-                ([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
+                new([("pcraft_og_surface", true)], 1),
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
+                new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
             },
             { "new!", [
-                ([("pcraft_new_title", true)], 0),
-                ([("pcraft_new_surface", true)], 1),
-                ([("pcraft_new_cave", true)], 1),
-                ([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
-                ([("pcraft_new_cave", true)], 3)]
+                new([("pcraft_new_title", true)], 0),
+                new([("pcraft_new_surface", true)], 1),
+                new([("pcraft_new_cave", true)], 1),
+                new([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
+                new([("pcraft_new_cave", true)], 3)]
             },
             { "pog edition", [
-                ([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
-                ([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
-                ([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
-                ([("pcraft_pe_win", false)], 3),
-                ([("pcraft_pe_death", true)], 4)]
+                new([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
+                new([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
+                new([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
+                new([("pcraft_pe_win", false)], 3),
+                new([("pcraft_pe_death", true)], 4)]
             }
         };
 

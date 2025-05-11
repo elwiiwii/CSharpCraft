@@ -13,6 +13,7 @@ using System;
 using CSharpCraft.Pcraft;
 using System.Drawing;
 using CSharpCraft.OptionsMenu;
+using FixMath;
 
 namespace CSharpCraft.RaceMode
 {
@@ -292,14 +293,14 @@ namespace CSharpCraft.RaceMode
 
             p8.Batch.Draw(p8.TextureDictionary["SmallNameBanner"], new Vector2(0 * cellW, 4 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
             p8.Batch.Draw(p8.TextureDictionary["SmallNameBanner"], new Vector2(73 * cellW, 4 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
-            p8.Circfill(47 - player1Score.ToString().Length, 9, 3, 1);
-            p8.Circfill(47 + player1Score.ToString().Length, 9, 3, 1);
+            p8.Circfill(F32.FromInt(47) - player1Score.ToString().Length, F32.FromInt(9), 3, 1);
+            p8.Circfill(F32.FromInt(47) + player1Score.ToString().Length, F32.FromInt(9), 3, 1);
             p8.Rectfill(47 - 1 - player1Score.ToString().Length, 6, 47 + 1 + player1Score.ToString().Length, 12, 1);
             Printc($"{player1Score}", 48, 7, 7);
             PrintR(player1Name, 40, 7, 7);
 
-            p8.Circfill(80 - player2Score.ToString().Length, 9, 3, 1);
-            p8.Circfill(80 + player2Score.ToString().Length, 9, 3, 1);
+            p8.Circfill(F32.FromInt(80) - player2Score.ToString().Length, F32.FromInt(9), 3, 1);
+            p8.Circfill(F32.FromInt(80) + player2Score.ToString().Length, F32.FromInt(9), 3, 1);
             p8.Rectfill(80 - 1 - player2Score.ToString().Length, 6, 80 + 1 + player2Score.ToString().Length, 12, 1);
             Printc($"{player2Score}", 81, 7, 7);
             p8.Print(player2Name, 87, 7, 7);
@@ -344,11 +345,12 @@ namespace CSharpCraft.RaceMode
                 DrawInitialSeedSelection(turns[3], 3);
             }
         }
-        public virtual string SpriteImage => "";
+        public string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
+        public string MapImage => "";
         public string MapData => @"";
-        public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new();
+        public Dictionary<string, List<SongInst>> Music => new();
         public Dictionary<string, Dictionary<int, string>> Sfx => new();
         public void Dispose()
         {

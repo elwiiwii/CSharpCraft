@@ -81,11 +81,12 @@ namespace CSharpCraft.Competitive
 
             Shared.DrawCursor(p8, cursorX, cursorY);
         }
-        public virtual string SpriteImage => "";
+        public string SpriteImage => "";
         public string SpriteData => @"";
         public string FlagData => @"";
+        public string MapImage => "";
         public string MapData => @"";
-        public Dictionary<string, List<(List<(string name, bool loop)> tracks, int group)>> Music => new();
+        public Dictionary<string, List<SongInst>> Music => new();
         public Dictionary<string, Dictionary<int, string>> Sfx => new();
         public void Dispose()
         {
