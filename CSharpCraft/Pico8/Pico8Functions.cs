@@ -351,13 +351,13 @@ public class Pico8Functions : IDisposable
             if (Btnp(3)) { menuSelected += 1; }
             menuSelected = GeneralFunctions.Loop(menuSelected, curMenuItems);
 
-            PlayPauseSound();
+            PlaySound(false);
         }
         else
         {
             buttons.UpLockout(this, isPaused);
 
-            PlayPauseSound();
+            PlaySound(true);
 
             _cart.Update();
         }
@@ -370,7 +370,7 @@ public class Pico8Functions : IDisposable
         {
             if (song[curTrack].Track.State == SoundState.Stopped)
             {
-                if (song.Count <= curTrack + 2)
+                if (song.Count > curTrack + 1)
                 {
                     curTrack += 1;
                     song[curTrack].Track.IsLooped = song[curTrack].Loop;
@@ -408,17 +408,19 @@ public class Pico8Functions : IDisposable
         }
     }
 
-    private void PlayPauseSound()
+    private void PlaySound(bool play = true)
     {
         foreach (List<MusicInst> song in channelMusic)
         {
-            if (song[curTrack].Track.State == SoundState.Paused) { song[curTrack].Track.Play(); } else { song[curTrack].Track.Pause(); }
+            if (song[curTrack].Track.State == SoundState.Paused && play) { song[curTrack].Track.Play(); }
+            else if (song[curTrack].Track.State == SoundState.Playing && !play) { song[curTrack].Track.Pause(); }
         }
         foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
         {
             foreach (SoundEffectInstance sfx in channel)
             {
-                if (sfx.State == SoundState.Paused) { sfx.Play(); } else { sfx.Pause(); }
+                if (sfx.State == SoundState.Paused && play) { sfx.Play(); }
+                else if (sfx.State == SoundState.Playing && !play) { sfx.Pause(); }
             }
         }
     }

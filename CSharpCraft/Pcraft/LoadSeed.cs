@@ -1,4 +1,5 @@
-﻿using CSharpCraft.Pico8;
+﻿using System.Text.RegularExpressions;
+using CSharpCraft.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework.Input;
 using NativeFileDialogs.Net;
@@ -7,9 +8,12 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace CSharpCraft.Pcraft;
 
-public class LoadSeed : SpeedrunBase
+public partial class LoadSeed : SpeedrunBase
 {
     public override string SceneName => "load seed";
+
+    [GeneratedRegex(@"\D")]
+    private static partial Regex DigitOnly();
 
     private int yStart = 1;
     private int menuX = 8;
@@ -102,6 +106,8 @@ public class LoadSeed : SpeedrunBase
             {
                 rngSeed += rngSeed + (rngSeedChar[i] + 1) * (i + 1);
             }
+            Random e = new(rngSeed);
+            rngSeed = Math.Abs(e.Next(0, int.MaxValue));
             seedInput = rngSeed.ToString();
         }
     }
@@ -130,7 +136,16 @@ public class LoadSeed : SpeedrunBase
 
     private void UpdateRngSeed()
     {
-        rngSeed = string.IsNullOrEmpty(seedInput) ? 0 : Convert.ToInt32(seedInput);
+        if (string.IsNullOrEmpty(seedInput))
+        {
+            rngSeed = 0;
+            return;
+        }
+        else
+        {
+            seedInput = DigitOnly().Replace(seedInput, "");
+            rngSeed = Convert.ToInt32(seedInput);
+        }
     }
 
     public override void Update()
@@ -838,6 +853,7 @@ public class LoadSeed : SpeedrunBase
     public override void Dispose()
     {
         TextInputEXT.StopTextInput();
+        TextInputEXT.TextInput -= OnTextInput;
         base.Dispose();
     }
 }
