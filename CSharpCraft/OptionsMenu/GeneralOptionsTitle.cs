@@ -31,15 +31,7 @@ public class GeneralOptionsTitle : IScene, IDisposable
     {
         p8.Cls();
 
-        // Get the size of the viewport
-        int viewportWidth = p8.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellW = viewportWidth / 128;
-        int cellH = viewportHeight / 128;
-
-        Vector2 size = new(cellW, cellH);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
         drawScene.Draw();
 

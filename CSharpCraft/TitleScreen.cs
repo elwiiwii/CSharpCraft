@@ -52,16 +52,8 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
     {
         p8.Batch.GraphicsDevice.Clear(Color.Black);
 
-        // Get the size of the viewport
-        int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
-
-        Vector2 position = new(1 * cellWidth, 1 * cellHeight);
-        Vector2 size = new(cellWidth, cellHeight);
+        Vector2 position = new(1 * p8.Cell.Width, 1 * p8.Cell.Height);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
         Texture2D logo = p8.TextureDictionary["CSharpCraftLogo"];
         p8.Batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -69,10 +61,10 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
         if (frame >= 5) { p8.Print($"c# craft {version}", 0, 18, 6); }
         if (frame >= 6) { p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
-        if (frame >= 7) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(3 * cellWidth, 36 * cellHeight), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-        if (frame >= 11) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(11 * cellWidth, 38 * cellHeight), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-        if (frame >= 15) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(19 * cellWidth, 36 * cellHeight), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-        if (frame >= 19) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(27 * cellWidth, 34 * cellHeight), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+        if (frame >= 7) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(3 * p8.Cell.Width, 36 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+        if (frame >= 11) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(11 * p8.Cell.Width, 38 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+        if (frame >= 15) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(19 * p8.Cell.Width, 36 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+        if (frame >= 19) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(27 * p8.Cell.Width, 34 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
 
         if (frame >= 29) { p8.Print("choose a game mode", 0, 50, 6); }
 

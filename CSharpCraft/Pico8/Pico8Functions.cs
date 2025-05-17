@@ -11,6 +11,8 @@ namespace CSharpCraft.Pico8;
 public class Pico8Functions : IDisposable
 {
     public SpriteBatch Batch { get; }
+    public (F32 x, F32 y) CameraOffset { get; internal set; } = (F32.Zero, F32.Zero);
+    public (int Width, int Height) Cell { get; internal set; }
     public GraphicsDeviceManager Graphics { get; }
     public GraphicsDevice GraphicsDevice { get; }
     public Dictionary<string, SoundEffect> MusicDictionary { get; }
@@ -68,7 +70,7 @@ public class Pico8Functions : IDisposable
     private Color[] _sprites;
     private Dictionary<string, List<SongInst>> _music;
     private Dictionary<string, Dictionary<int, string>> _sfx;
-    private (int x, int y) CameraOffset = (0, 0);
+    
     public IScene _cart;
     public List<List<MusicInst>> channelMusic = [];
     public List<SoundEffectInstance> channel0 = [];
@@ -334,6 +336,7 @@ public class Pico8Functions : IDisposable
 
     public void Update()
     {
+        Cell = (GraphicsDevice.Viewport.Width / 128, GraphicsDevice.Viewport.Height / 128);
         if (!(_cart.SceneName == "TitleScreen") && Btnp(6))
         {
             isPaused = !isPaused;
@@ -408,7 +411,7 @@ public class Pico8Functions : IDisposable
         }
     }
 
-    private void PlaySound(bool play = true)
+    private void PlaySound(bool play)
     {
         foreach (List<MusicInst> song in channelMusic)
         {
@@ -433,14 +436,7 @@ public class Pico8Functions : IDisposable
 
         if (isPaused)
         {
-            int viewportWidth = GraphicsDevice.Viewport.Width;
-            int viewportHeight = GraphicsDevice.Viewport.Height;
-
-            // Calculate the size of each cell
-            int cellW = viewportWidth / 128;
-            int cellH = viewportHeight / 128;
-
-            Vector2 size = new(cellW, cellH);
+            Vector2 size = new(Cell.Width, Cell.Height);
 
             int i = (int)Math.Floor(64 - (curMenuItems.Count / 2.0) * 8);
 
@@ -449,7 +445,7 @@ public class Pico8Functions : IDisposable
             Rectfill(0 + xborder + 1, i - 7 + 1, 127 - xborder - 1, i + curMenuItems.Count * 8 + 2 - 1, 7);
             Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + curMenuItems.Count * 8 + 2 - 2, 0);
 
-            Batch.Draw(TextureDictionary["PauseArrow"], new Vector2((xborder + 4) * cellW, (i - 1 + menuSelected * 8) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            Batch.Draw(TextureDictionary["PauseArrow"], new Vector2((xborder + 4) * Cell.Width, (i - 1 + menuSelected * 8) * Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             for(int j = 0; j < curMenuItems.Count; j++)
             {
@@ -487,16 +483,13 @@ public class Pico8Functions : IDisposable
 
     public void Camera() // https://pico-8.fandom.com/wiki/Camera
     {
-        CameraOffset = (0, 0);
+        CameraOffset = (F32.Zero, F32.Zero);
     }
 
 
     public void Camera(F32 x, F32 y) // https://pico-8.fandom.com/wiki/Camera
     {
-        int xFlr = F32.FloorToInt(x);
-        int yFlr = F32.FloorToInt(y);
-
-        CameraOffset = (xFlr, yFlr);
+        CameraOffset = (x, y);
     }
 
 
@@ -514,14 +507,6 @@ public class Pico8Functions : IDisposable
         int yFlr = F32.FloorToInt(y);
         int rFlr = (int)Math.Floor(r);
         Color drawCol = PalColors.FindAll(x => x.C0 == Colors[c]).Count > 0 ? PalColors.First(x => x.C0 == Colors[c]).C1 : Colors[c];
-
-        // Get the size of the viewport
-        int viewportWidth = GraphicsDevice.Viewport.Width;
-        int viewportHeight = GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
 
         for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
         {
@@ -544,8 +529,8 @@ public class Pico8Functions : IDisposable
                 if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
                 {
                     // Calculate the position and size of the line
-                    Vector2 position = new((i - CameraOffset.x) * cellWidth, (j - CameraOffset.y) * cellHeight);
-                    Vector2 size = new(cellWidth, cellHeight);
+                    Vector2 position = new((i - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (j - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
+                    Vector2 size = new(Cell.Width, Cell.Height);
 
                     // Draw the line
                     Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -564,14 +549,6 @@ public class Pico8Functions : IDisposable
         int rFlr = (int)Math.Floor(r);
         Color drawCol = PalColors.FindAll(x => x.C0 == Colors[c]).Count > 0 ? PalColors.First(x => x.C0 == Colors[c]).C1 : Colors[c];
 
-        // Get the size of the viewport
-        int viewportWidth = GraphicsDevice.Viewport.Width;
-        int viewportHeight = GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
-
         for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
         {
             for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
@@ -585,8 +562,8 @@ public class Pico8Functions : IDisposable
                 if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
                 {
                     // Calculate the position and size
-                    Vector2 position = new((i - CameraOffset.x) * cellWidth, (j - CameraOffset.y) * cellHeight);
-                    Vector2 size = new(cellWidth, cellHeight);
+                    Vector2 position = new((i - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (j - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
+                    Vector2 size = new(Cell.Width, Cell.Height);
 
                     // Draw
                     Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -670,7 +647,7 @@ public class Pico8Functions : IDisposable
         if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
         {
             Dispose();
-            Color[] secondHalf = Pico8Utils.MapDataToColorArray(this, _cart.MapData.Substring(0, _cart.MapDimensions.x * _cart.MapDimensions.y));
+            Color[] secondHalf = Pico8Utils.MapDataToColorArray(this, _cart.MapData.Substring(0, _cart.MapDimensions.x * _cart.MapDimensions.y * 2));
             secondHalf.CopyTo(_sprites, _cart.MapDimensions.x * _cart.MapDimensions.y);
         }
     }
@@ -834,14 +811,6 @@ public class Pico8Functions : IDisposable
         int charWidth = 4;
         //int charHeight = 5;
 
-        // Get the size of the viewport
-        int viewportWidth = GraphicsDevice.Viewport.Width;
-        int viewportHeight = GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
-
         for (int s = 0; s < str.Length; s++)
         {
             char letter = str[s];
@@ -852,12 +821,12 @@ public class Pico8Functions : IDisposable
                 {
                     if (Font.chars[letter][i, j] == 1)
                     {
-                        int charStartX = (s * charWidth + xFlr + j - CameraOffset.x) * cellWidth;
-                        //int charEndX = charStartX + cellWidth - CameraOffset.x;
-                        int charStartY = (yFlr + i - CameraOffset.y) * cellHeight;
+                        int charStartX = (s * charWidth + xFlr + j - F32.FloorToInt(CameraOffset.x)) * Cell.Width;
+                        //int charEndX = charStartX + Cell.Width - CameraOffset.x;
+                        int charStartY = (yFlr + i - F32.FloorToInt(CameraOffset.y)) * Cell.Height;
 
                         Vector2 position = new(charStartX, charStartY);
-                        Vector2 size = new(cellWidth, cellHeight);
+                        Vector2 size = new(Cell.Width, Cell.Height);
 
                         Batch.Draw(Pixel, position, null, Colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                     }
@@ -874,17 +843,9 @@ public class Pico8Functions : IDisposable
         //float yFlr = (float)(Math.Floor(y) - 0.5);
         int cFlr = (int)Math.Floor(c);
 
-        // Get the size of the viewport
-        int viewportWidth = GraphicsDevice.Viewport.Width;
-        int viewportHeight = GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
-
         // Calculate the position and size of the line
-        Vector2 position = new((xFlr - CameraOffset.x) * cellWidth, (yFlr - CameraOffset.y) * cellHeight);
-        Vector2 size = new(cellWidth, cellHeight);
+        Vector2 position = new((xFlr - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (yFlr - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
+        Vector2 size = new(Cell.Width, Cell.Height);
 
         // Draw the line
         Batch.Draw(Pixel, position, null, Colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
@@ -899,22 +860,14 @@ public class Pico8Functions : IDisposable
         int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
         int cFlr = (int)Math.Floor(c);
 
-        // Get the size of the viewport
-        int viewportWidth = GraphicsDevice.Viewport.Width;
-        int viewportHeight = GraphicsDevice.Viewport.Height;
+        int rectStartX = (x1Flr - F32.FloorToInt(CameraOffset.x)) * Cell.Width;
+        int rectStartY = (y1Flr - F32.FloorToInt(CameraOffset.y)) * Cell.Height;
 
-        // Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
+        int rectSizeX = (x2Flr - x1Flr + 1) * Cell.Width;
+        int rectSizeY = (y2Flr - y1Flr + 1) * Cell.Height;
 
-        int rectStartX = (x1Flr - CameraOffset.x) * cellWidth;
-        int rectStartY = (y1Flr - CameraOffset.y) * cellHeight;
-
-        int rectSizeX = (x2Flr - x1Flr + 1) * cellWidth;
-        int rectSizeY = (y2Flr - y1Flr + 1) * cellHeight;
-
-        //int rectEndX = (x2Flr - CameraOffset.x) * cellWidth;
-        //int rectThickness = (y2Flr - y1Flr) * cellHeight;
+        //int rectEndX = (x2Flr - CameraOffset.x) * Cell.Width;
+        //int rectThickness = (y2Flr - y1Flr) * Cell.Height;
         //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
 
         Vector2 position = new(rectStartX, rectStartY);
@@ -1052,16 +1005,8 @@ public class Pico8Functions : IDisposable
             spriteTextures[cache] = texture;
         }
 
-        // Get the size of the viewport
-        int viewportWidth = Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = Batch.GraphicsDevice.Viewport.Height;
-
-        //Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
-
-        Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - CameraOffset.x) * cellWidth, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - CameraOffset.y) * cellHeight);
-        Vector2 size = new(cellWidth, cellHeight);
+        Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - F32.FloorToInt(CameraOffset.x)) * Cell.Width, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
+        Vector2 size = new(Cell.Width, Cell.Height);
         SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
         Batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);
@@ -1098,16 +1043,8 @@ public class Pico8Functions : IDisposable
             spriteTextures[cache] = texture;
         }
 
-        // Get the size of the viewport
-        int viewportWidth = Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = Batch.GraphicsDevice.Viewport.Height;
-
-        //Calculate the size of each cell
-        int cellWidth = viewportWidth / 128;
-        int cellHeight = viewportHeight / 128;
-
-        Vector2 position = new(((flip_x ? dxFlr + 2 * spriteWidth * swFlr - spriteWidth : dxFlr + spriteWidth) - CameraOffset.x) * cellWidth, ((flip_y ? dyFlr + 2 * spriteHeight * shFlr - spriteHeight : dyFlr + spriteHeight) - CameraOffset.y) * cellHeight);
-        Vector2 size = new(dwFlr * cellWidth, dhFlr * cellHeight);
+        Vector2 position = new(((flip_x ? dxFlr + 2 * spriteWidth * swFlr - spriteWidth : dxFlr + spriteWidth) - F32.FloorToInt(CameraOffset.x)) * Cell.Width, ((flip_y ? dyFlr + 2 * spriteHeight * shFlr - spriteHeight : dyFlr + spriteHeight) - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
+        Vector2 size = new(dwFlr * Cell.Width, dhFlr * Cell.Height);
         SpriteEffects effects = (flip_x ? SpriteEffects.FlipHorizontally : SpriteEffects.None) | (flip_y ? SpriteEffects.FlipVertically : SpriteEffects.None);
 
         Batch.Draw(texture, position, null, Color.White, 0, Vector2.Zero, size, effects, 0);

@@ -94,15 +94,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
     {
         p8.Cls();
 
-        // Get the size of the viewport
-        int viewportWidth = p8.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellW = viewportWidth / 128;
-        int cellH = viewportHeight / 128;
-
-        Vector2 size = new(cellW, cellH);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         
         p8.Batch.Draw(p8.TextureDictionary["OptionsBackground5"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
@@ -113,11 +105,11 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
         if (menuSelected > -1)
         {
-            Vector2 position5 = new((x - 4) * cellW, (menuSelected * step + y) * cellH);
+            Vector2 position5 = new((x - 4) * p8.Cell.Width, (menuSelected * step + y) * p8.Cell.Height);
             p8.Batch.Draw(p8.TextureDictionary["Arrow"], position5, null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
         }
 
-        p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y - 5) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * p8.Cell.Width, (y - 5) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         foreach (PropertyInfo property in properties)
         {
@@ -128,7 +120,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
             }
         }
 
-        p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * cellW, (y + 1) * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+        p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * p8.Cell.Width, (y + 1) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
     }
     public string SpriteImage => "";
     public string SpriteData => @"";

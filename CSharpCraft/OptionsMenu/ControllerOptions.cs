@@ -94,29 +94,21 @@ public class ControllerOptions(int startIndex = -1) : IScene, IDisposable
     {
         p8.Cls();
 
-        // Get the size of the viewport
-        int viewportWidth = p8.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellW = viewportWidth / 128;
-        int cellH = viewportHeight / 128;
-
-        Vector2 size = new(cellW, cellH);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
         p8.Batch.Draw(p8.TextureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
         if (waitingForInput)
         {
-            p8.Batch.Draw(p8.TextureDictionary["WaitingForInput"], new Vector2(20 * cellW, 51 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["WaitingForInput"], new Vector2(20 * p8.Cell.Width, 51 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
         else
         {
-            p8.Batch.Draw(p8.TextureDictionary["KeybindsMenu"], new Vector2(8 * cellW, 46 * cellH), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["KeybindsMenu"], new Vector2(8 * p8.Cell.Width, 46 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             if (menuSelected.ver >= 0)
             {
-                Vector2 position5 = new((46 + 36 * menuSelected.hor) * cellW, (menuSelected.ver * 6 + 55) * cellH);
+                Vector2 position5 = new((46 + 36 * menuSelected.hor) * p8.Cell.Width, (menuSelected.ver * 6 + 55) * p8.Cell.Height);
                 p8.Batch.Draw(p8.TextureDictionary["Arrow"], position5, null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
             }
             else if (menuSelected.ver == -1)
@@ -124,8 +116,8 @@ public class ControllerOptions(int startIndex = -1) : IScene, IDisposable
                 p8.Rectfill(71, 32, 113, 38, 13);
             }
 
-            Vector2 position3 = new(70 * cellW, 31 * cellH);
-            Vector2 position4 = new(92 * cellW, 31 * cellH);
+            Vector2 position3 = new(70 * p8.Cell.Width, 31 * p8.Cell.Height);
+            Vector2 position4 = new(92 * p8.Cell.Width, 31 * p8.Cell.Height);
             p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], position3, null, p8.Colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], position4, null, p8.Colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
 

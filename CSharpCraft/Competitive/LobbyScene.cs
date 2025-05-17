@@ -153,30 +153,24 @@ public class LobbyScene(MainRace mainRace) : IScene, IDisposable
         int fin = Math.Min(menu.Off + displayed, tlist);
 
         int offset = 0;
-        int viewportWidth = p8.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.GraphicsDevice.Viewport.Height;
 
-        // Calculate the size of each cell
-        int cellW = viewportWidth / 128;
-        int cellH = viewportHeight / 128;
-
-        Vector2 size = new(cellW, cellH);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
         if (menu.Sel > tlist - 3)
         {
             offset = 4;
-            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + 10) * cellH), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * p8.Cell.Width, (y + 10) * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
         }
         else if (menu.Sel > 1)
         {
             offset = 2;
-            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + 9) * cellH), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
-            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + height - 6) * cellH), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * p8.Cell.Width, (y + 9) * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * p8.Cell.Width, (y + height - 6) * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
         else
         {
             offset = 0;
-            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * cellW, (y + height - 7) * cellH), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary["Arrow5"], new Vector2((x + (width / 2) - 2) * p8.Cell.Width, (y + height - 7) * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0);
         }
 
         int sely = y + offset + 4 + (sel + 1) * 7;
@@ -207,16 +201,8 @@ public class LobbyScene(MainRace mainRace) : IScene, IDisposable
     {
         p8.Cls();
 
-        // Get the size of the viewport
-        int viewportWidth = p8.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellW = viewportWidth / 128;
-        int cellH = viewportHeight / 128;
-
-        Vector2 size = new(cellW, cellH);
-        Vector2 halfSize = new(cellW / 2f, cellH / 2f);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+        Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
 
         //batch.Draw(textureDictionary["LobbyBackground"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
@@ -249,11 +235,11 @@ public class LobbyScene(MainRace mainRace) : IScene, IDisposable
         int i = 0;
         foreach (RoomUser player in mainRace.playerDictionary.Values)
         {
-            p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2(25 * cellW, (26 + i * 7) * cellH), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2(25 * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
             p8.Print(player.Name, 36, 26 + i * 7, 7);
             if (player.Role == "Player" && player.Ready)
             {
-                p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * cellW, (26 + i * 7) * cellH), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
             if (player.Host)
             {

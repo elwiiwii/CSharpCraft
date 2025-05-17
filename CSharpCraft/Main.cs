@@ -83,6 +83,7 @@ class FNAGame : Game
 
         UpdateViewport();
         
+        
         //scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
         scenes.Add(new PcraftSpeedrun());
@@ -90,6 +91,7 @@ class FNAGame : Game
         //scenes.Add(new MainRace());
         scenes.Add(new SeedFilter());
         scenes.Add(new LoadSeed());
+        scenes.Add(new Visualiser());
         scenes.Add(new ControlsOptions());
         scenes.Add(new CreditsScene());
         scenes.Add(new ExitScene());
@@ -181,21 +183,13 @@ class FNAGame : Game
         int clampFrame = Math.Abs((int)Math.Floor(popup.frame)) > 7 ? 7 : Math.Abs((int)Math.Floor(popup.frame));
         if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, 128 - clampFrame, 127, 128 - clampFrame + 7); }
 
-        // Get the size of the viewport
-        int viewportWidth = GraphicsDevice.Viewport.Width;
-        int viewportHeight = GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int cellW = viewportWidth / 128;
-        int cellH = viewportHeight / 128;
-
         // Draw the grid
         /*for (int i = 0; i <= 128; i++)
         {
             // Draw vertical lines
-            batch.DrawLine(pixel, new Vector2(i * cellW, 0), new Vector2(i * cellW, viewportHeight), Color.White, 1);
+            batch.DrawLine(pixel, new Vector2(i * p8.Cell.Width, 0), new Vector2(i * p8.Cell.Width, viewportHeight), Color.White, 1);
             // Draw horizontal lines
-            batch.DrawLine(pixel, new Vector2(0, i * cellH), new Vector2(viewportWidth, i * cellH), Color.White, 1);
+            batch.DrawLine(pixel, new Vector2(0, i * p8.Cell.Height), new Vector2(viewportWidth, i * p8.Cell.Height), Color.White, 1);
         }*/
 
         batch.End();
