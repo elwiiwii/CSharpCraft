@@ -46,6 +46,7 @@
 		<None Remove="Content\Graphics\Itchio.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\LobbyBackground.png" />
+		<None Remove="Content\Graphics\MCSRranked.png" />
 		<None Remove="Content\Graphics\ModeShadow.png" />
 		<None Remove="Content\Graphics\MusicNote.png" />
 		<None Remove="Content\Graphics\NameBubbleCenter.png" />
@@ -121,6 +122,7 @@
 		<None Remove="Content\Music\music_4.wav" />
 		<None Remove="Content\Music\pcraft_new_boss.wav" />
 		<None Remove="Content\Music\pcraft_new_cave.wav" />
+		<None Remove="Content\Music\pcraft_new_death.wav" />
 		<None Remove="Content\Music\pcraft_new_surface.wav" />
 		<None Remove="Content\Music\pcraft_new_title.wav" />
 		<None Remove="Content\Music\pcraft_og_cave_0.wav" />
@@ -191,6 +193,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\Cursor.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\MCSRranked.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\ModeShadow.png">
@@ -269,6 +274,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Music\menu.wav">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Music\pcraft_new_death.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Music\pcraft_og_cave_0.wav">

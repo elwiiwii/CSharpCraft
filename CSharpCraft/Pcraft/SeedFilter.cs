@@ -1641,7 +1641,7 @@ public class SeedFilter : PcraftBase, IDisposable
             new([("pcraft_new_surface", true)], 1),
             new([("pcraft_new_cave", true)], 1),
             new([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
-            new([("pcraft_new_cave", true)], 3)]
+            new([("pcraft_new_death", true)], 3)]
         },
         { "pog edition", [
             new([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),

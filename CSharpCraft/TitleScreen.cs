@@ -10,6 +10,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
 {
     public string SceneName { get => "TitleScreen"; }
     private Pico8Functions p8;
+    private readonly string version = "1.1.3";
 
     private int menuSelected;
     private KeyboardState prevState;
@@ -65,7 +66,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
         Texture2D logo = p8.TextureDictionary["CSharpCraftLogo"];
         p8.Batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-        if (frame >= 5) { p8.Print("c# craft 1.1.2", 0, 18, 6); }
+        if (frame >= 5) { p8.Print($"c# craft {version}", 0, 18, 6); }
         if (frame >= 6) { p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
         if (frame >= 7) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(3 * cellWidth, 36 * cellHeight), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }

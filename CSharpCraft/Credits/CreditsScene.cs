@@ -53,6 +53,19 @@ public class CreditsScene : IScene, IDisposable
         lexaloffle.Links.Add(("Pico8", "https://lexaloffle.com"));
         credits.Add(lexaloffle);
 
+        //CreditsItem mcsrRanked = new()
+        //{
+        //    Name = "mcsr ranked",
+        //    Description = new(),
+        //    Links = new()
+        //};
+        //mcsrRanked.Description.Add("CHECK OUT MCSR RANKED! ITS");
+        //mcsrRanked.Description.Add("AN AMAZING PROJECT AND A HUGE");
+        //mcsrRanked.Description.Add("INSPIRATION FOR COMPETITIVE!");
+        //mcsrRanked.Description.Add("SHOUT OUT REDLIME THE GOAT!");
+        //mcsrRanked.Links.Add(("MCSRranked", "https://mcsrranked.com/"));
+        //credits.Add(mcsrRanked);
+
         CreditsItem ellie = new()
         {
             Name = "ellie",
@@ -74,7 +87,7 @@ public class CreditsScene : IScene, IDisposable
         };
         holoknight.Description.Add("THANK YOU HOLOKNIGHT FOR THE");
         holoknight.Description.Add("AWESOME NEW MUSIC! YOU CAN");
-        holoknight.Description.Add("SUPPORT THEM ON BANDCAMP!");
+        holoknight.Description.Add("SUPPORT HER ON BANDCAMP!");
         holoknight.Links.Add(("Bandcamp", "https://holoknight.bandcamp.com"));
         holoknight.Links.Add(("Youtube", "https://youtube.com/@holoknight"));
         holoknight.Links.Add(("Discord", "@holoknight"));
