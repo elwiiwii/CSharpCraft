@@ -1,0 +1,200 @@
+syntax = "proto3";
+
+option csharp_namespace = "AccountService";
+
+package account;
+
+service AccountService {
+  rpc VerifyEmailBeforeRegistration (VerifyEmailBeforeRegistrationRequest) returns (VerifyEmailBeforeRegistrationResponse);
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc Logout (LogoutRequest) returns (LogoutResponse);
+  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse);
+  rpc RequestPasswordReset (RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
+  rpc VerifyResetCode (VerifyResetCodeRequest) returns (VerifyResetCodeResponse);
+  rpc ResetPassword (ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
+  rpc Enable2FA (Enable2FARequest) returns (Enable2FAResponse);
+  rpc Disable2FA (Disable2FARequest) returns (Disable2FAResponse);
+  rpc Verify2FA (Verify2FARequest) returns (Verify2FAResponse);
+  rpc Get2FAStatus (Get2FAStatusRequest) returns (Get2FAStatusResponse);
+}
+
+message VerifyEmailBeforeRegistrationRequest {
+  string email = 1;
+}
+
+message VerifyEmailBeforeRegistrationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string username = 2;
+  string password = 3;
+  string verification_code = 4;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+  string user_id = 3;
+  string verification_token = 4;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+  string user_id = 5;
+  bool requires_two_factor = 6;
+  TwoFactorType two_factor_type = 7;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message UpdateAccountRequest {
+  string refresh_token = 1;
+  string new_email = 2;
+  string new_username = 3;
+  string new_password = 4;
+}
+
+message UpdateAccountResponse {
+  bool success = 1;
+  string message = 2;
+  string new_access_token = 3;
+  string new_refresh_token = 4;
+}
+
+message RequestPasswordResetRequest {
+  string email = 1;
+}
+
+message RequestPasswordResetResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message VerifyResetCodeRequest {
+  string email = 1;
+  string reset_code = 2;
+}
+
+message VerifyResetCodeResponse {
+  bool success = 1;
+  string message = 2;
+  string verification_token = 3;
+}
+
+message ResetPasswordRequest {
+  string verification_token = 1;
+  string new_password = 2;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Delete account request
+message DeleteAccountRequest {
+  string refresh_token = 1;
+  string password = 2;
+}
+
+// Delete account response
+message DeleteAccountResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message VerifyEmailRequest {
+  string email = 1;
+  string verification_code = 2;
+}
+
+message VerifyEmailResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message Enable2FARequest {
+  string refresh_token = 1;
+  TwoFactorType two_factor_type = 2;
+}
+
+message Enable2FAResponse {
+  bool success = 1;
+  string message = 2;
+  string secret_key = 3;  // For authenticator app
+  string qr_code_url = 4; // For authenticator app
+}
+
+message Disable2FARequest {
+  string refresh_token = 1;
+  string verification_code = 2;
+}
+
+message Disable2FAResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message Verify2FARequest {
+  string email = 1;
+  string verification_code = 2;
+}
+
+message Verify2FAResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message Get2FAStatusRequest {
+  string refresh_token = 1;
+}
+
+message Get2FAStatusResponse {
+  bool success = 1;
+  string message = 2;
+  bool is_enabled = 3;
+  TwoFactorType two_factor_type = 4;
+}
+
+enum TwoFactorType {
+  NONE = 0;
+  AUTHENTICATOR_APP = 1;
+  EMAIL_CODE = 2;
+} 
