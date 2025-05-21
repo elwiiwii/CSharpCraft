@@ -1,4 +1,5 @@
-﻿using CSharpCraft.Pico8;
+﻿using CSharpCraft.Competitive;
+using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -25,12 +26,20 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
         frame = animation ? 0 : 50;
     }
 
-    public void Update()
+    public async void Update()
     {
         KeyboardState state = Keyboard.GetState();
 
         if (state.IsKeyDown(Keys.LeftControl) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
         {
+            try
+            {
+                await AccountHandler.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during AccountHandler shutdown: {ex.Message}");
+            }
             Environment.Exit(0);
         }
 
@@ -89,7 +98,6 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
     public Dictionary<string, Dictionary<int, string>> Sfx => new();
     public void Dispose()
     {
-
+        // No cleanup needed here as we handle it in Update
     }
-
 }

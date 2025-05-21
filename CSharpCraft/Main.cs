@@ -84,7 +84,7 @@ class FNAGame : Game
         UpdateViewport();
         
         
-        //scenes.Add(new CompetitiveScene());
+        scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
         scenes.Add(new PcraftSpeedrun());
         //scenes.Add(new DeluxeSingleplayer());
@@ -244,6 +244,16 @@ class FNAGame : Game
 
     protected override void UnloadContent()
     {
+        try
+        {
+            // Shutdown AccountHandler first
+            AccountHandler.Shutdown().Wait();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during AccountHandler shutdown: {ex.Message}");
+        }
+
         batch.Dispose();
         pixel.Dispose();
         p8.Dispose();
@@ -262,9 +272,22 @@ class FNAGame : Game
         }
 
         base.UnloadContent();
-
     }
 
+    protected override void OnExiting(object sender, EventArgs args)
+    {
+        try
+        {
+            // Ensure AccountHandler is shut down when the game exits
+            AccountHandler.Shutdown().Wait();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during AccountHandler shutdown on exit: {ex.Message}");
+        }
+
+        base.OnExiting(sender, args);
+    }
 
     private void UpdateViewport()
     {

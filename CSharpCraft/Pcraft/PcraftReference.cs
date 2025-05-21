@@ -263,9 +263,9 @@ public class PcraftReference(Pico8Functions p8)
         {
             if (list[i].Type == it.Type)
             {
-                if (it.Power == null || it.Power == list[i].Power)
+                if (it.Power is null || it.Power == list[i].Power)
                 {
-                    if (list[i].Count != null)
+                    if (list[i].Count is not null)
                     {
                         count += (int)list[i].Count;
                     }
@@ -285,7 +285,7 @@ public class PcraftReference(Pico8Functions p8)
         {
             if (list[i].Type == it.Type)
             {
-                if (it.Power == null || it.Power == list[i].Power)
+                if (it.Power is null || it.Power == list[i].Power)
                 {
                     return list[i];
                 }
@@ -297,11 +297,11 @@ public class PcraftReference(Pico8Functions p8)
     private void RemInList(List<Entity> list, Entity elem)
     {
         var it = IsInList(list, elem);
-        if (it == null)
+        if (it is null)
         {
             return;
         }
-        if (it.Count != null)
+        if (it.Count is not null)
         {
             it.Count -= elem.Count;
             if (it.Count <= 0)
@@ -318,7 +318,7 @@ public class PcraftReference(Pico8Functions p8)
     private void AddItemInList(List<Entity> list, Entity it, int p)
     {
         var it2 = IsInList(list, it);
-        if (it2 == null || it2.Count == null)
+        if (it2 is null || it2.Count is null)
         {
             AddPlace(list, it, p);
         }
@@ -701,9 +701,9 @@ public class PcraftReference(Pico8Functions p8)
 
     private void Update()
     {
-        if (curMenu != null)
+        if (curMenu is not null)
         {
-            if (curMenu.Spr != null)
+            if (curMenu.Spr is not null)
             {
                 if (p8.Btnp(4) && !lb4)
                 {
@@ -809,7 +809,7 @@ public class PcraftReference(Pico8Functions p8)
             p8.Music(currentLevel == cave ? 4 : 1);
         }
 
-        if (curItem != null)
+        if (curItem is not null)
         {
             if (HowMany(invent, curItem) <= 0) { curItem = null; }
         }
@@ -872,20 +872,20 @@ public class PcraftReference(Pico8Functions p8)
             e.Vx *= 0.95;
             e.Vy *= 0.95;
 
-            if (e.Timer != null && e.Timer < 1)
+            if (e.Timer is not null && e.Timer < 1)
             {
                 p8.Del(entities, e);
             }
             else
             {
-                if (e.Timer != null) { e.Timer -= 1; }
+                if (e.Timer is not null) { e.Timer -= 1; }
 
                 var dist = Math.Max(Math.Abs(e.X - plx), Math.Abs(e.Y - ply));
-                if (e.GiveItem != null)
+                if (e.GiveItem is not null)
                 {
                     if (dist < 5)
                     {
-                        if (e.Timer == null || e.Timer < 115)
+                        if (e.Timer is null || e.Timer < 115)
                         {
                             var newIt = Instc(e.GiveItem, 1);
                             AddItemInList(invent, newIt, -1);
@@ -903,7 +903,7 @@ public class PcraftReference(Pico8Functions p8)
                     }
                     if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
                     {
-                        if (curItem != null && curItem.Type == pickuptool)
+                        if (curItem is not null && curItem.Type == pickuptool)
                         {
                             if (e.Type == chest || e.Type.BeCraft)
                             {
@@ -1070,11 +1070,11 @@ public class PcraftReference(Pico8Functions p8)
             var hity = ply + by * 8;
             var hit = GetGr(hitx, hity);
 
-            if (!lb5 && curItem != null && curItem.Type.Drop)
+            if (!lb5 && curItem is not null && curItem.Type.Drop)
             {
                 if (hit == grsand || hit == grgrass)
                 {
-                    if (curItem.List == null) { curItem.List = []; }
+                    if (curItem.List is null) { curItem.List = []; }
                     curItem.HasCol = true;
 
                     curItem.X = Math.Floor(hitx / 16) * 16 + 8;
@@ -1094,7 +1094,7 @@ public class PcraftReference(Pico8Functions p8)
                 {
                     p8.Sfx(19, 3);
                     var pow = 1.0;
-                    if (curItem != null && curItem.Type == sword)
+                    if (curItem is not null && curItem.Type == sword)
                     {
                         pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
                         stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
@@ -1117,11 +1117,11 @@ public class PcraftReference(Pico8Functions p8)
                         p8.Add(entities, SetText(pow.ToString(), 9, 20, Entity(etext, e.X, e.Y - 10, 0, -1)));
                     }
                 }
-                else if (hit.Mat != null)
+                else if (hit.Mat is not null)
                 {
                     p8.Sfx(15, 3);
                     var pow = 1.0;
-                    if (curItem != null)
+                    if (curItem is not null)
                     {
                         if (hit == grtree)
                         {
@@ -1161,13 +1161,13 @@ public class PcraftReference(Pico8Functions p8)
                 else
                 {
                     p8.Sfx(19, 3);
-                    if (curItem != null)
+                    if (curItem is not null)
                     {
-                        if (curItem.Power != null)
+                        if (curItem.Power is not null)
                         {
                             stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                         }
-                        if (curItem.Type.GiveLife != null)
+                        if (curItem.Type.GiveLife is not null)
                         {
                             plife = Math.Min(100, plife + (int)curItem.Type.GiveLife);
                             RemInList(invent, Instc(curItem.Type, 1));
@@ -1351,15 +1351,15 @@ public class PcraftReference(Pico8Functions p8)
 
         var weap = 75;
 
-        if (isplayer && curItem != null)
+        if (isplayer && curItem is not null)
         {
             p8.Pal();
             weap = curItem.Type.Spr;
-            if (curItem.Power != null)
+            if (curItem.Power is not null)
             {
                 SetPal(pwrPal[(int)curItem.Power - 1]);
             }
-            if (curItem.Type != null && curItem.Type.Pal != null)
+            if (curItem.Type is not null && curItem.Type.Pal is not null)
             {
                 SetPal(curItem.Type.Pal);
             }
@@ -1558,7 +1558,7 @@ public class PcraftReference(Pico8Functions p8)
     private bool Comp(int i, int j, Ground gr)
     {
         var gr2 = GetDirectGr(i, j);
-        return gr != null && gr2 != null && gr.Gr == gr2.Gr;
+        return gr is not null && gr2 is not null && gr.Gr == gr2.Gr;
     }
 
     private double WatVal(double i, double j)
@@ -1609,7 +1609,7 @@ public class PcraftReference(Pico8Functions p8)
                 var gi = (i - ci) * 2 + 64;
                 var gj = (j - cj) * 2 + 32;
 
-                if (gr != null && gr.Gr == 1) // sand
+                if (gr is not null && gr.Gr == 1) // sand
                 {
                     var sv = 0;
                     if (gr == grfarm || gr == grwheat) { sv = 3; }
@@ -1649,7 +1649,7 @@ public class PcraftReference(Pico8Functions p8)
             for (int j = cj - 1; j <= cj + 8; j++)
             {
                 var gr = GetDirectGr(i, j);
-                if (gr != null)
+                if (gr is not null)
                 {
                     var gi = i * 16;
                     var gj = j * 16;
@@ -1722,14 +1722,14 @@ public class PcraftReference(Pico8Functions p8)
         var ty = it.Type;
         p8.Pal();
         var px = x;
-        if (it.Power != null)
+        if (it.Power is not null)
         {
             var pwn = pwrNames[(int)it.Power - 1];
             p8.Print(pwn, x + 10, y, col);
             px += pwn.Length * 4 + 4;
             SetPal(pwrPal[(int)it.Power - 1]);
         }
-        if (ty.Pal != null) { SetPal(ty.Pal); }
+        if (ty.Pal is not null) { SetPal(ty.Pal); }
         p8.Spr(ty.Spr, x, y - 2);
         p8.Pal();
         p8.Print(ty.Name, px + 10, y, col);
@@ -1765,14 +1765,14 @@ public class PcraftReference(Pico8Functions p8)
             var it = menu.List[i];
             var py = y + (i - menu.Off) * 8;
             var col = 7;
-            if (it.Req != null && !CanCraft(it))
+            if (it.Req is not null && !CanCraft(it))
             {
                 col = 0;
             }
 
             ItemName(x, py, it, col);
 
-            if (it.Count != null)
+            if (it.Count is not null)
             {
                 var c = $"{it.Count}";
                 p8.Print(c, x + sx - c.Length * 4 - 10, py, col);
@@ -1801,7 +1801,7 @@ public class PcraftReference(Pico8Functions p8)
             var py = y + i * 8;
             ItemName(x, py, it, 7);
 
-            if (it.Count != null)
+            if (it.Count is not null)
             {
                 var h = HowMany(invent, it);
                 var c = $"{h}/{it.Count}";
@@ -1830,8 +1830,8 @@ public class PcraftReference(Pico8Functions p8)
         {
             var e = entities[i];
             p8.Pal();
-            if (e.Type.Pal != null) { SetPal(e.Type.Pal); }
-            if (e.Type.BigSpr != null)
+            if (e.Type.Pal is not null) { SetPal(e.Type.Pal); }
+            if (e.Type.BigSpr is not null)
             {
                 p8.Spr((int)e.Type.BigSpr, e.X - 8, e.Y - 8, 2, 2);
             }
@@ -1843,7 +1843,7 @@ public class PcraftReference(Pico8Functions p8)
                 }
                 else
                 {
-                    if (e.Timer != null && e.Timer < 45 && e.Timer % 4 > 2)
+                    if (e.Timer is not null && e.Timer < 45 && e.Timer % 4 > 2)
                     {
                         for (int j = 0; j <= 15; j++)
                         {
@@ -1912,7 +1912,7 @@ public class PcraftReference(Pico8Functions p8)
 
     private void Draw()
     {
-        if (curMenu != null && curMenu.Spr != null)
+        if (curMenu is not null && curMenu.Spr is not null)
         {
             p8.Camera();
             p8.Palt(0, false);
@@ -1940,19 +1940,19 @@ public class PcraftReference(Pico8Functions p8)
         Dbar(4, 4, plife, llife, 8, 2);
         Dbar(4, 9, Math.Max(0, pstam), lstam, 11, 3);
 
-        if (curItem != null)
+        if (curItem is not null)
         {
             var ix = 35;
             var iy = 3;
             ItemName(ix + 1, iy + 3, curItem, 7);
-            if (curItem.Count != null)
+            if (curItem.Count is not null)
             {
                 var c = $"{curItem.Count}";
                 p8.Print(c, ix + 88 - 16, iy + 3, 7);
             }
         }
 
-        if (curMenu != null)
+        if (curMenu is not null)
         {
             p8.Camera();
             if (curMenu.Type == chest)

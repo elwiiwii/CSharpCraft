@@ -654,12 +654,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Protobuf Include="..\RaceServer\Protos\gameservice.proto">
-	    <Link>Protos\gameservice.proto</Link>
-	  </Protobuf>
-	</ItemGroup>
-
-	<ItemGroup>
 	  <None Include="bin\Debug\net9.0\FAudio.dll" />
 	  <None Include="bin\Debug\net9.0\FNA3D.dll" />
 	  <None Include="bin\Debug\net9.0\libtheorafile.dll" />
@@ -668,6 +662,19 @@
 	  <None Include="bin\Release\net9.0\FNA3D.dll" />
 	  <None Include="bin\Release\net9.0\libtheorafile.dll" />
 	  <None Include="bin\Release\net9.0\SDL3.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Protos\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Protobuf Include="..\RaceServer\Protos\account.proto">
+	    <Link>Protos\account.proto</Link>
+	  </Protobuf>
+	  <Protobuf Include="..\RaceServer\Protos\gameservice.proto">
+	    <Link>Protos\gameservice.proto</Link>
+	  </Protobuf>
 	</ItemGroup>
 
 </Project>

@@ -20,7 +20,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
     private readonly Dictionary<string, (int Attempts, DateTime LastAttempt)> _verifyAttempts = new();
     private const int MAX_LOGIN_ATTEMPTS = 5;
     private const int MAX_VERIFY_ATTEMPTS = 3;
-    private const int LOGIN_COOLDOWN_MINUTES = 15;
+    private const int LOGIN_COOLDOWN_MINUTES = 5;
     private const int VERIFY_COOLDOWN_MINUTES = 5;
 
     public AccountServiceImpl(
@@ -398,11 +398,21 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
 
             var userData = userDoc.ToDictionary();
-            if (!userData.ContainsKey("IsTwoFactorEnabled") && (bool)userData["IsTwoFactorEnabled"])
+            bool isTwoFactorEnabled = false;
+            string twoFactorType = "NONE";
+
+            if (userData.TryGetValue("IsTwoFactorEnabled", out var isEnabledObj) && 
+                userData.TryGetValue("TwoFactorType", out var typeObj))
+            {
+                isTwoFactorEnabled = (bool)isEnabledObj;
+                twoFactorType = typeObj.ToString();
+            }
+
+            if (isTwoFactorEnabled)
             {
                 _logger.LogInformation($"Two-factor authentication is enabled for user: {userRecord.Uid}");
 
-                if (userData["TwoFactorType"].ToString() == "EMAIL_CODE")
+                if (twoFactorType == "EMAIL_CODE")
                 {
                     var verificationCode = await _emailService.GenerateAndStoreVerificationCode(request.Email);
                     await _emailService.SendVerificationEmail(request.Email, verificationCode);
@@ -414,7 +424,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                     Success = true,
                     Message = "2FA verification required",
                     RequiresTwoFactor = true,
-                    TwoFactorType = userData["TwoFactorType"].ToString() == "AUTHENTICATOR_APP" ?
+                    TwoFactorType = twoFactorType == "AUTHENTICATOR_APP" ?
                         TwoFactorType.AuthenticatorApp : TwoFactorType.EmailCode
                 };
             }
@@ -443,6 +453,14 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             });
             _logger.LogInformation("Created new session document");
 
+            // After successful login, generate a permanent token
+            var permanentToken = GenerateRefreshToken();
+            await userDoc.Reference.UpdateAsync(new Dictionary<string, object>
+            {
+                { "permanentToken", permanentToken },
+                { "lastLogin", Timestamp.FromDateTime(DateTime.UtcNow) }
+            });
+
             return new LoginResponse
             {
                 Success = true,
@@ -450,6 +468,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 AccessToken = customToken,
                 RefreshToken = refreshToken,
                 UserId = userRecord.Uid,
+                PermanentToken = permanentToken,
                 RequiresTwoFactor = false
             };
         }
@@ -480,6 +499,10 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 var sessionData = snapshot.Documents[0].ToDictionary();
                 var userId = sessionData["userId"].ToString();
 
+                // Remove the permanent token
+                var userDoc = _firestoreDb.Collection("users").Document(userId);
+                await userDoc.UpdateAsync("permanentToken", FieldValue.Delete);
+
                 await sessionDoc.DeleteAsync();
 
                 return new LogoutResponse
@@ -502,132 +525,6 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 Success = false,
                 Message = $"Logout failed: {ex.Message}"
             };
-            throw;
-        }
-    }
-
-    public override async Task<RefreshTokenResponse> RefreshToken(RefreshTokenRequest request, ServerCallContext context)
-    {
-        const int MAX_RETRIES = 3;
-        const int RETRY_DELAY_MS = 1000;
-        int retryCount = 0;
-
-        while (true)
-        {
-            try
-            {
-                _logger.LogInformation($"Token refresh attempt {retryCount + 1} for token: {request.RefreshToken}");
-
-                var sessionQuery = _firestoreDb.Collection("sessions")
-                    .WhereEqualTo("refreshToken", request.RefreshToken);
-                var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
-
-                if (sessionSnapshot.Count == 0)
-                {
-                    _logger.LogWarning($"No session found for the provided refresh token: {request.RefreshToken}");
-                    return new RefreshTokenResponse
-                    {
-                        Success = false,
-                        Message = "Session has been invalidated"
-                    };
-                }
-
-                var sessionData = sessionSnapshot.Documents[0].ToDictionary();
-                var userId = sessionData["userId"].ToString();
-                _logger.LogInformation($"Found session for user: {userId}");
-
-                var userDoc = await _firestoreDb.Collection("users").Document(userId).GetSnapshotAsync();
-                if (!userDoc.Exists)
-                {
-                    _logger.LogWarning($"User document not found for {userId}");
-                    return new RefreshTokenResponse
-                    {
-                        Success = false,
-                        Message = "Session has been invalidated"
-                    };
-                }
-
-                var userData = userDoc.ToDictionary();
-                if (!userData.ContainsKey("activeToken"))
-                {
-                    _logger.LogWarning($"No active token found for user {userId}");
-                    return new RefreshTokenResponse
-                    {
-                        Success = false,
-                        Message = "Session has been invalidated"
-                    };
-                }
-
-                var activeToken = userData["activeToken"].ToString();
-                _logger.LogInformation($"Active token in Firebase: {activeToken}");
-                _logger.LogInformation($"Provided token: {request.RefreshToken}");
-
-                if (activeToken != request.RefreshToken)
-                {
-                    _logger.LogWarning($"Provided token does not match the active token for user {userId}");
-                    return new RefreshTokenResponse
-                    {
-                        Success = false,
-                        Message = "Session has been invalidated"
-                    };
-                }
-
-                var newAccessToken = await _firebaseAuth.CreateCustomTokenAsync(userId);
-                var newRefreshToken = GenerateRefreshToken();
-                _logger.LogInformation($"Generated new refresh token for user {userId}");
-
-                try
-                {
-                    var batch = _firestoreDb.StartBatch();
-                    batch.Update(sessionSnapshot[0].Reference, new Dictionary<string, object>
-                    {
-                        { "refreshToken", newRefreshToken },
-                        { "lastActive", Timestamp.FromDateTime(DateTime.UtcNow) }
-                    });
-
-                    batch.Update(userDoc.Reference, "activeToken", newRefreshToken);
-                    await batch.CommitAsync();
-                    _logger.LogInformation("Successfully updated session and user documents");
-
-                    return new RefreshTokenResponse
-                    {
-                        Success = true,
-                        Message = "Token refreshed successfully",
-                        AccessToken = newAccessToken,
-                        RefreshToken = newRefreshToken
-                    };
-                }
-                catch (Exception ex) when (ex is HttpRequestException || ex is HttpProtocolException)
-                {
-                    _logger.LogWarning($"Network error during token refresh (attempt {retryCount + 1}): {ex.Message}");
-                    if (retryCount < MAX_RETRIES - 1)
-                    {
-                        retryCount++;
-                        await Task.Delay(RETRY_DELAY_MS * retryCount);
-                        continue;
-                    }
-                    throw;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Token refresh failed: {ex.Message}");
-                _logger.LogError($"Stack trace: {ex.StackTrace}");
-
-                if (retryCount < MAX_RETRIES - 1)
-                {
-                    retryCount++;
-                    await Task.Delay(RETRY_DELAY_MS * retryCount);
-                    continue;
-                }
-
-                return new RefreshTokenResponse
-                {
-                    Success = false,
-                    Message = $"Token refresh failed after {MAX_RETRIES} attempts: {ex.Message}"
-                };
-                throw;
-            }
         }
     }
 
@@ -1364,6 +1261,50 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 Message = "An error occurred while getting 2FA status"
             };
             throw;
+        }
+    }
+
+    public override async Task<CheckTokenResponse> CheckToken(CheckTokenRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var userDoc = await _firestoreDb.Collection("users").Document(request.UserId).GetSnapshotAsync();
+            if (!userDoc.Exists)
+            {
+                return new CheckTokenResponse
+                {
+                    IsValid = false,
+                    Message = "User not found"
+                };
+            }
+
+            var userData = userDoc.ToDictionary();
+            if (!userData.ContainsKey("permanentToken"))
+            {
+                return new CheckTokenResponse
+                {
+                    IsValid = false,
+                    Message = "No permanent token found"
+                };
+            }
+
+            var storedToken = userData["permanentToken"].ToString();
+            var isValid = storedToken == request.Token;
+
+            return new CheckTokenResponse
+            {
+                IsValid = isValid,
+                Message = isValid ? "Token is valid" : "Token is invalid"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error checking token: {ex.Message}");
+            return new CheckTokenResponse
+            {
+                IsValid = false,
+                Message = "Error checking token"
+            };
         }
     }
 }

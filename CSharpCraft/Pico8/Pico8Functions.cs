@@ -5,12 +5,14 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Reflection;
+using CSharpCraft.Competitive;
 
 namespace CSharpCraft.Pico8;
 
 public class Pico8Functions : IDisposable
 {
-    public SpriteBatch Batch { get; }
+    //public AccountHandler AccountHandler { get; set; } = new();
+	public SpriteBatch Batch { get; }
     public (F32 x, F32 y) CameraOffset { get; internal set; } = (F32.Zero, F32.Zero);
     public (int Width, int Height) Cell { get; internal set; }
     public GraphicsDeviceManager Graphics { get; }

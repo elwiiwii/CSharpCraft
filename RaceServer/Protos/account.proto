@@ -10,7 +10,6 @@ service AccountService {
   rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc Logout (LogoutRequest) returns (LogoutResponse);
-  rpc RefreshToken (RefreshTokenRequest) returns (RefreshTokenResponse);
   rpc UpdateAccount (UpdateAccountRequest) returns (UpdateAccountResponse);
   rpc RequestPasswordReset (RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
   rpc VerifyResetCode (VerifyResetCodeRequest) returns (VerifyResetCodeResponse);
@@ -20,6 +19,7 @@ service AccountService {
   rpc Disable2FA (Disable2FARequest) returns (Disable2FAResponse);
   rpc Verify2FA (Verify2FARequest) returns (Verify2FAResponse);
   rpc Get2FAStatus (Get2FAStatusRequest) returns (Get2FAStatusResponse);
+  rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
 }
 
 message VerifyEmailBeforeRegistrationRequest {
@@ -53,15 +53,14 @@ message LoginRequest {
 message LoginResponse {
   bool success = 1;
   string message = 2;
-  string access_token = 3;
-  string refresh_token = 4;
-  string user_id = 5;
-  bool requires_two_factor = 6;
-  TwoFactorType two_factor_type = 7;
+  string user_id = 3;
+  bool requires_two_factor = 4;
+  TwoFactorType two_factor_type = 5;
+  string permanent_token = 6;
 }
 
 message LogoutRequest {
-  string refresh_token = 1;
+  string permanent_token = 1;
 }
 
 message LogoutResponse {
@@ -69,19 +68,8 @@ message LogoutResponse {
   string message = 2;
 }
 
-message RefreshTokenRequest {
-  string refresh_token = 1;
-}
-
-message RefreshTokenResponse {
-  bool success = 1;
-  string message = 2;
-  string access_token = 3;
-  string refresh_token = 4;
-}
-
 message UpdateAccountRequest {
-  string refresh_token = 1;
+  string permanent_token = 1;
   string new_email = 2;
   string new_username = 3;
   string new_password = 4;
@@ -90,8 +78,6 @@ message UpdateAccountRequest {
 message UpdateAccountResponse {
   bool success = 1;
   string message = 2;
-  string new_access_token = 3;
-  string new_refresh_token = 4;
 }
 
 message RequestPasswordResetRequest {
@@ -126,7 +112,7 @@ message ResetPasswordResponse {
 
 // Delete account request
 message DeleteAccountRequest {
-  string refresh_token = 1;
+  string permanent_token = 1;
   string password = 2;
 }
 
@@ -144,12 +130,10 @@ message VerifyEmailRequest {
 message VerifyEmailResponse {
   bool success = 1;
   string message = 2;
-  string access_token = 3;
-  string refresh_token = 4;
 }
 
 message Enable2FARequest {
-  string refresh_token = 1;
+  string permanent_token = 1;
   TwoFactorType two_factor_type = 2;
 }
 
@@ -161,7 +145,7 @@ message Enable2FAResponse {
 }
 
 message Disable2FARequest {
-  string refresh_token = 1;
+  string permanent_token = 1;
   string verification_code = 2;
 }
 
@@ -178,12 +162,11 @@ message Verify2FARequest {
 message Verify2FAResponse {
   bool success = 1;
   string message = 2;
-  string access_token = 3;
-  string refresh_token = 4;
+  string permanent_token = 3;
 }
 
 message Get2FAStatusRequest {
-  string refresh_token = 1;
+  string permanent_token = 1;
 }
 
 message Get2FAStatusResponse {
@@ -191,6 +174,16 @@ message Get2FAStatusResponse {
   string message = 2;
   bool is_enabled = 3;
   TwoFactorType two_factor_type = 4;
+}
+
+message CheckTokenRequest {
+  string user_id = 1;
+  string token = 2;
+}
+
+message CheckTokenResponse {
+  bool is_valid = 1;
+  string message = 2;
 }
 
 enum TwoFactorType {

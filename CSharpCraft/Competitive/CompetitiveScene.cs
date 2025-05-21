@@ -31,6 +31,13 @@ public class CompetitiveScene : IScene
     public void Init(Pico8Functions pico8)
     {
         p8 = pico8;
+
+        Task.Run(AccountHandler.ConnectToServer);
+        if (!AccountHandler._isLoggedIn)
+        {
+            p8.LoadCart(new LoginScene(this));
+        }
+
         back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = p8.TitleScreen };
         ranked = new() { StartPos = (30, 32), EndPos = (61, 63), Label = "ranked", ShadowTexture = "ModeShadow", IconTexture = "RankedIcon", Scene = new RankedScene(this) };
         speedrun = new() { StartPos = (66, 32), EndPos = (97, 63), Label = "speedrun", ShadowTexture = "ModeShadow", IconTexture = "SpeedrunIcon", Scene = new SpeedrunScene(this) };
