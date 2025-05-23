@@ -19,6 +19,7 @@ public class LobbyScene(MainRace mainRace) : IScene, IDisposable
 #nullable disable
 
     public string SceneName { get => "1"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
     public void Init(Pico8Functions pico8)

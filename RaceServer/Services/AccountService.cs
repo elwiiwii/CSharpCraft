@@ -39,7 +39,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         _keyVaultService = keyVaultService;
     }
 
-    public async Task<bool> IsTokenValid(string userId, string refreshToken)
+    public async Task<bool> IsTokenValid(string userId, string token)
     {
         _logger.LogInformation($"Validating token for user {userId}");
 
@@ -60,7 +60,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
 
             var activeToken = userData["activeToken"].ToString();
-            var isValid = activeToken == refreshToken;
+            var isValid = activeToken == token;
 
             _logger.LogInformation($"Token validation result for user {userId}: {isValid}");
 
@@ -74,14 +74,14 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         }
     }
 
-    public async Task UpdateActiveToken(string userId, string refreshToken)
+    public async Task UpdateActiveToken(string userId, string token)
     {
         _logger.LogInformation($"Updating active token for user {userId}");
 
         try
         {
             var userDoc = _firestoreDb.Collection("users").Document(userId);
-            await userDoc.UpdateAsync("activeToken", refreshToken);
+            await userDoc.UpdateAsync("activeToken", token);
             _logger.LogInformation($"Active token updated for user {userId}");
         }
         catch (Exception ex)
@@ -91,7 +91,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         }
     }
 
-    private static string GenerateRefreshToken()
+    private static string GenerateToken()
     {
         var randomNumber = new byte[32];
         using var rng = RandomNumberGenerator.Create();
@@ -266,11 +266,11 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             await userDoc.UpdateAsync("IsEmailVerified", true);
 
             var customToken = await _firebaseAuth.CreateCustomTokenAsync(userRecord.Uid);
-            var refreshToken = GenerateRefreshToken();
+            var token = GenerateToken();
 
             await userDoc.SetAsync(new Dictionary<string, object>
             {
-                { "activeToken", refreshToken },
+                { "activeToken", token },
                 { "lastLoginToken", Timestamp.FromDateTime(DateTime.UtcNow) }
             }, SetOptions.MergeAll);
 
@@ -279,7 +279,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             await sessionDoc.SetAsync(new Dictionary<string, object>
             {
                 { "userId", userRecord.Uid },
-                { "refreshToken", refreshToken },
+                { "refreshToken", token },
                 { "createdAt", Timestamp.FromDateTime(DateTime.UtcNow) },
                 { "lastActive", Timestamp.FromDateTime(DateTime.UtcNow) }
             });
@@ -287,9 +287,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             return new VerifyEmailResponse
             {
                 Success = true,
-                Message = "Email verified successfully.",
-                AccessToken = customToken,
-                RefreshToken = refreshToken
+                Message = "Email verified successfully."
             };
         }
         catch (Exception ex)
@@ -432,12 +430,12 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             _logger.LogInformation($"2FA is not enabled for user {userRecord.Uid}, proceeding with normal login");
 
             var customToken = await _firebaseAuth.CreateCustomTokenAsync(userRecord.Uid);
-            var refreshToken = GenerateRefreshToken();
+            var token = GenerateToken();
             _logger.LogInformation($"Generated refresh token for user {userRecord.Uid}");
 
             await userDoc.Reference.SetAsync(new Dictionary<string, object>
             {
-                { "activeToken", refreshToken },
+                { "activeToken", token },
                 { "lastLoginToken", Timestamp.FromDateTime(DateTime.UtcNow) }
             }, SetOptions.MergeAll);
             _logger.LogInformation("Stored active token in Firestore");
@@ -447,14 +445,14 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             await sessionDoc.SetAsync(new Dictionary<string, object>
             {
                 { "userId", userRecord.Uid },
-                { "refreshToken", refreshToken },
+                { "refreshToken", token },
                 { "createdAt", Timestamp.FromDateTime(DateTime.UtcNow) },
                 { "lastActive", Timestamp.FromDateTime(DateTime.UtcNow) }
             });
             _logger.LogInformation("Created new session document");
 
             // After successful login, generate a permanent token
-            var permanentToken = GenerateRefreshToken();
+            var permanentToken = GenerateToken();
             await userDoc.Reference.UpdateAsync(new Dictionary<string, object>
             {
                 { "permanentToken", permanentToken },
@@ -465,8 +463,6 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             {
                 Success = true,
                 Message = "Login successful",
-                AccessToken = customToken,
-                RefreshToken = refreshToken,
                 UserId = userRecord.Uid,
                 PermanentToken = permanentToken,
                 RequiresTwoFactor = false
@@ -490,7 +486,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         try
         {
             var sessionsRef = _firestoreDb.Collection("sessions");
-            var query = sessionsRef.WhereEqualTo("refreshToken", request.RefreshToken);
+            var query = sessionsRef.WhereEqualTo("refreshToken", request.PermanentToken);
             var snapshot = await query.GetSnapshotAsync();
 
             if (snapshot.Count > 0)
@@ -536,12 +532,12 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         try
         {
             var sessionQuery = _firestoreDb.Collection("sessions")
-                .WhereEqualTo("refreshToken", request.RefreshToken);
+                .WhereEqualTo("refreshToken", request.PermanentToken);
             var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
 
             if (sessionSnapshot.Count == 0)
             {
-                _logger.LogWarning($"No session found for the provided refresh token: {request.RefreshToken}");
+                _logger.LogWarning($"No session found for the provided refresh token: {request.PermanentToken}");
                 return new UpdateAccountResponse
                 {
                     Success = false,
@@ -576,7 +572,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
 
             var activeToken = userData["activeToken"].ToString();
-            if (activeToken != request.RefreshToken)
+            if (activeToken != request.PermanentToken)
             {
                 _logger.LogWarning($"Provided token does not match the active token for user {userId}");
                 return new UpdateAccountResponse
@@ -622,24 +618,22 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
 
             var newAccessToken = await _firebaseAuth.CreateCustomTokenAsync(userId);
-            var newRefreshToken = GenerateRefreshToken();
+            var newToken = GenerateToken();
 
             var existingSessionDoc = sessionSnapshot[0].Reference;
             await existingSessionDoc.UpdateAsync(new Dictionary<string, object>
             {
-                { "refreshToken", newRefreshToken },
+                { "refreshToken", newToken },
                 { "lastActive", Timestamp.FromDateTime(DateTime.UtcNow) }
             });
 
-            await userDoc.Reference.UpdateAsync("activeToken", newRefreshToken);
+            await userDoc.Reference.UpdateAsync("activeToken", newToken);
             _logger.LogInformation("Successfully updated session and user documents");
 
             return new UpdateAccountResponse
             {
                 Success = true,
-                Message = "Account updated successfully",
-                NewAccessToken = newAccessToken,
-                NewRefreshToken = newRefreshToken
+                Message = "Account updated successfully"
             };
         }
         catch (Exception ex)
@@ -716,7 +710,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 };
             }
 
-            var verificationToken = GenerateRefreshToken();
+            var verificationToken = GenerateToken();
             var verificationDoc = _firestoreDb.Collection("password_reset_verifications").Document();
             await verificationDoc.SetAsync(new
             {
@@ -822,12 +816,12 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         try
         {
             var sessionQuery = _firestoreDb.Collection("sessions")
-                .WhereEqualTo("refreshToken", request.RefreshToken);
+                .WhereEqualTo("refreshToken", request.PermanentToken);
             var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
 
             if (sessionSnapshot.Count == 0)
             {
-                _logger.LogWarning($"No session found for the provided refresh token: {request.RefreshToken}");
+                _logger.LogWarning($"No session found for the provided refresh token: {request.PermanentToken}");
                 return new DeleteAccountResponse
                 {
                     Success = false,
@@ -862,7 +856,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
 
             var activeToken = userData["activeToken"].ToString();
-            if (activeToken != request.RefreshToken)
+            if (activeToken != request.PermanentToken)
             {
                 _logger.LogWarning($"Provided token does not match the active token for user {userId}");
                 return new DeleteAccountResponse
@@ -944,7 +938,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         try
         {
             var sessionQuery = _firestoreDb.Collection("sessions")
-                .WhereEqualTo("refreshToken", request.RefreshToken);
+                .WhereEqualTo("refreshToken", request.PermanentToken);
             var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
 
             if (sessionSnapshot.Count == 0)
@@ -1036,7 +1030,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         try
         {
             var sessionQuery = _firestoreDb.Collection("sessions")
-                .WhereEqualTo("refreshToken", request.RefreshToken);
+                .WhereEqualTo("refreshToken", request.PermanentToken);
             var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
 
             if (sessionSnapshot.Count == 0)
@@ -1165,7 +1159,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             _logger.LogInformation($"2FA verification successful for user: {userId}");
 
             var customToken = await _firebaseAuth.CreateCustomTokenAsync(userId);
-            var refreshToken = GenerateRefreshToken();
+            var token = GenerateToken();
             _logger.LogInformation($"Generated new refresh token for user: {userId}");
 
             try
@@ -1173,7 +1167,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 var batch = _firestoreDb.StartBatch();
                 batch.Update(userDoc.Reference, new Dictionary<string, object>
                 {
-                    { "activeToken", refreshToken },
+                    { "activeToken", token },
                     { "lastLogin", Timestamp.FromDateTime(DateTime.UtcNow) }
                 });
 
@@ -1182,7 +1176,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 batch.Set(sessionDoc, new Dictionary<string, object>
                 {
                     { "userId", userId },
-                    { "refreshToken", refreshToken },
+                    { "refreshToken", token },
                     { "createdAt", Timestamp.FromDateTime(DateTime.UtcNow) },
                     { "lastActive", Timestamp.FromDateTime(DateTime.UtcNow) }
                 });
@@ -1193,9 +1187,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 return new Verify2FAResponse
                 {
                     Success = true,
-                    Message = "2FA verification successful",
-                    AccessToken = customToken,
-                    RefreshToken = refreshToken
+                    Message = "2FA verification successful"
                 };
             }
             catch (Exception ex)
@@ -1226,7 +1218,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         try
         {
             var sessionQuery = _firestoreDb.Collection("sessions")
-                .WhereEqualTo("refreshToken", request.RefreshToken);
+                .WhereEqualTo("refreshToken", request.PermanentToken);
             var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
 
             if (sessionSnapshot.Count == 0)

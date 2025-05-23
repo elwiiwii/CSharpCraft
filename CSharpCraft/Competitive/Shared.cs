@@ -1,59 +1,44 @@
 ﻿using CSharpCraft.Pico8;
-using Microsoft.Xna.Framework.Graphics;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.Competitive;
 
 public static class Shared
 {
-    public static Icon? IconUpdate(Pico8Functions p8, Icon[] icons, float x, float y)
+    public static Icon? UpdateIcon(Pico8Functions p8, Icon[] icons, float x, float y)
     {
-        int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-        int w = viewportWidth / 128;
-        int h = viewportHeight / 128;
         foreach (Icon icon in icons)
         {
-            if (x > icon.StartPos.x * w && x < (icon.EndPos.x + 1) * w && y > icon.StartPos.y * h && y < (icon.EndPos.y + 1) * h) { return icon; }
+            if (x > icon.StartPos.x * p8.Cell.Width && x < (icon.EndPos.x + 1) * p8.Cell.Width && y > icon.StartPos.y * p8.Cell.Height && y < (icon.EndPos.y + 1) * p8.Cell.Height) { return icon; }
         }
         return null;
     }
 
     public static void DrawIcons(Pico8Functions p8, Icon[] icons, float x, float y)
     {
-        int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-        int w = viewportWidth / 128;
-        int h = viewportHeight / 128;
-        Vector2 size = new(w, h);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         foreach (Icon icon in icons)
         {
-            bool sel = IconUpdate(p8, [icon], x, y) is not null;
-            if (icon.ShadowTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.ShadowTexture], new Vector2 (icon.StartPos.x * w, icon.StartPos.y * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-            if (icon.IconTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.IconTexture], new Vector2 ((icon.StartPos.x + (sel ? icon.Offset.x : 0)) * w, (icon.StartPos.y + (sel ? icon.Offset.y : 0)) * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+            bool sel = UpdateIcon(p8, [icon], x, y) is not null;
+            if (icon.ShadowTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.ShadowTexture], new Vector2 (icon.StartPos.x * p8.Cell.Width, icon.StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+            if (icon.IconTexture is not null) { p8.Batch.Draw(p8.TextureDictionary[icon.IconTexture], new Vector2 ((icon.StartPos.x + (sel ? icon.Offset.x : 0)) * p8.Cell.Width, (icon.StartPos.y + (sel ? icon.Offset.y : 0)) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
         }
     }
 
     public static void DrawCursor(Pico8Functions p8, float x, float y)
     {
-        int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-        int w = viewportWidth / 128;
-        int h = viewportHeight / 128;
-        p8.Batch.Draw(p8.TextureDictionary["Cursor"], new(x - 15 * (w / 2.0f), y - 15 * (h / 2.0f)), null, Color.White, 0, Vector2.Zero, new Vector2 (w / 2.0f, h / 2.0f), SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["Cursor"], new(x - 15 * (p8.Cell.Width / 2.0f), y - 15 * (p8.Cell.Height / 2.0f)), null, Color.White, 0, Vector2.Zero, new Vector2 (p8.Cell.Width / 2.0f, p8.Cell.Height / 2.0f), SpriteEffects.None, 0);
     }
 
     public static void DrawNameBubble(Pico8Functions p8, string s, int x, int y)
     {
-        int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-        int w = viewportWidth / 128;
-        int h = viewportHeight / 128;
-        Vector2 size = new(w, h);
-        p8.Batch.Draw(p8.TextureDictionary["SmallNameBubbleEdge"], new Vector2 ((x - s.Length * 2 - 5) * w, y * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["SmallNameBubbleCenter"], new((x - s.Length * 2) * w, y * h), null, Color.White, 0, Vector2.Zero, new Vector2((s.Length * 4 + 1) * w, h), SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["SmallNameBubbleEdge"], new((x + s.Length * 2 + 1) * w, y * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+        p8.Batch.Draw(p8.TextureDictionary["10pxHighlightEdge"], new Vector2 ((x - s.Length * 2 - 5) * p8.Cell.Width, y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["10pxHighlightCenter"], new((x - s.Length * 2) * p8.Cell.Width, y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2((s.Length * 4 + 1) * p8.Cell.Width, p8.Cell.Height), SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["10pxHighlightEdge"], new((x + s.Length * 2 + 1) * p8.Cell.Width, y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
         Printc(p8, "rooms", x + 1, y + 2, 15);
     }
 

@@ -10,6 +10,7 @@ namespace CSharpCraft.RaceMode;
 public class MainRace : IScene, IDisposable
 {
     public string SceneName { get => "race"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
     //TODO channel is disposable

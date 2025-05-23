@@ -11,7 +11,6 @@ namespace CSharpCraft.Pico8;
 
 public class Pico8Functions : IDisposable
 {
-    //public AccountHandler AccountHandler { get; set; } = new();
 	public SpriteBatch Batch { get; }
     public (F32 x, F32 y) CameraOffset { get; internal set; } = (F32.Zero, F32.Zero);
     public (int Width, int Height) Cell { get; internal set; }
@@ -46,7 +45,6 @@ public class Pico8Functions : IDisposable
         Pico8Utils.HexToColor("FF77A8"), // 14 pink
         Pico8Utils.HexToColor("FFCCAA"), // 15 light-peach
         
-        /*
         Pico8Utils.HexToColor("291814"), // 16 brownish-black
         Pico8Utils.HexToColor("111D35"), // 17 darker-blue
         Pico8Utils.HexToColor("422136"), // 18 darker-purple
@@ -63,7 +61,6 @@ public class Pico8Functions : IDisposable
         Pico8Utils.HexToColor("754665"), // 29 mauve
         Pico8Utils.HexToColor("FF6E59"), // 30 dark-peach
         Pico8Utils.HexToColor("FF9D81"), // 31 peach
-        */
     ];
     public List<PalCol> PalColors { get; } = [new(Color.Black, Color.Black, true)];
 

@@ -3,6 +3,7 @@
 public interface IScene
 {
     string SceneName { get; }
+    double Fps { get; }
     void Init(Pico8Functions p8);
     void Update();
     void Draw();

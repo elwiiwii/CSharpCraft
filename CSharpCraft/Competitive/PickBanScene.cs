@@ -31,6 +31,7 @@ public class PickBanScene(MainRace mainRace) : IScene, IDisposable
 #nullable disable
 
     public string SceneName { get => "2"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
     public void Init(Pico8Functions pico8)

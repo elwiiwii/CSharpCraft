@@ -110,6 +110,8 @@ class FNAGame : Game
         //    elapsedSeconds = 0.0;
         //}
 
+        this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / p8._cart.Fps));
+
         bool er;
         (p8.OptionsFile, er) = OptionsFile.Initialize();
         if (er) { popup = ("settings file corrupted", 1.5); }
@@ -247,7 +249,7 @@ class FNAGame : Game
         try
         {
             // Shutdown AccountHandler first
-            AccountHandler.Shutdown().Wait();
+            AccountHandler.Shutdown();
         }
         catch (Exception ex)
         {
@@ -279,7 +281,7 @@ class FNAGame : Game
         try
         {
             // Ensure AccountHandler is shut down when the game exits
-            AccountHandler.Shutdown().Wait();
+            AccountHandler.Shutdown();
         }
         catch (Exception ex)
         {

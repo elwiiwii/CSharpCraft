@@ -15,11 +15,16 @@ public static class AccountHandler
 {
     private static string? _userId;
     private static string? _permanentToken;
-    private static readonly string _clientId = GetPersistentClientId();
+    private static readonly string _clientId = Guid.NewGuid().ToString();
     private static string TOKEN_FILE => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "FirebaseTest2",
+        "CSharpCraft",
         $"auth_tokens_{_clientId}.json"
+    );
+    private static string BACKUP_TOKEN_FILE => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "CSharpCraft",
+        "auth_tokens_backup.json"
     );
     private static readonly byte[] _encryptionKey = GetOrCreateEncryptionKey();
     private static readonly byte[] _iv = new byte[16];
@@ -42,13 +47,89 @@ public static class AccountHandler
     {
         try
         {
+            Console.WriteLine("Process exit detected, cleaning up...");
+            Console.WriteLine($"Current token file path: {TOKEN_FILE}");
+            Console.WriteLine($"Current backup file path: {BACKUP_TOKEN_FILE}");
+            
             StopTokenCheck();
             _channel?.Dispose();
             _tokenCheckCts?.Dispose();
+
+            // If we have a valid token file, back it up
+            if (File.Exists(TOKEN_FILE))
+            {
+                Console.WriteLine($"Found token file, creating backup...");
+                try
+                {
+                    var directory = Path.GetDirectoryName(BACKUP_TOKEN_FILE);
+                    if (directory is not null && !Directory.Exists(directory))
+                    {
+                        Console.WriteLine($"Creating directory: {directory}");
+                        Directory.CreateDirectory(directory);
+                    }
+
+                    // Read the current token file
+                    Console.WriteLine($"Reading token file: {TOKEN_FILE}");
+                    var json = File.ReadAllText(TOKEN_FILE);
+                    Console.WriteLine($"Token file contents: {json}");
+                    
+                    var tokens = JsonSerializer.Deserialize<AuthTokens>(json);
+                    
+                    if (tokens is not null && !string.IsNullOrEmpty(tokens.PermanentToken))
+                    {
+                        Console.WriteLine("Valid tokens found, creating backup...");
+                        // Write to backup file
+                        File.WriteAllText(BACKUP_TOKEN_FILE, json);
+                        Console.WriteLine($"Backup created at: {BACKUP_TOKEN_FILE}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No valid tokens found, skipping backup");
+                    }
+
+                    if (File.Exists(BACKUP_TOKEN_FILE))
+                    {
+                        Console.WriteLine($"Deleting token file: {TOKEN_FILE}");
+                        File.Delete(TOKEN_FILE);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Could not backup token file: {ex.Message}");
+                    Console.WriteLine($"Error type: {ex.GetType().Name}");
+                    if (ex.InnerException is not null)
+                    {
+                        Console.WriteLine($"Inner error: {ex.InnerException.Message}");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No token file found at: {TOKEN_FILE}");
+                // List all files in the directory to help debug
+                var directory = Path.GetDirectoryName(TOKEN_FILE);
+                if (directory is not null && Directory.Exists(directory))
+                {
+                    Console.WriteLine("Files in directory:");
+                    foreach (var file in Directory.GetFiles(directory))
+                    {
+                        Console.WriteLine($"  {file}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Directory does not exist: {directory}");
+                }
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error during process exit cleanup: {ex.Message}");
+            Console.WriteLine($"Error type: {ex.GetType().Name}");
+            if (ex.InnerException is not null)
+            {
+                Console.WriteLine($"Inner error: {ex.InnerException.Message}");
+            }
         }
     }
 
@@ -80,15 +161,10 @@ public static class AccountHandler
         }
     }
 
-    public static async Task Shutdown()
+    public static void Shutdown()
     {
         try
         {
-            if (_isLoggedIn && _permanentToken is not null)
-            {
-                await ForceLogout();
-            }
-
             StopTokenCheck();
             _channel?.Dispose();
             _tokenCheckCts?.Dispose();
@@ -96,8 +172,6 @@ public static class AccountHandler
             _channel = null;
             _client = null;
             _isLoggedIn = false;
-            _permanentToken = null;
-            _userId = null;
         }
         catch (Exception ex)
         {
@@ -111,59 +185,48 @@ public static class AccountHandler
         public string? PermanentToken { get; set; }
     }
 
-    private static string GetPersistentClientId()
-    {
-        try
-        {
-            var clientIdFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "client_id.txt");
-            if (File.Exists(clientIdFile))
-            {
-                return File.ReadAllText(clientIdFile).Trim();
-            }
-
-            var newClientId = Guid.NewGuid().ToString();
-
-            var directory = Path.GetDirectoryName(clientIdFile);
-            if (directory is not null && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            File.WriteAllText(clientIdFile, newClientId);
-            return newClientId;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Warning: Could not create persistent client ID: {ex.Message}");
-            return Guid.NewGuid().ToString();
-        }
-    }
-
     private static void LoadTokens()
     {
         try
         {
+            Console.WriteLine("Attempting to load tokens...");
+            
+            // First try to load from the client-specific token file
             if (File.Exists(TOKEN_FILE))
             {
+                Console.WriteLine($"Found client-specific token file: {TOKEN_FILE}");
                 var json = File.ReadAllText(TOKEN_FILE);
                 var tokens = JsonSerializer.Deserialize<AuthTokens>(json);
                 if (tokens is not null)
                 {
+                    Console.WriteLine("Successfully loaded tokens from client-specific file");
                     _userId = tokens.UserId;
                     _permanentToken = tokens.PermanentToken;
+                    return;
                 }
             }
-            else if (File.Exists(TOKEN_FILE + ".bak"))
+            else
             {
-                Console.WriteLine($"Warning: Token file not found. Attempting to load backup.");
-                var json = File.ReadAllText(TOKEN_FILE + ".bak");
+                Console.WriteLine("No client-specific token file found");
+            }
+
+            // If no client-specific token file exists, try the backup file
+            if (File.Exists(BACKUP_TOKEN_FILE))
+            {
+                Console.WriteLine($"Found backup token file: {BACKUP_TOKEN_FILE}");
+                var json = File.ReadAllText(BACKUP_TOKEN_FILE);
                 var tokens = JsonSerializer.Deserialize<AuthTokens>(json);
                 if (tokens is not null)
                 {
+                    Console.WriteLine("Successfully loaded tokens from backup file");
                     _userId = tokens.UserId;
                     _permanentToken = tokens.PermanentToken;
-                    SaveTokens();
+                    // Don't save to client-specific file yet - wait for successful token validation
                 }
+            }
+            else
+            {
+                Console.WriteLine("No backup token file found");
             }
         }
         catch (Exception ex)
@@ -193,21 +256,53 @@ public static class AccountHandler
             var directory = Path.GetDirectoryName(TOKEN_FILE);
             if (directory is not null && !Directory.Exists(directory))
             {
+                Console.WriteLine($"Creating directory: {directory}");
                 Directory.CreateDirectory(directory);
             }
 
-            var tempFile = TOKEN_FILE + ".tmp";
-            File.WriteAllText(tempFile, json);
-
-            if (File.Exists(TOKEN_FILE))
+            // Write directly to the token file
+            Console.WriteLine($"Writing to token file: {TOKEN_FILE}");
+            File.WriteAllText(TOKEN_FILE, json);
+            
+            // Also update the backup file
+            try
             {
-                File.Delete(TOKEN_FILE + ".bak");
+                Console.WriteLine($"Deleting backup file: {BACKUP_TOKEN_FILE}");
+                if (File.Exists(BACKUP_TOKEN_FILE))
+                {
+                    File.Delete(BACKUP_TOKEN_FILE);
+                }
             }
-            File.Move(tempFile, TOKEN_FILE);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Could not delete backup token file: {ex.Message}");
+                try
+                {
+                    Console.WriteLine($"Deleting backup file: {BACKUP_TOKEN_FILE}");
+                    if (File.Exists(BACKUP_TOKEN_FILE))
+                    {
+                        File.Delete(BACKUP_TOKEN_FILE);
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine($"Warning: Could not delete backup token file again: {ex.Message}");
+                    throw;
+                }
+            }
+            
+            Console.WriteLine("Token files saved successfully");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Warning: Could not save tokens: {ex.Message}");
+            Console.WriteLine($"Error saving tokens: {ex.Message}");
+            Console.WriteLine($"Error type: {ex.GetType().Name}");
+            if (ex.InnerException is not null)
+            {
+                Console.WriteLine($"Inner error: {ex.InnerException.Message}");
+                Console.WriteLine($"Inner error type: {ex.InnerException.GetType().Name}");
+            }
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             throw;
         }
     }
@@ -315,7 +410,7 @@ public static class AccountHandler
                         RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         {
                             Console.WriteLine($"SSL Certificate validation: {sslPolicyErrors}");
-                            if (sslPolicyErrors != System.Net.Security.SslPolicyErrors.None && certificate != null)
+                            if (sslPolicyErrors != System.Net.Security.SslPolicyErrors.None && certificate is not null)
                             {
                                 Console.WriteLine($"Certificate details:");
                                 Console.WriteLine($"  Subject: {certificate.Subject}");
@@ -354,7 +449,7 @@ public static class AccountHandler
                 Console.WriteLine($"Connection attempt failed:");
                 Console.WriteLine($"  Error Type: {ex.GetType().Name}");
                 Console.WriteLine($"  Error Message: {ex.Message}");
-                if (ex.InnerException != null)
+                if (ex.InnerException is not null)
                 {
                     Console.WriteLine($"  Inner Error Type: {ex.InnerException.GetType().Name}");
                     Console.WriteLine($"  Inner Error Message: {ex.InnerException.Message}");
@@ -367,8 +462,20 @@ public static class AccountHandler
                 throw new Exception("Failed to connect to server. Please ensure the server is running.", ex);
             }
 
+            try
+            {
+                LoadTokens();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load tokens: {ex.Message}");
+                _userId = null;
+                _permanentToken = null;
+            }
+
             if (_permanentToken is not null && _userId is not null)
             {
+                Console.WriteLine("Found stored tokens, attempting to validate...");
                 try
                 {
                     var response = await _client.CheckTokenAsync(new CheckTokenRequest
@@ -377,13 +484,23 @@ public static class AccountHandler
                         Token = _permanentToken
                     });
 
+                    Console.WriteLine($"Token validation response: IsValid={response.IsValid}, Message={response.Message}");
+
                     if (response.IsValid)
                     {
+                        Console.WriteLine("Token is valid, logging in...");
                         _isLoggedIn = true;
+                        // If we loaded from backup, now save to client-specific file
+                        if (!File.Exists(TOKEN_FILE))
+                        {
+                            Console.WriteLine("Saving tokens to client-specific file...");
+                            SaveTokens();
+                        }
                         await StartTokenCheck();
                     }
                     else
                     {
+                        Console.WriteLine("Token is invalid, logging out...");
                         await ForceLogout();
                     }
                 }
@@ -392,6 +509,15 @@ public static class AccountHandler
                     Console.WriteLine("Server is unavailable. Please try again later.");
                     await ForceLogout();
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error validating token: {ex.Message}");
+                    await ForceLogout();
+                }
+            }
+            else
+            {
+                Console.WriteLine("No stored tokens found");
             }
         }
         catch (Exception ex)
@@ -401,7 +527,7 @@ public static class AccountHandler
         }
     }
 
-    private static async Task DisconnectFromServer()
+    public static async Task DisconnectFromServer()
     {
         try
         {
@@ -577,6 +703,19 @@ public static class AccountHandler
                     Console.WriteLine($"Error moving token file: {ex.Message}");
                 }
             }
+
+            // Also clear the backup file
+            if (File.Exists(BACKUP_TOKEN_FILE))
+            {
+                try
+                {
+                    File.Delete(BACKUP_TOKEN_FILE);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error deleting backup token file: {ex.Message}");
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -619,10 +758,10 @@ public static class AccountHandler
 
     public static async Task<RegisterResponse> Register(string email, string username, string password, string verificationCode)
     {
-        if (_client == null)
+        if (_client is null)
         {
             await ConnectToServer();
-            if (_client == null)
+            if (_client is null)
             {
                 return new RegisterResponse
                 {
@@ -663,10 +802,10 @@ public static class AccountHandler
 
     public static async Task<LoginResponse> Login(string email, string password)
     {
-        if (_client == null)
+        if (_client is null)
         {
             await ConnectToServer();
-            if (_client == null)
+            if (_client is null)
             {
                 return new LoginResponse
                 {

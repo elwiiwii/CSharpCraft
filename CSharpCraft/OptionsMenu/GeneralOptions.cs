@@ -10,6 +10,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 {
 
     public string SceneName { get => "options"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
     private int menuSelected;

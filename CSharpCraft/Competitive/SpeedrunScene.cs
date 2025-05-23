@@ -9,6 +9,7 @@ namespace CSharpCraft.Competitive;
 public class SpeedrunScene(IScene prevScene) : IScene
 {
     public string SceneName { get => "ranked"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
     private Icon back;
     private Icon replays;
@@ -46,7 +47,7 @@ public class SpeedrunScene(IScene prevScene) : IScene
         cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
         cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
-        curIcon = Shared.IconUpdate(p8, icons, cursorX, cursorY);
+        curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
 
         if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.LoadCart(curIcon.Scene); }
         prevState = state;

@@ -6,6 +6,7 @@ namespace CSharpCraft.Pcraft;
 public abstract class DeluxeBase : IScene, IDisposable
 {
     public abstract string SceneName { get; }
+    public double Fps { get => 30.0; }
 
     private static Pico8Functions? p8;
 

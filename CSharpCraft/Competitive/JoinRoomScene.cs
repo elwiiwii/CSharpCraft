@@ -21,6 +21,7 @@ public class JoinRoomScene(MainRace mainRace) : IScene, IDisposable
 #nullable disable
 
     public string SceneName { get => "0"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
     public void Init(Pico8Functions pico8)

@@ -9,6 +9,7 @@ public class ControlsOptions : IScene, IDisposable
 {
 
     public string SceneName { get => "options"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
     KeyboardOptions drawScene = new(-2);

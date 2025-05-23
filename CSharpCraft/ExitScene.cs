@@ -5,6 +5,7 @@ namespace CSharpCraft;
 public class ExitScene : IScene, IDisposable
 {
     public string SceneName { get => "exit"; }
+    public double Fps { get => 60.0; }
 
     public void Init(Pico8Functions pico8)
     {

@@ -16,6 +16,14 @@
 	<ItemGroup>
 		<None Remove="Content\Graphics\0.png" />
 		<None Remove="Content\Graphics\1.png" />
+		<None Remove="Content\Graphics\10pxBackgroundCenter.png" />
+		<None Remove="Content\Graphics\10pxBackgroundEdge.png" />
+		<None Remove="Content\Graphics\10pxBackgroundOverlapEdge.png" />
+		<None Remove="Content\Graphics\10pxHighlightCenter.png" />
+		<None Remove="Content\Graphics\10pxHighlightEdge.png" />
+		<None Remove="Content\Graphics\10pxHighlightOverlapEdge.png" />
+		<None Remove="Content\Graphics\12pxHighlightCenter.png" />
+		<None Remove="Content\Graphics\12pxHighlightEdge.png" />
 		<None Remove="Content\Graphics\2.png" />
 		<None Remove="Content\Graphics\3.png" />
 		<None Remove="Content\Graphics\4.png" />
@@ -174,6 +182,33 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Content\Graphics\10pxBackgroundEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Content\Graphics\10pxBackgroundCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\10pxBackgroundOverlapEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\10pxHighlightCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\10pxHighlightEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\10pxHighlightOverlapEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\12pxHighlightCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\12pxHighlightEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\BackIcon.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -202,12 +237,6 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\MusicNote.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\NameBubbleCenter.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\NameBubbleEdge.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\NewRoomIcon.png">
@@ -247,12 +276,6 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SettingsShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SmallNameBubbleCenter.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SmallNameBubbleEdge.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\SpeedrunBackground.png">

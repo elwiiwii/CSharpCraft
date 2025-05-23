@@ -6,6 +6,7 @@ namespace CSharpCraft;
 public class MapConversion : IScene, IDisposable
 {
     public string SceneName { get => "map conversion"; }
+    public double Fps { get => 60.0; }
     private Pico8Functions? p8;
 
     public void Init(Pico8Functions pico8)

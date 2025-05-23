@@ -10,6 +10,7 @@ namespace CSharpCraft;
 public class TitleScreen(bool animation = false) : IScene, IDisposable
 {
     public string SceneName { get => "TitleScreen"; }
+    public double Fps { get => 30.0; }
     private Pico8Functions p8;
     private readonly string version = "1.1.3";
 
@@ -26,7 +27,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
         frame = animation ? 0 : 50;
     }
 
-    public async void Update()
+    public void Update()
     {
         KeyboardState state = Keyboard.GetState();
 
@@ -34,7 +35,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
         {
             try
             {
-                await AccountHandler.Shutdown();
+                AccountHandler.Shutdown();
             }
             catch (Exception ex)
             {
