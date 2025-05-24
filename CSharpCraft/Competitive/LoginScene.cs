@@ -24,21 +24,29 @@ public class LoginScene : IScene
     private Action<char>? currentHandler;
     private string statusMessage = string.Empty;
     private bool isProcessing = false;
-    private enum InputMode { Email, Code, Username, Password, TwoFactorCode, None }
+    private enum InputMode { Email, Password, TwoFactorCode, Code, Username, None }
     private bool isRegistering = true;
     private bool requiresTwoFactor = false;
     private TwoFactorType twoFactorType = TwoFactorType.None;
 
     private Selector loginRegisterSelector;
     private TextBox emailBox;
-    private TextBox codeBox;
-    private TextBox usernameBox;
     private TextBox passwordBox;
     private TextBox twoFactorBox;
-
+    private TextBox codeBox;
+    private TextBox usernameBox;
+    private Button loginButton;
+    private Button verifyButton;
+    private Button submitCodeButton;
+    private Button registerButton;
+    private bool isEmailVerified = false;
+    private bool isVerifyingCode = false;
+    
     private readonly Dictionary<InputMode, (TextBox box, Func<char, bool> validator)> inputHandlers;
     private readonly Dictionary<InputMode, Action> enterHandlers;
     private readonly Dictionary<TextBox, InputMode> textBoxToInputMode;
+    private readonly List<TextBox> loginFlow;
+    private readonly List<TextBox> registerFlow;
 
     public LoginScene(IScene _prevScene)
     {
@@ -47,6 +55,8 @@ public class LoginScene : IScene
         inputHandlers = [];
         enterHandlers = [];
         textBoxToInputMode = [];
+        loginFlow = [];
+        registerFlow = [];
     }
 
     public void Init(Pico8Functions pico8)
@@ -55,15 +65,22 @@ public class LoginScene : IScene
 
         var op1 = new SelectorOption { Name = "login" };
         var op2 = new SelectorOption { Name = "register" };
-        loginRegisterSelector = new Selector(p8, (29, 41), [op1, op2]);
+        loginRegisterSelector = new Selector(p8, (29, 29), [op1, op2]);
         
-        emailBox = new TextBox(p8, (29, 53), (69, 69), "email:", string.Empty);
-        codeBox = new TextBox(p8, (29, 65), (69, 69), "code:", string.Empty);
-        usernameBox = new TextBox(p8, (29, 77), (69, 69), "username:", string.Empty);
-        passwordBox = new TextBox(p8, (29, 89), (69, 69), "password:", string.Empty);
-        twoFactorBox = new TextBox(p8, (29, 101), (69, 69), "2fa code:", string.Empty);
+        emailBox = new TextBox(p8, (29, 41), (69, 69), "email:");
+        passwordBox = new TextBox(p8, (29, 53), (69, 69), "password:");
+        twoFactorBox = new TextBox(p8, (29, 65), (69, 69), "2fa code:");
+        verifyButton = new Button((46, 53), "verify", false);
+        submitCodeButton = new Button((79, 53), "->", false);
+        registerButton = new Button((42, 77), "register", false);
 
-        // Map text boxes to their input modes
+        codeBox = new TextBox(p8, (29, 53), (43, 43), "");
+        usernameBox = new TextBox(p8, (29, 53), (69, 69), "username:");
+        loginButton = new Button((29, 65), "login", false);
+
+        loginFlow.AddRange([emailBox, passwordBox, twoFactorBox]);
+        registerFlow.AddRange([emailBox, codeBox, usernameBox, passwordBox]);
+
         textBoxToInputMode[emailBox] = InputMode.Email;
         textBoxToInputMode[codeBox] = InputMode.Code;
         textBoxToInputMode[usernameBox] = InputMode.Username;
@@ -79,7 +96,7 @@ public class LoginScene : IScene
         });
 
         inputHandlers[InputMode.Code] = (codeBox, c => {
-            var allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return allowed.Contains(c) && codeBox.Text.Length <= 8;
         });
 
@@ -92,33 +109,43 @@ public class LoginScene : IScene
 
         inputHandlers[InputMode.TwoFactorCode] = (twoFactorBox, c => c >= '0' && c <= '9' && twoFactorBox.Text.Length < 6);
 
-        //enterHandlers[InputMode.Email] = () => {
-        //    if (isRegistering)
-        //    {
-        //        _ = VerifyEmail();
-        //    }
-        //    else
-        //    {
-        //        usernameBox.IsActive = true;
-        //        emailBox.IsActive = false;
-        //    }
-        //};
-        //
-        //enterHandlers[InputMode.Username] = () => {
-        //    passwordBox.IsActive = true;
-        //    usernameBox.IsActive = false;
-        //};
-        //
-        //enterHandlers[InputMode.Password] = () => {
-        //    if (isRegistering)
-        //    {
-        //        _ = RegisterUser();
-        //    }
-        //    else
-        //    {
-        //        _ = LoginUser();
-        //    }
-        //};
+        enterHandlers[InputMode.Email] = () => {
+            if (isRegistering)
+            {
+                if (IsValidEmail(emailBox.Text))
+                {
+                    _ = VerifyEmail();
+                }
+            }
+            else
+            {
+                passwordBox.IsActive = true;
+                emailBox.IsActive = false;
+            }
+        };
+
+        enterHandlers[InputMode.Code] = () => {
+            
+        };
+
+        enterHandlers[InputMode.Username] = () => {
+            
+        };
+
+        enterHandlers[InputMode.Password] = () => {
+            if (isRegistering)
+            {
+                _ = RegisterUser();
+            }
+            else
+            {
+                _ = LoginUser();
+            }
+        };
+
+        enterHandlers[InputMode.TwoFactorCode] = () => {
+            _ = VerifyTwoFactor();
+        };
 
         TextInputEXT.StartTextInput();
         EnableInputMode(InputMode.None);
@@ -153,19 +180,34 @@ public class LoginScene : IScene
         currentInput = string.Empty;
     }
 
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private async Task VerifyEmail()
     {
         try
         {
             isProcessing = true;
-            statusMessage = "Verifying email...";
+            statusMessage = "Sending verification email...";
             
             var response = await AccountHandler.VerifyEmailBeforeRegistration(emailBox.Text);
 
             if (response.Success)
             {
-                statusMessage = response.Message;
-                EnableInputMode(InputMode.Code);
+                statusMessage = "Verification email sent! Please check your inbox.";
+                isVerifyingCode = true;
+                codeBox.IsActive = true;
+                emailBox.IsActive = false;
             }
             else
             {
@@ -182,12 +224,46 @@ public class LoginScene : IScene
         }
     }
 
+    private async Task SubmitVerificationCode()
+    {
+        try
+        {
+            isProcessing = true;
+            statusMessage = "Verifying code...";
+            
+            var response = await AccountHandler.VerifyEmailBeforeRegistration(emailBox.Text);
+
+            if (response.Success)
+            {
+                statusMessage = "Email verified successfully! Please set your username and password.";
+                isEmailVerified = true;
+                isVerifyingCode = false;
+                codeBox.IsActive = false;
+                usernameBox.IsActive = true;
+            }
+            else
+            {
+                statusMessage = response.Message;
+                isVerifyingCode = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+            isVerifyingCode = false;
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
     private async Task RegisterUser()
     {
         try
         {
             isProcessing = true;
-            statusMessage = "Registering user...";
+            statusMessage = "Creating account...";
 
             var response = await AccountHandler.Register(emailBox.Text, usernameBox.Text, passwordBox.Text, codeBox.Text);
 
@@ -325,10 +401,9 @@ public class LoginScene : IScene
 
     private void OnCodeInput(char c)
     {
-        var allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        if (allowed.Contains(c))
+        if (inputHandlers[InputMode.Code].validator(c))
         {
-            currentInput += c;
+            inputHandlers[InputMode.Code].box.HandleInput(c);
         }
     }
 
@@ -352,8 +427,57 @@ public class LoginScene : IScene
     {
         if (inputHandlers[InputMode.TwoFactorCode].validator(c))
         {
-            currentInput += c;
+            inputHandlers[InputMode.TwoFactorCode].box.HandleInput(c);
         }
+    }
+
+    private List<string> SplitStatusMessage(string message)
+    {
+        const int SCREEN_WIDTH = 128;
+        const int MARGIN = 5;
+        const int CHAR_WIDTH = 4;
+        const int MAX_CHARS_PER_LINE = (SCREEN_WIDTH - (MARGIN * 2)) / CHAR_WIDTH;
+
+        var lines = new List<string>();
+        var words = message.Split(' ');
+        var currentLine = new System.Text.StringBuilder();
+
+        foreach (var word in words)
+        {
+            if (currentLine.Length + word.Length + (currentLine.Length > 0 ? 1 : 0) > MAX_CHARS_PER_LINE)
+            {
+                if (currentLine.Length > 0)
+                {
+                    lines.Add(currentLine.ToString());
+                    currentLine.Clear();
+                }
+
+                if (word.Length > MAX_CHARS_PER_LINE)
+                {
+                    var remainingWord = word;
+                    while (remainingWord.Length > 0)
+                    {
+                        var chunk = remainingWord.Substring(0, Math.Min(MAX_CHARS_PER_LINE, remainingWord.Length));
+                        lines.Add(chunk);
+                        remainingWord = remainingWord.Substring(chunk.Length);
+                    }
+                    continue;
+                }
+            }
+
+            if (currentLine.Length > 0)
+            {
+                currentLine.Append(' ');
+            }
+            currentLine.Append(word);
+        }
+
+        if (currentLine.Length > 0)
+        {
+            lines.Add(currentLine.ToString());
+        }
+
+        return lines;
     }
 
     public void Update()
@@ -364,6 +488,21 @@ public class LoginScene : IScene
         cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
         if (isProcessing) goto end_of_update;
+
+        if (loginRegisterSelector.Sel == 0 && isRegistering)
+        {
+            isRegistering = false;
+            isEmailVerified = false;
+            isVerifyingCode = false;
+            passwordBox.StartPos = (29, 53);
+        }
+        else if (loginRegisterSelector.Sel == 1 && !isRegistering)
+        {
+            isRegistering = true;
+            isEmailVerified = false;
+            isVerifyingCode = false;
+            passwordBox.StartPos = (29, 65);
+        }
 
         if (keyboardState.IsKeyDown(Keys.Back) && prevKeyboardState.IsKeyUp(Keys.Back))
         {
@@ -383,17 +522,79 @@ public class LoginScene : IScene
             }
         }
 
+        if (isRegistering)
+        {
+            if (isEmailVerified)
+            {
+                registerButton.IsActive = !string.IsNullOrEmpty(usernameBox.Text) && !string.IsNullOrEmpty(passwordBox.Text);
+                registerButton.Update(p8, cursorX, cursorY);
+            }
+            else if (isVerifyingCode)
+            {
+                submitCodeButton.IsActive = !string.IsNullOrEmpty(codeBox.Text);
+                submitCodeButton.Update(p8, cursorX, cursorY);
+            }
+            else if (IsValidEmail(emailBox.Text))
+            {
+                verifyButton.IsActive = true;
+                verifyButton.Update(p8, cursorX, cursorY);
+            }
+            else
+            {
+                verifyButton.IsActive = false;
+            }
+        }
+        else
+        {
+            loginButton.Update(p8, cursorX, cursorY);
+        }
+
         if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
         {
             loginRegisterSelector.Update(p8, cursorX, cursorY);
-            emailBox.ActiveUpdate(p8, cursorX, cursorY);
-            codeBox.ActiveUpdate(p8, cursorX, cursorY);
-            usernameBox.ActiveUpdate(p8, cursorX, cursorY);
-            passwordBox.ActiveUpdate(p8, cursorX, cursorY);
-            twoFactorBox.ActiveUpdate(p8, cursorX, cursorY);
+            
+            if (isRegistering)
+            {
+                emailBox.ActiveUpdate(p8, cursorX, cursorY);
+                
+                if (!isEmailVerified)
+                {
+                    if (isVerifyingCode)
+                    {
+                        codeBox.ActiveUpdate(p8, cursorX, cursorY);
+                        if (!string.IsNullOrEmpty(codeBox.Text) && submitCodeButton.IsHovered)
+                        {
+                            _ = SubmitVerificationCode();
+                        }
+                    }
+                    else if (IsValidEmail(emailBox.Text) && verifyButton.IsHovered)
+                    {
+                        _ = VerifyEmail();
+                    }
+                }
+                else
+                {
+                    codeBox.ActiveUpdate(p8, cursorX, cursorY);
+                    usernameBox.ActiveUpdate(p8, cursorX, cursorY);
+                    passwordBox.ActiveUpdate(p8, cursorX, cursorY);
+                    if (!string.IsNullOrEmpty(usernameBox.Text) && !string.IsNullOrEmpty(passwordBox.Text) && registerButton.IsHovered)
+                    {
+                        _ = RegisterUser();
+                    }
+                }
+            }
+            else
+            {
+                emailBox.ActiveUpdate(p8, cursorX, cursorY);
+                passwordBox.ActiveUpdate(p8, cursorX, cursorY);
+                twoFactorBox.ActiveUpdate(p8, cursorX, cursorY);
+                if (loginButton.IsHovered)
+                {
+                    _ = LoginUser();
+                }
+            }
         }
 
-        // Set input mode based on active text box
         var activeTextBox = textBoxToInputMode.Keys.FirstOrDefault(box => box.IsActive);
         EnableInputMode(activeTextBox is not null ? textBoxToInputMode[activeTextBox] : InputMode.None);
 
@@ -411,17 +612,44 @@ public class LoginScene : IScene
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
-        //Shared.Printc(p8, isRegistering ? "Registration" : "Login", 64, 1, 7);
-        //Shared.Printc(p8, currentHandler?.Method.Name ?? "Email", 64, 7, 7);
-        //Shared.Printc(p8, currentInput, 64, 13, 7);
-        //Shared.Printc(p8, statusMessage, 64, 19, 7);
-        //Shared.Printc(p8, "Press TAB to switch between Login/Register", 64, 25, 7);
-
-        //p8.Pset(F32.FromInt(29 + 4), F32.FromInt(41 - 1), 7);
         loginRegisterSelector.Draw(p8);
-        emailBox.Draw(p8);
-        usernameBox.Draw(p8);
-        passwordBox.Draw(p8);
+        
+        if (isRegistering)
+        {
+            emailBox.Draw(p8);
+            
+            if (isEmailVerified)
+            {
+                usernameBox.Draw(p8);
+                passwordBox.Draw(p8);
+                registerButton.Draw(p8);
+            }
+            else if (isVerifyingCode)
+            {
+                codeBox.Draw(p8);
+                submitCodeButton.Draw(p8);
+            }
+            else if (IsValidEmail(emailBox.Text))
+            {
+                verifyButton.Draw(p8);
+            }
+        }
+        else
+        {
+            emailBox.Draw(p8);
+            passwordBox.Draw(p8);
+            twoFactorBox.Draw(p8);
+            loginButton.Draw(p8);
+        }
+
+        if (!string.IsNullOrEmpty(statusMessage))
+        {
+            var lines = SplitStatusMessage(statusMessage);
+            for (int i = 0; i < lines.Count; i++)
+            {
+                Shared.Printc(p8, lines[i], 64, 120 - ((lines.Count - 1 - i) * 7), 15);
+            }
+        }
 
         Shared.DrawCursor(p8, cursorX, cursorY);
     }

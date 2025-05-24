@@ -893,4 +893,38 @@ public static class AccountHandler
             };
         }
     }
+
+    public static async Task<VerifyEmailResponse> VerifyEmailCode(string email, string verificationCode)
+    {
+        if (_client is null)
+        {
+            await ConnectToServer();
+            if (_client is null)
+            {
+                return new VerifyEmailResponse
+                {
+                    Success = false,
+                    Message = "Not connected to server."
+                };
+            }
+        }
+
+        try
+        {
+            return await _client.VerifyEmailAsync(new VerifyEmailRequest
+            {
+                Email = email,
+                VerificationCode = verificationCode
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error verifying email code: {ex.Message}");
+            return new VerifyEmailResponse
+            {
+                Success = false,
+                Message = $"Error verifying email code: {ex.Message}"
+            };
+        }
+    }
 }

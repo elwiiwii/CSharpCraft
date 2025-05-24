@@ -301,34 +301,15 @@ public class SeedFilter : PcraftBase, IDisposable
         return mval;
     }
 
-    private class NoiseCache
-    {
-        public F32[][] Noise1 { get; set; }
-        public F32[][] Noise2 { get; set; }
-        public F32[][] Noise3 { get; set; }
-        public F32[][] Noise4 { get; set; }
-    }
-
     private async Task CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, CancellationToken ct)
     {
         var tcs = new TaskCompletionSource<bool>();
-
-        // Pre-calculate common values
-        int maxRadius = Math.Min(levelsx / 2 - 1, Math.Max(1, MaxRadius(densityChecks, densityComparisons)));
-        int minRadius = Math.Min(levelsx / 2 - 1, Math.Max(1, MinRadius(densityChecks, densityComparisons)));
-        int center = levelsx / 2;
-
-        // Create reusable buffers
-        var temp_typeCount = new int[11];
-        var densityChecksClone = densityChecks.Select(c => c.Clone()).ToList();
-        var densityComparisonsClone = densityComparisons.Select(c => c.Clone()).ToList();
 
         await Task.Run(async () =>
         {
             try
             {
-                var options = new ParallelOptions { CancellationToken = ct };
-                Parallel.For(0, int.MaxValue, options, (index, state) =>
+                Parallel.For(0, int.MaxValue, (index, state) =>
                 {
                     if (ct.IsCancellationRequested || found)
                     {
@@ -336,29 +317,28 @@ public class SeedFilter : PcraftBase, IDisposable
                         return;
                     }
 
-                    // Generate new noise maps for each iteration
+                    bool needmap = true;
+                    //List<DensityCheck> densityChecksClone = DeepClonerExtensions.DeepClone(densityChecks);
+                    //List<DensityComparison> densityComparisonsClone = DeepClonerExtensions.DeepClone(densityComparisons);
+
+                    List<DensityCheck> densityChecksClone = densityChecks.Select(c => c.Clone()).ToList();
+                    List<DensityComparison> densityComparisonsClone = densityComparisons.Select(c => c.Clone()).ToList();
+
                     F32[][] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
                     F32[][] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
                     F32[][] cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
                     F32[][] cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
 
-                    // Reset counters
-                    Array.Clear(temp_typeCount, 0, temp_typeCount.Length);
-                    foreach (var check in densityChecksClone)
+                    int maxRadius = Math.Min(levelsx / 2 - 1, Math.Max(1, MaxRadius(densityChecksClone, densityComparisonsClone)));
+                    int minRadius = Math.Min(levelsx / 2 - 1, Math.Max(1, MinRadius(densityChecksClone, densityComparisonsClone)));
+                    int center = levelsx / 2;
+                    int[] temp_typeCount = new int[11];
+
+                    for (int i = 0; i < 11; i++)
                     {
-                        check.Count = 0;
-                        check.FailCount = 0;
-                        check.TryCount = 0;
-                    }
-                    foreach (var check in densityComparisonsClone)
-                    {
-                        check.Count1 = 0;
-                        check.Count2 = 0;
-                        check.FailCount = 0;
-                        check.TryCount = 0;
+                        temp_typeCount[i] = 0;
                     }
 
-                    // Process map generation
                     for (int i = 0; i <= sx; i++)
                     {
                         for (int j = 0; j <= sy; j++)
@@ -371,28 +351,29 @@ public class SeedFilter : PcraftBase, IDisposable
                             F32 coast = v * 4 - dist * 4;
 
                             int id = a;
-                            if (coast > F32.FromDouble(0.3)) { id = b; }
-                            if (coast > F32.FromDouble(0.6)) { id = c; }
-                            if (coast > F32.FromDouble(0.3) && v2 > F32.Half) { id = d; }
-                            if (id == c && v3 > F32.Half) { id = e; }
+                            if (coast > F32.FromDouble(0.3)) { id = b; } // sand
+                            if (coast > F32.FromDouble(0.6)) { id = c; } // grass
+                            if (coast > F32.FromDouble(0.3) && v2 > F32.Half) { id = d; } // stone
+                            if (id == c && v3 > F32.Half) { id = e; } // tree
 
                             temp_typeCount[id]++;
+
+                            cur[i][j] = F32.FromInt(id);
 
                             if ((densityChecksClone.Count == 0 && densityComparisonsClone.Count == 0) ||
                                 i < center - maxRadius ||
                                 i > center + maxRadius ||
                                 j < center - maxRadius ||
                                 j > center + maxRadius) { continue; }
-
-                            int curtile = id;
+                            //if ((i >= center - minRadius && i <= center + minRadius) || (j >= center - minRadius && j <= center + minRadius)) { continue; }
+                            int curtile = F32.FloorToInt(cur[i][j]);
                             DensityCount(densityChecksClone, i - center, j - center, curtile);
                             ComparisonCount(densityComparisonsClone, i - center, j - center, curtile);
                         }
                     }
 
-                    bool needmap = Filter(densityChecksClone, densityComparisonsClone);
+                    needmap = Filter(densityChecksClone, densityComparisonsClone);
 
-                    // Update statistics
                     for (int i = 0; i < densityChecks.Count; i++)
                     {
                         if (densityChecksClone[i].TryCount == 1)

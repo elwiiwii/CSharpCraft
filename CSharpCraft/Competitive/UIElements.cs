@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using CSharpCraft.Pico8;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -42,7 +43,10 @@ public class Selector
     {
         for (int i = 0; i < Options.Length; i++)
         {
-            if (x > Options[i].Area.x1 * p8.Cell.Width && x < Options[i].Area.x2 * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height) { Sel = i; }
+            if (x > Options[i].Area.x1 * p8.Cell.Width && x < Options[i].Area.x2 * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+            {
+                Sel = i;
+            }
         }
         int x1;
         int x2 = StartPos.x;
@@ -73,10 +77,47 @@ public class Selector
     }
 }
 
+public class Button
+{
+    public (int x, int y) StartPos { get; set; }
+    public string Label { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public bool IsHovered { get; internal set; } = false;
+
+    public Button((int x, int y) startPos, string label, bool isActive)
+    {
+        StartPos = startPos;
+        Label = label;
+        IsActive = isActive;
+        IsHovered = false;
+    }
+
+    public void Update(Pico8Functions p8, float x, float y)
+    {
+        if (IsActive && x > StartPos.x * p8.Cell.Width && x < (StartPos.x + (Label.Length * 4) + 11) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+        {
+            IsHovered = true;
+        }
+        else
+        {
+            IsHovered = false;
+        }
+    }
+
+    public void Draw(Pico8Functions p8)
+    {
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+        p8.Batch.Draw(p8.TextureDictionary[$"10px{(IsHovered ? "Highlight" : "Background")}Center"], new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height), SpriteEffects.None, 0);
+        p8.Print(Label, StartPos.x + 6, StartPos.y + 2, IsHovered ? 15 : 29);
+        p8.Batch.Draw(p8.TextureDictionary[$"10px{(IsHovered ? "Highlight" : "Background")}Edge"], new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary[$"10px{(IsHovered ? "Highlight" : "Background")}Edge"], new((StartPos.x + (Label.Length * 4) + 6) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+    }
+}
+
 public class TextBox
 {
-    public (int x, int y) StartPos { get; internal init; }
-    public (int min, int max) Size { get; internal init; }
+    public (int x, int y) StartPos { get; set; }
+    public (int min, int max) Size { get; set; }
     public string Label { get; set; } = string.Empty;
     public string Text { get; private set; } = string.Empty;
     public bool IsActive { get; set; } = false;
@@ -84,12 +125,12 @@ public class TextBox
     private Func<char, bool>? inputValidator;
     private int maxLength;
 
-    public TextBox(Pico8Functions p8, (int x, int y) startPos, (int min, int max) size, string label, string text, Func<char, bool>? validator = null, int maxLength = int.MaxValue, bool isActive = false)
+    public TextBox(Pico8Functions p8, (int x, int y) startPos, (int min, int max) size, string label, Func<char, bool>? validator = null, int maxLength = int.MaxValue, bool isActive = false)
     {
         StartPos = startPos;
         Size = size;
         Label = label;
-        Text = text;
+        Text = string.Empty;
         IsActive = isActive;
         inputValidator = validator;
         this.maxLength = maxLength;
@@ -139,7 +180,8 @@ public class TextBox
         p8.Batch.Draw(p8.TextureDictionary[$"10pxBackgroundEdge"], new(Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
         string s = Label + Text + indicator;
         int startIndex = !IsActive ? 0 : Math.Max(0, s.Length - ((Size.max - 12) / 4));
-        int length = s.Length > ((Size.max - 12) / 4) ? ((Size.max - 12) / 4) : s.Length;
+        int length = s.Length > ((Size.max - 11) / 4) ? ((Size.max - 11) / 4) : s.Length;
+        if (startIndex + length > s.Length) { length = s.Length - startIndex; }
         p8.Print(s.Substring(startIndex, length), StartPos.x + 6, StartPos.y + 2, 29);
     }
 }
