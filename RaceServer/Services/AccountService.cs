@@ -181,6 +181,41 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         }
     }
 
+    public override async Task<VerifyEmailBeforeRegistrationResponse> VerifyEmailCodeForRegistration(
+        VerifyEmailCodeForRegistrationRequest request,
+        ServerCallContext context)
+    {
+        _logger.LogInformation($"Verifying email code for registration: {request.Email}");
+
+        try
+        {
+            var isValid = await _emailService.VerifyEmailCode(request.Email, request.VerificationCode.ToUpperInvariant());
+            if (!isValid)
+            {
+                return new VerifyEmailBeforeRegistrationResponse
+                {
+                    Success = false,
+                    Message = "Invalid or expired verification code."
+                };
+            }
+
+            return new VerifyEmailBeforeRegistrationResponse
+            {
+                Success = true,
+                Message = "Email verified successfully."
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error verifying email code: {ex.Message}");
+            return new VerifyEmailBeforeRegistrationResponse
+            {
+                Success = false,
+                Message = "An error occurred while verifying the code."
+            };
+        }
+    }
+
     public override async Task<RegisterResponse> Register(
         RegisterRequest request,
         ServerCallContext context)
@@ -334,6 +369,52 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         }
     }
 
+    private async Task CleanupOldData(string userId)
+    {
+        try
+        {
+            // Clean up old sessions for this user
+            var sessionsRef = _firestoreDb.Collection("sessions");
+            var sessionsQuery = sessionsRef.WhereEqualTo("userId", userId);
+            var sessionsSnapshot = await sessionsQuery.GetSnapshotAsync();
+            
+            foreach (var doc in sessionsSnapshot)
+            {
+                await doc.Reference.DeleteAsync();
+                _logger.LogInformation($"Deleted old session {doc.Id} for user {userId}");
+            }
+
+            // Clean up expired password resets
+            var resetVerificationsRef = _firestoreDb.Collection("password_reset_verifications");
+            var expiredResetsQuery = resetVerificationsRef
+                .WhereLessThan("ExpiryTime", Timestamp.FromDateTime(DateTime.UtcNow));
+            var expiredResetsSnapshot = await expiredResetsQuery.GetSnapshotAsync();
+            
+            foreach (var doc in expiredResetsSnapshot)
+            {
+                await doc.Reference.DeleteAsync();
+                _logger.LogInformation($"Deleted expired password reset verification {doc.Id}");
+            }
+
+            // Clean up expired verification codes
+            var verificationCodesRef = _firestoreDb.Collection("verification_codes");
+            var expiredCodesQuery = verificationCodesRef
+                .WhereLessThan("ExpiryTime", Timestamp.FromDateTime(DateTime.UtcNow));
+            var expiredCodesSnapshot = await expiredCodesQuery.GetSnapshotAsync();
+            
+            foreach (var doc in expiredCodesSnapshot)
+            {
+                await doc.Reference.DeleteAsync();
+                _logger.LogInformation($"Deleted expired verification code {doc.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error cleaning up old data: {ex.Message}");
+            // Don't throw - we don't want cleanup failures to affect the main flow
+        }
+    }
+
     public override async Task<LoginResponse> Login(LoginRequest request, ServerCallContext context)
     {
         try
@@ -450,6 +531,9 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 { "lastActive", Timestamp.FromDateTime(DateTime.UtcNow) }
             });
             _logger.LogInformation("Created new session document");
+
+            // Clean up old sessions and expired data
+            await CleanupOldData(userRecord.Uid);
 
             // After successful login, generate a permanent token
             var permanentToken = GenerateToken();
@@ -1184,6 +1268,9 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 await batch.CommitAsync();
                 _logger.LogInformation($"Successfully created session for user: {userId}");
 
+                // Clean up old sessions and expired data
+                await CleanupOldData(userId);
+
                 return new Verify2FAResponse
                 {
                     Success = true,
@@ -1192,24 +1279,22 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error creating session: {ex.Message}");
+                _logger.LogError($"Error creating session after 2FA verification: {ex.Message}");
                 return new Verify2FAResponse
                 {
                     Success = false,
-                    Message = "An error occurred while creating your session"
+                    Message = "An error occurred while creating your session."
                 };
-                throw;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error verifying 2FA: {ex.Message}");
+            _logger.LogError($"Error during 2FA verification: {ex.Message}");
             return new Verify2FAResponse
             {
                 Success = false,
-                Message = "An error occurred while verifying 2FA"
+                Message = "An error occurred during verification."
             };
-            throw;
         }
     }
 
@@ -1296,6 +1381,43 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             {
                 IsValid = false,
                 Message = "Error checking token"
+            };
+        }
+    }
+
+    public override async Task<CheckEmailExistsResponse> CheckEmailExists(
+        CheckEmailExistsRequest request,
+        ServerCallContext context)
+    {
+        _logger.LogInformation($"Checking if email exists: {request.Email}");
+
+        try
+        {
+            try
+            {
+                await _firebaseAuth.GetUserByEmailAsync(request.Email);
+                return new CheckEmailExistsResponse
+                {
+                    Exists = true,
+                    Message = "An account with this email already exists."
+                };
+            }
+            catch (FirebaseAuthException)
+            {
+                return new CheckEmailExistsResponse
+                {
+                    Exists = false,
+                    Message = "Email is available for registration."
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error checking email existence for {request.Email}");
+            return new CheckEmailExistsResponse
+            {
+                Exists = false,
+                Message = "An error occurred while checking email existence."
             };
         }
     }

@@ -5,7 +5,9 @@ option csharp_namespace = "AccountService";
 package account;
 
 service AccountService {
+  rpc CheckEmailExists (CheckEmailExistsRequest) returns (CheckEmailExistsResponse);
   rpc VerifyEmailBeforeRegistration (VerifyEmailBeforeRegistrationRequest) returns (VerifyEmailBeforeRegistrationResponse);
+  rpc VerifyEmailCodeForRegistration (VerifyEmailCodeForRegistrationRequest) returns (VerifyEmailBeforeRegistrationResponse);
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
@@ -22,6 +24,15 @@ service AccountService {
   rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
 }
 
+message CheckEmailExistsRequest {
+  string email = 1;
+}
+
+message CheckEmailExistsResponse {
+  bool exists = 1;
+  string message = 2;
+}
+
 message VerifyEmailBeforeRegistrationRequest {
   string email = 1;
 }
@@ -29,6 +40,11 @@ message VerifyEmailBeforeRegistrationRequest {
 message VerifyEmailBeforeRegistrationResponse {
   bool success = 1;
   string message = 2;
+}
+
+message VerifyEmailCodeForRegistrationRequest {
+  string email = 1;
+  string verification_code = 2;
 }
 
 message RegisterRequest {

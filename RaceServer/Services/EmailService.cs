@@ -148,7 +148,7 @@ If you did not request this password reset, please ignore this email."
                 Type = "email_verification",
                 ExpiryTime = Timestamp.FromDateTime(expiryTime),
                 CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow),
-                IsUsed = false
+                UsageCount = 0
             });
 
             return code;
@@ -168,7 +168,6 @@ If you did not request this password reset, please ignore this email."
                 .WhereEqualTo("Email", email)
                 .WhereEqualTo("Code", code)
                 .WhereEqualTo("Type", "email_verification")
-                .WhereEqualTo("IsUsed", false)
                 .OrderByDescending("CreatedAt")
                 .Limit(1);
 
@@ -187,7 +186,18 @@ If you did not request this password reset, please ignore this email."
                 return false;
             }
 
-            await verificationDoc.Reference.UpdateAsync("IsUsed", true);
+            // Get current usage count, default to 0 if not present
+            var usageCount = verificationData.ContainsKey("UsageCount") ? 
+                Convert.ToInt32(verificationData["UsageCount"]) : 0;
+
+            // Allow up to 2 uses of the code
+            if (usageCount >= 2)
+            {
+                return false;
+            }
+
+            // Increment usage count
+            await verificationDoc.Reference.UpdateAsync("UsageCount", usageCount + 1);
             return true;
         }
         catch (Exception ex)

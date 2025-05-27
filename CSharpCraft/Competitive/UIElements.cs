@@ -150,6 +150,11 @@ public class TextBox
         }
     }
 
+    public void SetText(string text)
+    {
+        Text = text;
+    }
+
     public bool HandleInput(char c)
     {
         if (!IsActive) return false;
@@ -159,6 +164,28 @@ public class TextBox
         
         Text += c;
         return true;
+    }
+
+    public bool HandlePaste(string text)
+    {
+        if (!IsActive) return false;
+        
+        var validText = new System.Text.StringBuilder();
+        foreach (var c in text)
+        {
+            if (inputValidator is null || inputValidator(c))
+            {
+                validText.Append(c);
+            }
+        }
+        
+        if (validText.Length > 0)
+        {
+            Text += validText.ToString();
+            return true;
+        }
+        
+        return false;
     }
 
     public bool HandleBackspace()

@@ -116,7 +116,7 @@ public class CompetitiveScene : IScene
         Shared.DrawIcons(p8, icons, cursorX, cursorY);
 
         if (curIcon is not null) { labelLength = curIcon.Label.Length * 4; }
-        else { labelLength = Math.Max(labelLength - labelLength / 3, 0); }
+        else { labelLength = Math.Max(labelLength - labelLength / 4, 0); }
         p8.Batch.Draw(p8.TextureDictionary["12pxHighlightCenter"], new((63 - labelLength / 2) * w, 108 * h), null, Color.White, 0, Vector2.Zero, new Vector2(w * (labelLength + 1), h), SpriteEffects.None, 0);
         p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 - 5 - labelLength / 2 - 1) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
         p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 + labelLength / 2 + 1) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);

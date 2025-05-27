@@ -121,6 +121,36 @@ public static class AccountHandler
                     Console.WriteLine($"Directory does not exist: {directory}");
                 }
             }
+
+            // Clean up encryption key file
+            var keyFile = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "CSharpCraft",
+                $"encryption_key_{_clientId}.bin"
+            );
+
+            if (File.Exists(keyFile))
+            {
+                try
+                {
+                    Console.WriteLine($"Deleting encryption key file: {keyFile}");
+                    File.Delete(keyFile);
+                    Console.WriteLine("Encryption key file deleted successfully");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Could not delete encryption key file: {ex.Message}");
+                    Console.WriteLine($"Error type: {ex.GetType().Name}");
+                    if (ex.InnerException is not null)
+                    {
+                        Console.WriteLine($"Inner error: {ex.InnerException.Message}");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No encryption key file found at: {keyFile}");
+            }
         }
         catch (Exception ex)
         {
@@ -924,6 +954,73 @@ public static class AccountHandler
             {
                 Success = false,
                 Message = $"Error verifying email code: {ex.Message}"
+            };
+        }
+    }
+
+    public static async Task<VerifyEmailBeforeRegistrationResponse> VerifyEmailCodeForRegistration(string email, string code)
+    {
+        if (_client is null)
+        {
+            await ConnectToServer();
+            if (_client is null)
+            {
+                return new VerifyEmailBeforeRegistrationResponse
+                {
+                    Success = false,
+                    Message = "Not connected to server."
+                };
+            }
+        }
+
+        try
+        {
+            return await _client.VerifyEmailCodeForRegistrationAsync(new VerifyEmailCodeForRegistrationRequest
+            {
+                Email = email,
+                VerificationCode = code.ToUpperInvariant()
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error verifying email code: {ex.Message}");
+            return new VerifyEmailBeforeRegistrationResponse
+            {
+                Success = false,
+                Message = $"Error verifying email code: {ex.Message}"
+            };
+        }
+    }
+
+    public static async Task<CheckEmailExistsResponse> CheckEmailExists(string email)
+    {
+        if (_client is null)
+        {
+            await ConnectToServer();
+            if (_client is null)
+            {
+                return new CheckEmailExistsResponse
+                {
+                    Exists = false,
+                    Message = "Not connected to server."
+                };
+            }
+        }
+
+        try
+        {
+            return await _client.CheckEmailExistsAsync(new CheckEmailExistsRequest
+            {
+                Email = email
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error checking email existence: {ex.Message}");
+            return new CheckEmailExistsResponse
+            {
+                Exists = false,
+                Message = $"Error checking email existence: {ex.Message}"
             };
         }
     }

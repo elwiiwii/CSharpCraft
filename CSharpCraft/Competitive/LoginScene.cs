@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using AccountService;
 using FixMath;
+using SDL3;
+using System.Runtime.InteropServices;
 
 namespace CSharpCraft.Competitive;
 
@@ -198,8 +200,17 @@ public class LoginScene : IScene
         try
         {
             isProcessing = true;
-            statusMessage = "Sending verification email...";
+            statusMessage = "Checking email...";
             
+            // First check if email is already registered
+            var checkResponse = await AccountHandler.CheckEmailExists(emailBox.Text);
+            if (checkResponse.Exists)
+            {
+                statusMessage = "This email is already registered. Please login instead.";
+                return;
+            }
+
+            statusMessage = "Sending verification email...";
             var response = await AccountHandler.VerifyEmailBeforeRegistration(emailBox.Text);
 
             if (response.Success)
@@ -231,7 +242,7 @@ public class LoginScene : IScene
             isProcessing = true;
             statusMessage = "Verifying code...";
             
-            var response = await AccountHandler.VerifyEmailBeforeRegistration(emailBox.Text);
+            var response = await AccountHandler.VerifyEmailCodeForRegistration(emailBox.Text, codeBox.Text);
 
             if (response.Success)
             {
@@ -269,8 +280,8 @@ public class LoginScene : IScene
 
             if (response.Success)
             {
+                _ = LoginUser();
                 statusMessage = response.Message;
-                AccountHandler._isLoggedIn = true;
             }
             else
             {
@@ -307,8 +318,8 @@ public class LoginScene : IScene
                 }
                 else
                 {
+                    p8.LoadCart(prevScene);
                     statusMessage = response.Message;
-                    AccountHandler._isLoggedIn = true;
                 }
             }
             else
@@ -355,11 +366,42 @@ public class LoginScene : IScene
         }
     }
 
+    private void ResetVerificationState()
+    {
+        isEmailVerified = false;
+        isVerifyingCode = false;
+        codeBox.SetText("");
+        usernameBox.SetText("");
+        passwordBox.SetText("");
+        statusMessage = "Email changed. Please verify the new email address.";
+    }
+
     private void OnEmailInput(char c)
     {
         if (inputHandlers[InputMode.Email].validator(c))
         {
+            // Store the old email to check if it changed
+            var oldEmail = emailBox.Text;
             inputHandlers[InputMode.Email].box.HandleInput(c);
+            
+            // If email changed and we were in a verified state, reset the verification
+            if (oldEmail != emailBox.Text && (isEmailVerified || isVerifyingCode))
+            {
+                ResetVerificationState();
+            }
+        }
+    }
+
+    private void OnEmailBackspace()
+    {
+        // Store the old email to check if it changed
+        var oldEmail = emailBox.Text;
+        emailBox.HandleBackspace();
+        
+        // If email changed and we were in a verified state, reset the verification
+        if (oldEmail != emailBox.Text && (isEmailVerified || isVerifyingCode))
+        {
+            ResetVerificationState();
         }
     }
 
@@ -504,13 +546,39 @@ public class LoginScene : IScene
             passwordBox.StartPos = (29, 65);
         }
 
+        if (keyboardState.IsKeyDown(Keys.LeftControl) && keyboardState.IsKeyDown(Keys.V) && prevKeyboardState.IsKeyUp(Keys.V))
+        {
+            var activeBox = textBoxToInputMode.Keys.FirstOrDefault(box => box.IsActive);
+            if (activeBox is not null)
+            {
+                try
+                {
+                    var clipboardText = SDL.SDL_GetClipboardText();
+                    if (!string.IsNullOrEmpty(clipboardText))
+                    {
+                        activeBox.HandlePaste(clipboardText);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error pasting from clipboard: {ex.Message}");
+                }
+            }
+        }
+
         if (keyboardState.IsKeyDown(Keys.Back) && prevKeyboardState.IsKeyUp(Keys.Back))
         {
-            emailBox.HandleBackspace();
-            usernameBox.HandleBackspace();
-            passwordBox.HandleBackspace();
-            codeBox.HandleBackspace();
-            twoFactorBox.HandleBackspace();
+            if (emailBox.IsActive)
+            {
+                OnEmailBackspace();
+            }
+            else
+            {
+                usernameBox.HandleBackspace();
+                passwordBox.HandleBackspace();
+                codeBox.HandleBackspace();
+                twoFactorBox.HandleBackspace();
+            }
         }
 
         if (keyboardState.IsKeyDown(Keys.Enter) && prevKeyboardState.IsKeyUp(Keys.Enter))
