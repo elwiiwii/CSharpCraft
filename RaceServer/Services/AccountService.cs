@@ -250,7 +250,14 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 Username = request.Username,
                 Email = request.Email,
                 CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow),
-                IsEmailVerified = true
+                IsEmailVerified = true,
+                ProfilePicture = 27,
+                MainColor = "#7E2553",
+                HexCodes = new[] {
+                    "#7E2553",
+                    "#FFCCAA",
+                    "#AB5236"
+                }
             });
 
             return new RegisterResponse
@@ -549,7 +556,16 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 Message = "Login successful",
                 UserId = userRecord.Uid,
                 PermanentToken = permanentToken,
-                RequiresTwoFactor = false
+                RequiresTwoFactor = false,
+                ProfilePicture = userData.ContainsKey("ProfilePicture") ? Convert.ToInt32(userData["ProfilePicture"]) : 27,
+                NameColor = userData.ContainsKey("NameColor") ? userData["NameColor"].ToString() : "#FFFFFF",
+                ShadowColor = userData.ContainsKey("ShadowColor") ? userData["ShadowColor"].ToString() : "#C2C3C7",
+                OutlineColor = userData.ContainsKey("OutlineColor") ? userData["OutlineColor"].ToString() : "#FFFFFF",
+                BackgroundColor = userData.ContainsKey("BackgroundColor") ? userData["BackgroundColor"].ToString() : "#111D35",
+                HexCodes = { userData.ContainsKey("HexCodes") ? 
+                    ((IEnumerable<object>)userData["HexCodes"]).Select(x => x.ToString()) : 
+                    new[] { "#7E2553", "#FFCCAA", "#AB5236" } },
+                Username = userData.ContainsKey("Username") ? userData["Username"].ToString() : string.Empty
             };
         }
         catch (FirebaseAuthException ex)
@@ -1418,6 +1434,190 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             {
                 Exists = false,
                 Message = "An error occurred while checking email existence."
+            };
+        }
+    }
+
+    public override async Task<UpdateProfileCustomizationResponse> UpdateProfileCustomization(
+        UpdateProfileCustomizationRequest request,
+        ServerCallContext context)
+    {
+        _logger.LogInformation("Processing profile customization update request");
+
+        try
+        {
+            var sessionQuery = _firestoreDb.Collection("sessions")
+                .WhereEqualTo("refreshToken", request.PermanentToken);
+            var sessionSnapshot = await sessionQuery.GetSnapshotAsync();
+
+            if (sessionSnapshot.Count == 0)
+            {
+                _logger.LogWarning($"No session found for the provided refresh token: {request.PermanentToken}");
+                return new UpdateProfileCustomizationResponse
+                {
+                    Success = false,
+                    Message = "Session has been invalidated"
+                };
+            }
+
+            var sessionData = sessionSnapshot[0].ToDictionary();
+            var userId = sessionData["userId"].ToString();
+            _logger.LogInformation($"Found session for user: {userId}");
+
+            var userDoc = await _firestoreDb.Collection("users").Document(userId).GetSnapshotAsync();
+            if (!userDoc.Exists)
+            {
+                _logger.LogWarning($"User document not found for {userId}");
+                return new UpdateProfileCustomizationResponse
+                {
+                    Success = false,
+                    Message = "Session has been invalidated"
+                };
+            }
+
+            var userData = userDoc.ToDictionary();
+            if (!userData.ContainsKey("activeToken"))
+            {
+                _logger.LogWarning($"No active token found for user {userId}");
+                return new UpdateProfileCustomizationResponse
+                {
+                    Success = false,
+                    Message = "Session has been invalidated"
+                };
+            }
+
+            var activeToken = userData["activeToken"].ToString();
+            if (activeToken != request.PermanentToken)
+            {
+                _logger.LogWarning($"Provided token does not match the active token for user {userId}");
+                return new UpdateProfileCustomizationResponse
+                {
+                    Success = false,
+                    Message = "Session has been invalidated"
+                };
+            }
+
+            // Validate hex codes
+            if (request.HexCodes.Count == 0)
+            {
+                return new UpdateProfileCustomizationResponse
+                {
+                    Success = false,
+                    Message = "At least one hex code is required"
+                };
+            }
+
+            foreach (var hexCode in request.HexCodes)
+            {
+                if (!IsValidHexColor(hexCode))
+                {
+                    return new UpdateProfileCustomizationResponse
+                    {
+                        Success = false,
+                        Message = $"Invalid hex color code: {hexCode}"
+                    };
+                }
+            }
+
+            // Get existing hex codes
+            var existingHexCodes = userData.ContainsKey("HexCodes") ? 
+                ((IEnumerable<object>)userData["HexCodes"]).Select(x => x.ToString()).ToList() : 
+                new List<string>();
+
+            // Update only the hex codes that were provided
+            var updatedHexCodes = new List<string>(existingHexCodes);
+            for (int i = 0; i < request.HexCodes.Count; i++)
+            {
+                if (i < updatedHexCodes.Count)
+                {
+                    updatedHexCodes[i] = request.HexCodes[i];
+                }
+                else
+                {
+                    updatedHexCodes.Add(request.HexCodes[i]);
+                }
+            }
+
+            // Update the user document
+            await userDoc.Reference.UpdateAsync(new Dictionary<string, object>
+            {
+                { "ProfilePicture", request.ProfilePicture },
+                { "HexCodes", updatedHexCodes }
+            });
+
+            _logger.LogInformation($"Updated profile customization for user: {userId}");
+
+            return new UpdateProfileCustomizationResponse
+            {
+                Success = true,
+                Message = "Profile customization updated successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error updating profile customization: {ex.Message}");
+            return new UpdateProfileCustomizationResponse
+            {
+                Success = false,
+                Message = "An error occurred while updating profile customization"
+            };
+        }
+    }
+
+    private bool IsValidHexColor(string hexColor)
+    {
+        if (string.IsNullOrEmpty(hexColor))
+            return false;
+
+        // Remove # if present
+        hexColor = hexColor.TrimStart('#');
+
+        // Check if it's a valid hex color (6 characters, all valid hex digits)
+        return hexColor.Length == 6 && hexColor.All(c => 
+            (c >= '0' && c <= '9') || 
+            (c >= 'a' && c <= 'f') || 
+            (c >= 'A' && c <= 'F'));
+    }
+
+    public override async Task<GetUserByUsernameResponse> GetUserByUsername(GetUserByUsernameRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation($"Fetching user by username: {request.Username}");
+        try
+        {
+            var usersRef = _firestoreDb.Collection("users");
+            var query = usersRef.WhereEqualTo("Username", request.Username).Limit(1);
+            var snapshot = await query.GetSnapshotAsync();
+            if (snapshot.Count == 0)
+            {
+                return new GetUserByUsernameResponse
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+            var userDoc = snapshot[0];
+            var userData = userDoc.ToDictionary();
+            return new GetUserByUsernameResponse
+            {
+                Success = true,
+                Message = "User found.",
+                UserId = userDoc.Id,
+                Username = userData.ContainsKey("Username") ? userData["Username"].ToString() : string.Empty,
+                ProfilePicture = userData.ContainsKey("ProfilePicture") ? Convert.ToInt32(userData["ProfilePicture"]) : 27,
+                NameColor = userData.ContainsKey("NameColor") ? userData["NameColor"].ToString() : "#FFFFFF",
+                ShadowColor = userData.ContainsKey("ShadowColor") ? userData["ShadowColor"].ToString() : "#C2C3C7",
+                OutlineColor = userData.ContainsKey("OutlineColor") ? userData["OutlineColor"].ToString() : "#FFFFFF",
+                BackgroundColor = userData.ContainsKey("BackgroundColor") ? userData["BackgroundColor"].ToString() : "#111D35",
+                HexCodes = { userData.ContainsKey("HexCodes") ? ((IEnumerable<object>)userData["HexCodes"]).Select(x => x.ToString()) : new[] { "#7E2553", "#FFCCAA", "#AB5236" } }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching user by username: {ex.Message}");
+            return new GetUserByUsernameResponse
+            {
+                Success = false,
+                Message = "An error occurred while fetching the user."
             };
         }
     }

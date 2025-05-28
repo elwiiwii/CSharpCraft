@@ -35,6 +35,13 @@ public static class AccountHandler
     private static Task? _tokenCheckTask;
     public static bool _isLoggedIn;
     private const int TOKEN_CHECK_INTERVAL_MS = 2000; // 2 seconds
+    public static int _profilePicture = 27;
+    public static string _nameColor = "#FFFFFF";
+    public static string _shadowColor = "#C2C3C7";
+    public static string _outlineColor = "#FFFFFF";
+    public static string _backgroundColor = "#111D35";
+    public static List<string> _hexCodes = ["#7E2553", "#FFCCAA", "#AB5236"];
+    public static string _username = string.Empty;
 
     static AccountHandler()
     {
@@ -50,7 +57,7 @@ public static class AccountHandler
             Console.WriteLine("Process exit detected, cleaning up...");
             Console.WriteLine($"Current token file path: {TOKEN_FILE}");
             Console.WriteLine($"Current backup file path: {BACKUP_TOKEN_FILE}");
-            
+
             StopTokenCheck();
             _channel?.Dispose();
             _tokenCheckCts?.Dispose();
@@ -72,9 +79,9 @@ public static class AccountHandler
                     Console.WriteLine($"Reading token file: {TOKEN_FILE}");
                     var json = File.ReadAllText(TOKEN_FILE);
                     Console.WriteLine($"Token file contents: {json}");
-                    
+
                     var tokens = JsonSerializer.Deserialize<AuthTokens>(json);
-                    
+
                     if (tokens is not null && !string.IsNullOrEmpty(tokens.PermanentToken))
                     {
                         Console.WriteLine("Valid tokens found, creating backup...");
@@ -220,7 +227,7 @@ public static class AccountHandler
         try
         {
             Console.WriteLine("Attempting to load tokens...");
-            
+
             // First try to load from the client-specific token file
             if (File.Exists(TOKEN_FILE))
             {
@@ -293,7 +300,7 @@ public static class AccountHandler
             // Write directly to the token file
             Console.WriteLine($"Writing to token file: {TOKEN_FILE}");
             File.WriteAllText(TOKEN_FILE, json);
-            
+
             // Also update the backup file
             try
             {
@@ -320,7 +327,7 @@ public static class AccountHandler
                     throw;
                 }
             }
-            
+
             Console.WriteLine("Token files saved successfully");
         }
         catch (Exception ex)
@@ -422,7 +429,7 @@ public static class AccountHandler
         try
         {
             Console.WriteLine($"Attempting to connect to server at {SERVER_URL}...");
-            
+
             var channelOptions = new GrpcChannelOptions
             {
                 HttpHandler = new SocketsHttpHandler
@@ -527,6 +534,7 @@ public static class AccountHandler
                             SaveTokens();
                         }
                         await StartTokenCheck();
+                        await FetchAndSetProfileFields();
                     }
                     else
                     {
@@ -850,23 +858,24 @@ public static class AccountHandler
             var response = await _client.LoginAsync(new LoginRequest
             {
                 Email = email,
-                Password = password,
+                Password = password
             });
 
             if (response.Success)
             {
-                if (response.RequiresTwoFactor)
-                {
-                    return response;
-                }
-                else
-                {
-                    _userId = response.UserId;
-                    _permanentToken = response.PermanentToken;
-                    _isLoggedIn = true;
-                    SaveTokens();
-                    await StartTokenCheck();
-                }
+                _isLoggedIn = true;
+                _permanentToken = response.PermanentToken;
+                _userId = response.UserId;
+                _profilePicture = response.ProfilePicture;
+                _nameColor = response.NameColor;
+                _shadowColor = response.ShadowColor;
+                _outlineColor = response.OutlineColor;
+                _backgroundColor = response.BackgroundColor;
+                _hexCodes = response.HexCodes.ToList();
+                _username = response.Username;
+                SaveTokens();
+                await StartTokenCheck();
+                await FetchAndSetProfileFields();
             }
 
             return response;
@@ -876,7 +885,7 @@ public static class AccountHandler
             return new LoginResponse
             {
                 Success = false,
-                Message = $"Error during login: {ex.Message}"
+                Message = $"Error logging in: {ex.Message}"
             };
         }
     }
@@ -1024,4 +1033,60 @@ public static class AccountHandler
             };
         }
     }
+
+    public static async Task<GetUserByUsernameResponse> GetUserByUsername(string username)
+    {
+        if (_client is null)
+        {
+            await ConnectToServer();
+            if (_client is null)
+            {
+                return new GetUserByUsernameResponse
+                {
+                    Success = false,
+                    Message = "Not connected to server."
+                };
+            }
+        }
+
+        try
+        {
+            return await _client.GetUserByUsernameAsync(new GetUserByUsernameRequest
+            {
+                Username = username
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error getting user by username: {ex.Message}");
+            return new GetUserByUsernameResponse
+            {
+                Success = false,
+                Message = $"Error getting user by username: {ex.Message}"
+            };
+        }
+    }
+
+    public static async Task FetchAndSetProfileFields()
+    {
+        if (_userId is null || _client is null || _username is null) return;
+
+        var response = await _client.GetUserByUsernameAsync(new GetUserByUsernameRequest
+        {
+            Username = _username
+        });
+
+        if (response.Success)
+        {
+            _username = response.Username;
+            _profilePicture = response.ProfilePicture;
+            _nameColor = response.NameColor;
+            _shadowColor = response.ShadowColor;
+            _outlineColor = response.OutlineColor;
+            _backgroundColor = response.BackgroundColor;
+            _hexCodes = response.HexCodes.ToList();
+        }
+    }
 }
+
+

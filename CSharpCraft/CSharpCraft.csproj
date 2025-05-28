@@ -38,6 +38,7 @@
 		<None Remove="Content\Graphics\BackIcon.png" />
 		<None Remove="Content\Graphics\BackShadow.png" />
 		<None Remove="Content\Graphics\Bandcamp.png" />
+		<None Remove="Content\Graphics\BigFont.png" />
 		<None Remove="Content\Graphics\BlankBackground.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
 		<None Remove="Content\Graphics\Checker.png" />
@@ -70,6 +71,7 @@
 		<None Remove="Content\Graphics\OptionsMenuBackground.png" />
 		<None Remove="Content\Graphics\OptionsMenuTab.png" />
 		<None Remove="Content\Graphics\PauseArrow.png" />
+		<None Remove="Content\Graphics\PfpIcons.png" />
 		<None Remove="Content\Graphics\Pico8.png" />
 		<None Remove="Content\Graphics\PlayerIcon.png" />
 		<None Remove="Content\Graphics\PrivateBackground.png" />
@@ -215,6 +217,9 @@
 	  <Content Include="Content\Graphics\BackShadow.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\BigFont.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\BlankBackground.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -240,6 +245,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\NewRoomIcon.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\PfpIcons.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\PrivateBackground.png">

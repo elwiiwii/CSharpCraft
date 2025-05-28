@@ -78,7 +78,7 @@ public class LoginScene : IScene
 
         codeBox = new TextBox(p8, (29, 53), (43, 43), "");
         usernameBox = new TextBox(p8, (29, 53), (69, 69), "username:");
-        loginButton = new Button((29, 65), "login", false);
+        loginButton = new Button((48, 65), "login", false);
 
         loginFlow.AddRange([emailBox, passwordBox, twoFactorBox]);
         registerFlow.AddRange([emailBox, codeBox, usernameBox, passwordBox]);
@@ -313,8 +313,9 @@ public class LoginScene : IScene
                 {
                     requiresTwoFactor = true;
                     twoFactorType = response.TwoFactorType;
-                    statusMessage = "Please enter your 2FA code";
-                    EnableInputMode(InputMode.TwoFactorCode);
+                    statusMessage = $"Please enter your {twoFactorType} code";
+                    twoFactorBox.IsActive = true;
+                    passwordBox.IsActive = false;
                 }
                 else
                 {
@@ -614,6 +615,7 @@ public class LoginScene : IScene
         }
         else
         {
+            loginButton.IsActive = !string.IsNullOrEmpty(emailBox.Text) && !string.IsNullOrEmpty(passwordBox.Text);
             loginButton.Update(p8, cursorX, cursorY);
         }
 
@@ -706,7 +708,10 @@ public class LoginScene : IScene
         {
             emailBox.Draw(p8);
             passwordBox.Draw(p8);
-            twoFactorBox.Draw(p8);
+            if (requiresTwoFactor)
+            {
+                twoFactorBox.Draw(p8);
+            }
             loginButton.Draw(p8);
         }
 

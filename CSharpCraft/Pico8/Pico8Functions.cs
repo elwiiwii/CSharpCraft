@@ -835,6 +835,46 @@ public class Pico8Functions : IDisposable
     }
 
 
+    public void PrintBig(string text, int x, int y, Color color)
+    {
+        Texture2D fontTexture = TextureDictionary["BigFont"];
+        const int charWidth = 8;
+        const int charHeight = 12;
+        const string fontChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
+        int charsPerRow = fontTexture.Width / charWidth;
+
+        foreach (char c in text)
+        {
+            int charIndex = fontChars.IndexOf(c);
+            if (charIndex < 0)
+            {
+                x += charWidth;
+                continue;
+            }
+
+            int srcX = (charIndex % charsPerRow) * charWidth;
+            int srcY = (charIndex / charsPerRow) * charHeight;
+            Rectangle srcRect = new(srcX, srcY, charWidth, charHeight);
+
+            Color[] pixelData = new Color[charWidth * charHeight];
+            fontTexture.GetData(0, srcRect, pixelData, 0, pixelData.Length);
+
+            for (int py = 0; py < charHeight; py++)
+            {
+                for (int px = 0; px < charWidth; px++)
+                {
+                    if (pixelData[py * charWidth + px].A > 0)
+                    {
+                        Batch.Draw(fontTexture, new Rectangle((x + px - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (y + py - F32.FloorToInt(CameraOffset.y)) * Cell.Height, Cell.Width, Cell.Height), new Rectangle(srcX + px, srcY + py, 1, 1), color);
+                    }
+                }
+            }
+
+            x += charWidth;
+        }
+    }
+
+
     public void Pset(F32 x, F32 y, double c) // https://pico-8.fandom.com/wiki/Pset
     {
         int xFlr = F32.FloorToInt(x);
@@ -848,6 +888,35 @@ public class Pico8Functions : IDisposable
 
         // Draw the line
         Batch.Draw(Pixel, position, null, Colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+    }
+
+
+    public void Rect(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rect
+    {
+        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
+        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
+        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
+        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
+        int cFlr = (int)Math.Floor(c);
+
+        Rectfill(x1Flr, y1Flr, x2Flr, y1Flr, cFlr);
+        Rectfill(x1Flr, y2Flr, x2Flr, y2Flr, cFlr);
+        Rectfill(x1Flr, y1Flr, x1Flr, y2Flr, cFlr);
+        Rectfill(x2Flr, y1Flr, x2Flr, y2Flr, cFlr);
+    }
+
+
+    public void Rect(double x1, double y1, double x2, double y2, Color c) // https://pico-8.fandom.com/wiki/Rect
+    {
+        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
+        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
+        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
+        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
+
+        Rectfill(x1Flr, y1Flr, x2Flr, y1Flr, c);
+        Rectfill(x1Flr, y2Flr, x2Flr, y2Flr, c);
+        Rectfill(x1Flr, y1Flr, x1Flr, y2Flr, c);
+        Rectfill(x2Flr, y1Flr, x2Flr, y2Flr, c);
     }
 
 
@@ -873,6 +942,29 @@ public class Pico8Functions : IDisposable
         Vector2 size = new(rectSizeX, rectSizeY);
 
         Batch.Draw(Pixel, position, null, Colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+    }
+
+    public void Rectfill(double x1, double y1, double x2, double y2, Color c) // https://pico-8.fandom.com/wiki/Rectfill
+    {
+        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
+        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
+        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
+        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
+
+        int rectStartX = (x1Flr - F32.FloorToInt(CameraOffset.x)) * Cell.Width;
+        int rectStartY = (y1Flr - F32.FloorToInt(CameraOffset.y)) * Cell.Height;
+
+        int rectSizeX = (x2Flr - x1Flr + 1) * Cell.Width;
+        int rectSizeY = (y2Flr - y1Flr + 1) * Cell.Height;
+
+        //int rectEndX = (x2Flr - CameraOffset.x) * Cell.Width;
+        //int rectThickness = (y2Flr - y1Flr) * Cell.Height;
+        //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
+
+        Vector2 position = new(rectStartX, rectStartY);
+        Vector2 size = new(rectSizeX, rectSizeY);
+
+        Batch.Draw(Pixel, position, null, c, 0, Vector2.Zero, size, SpriteEffects.None, 0);
     }
 
 

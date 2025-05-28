@@ -22,6 +22,8 @@ service AccountService {
   rpc Verify2FA (Verify2FARequest) returns (Verify2FAResponse);
   rpc Get2FAStatus (Get2FAStatusRequest) returns (Get2FAStatusResponse);
   rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
+  rpc UpdateProfileCustomization(UpdateProfileCustomizationRequest) returns (UpdateProfileCustomizationResponse);
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse);
 }
 
 message CheckEmailExistsRequest {
@@ -73,6 +75,13 @@ message LoginResponse {
   bool requires_two_factor = 4;
   TwoFactorType two_factor_type = 5;
   string permanent_token = 6;
+  int32 profile_picture = 7;
+  string name_color = 8;
+  string shadow_color = 9;
+  string outline_color = 10;
+  string background_color = 11;
+  repeated string hex_codes = 12;
+  string username = 13;
 }
 
 message LogoutRequest {
@@ -200,6 +209,34 @@ message CheckTokenRequest {
 message CheckTokenResponse {
   bool is_valid = 1;
   string message = 2;
+}
+
+message UpdateProfileCustomizationRequest {
+  string permanent_token = 1;
+  int32 profile_picture = 2;
+  repeated string hex_codes = 3;
+}
+
+message UpdateProfileCustomizationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetUserByUsernameRequest {
+  string username = 1;
+}
+
+message GetUserByUsernameResponse {
+  bool success = 1;
+  string message = 2;
+  string user_id = 3;
+  string username = 4;
+  int32 profile_picture = 5;
+  string name_color = 6;
+  string shadow_color = 7;
+  string outline_color = 8;
+  string background_color = 9;
+  repeated string hex_codes = 10;
 }
 
 enum TwoFactorType {

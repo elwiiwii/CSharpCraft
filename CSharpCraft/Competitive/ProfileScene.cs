@@ -1,4 +1,5 @@
-﻿using CSharpCraft.Pico8;
+﻿using AccountService;
+using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -12,29 +13,20 @@ public class ProfileScene(IScene prevScene) : IScene
     public double Fps { get => 60.0; }
     private Pico8Functions p8;
     private Icon back;
-    private Icon replays;
-    private Icon statistics;
-    private Icon search;
-    private Icon profile;
-    private Icon settings;
 
-    private Icon[] icons;
     private Icon? curIcon;
     private float cursorX;
     private float cursorY;
     private MouseState prevState;
 
-    public void Init(Pico8Functions pico8)
+    private GetUserByUsernameResponse user;
+
+    public async void Init(Pico8Functions pico8)
     {
         p8 = pico8;
         back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = prevScene };
-        replays = new() { StartPos = (111, 46), EndPos = (125, 59), Label = "replays", ShadowTexture = "ReplaysShadow", IconTexture = "ReplaysIcon", Scene = new ReplaysScene(prevScene) };
-        statistics = new() { StartPos = (111, 63), EndPos = (125, 75), Label = "statistics", ShadowTexture = "StatisticsShadow", IconTexture = "StatisticsIcon", Scene = new StatisticsScene(prevScene) };
-        search = new() { StartPos = (112, 78), EndPos = (124, 90), Label = "search", ShadowTexture = "SearchShadow", IconTexture = "SearchIcon", Scene = new SearchScene(prevScene) };
-        profile = new() { StartPos = (112, 93), EndPos = (124, 108), Label = "profile", ShadowTexture = "ProfileShadow", IconTexture = "ProfileIcon" };
-        settings = new() { StartPos = (111, 111), EndPos = (125, 125), Label = "settings", ShadowTexture = "SettingsShadow", IconTexture = "SettingsIcon", Scene = new SettingsScene(prevScene) };
-        icons = [back, replays, statistics, search, profile, settings];
 
+        user = await AccountHandler.GetUserByUsername(AccountHandler._username);
         curIcon = null;
         prevState = Mouse.GetState();
         cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
@@ -47,7 +39,7 @@ public class ProfileScene(IScene prevScene) : IScene
         cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
         cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
-        curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
+        curIcon = Shared.UpdateIcon(p8, [back], cursorX, cursorY);
 
         if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.LoadCart(curIcon.Scene); }
         prevState = state;
@@ -59,11 +51,37 @@ public class ProfileScene(IScene prevScene) : IScene
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
-        Shared.DrawIcons(p8, icons, cursorX, cursorY);
+        if (user is not null && user.Success)
+        {
+            p8.Rectfill(3, 3, 34, 34, Pico8Utils.HexToColor(user.BackgroundColor));
+            for (int i = 0; i < user.HexCodes.Count; i++)
+            {
+                p8.Pal(p8.Colors[i + 1], Pico8Utils.HexToColor(user.HexCodes[i]));
+            }
+            int lastRowIndex = user.ProfilePicture % (p8.TextureDictionary["PfpIcons"].Width / 32);
+            p8.Spr(user.ProfilePicture * 16 - lastRowIndex * 12, 3, 3, 4, 4);
+            p8.Pal();
+            p8.Rect(3, 3, 34, 34, Pico8Utils.HexToColor(user.OutlineColor));
+
+            p8.PrintBig(user.Username, 41, 6, Pico8Utils.HexToColor(user.ShadowColor));
+            p8.PrintBig(user.Username, 40, 5, Pico8Utils.HexToColor(user.NameColor));
+
+
+        }
+        else if (user is not null && !user.Success)
+        {
+            Shared.Printc(p8, "user not found", 64, 62, 15);
+        }
+        else
+        {
+            Shared.Printc(p8, "loading...", 64, 62, 15);
+        }
+
+        Shared.DrawIcons(p8, [back], cursorX, cursorY);
 
         Shared.DrawCursor(p8, cursorX, cursorY);
     }
-    public string SpriteImage => "";
+    public string SpriteImage => "PfpIcons";
     public string SpriteData => @"";
     public string FlagData => @"";
     public (int x, int y) MapDimensions => (0, 0);
