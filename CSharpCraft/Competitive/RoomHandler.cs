@@ -7,13 +7,8 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode;
 
-public class MainRace : IScene, IDisposable
+public static class RoomHandler
 {
-    public string SceneName { get => "race"; }
-    public double Fps { get => 60.0; }
-    private Pico8Functions p8;
-
-    //TODO channel is disposable
     public GrpcChannel channel;
     public GameService.GameServiceClient service;
 

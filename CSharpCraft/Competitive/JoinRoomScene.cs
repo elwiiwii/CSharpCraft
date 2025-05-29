@@ -7,7 +7,7 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode;
 
-public class JoinRoomScene(MainRace mainRace) : IScene, IDisposable
+public class JoinRoomScene(RoomHandler mainRace) : IScene, IDisposable
 {
 #nullable enable
     private static ConcurrentString userName = new();

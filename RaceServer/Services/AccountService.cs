@@ -557,14 +557,6 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
                 UserId = userRecord.Uid,
                 PermanentToken = permanentToken,
                 RequiresTwoFactor = false,
-                ProfilePicture = userData.ContainsKey("ProfilePicture") ? Convert.ToInt32(userData["ProfilePicture"]) : 27,
-                NameColor = userData.ContainsKey("NameColor") ? userData["NameColor"].ToString() : "#FFFFFF",
-                ShadowColor = userData.ContainsKey("ShadowColor") ? userData["ShadowColor"].ToString() : "#C2C3C7",
-                OutlineColor = userData.ContainsKey("OutlineColor") ? userData["OutlineColor"].ToString() : "#FFFFFF",
-                BackgroundColor = userData.ContainsKey("BackgroundColor") ? userData["BackgroundColor"].ToString() : "#111D35",
-                HexCodes = { userData.ContainsKey("HexCodes") ? 
-                    ((IEnumerable<object>)userData["HexCodes"]).Select(x => x.ToString()) : 
-                    new[] { "#7E2553", "#FFCCAA", "#AB5236" } },
                 Username = userData.ContainsKey("Username") ? userData["Username"].ToString() : string.Empty
             };
         }

@@ -75,13 +75,7 @@ message LoginResponse {
   bool requires_two_factor = 4;
   TwoFactorType two_factor_type = 5;
   string permanent_token = 6;
-  int32 profile_picture = 7;
-  string name_color = 8;
-  string shadow_color = 9;
-  string outline_color = 10;
-  string background_color = 11;
-  repeated string hex_codes = 12;
-  string username = 13;
+  string username = 7;
 }
 
 message LogoutRequest {

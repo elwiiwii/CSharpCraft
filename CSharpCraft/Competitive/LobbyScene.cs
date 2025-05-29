@@ -6,7 +6,7 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode;
 
-public class LobbyScene(MainRace mainRace) : IScene, IDisposable
+public class LobbyScene(RoomHandler mainRace) : IScene, IDisposable
 {
 #nullable enable
     private Menu roomMenu = new();

@@ -18,9 +18,9 @@ namespace RaceServer
             users.Add(user);
         }
 
-        public void RemovePlayer(string name)
+        public void RemovePlayer(string userId)
         {
-            User user = users.FirstOrDefault(p => p.Name == name);
+            User user = users.FirstOrDefault(p => p.UserId == userId);
 
             if (user is not null)
             {
@@ -28,9 +28,9 @@ namespace RaceServer
             }
         }
         
-        public void TogglePlayerReady(string name)
+        public void TogglePlayerReady(string userId)
         {
-            User player = users.FirstOrDefault(p => p.Name == name);
+            User player = users.FirstOrDefault(p => p.UserId == userId);
             if (player is not null && player.Role == "Player")
                 player.Ready = !player.Ready;
         }
@@ -61,11 +61,18 @@ namespace RaceServer
 
     public class User
     {
-        public string Name { get; set; }
+        public string UserId { get; set; }
+        public string Username { get; set; }
         public string Role { get; set; } = "Player";
         public bool Host { get; set; }
         public bool Ready { get; set; } = true;
         public int? Seed { get; set; } = null;
+        public int ProfilePicture { get; set; } = 27;
+        public string NameColor { get; set; } = "#FFFFFF";
+        public string ShadowColor { get; set; } = "#C2C3C7";
+        public string OutlineColor { get; set; } = "#FFFFFF";
+        public string BackgroundColor { get; set; } = "#111D35";
+        public List<string> HexCodes { get; set; } = new() { "#7E2553", "#FFCCAA", "#AB5236" };
     }
 
     public class DuelMatch

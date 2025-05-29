@@ -35,12 +35,6 @@ public static class AccountHandler
     private static Task? _tokenCheckTask;
     public static bool _isLoggedIn;
     private const int TOKEN_CHECK_INTERVAL_MS = 2000; // 2 seconds
-    public static int _profilePicture = 27;
-    public static string _nameColor = "#FFFFFF";
-    public static string _shadowColor = "#C2C3C7";
-    public static string _outlineColor = "#FFFFFF";
-    public static string _backgroundColor = "#111D35";
-    public static List<string> _hexCodes = ["#7E2553", "#FFCCAA", "#AB5236"];
     public static string _username = string.Empty;
 
     static AccountHandler()
@@ -534,7 +528,6 @@ public static class AccountHandler
                             SaveTokens();
                         }
                         await StartTokenCheck();
-                        await FetchAndSetProfileFields();
                     }
                     else
                     {
@@ -866,16 +859,9 @@ public static class AccountHandler
                 _isLoggedIn = true;
                 _permanentToken = response.PermanentToken;
                 _userId = response.UserId;
-                _profilePicture = response.ProfilePicture;
-                _nameColor = response.NameColor;
-                _shadowColor = response.ShadowColor;
-                _outlineColor = response.OutlineColor;
-                _backgroundColor = response.BackgroundColor;
-                _hexCodes = response.HexCodes.ToList();
                 _username = response.Username;
                 SaveTokens();
                 await StartTokenCheck();
-                await FetchAndSetProfileFields();
             }
 
             return response;
@@ -1064,27 +1050,6 @@ public static class AccountHandler
                 Success = false,
                 Message = $"Error getting user by username: {ex.Message}"
             };
-        }
-    }
-
-    public static async Task FetchAndSetProfileFields()
-    {
-        if (_userId is null || _client is null || _username is null) return;
-
-        var response = await _client.GetUserByUsernameAsync(new GetUserByUsernameRequest
-        {
-            Username = _username
-        });
-
-        if (response.Success)
-        {
-            _username = response.Username;
-            _profilePicture = response.ProfilePicture;
-            _nameColor = response.NameColor;
-            _shadowColor = response.ShadowColor;
-            _outlineColor = response.OutlineColor;
-            _backgroundColor = response.BackgroundColor;
-            _hexCodes = response.HexCodes.ToList();
         }
     }
 }

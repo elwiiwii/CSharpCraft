@@ -7,6 +7,7 @@ package race;
 service GameService {
 	rpc RoomStream (RoomStreamRequest) returns (stream RoomStreamResponse);
 	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
+	rpc LeaveRoom (LeaveRoomRequest) returns (LeaveRoomResponse);
 	rpc PlayerReady (PlayerReadyRequest) returns (PlayerReadyResponse);
 	rpc StartMatch (StartMatchRequest) returns (StartMatchResponse);
 	rpc UpdateSeeds (UpdateSeedsRequest) returns (UpdateSeedsResponse);
@@ -14,47 +15,59 @@ service GameService {
 	rpc EndMatch (EndMatchRequest) returns (EndMatchResponse);
 }
 
-
-
 message RoomUser {
-	string name = 1;
-	string role = 2;
-	bool host = 3;
-	bool ready = 4;
-	int32 seed = 5;
+	string user_id = 1;
+	string username = 2;
+	string role = 3;
+	bool host = 4;
+	bool ready = 5;
+	int32 seed = 6;
+	int32 profile_picture = 7;
+	string name_color = 8;
+	string shadow_color = 9;
+	string outline_color = 10;
+	string background_color = 11;
+	repeated string hex_codes = 12;
 }
 
-
-
 message RoomStreamRequest {
-	string name = 1;
-	string role = 2;
-	bool host = 3;
+	string user_id = 1;
+	string permanent_token = 2;
+	string role = 3;
 }
 
 message RoomStreamResponse {
 	oneof message {
 		JoinRoomNotification join_room_notification = 1;
-		PlayerReadyNotification player_ready_notification = 2;
-		StartMatchNotification start_match_notification = 3;
-		UpdateSeedsNotification update_seeds_notification = 4;
-		EndGameNotification end_game_notification = 5;
-		EndMatchNotification end_match_notification = 6;
+		LeaveRoomNotification leave_room_notification = 2;
+		PlayerReadyNotification player_ready_notification = 3;
+		StartMatchNotification start_match_notification = 4;
+		UpdateSeedsNotification update_seeds_notification = 5;
+		EndGameNotification end_game_notification = 6;
+		EndMatchNotification end_match_notification = 7;
 	}
 }
 
-
-
 message JoinRoomRequest {
-	string name = 1;
-	string role = 2;
+	string user_id = 1;
+	string permanent_token = 2;
+	string role = 3;
 }
 
 message JoinRoomResponse {
-	string name = 1;
-	string role = 2;
-	bool host = 3;
-	bool ready = 4;
+	bool success = 1;
+	string message = 2;
+	RoomUser user = 3;
+}
+
+message LeaveRoomRequest {
+	string user_id = 1;
+	string permanent_token = 2;
+}
+
+message LeaveRoomResponse {
+	bool success = 1;
+	string message = 2;
 }
 
 message JoinRoomNotification {
@@ -62,14 +75,20 @@ message JoinRoomNotification {
 	bool all_ready = 2;
 }
 
-
+message LeaveRoomNotification {
+	repeated RoomUser users = 1;
+	string username = 2;
+}
 
 message PlayerReadyRequest {
-	string name = 1;
+	string user_id = 1;
+	string permanent_token = 2;
 }
 
 message PlayerReadyResponse {
-	bool ready = 1;
+	bool success = 1;
+	string message = 2;
+	bool ready = 3;
 }
 
 message PlayerReadyNotification {
@@ -77,58 +96,63 @@ message PlayerReadyNotification {
 	bool all_ready = 2;
 }
 
-
-
 message StartMatchRequest {
-	string name = 1;
+	string user_id = 1;
+	string permanent_token = 2;
 }
 
 message StartMatchResponse {
-	
+	bool success = 1;
+	string message = 2;
 }
 
 message StartMatchNotification {
 	bool match_started = 1;
+	repeated RoomUser players = 2;
 }
 
-
-
 message UpdateSeedsRequest {
-	
+	string user_id = 1;
+	string permanent_token = 2;
 }
 
 message UpdateSeedsResponse {
-	
+	bool success = 1;
+	string message = 2;
 }
 
 message UpdateSeedsNotification {
-	
+	repeated RoomUser users = 1;
 }
 
-
-
 message EndGameRequest {
-	
+	string user_id = 1;
+	string permanent_token = 2;
+	double finish_time = 3;
 }
 
 message EndGameResponse {
-	
+	bool success = 1;
+	string message = 2;
 }
 
 message EndGameNotification {
-	
+	string winner_id = 1;
+	double finish_time = 2;
 }
 
-
-
 message EndMatchRequest {
-	
+	string user_id = 1;
+	string permanent_token = 2;
 }
 
 message EndMatchResponse {
-	
+	bool success = 1;
+	string message = 2;
 }
 
 message EndMatchNotification {
-	
+	string winner_id = 1;
+	int32 games_won = 2;
+	int32 games_lost = 3;
 }
