@@ -177,7 +177,7 @@ public class LoginScene : IScene
 
         if (currentHandler is not null)
         {
-            TextInputEXT.TextInput += currentHandler;
+        TextInputEXT.TextInput += currentHandler;
         }
         currentInput = string.Empty;
     }
@@ -503,7 +503,7 @@ public class LoginScene : IScene
                         var chunk = remainingWord.Substring(0, Math.Min(MAX_CHARS_PER_LINE, remainingWord.Length));
                         lines.Add(chunk);
                         remainingWord = remainingWord.Substring(chunk.Length);
-                    }
+        }
                     continue;
                 }
             }
@@ -551,7 +551,7 @@ public class LoginScene : IScene
         {
             var activeBox = textBoxToInputMode.Keys.FirstOrDefault(box => box.IsActive);
             if (activeBox is not null)
-            {
+        {
                 try
                 {
                     var clipboardText = SDL.SDL_GetClipboardText();

@@ -6,7 +6,7 @@ using CSharpCraft.Pico8;
 
 namespace CSharpCraft.RaceMode;
 
-public class LobbyScene(RoomHandler mainRace) : IScene, IDisposable
+public class LobbyScene() : IScene, IDisposable
 {
 #nullable enable
     private Menu roomMenu = new();
@@ -36,27 +36,27 @@ public class LobbyScene(RoomHandler mainRace) : IScene, IDisposable
     public async void Update()
     {
         bool allReady = true;
-        foreach (KeyValuePair<int, RoomUser> player in mainRace.playerDictionary)
+        foreach (KeyValuePair<int, RoomUser> player in RoomHandler._playerDictionary)
         {
-            if (!player.Value.Ready) { allReady = false; }
+            if (!player.Value.IsReady) { allReady = false; }
         }
 
         actionsItems.Clear();
-        actionsItems.Add(new Item { Name = mainRace.myself.Ready ? "unready" : "ready", Active = mainRace.myself.Role == "Player", Method = PlayerReady });
-        actionsItems.Add(new Item { Name = "start match", Active = mainRace.myself.Host && allReady, Method = StartMatch });
-        actionsItems.Add(new Item { Name = "leave room", Active = true, Method = LeaveRoom });
-        actionsItems.Add(new Item { Name = "change role", Active = true, Method = ChangeRole });
-        actionsItems.Add(new Item { Name = "change host", Active = mainRace.myself.Host, Method = ChangeHost });
-        actionsItems.Add(new Item { Name = "seeding", Active = mainRace.myself.Host, Method = Seeding });
-        actionsItems.Add(new Item { Name = "settings", Active = true, Method = Settings });
-        actionsItems.Add(new Item { Name = "password", Active = true, Method = Password });
+        actionsItems.Add(new Item { Name = RoomHandler._myself.IsReady ? "unready" : "ready", Active = RoomHandler._myself.Role == "Player", Method = RoomHandler.SetReady });
+        actionsItems.Add(new Item { Name = "start match", Active = RoomHandler._myself.IsHost && allReady, Method = RoomHandler.StartMatch });
+        actionsItems.Add(new Item { Name = "leave room", Active = true, Method = RoomHandler.DisconnectFromRoom });
+        actionsItems.Add(new Item { Name = "change role", Active = true, Method = RoomHandler.ChangeRole });
+        actionsItems.Add(new Item { Name = "change host", Active = RoomHandler._myself.IsHost, Method = RoomHandler.ChangeHost });
+        actionsItems.Add(new Item { Name = "seeding", Active = RoomHandler._myself.IsHost, Method = RoomHandler.Seeding });
+        actionsItems.Add(new Item { Name = "settings", Active = true, Method = RoomHandler.Settings });
+        actionsItems.Add(new Item { Name = "password", Active = true, Method = RoomHandler.Password });
 
         rulesItems.Clear();
-        rulesItems.Add(new Item { Name = "best of:5", Active = mainRace.myself.Host });
-        rulesItems.Add(new Item { Name = "mode:any%", Active = mainRace.myself.Host });
-        rulesItems.Add(new Item { Name = "finishers:1", Active = mainRace.myself.Host });
-        rulesItems.Add(new Item { Name = "unbans:on", Active = mainRace.myself.Host });
-        rulesItems.Add(new Item { Name = "adv:0-0", Active = mainRace.myself.Host });
+        rulesItems.Add(new Item { Name = "best of:5", Active = RoomHandler._myself.IsHost });
+        rulesItems.Add(new Item { Name = "mode:any%", Active = RoomHandler._myself.IsHost });
+        rulesItems.Add(new Item { Name = "finishers:1", Active = RoomHandler._myself.IsHost });
+        rulesItems.Add(new Item { Name = "unbans:on", Active = RoomHandler._myself.IsHost });
+        rulesItems.Add(new Item { Name = "adv:0-0", Active = RoomHandler._myself.IsHost });
 
         if (p8.Btnp(0)) { actionsMenu.Active = true; rulesMenu.Active = false; }
         if (p8.Btnp(1)) { rulesMenu.Active = true; actionsMenu.Active = false; }
@@ -79,9 +79,9 @@ public class LobbyScene(RoomHandler mainRace) : IScene, IDisposable
         }
 
 
-        if (p8.Btnp(4)) { p8.LoadCart(new PickBanScene(mainRace)); }
+        if (p8.Btnp(4)) { p8.LoadCart(new PickBanScene()); }
 
-        //if (p8.Btnp(5) && mainRace.myself.Role == "Player")
+        //if (p8.Btnp(5) && RoomHandler.myself.Role == "Player")
         //{
         //    await PlayerReady();
         //}
@@ -234,15 +234,15 @@ public class LobbyScene(RoomHandler mainRace) : IScene, IDisposable
         //p8.Print(rules, 83, 84, 7);
 
         int i = 0;
-        foreach (RoomUser player in mainRace.playerDictionary.Values)
+        foreach (RoomUser player in RoomHandler._playerDictionary.Values)
         {
             p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2(25 * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-            p8.Print(player.Name, 36, 26 + i * 7, 7);
-            if (player.Role == "Player" && player.Ready)
+            p8.Print(player.Username, 36, 26 + i * 7, 7);
+            if (player.Role == "Player" && player.IsReady)
             {
-                p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((37 + player.Username.Length * 4) * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
-            if (player.Host)
+            if (player.IsHost)
             {
                 p8.Print("[", 81, 26 + i * 7, 5);
                 p8.Print("host", 84, 26 + i * 7, 5);
@@ -254,45 +254,6 @@ public class LobbyScene(RoomHandler mainRace) : IScene, IDisposable
         }
     }
 
-    private async Task Password()
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task Settings()
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task Seeding()
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task ChangeHost()
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task ChangeRole()
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task LeaveRoom()
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task StartMatch()
-    {
-        mainRace.service.StartMatch(new StartMatchRequest { Name = mainRace.myself.Name });
-    }
-
-    private async Task PlayerReady()
-    {
-        mainRace.myself.Ready = mainRace.service.PlayerReady(new PlayerReadyRequest { Name = mainRace.myself.Name }).Ready;
-    }
     public string SpriteImage => "";
     public string SpriteData => @"
 00000000ffffffffffffffffffffffffffffffff44fff44ffff44fff020121000004200002031000fff55fffffff555ff5555fff000000000001000000101000

@@ -4,308 +4,242 @@ using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using AccountService;
 
 namespace RaceServer.Services;
 
 public class GameServer : GameService.GameServiceBase
 {
-    private readonly List<IServerStreamWriter<RoomStreamResponse>> clients = new();
-    private readonly Dictionary<string, IServerStreamWriter<RoomStreamResponse>> clientStreams = new();
-    private readonly Room room = new("TestRoom");
-    private readonly ILogger<GameServer> logger;
-    private readonly AccountService.AccountService.AccountServiceClient _accountClient;
+    private readonly Dictionary<string, IServerStreamWriter<RoomStreamResponse>> _clients = new();
+    private readonly Room _room = new("TestRoom");
+    private readonly ILogger<GameServer> _logger;
 
-    public GameServer(ILogger<GameServer> logger, AccountService.AccountService.AccountServiceClient accountClient)
+    public GameServer(ILogger<GameServer> logger)
     {
-        this.logger = logger;
-        this._accountClient = accountClient;
+        _logger = logger;
     }
 
-    private async Task<bool> ValidateToken(string userId, string token)
+    public override async Task<ConnectToRoomResponse> ConnectToRoom(ConnectToRoomRequest request, ServerCallContext context)
     {
-        try
+        _logger.LogInformation($"User {request.Username} attempting to connect to room as {request.Role}");
+
+        var user = new RoomPlayer
         {
-            var response = await _accountClient.CheckTokenAsync(new CheckTokenRequest
+            Username = request.Username,
+            Role = request.Role
+        };
+
+        var (success, message) = _room.AddUser(user);
+        if (!success)
+        {
+            return new ConnectToRoomResponse
             {
-                UserId = userId,
-                Token = token
-            });
-            return response.IsValid;
+                Success = false,
+                Message = message
+            };
         }
-        catch (Exception ex)
+
+        // Notify all clients about the new room state
+        await BroadcastRoomState();
+
+        return new ConnectToRoomResponse
         {
-            logger.LogError($"Error validating token: {ex.Message}");
-            return false;
+            Success = true,
+            Message = "Connected to room successfully",
+            IsHost = user.IsHost,
+            IsReady = user.IsReady
+        };
+    }
+
+    public override async Task<DisconnectFromRoomResponse> DisconnectFromRoom(DisconnectFromRoomRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation($"User {request.Username} disconnecting from room");
+
+        var (success, message) = _room.RemoveUser(request.Username);
+        if (!success)
+        {
+            return new DisconnectFromRoomResponse
+            {
+                Success = false,
+                Message = message
+            };
         }
+
+        // Remove client from stream
+        if (_clients.ContainsKey(request.Username))
+        {
+            _clients.Remove(request.Username);
+        }
+
+        // Notify remaining clients about the room state
+        await BroadcastRoomState();
+
+        return new DisconnectFromRoomResponse
+        {
+            Success = true,
+            Message = "Disconnected from room successfully"
+        };
     }
 
     public override async Task RoomStream(RoomStreamRequest request, IServerStreamWriter<RoomStreamResponse> responseStream, ServerCallContext context)
     {
-        if (!await ValidateToken(request.UserId, request.PermanentToken))
-        {
-            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token"));
-        }
+        _logger.LogInformation($"User {request.Username} starting room stream");
 
-        clients.Add(responseStream);
-        clientStreams[request.UserId] = responseStream;
+        if (!_clients.ContainsKey(request.Username))
+        {
+            _clients.Add(request.Username, responseStream);
+        }
 
         try
         {
-            var userResponse = await _accountClient.GetUserByUsernameAsync(new GetUserByUsernameRequest
+            // Send initial room state
+            var response = new RoomStreamResponse
             {
-                Username = request.UserId // This should be changed to use GetUserById when implemented
-            });
-
-            if (!userResponse.Success)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
-            }
-
-            User newUser = new()
-            {
-                UserId = request.UserId,
-                Username = userResponse.Username,
-                Role = request.Role,
-                Host = room.Users.Count == 0,
-                Ready = request.Role == "Player" ? false : true,
-                ProfilePicture = userResponse.ProfilePicture,
-                NameColor = userResponse.NameColor,
-                ShadowColor = userResponse.ShadowColor,
-                OutlineColor = userResponse.OutlineColor,
-                BackgroundColor = userResponse.BackgroundColor,
-                HexCodes = userResponse.HexCodes.ToList()
-            };
-
-            room.AddPlayer(newUser);
-
-            var notification = new RoomStreamResponse
-            {
-                JoinRoomNotification = new JoinRoomNotification()
-            };
-
-            foreach (User user in room.Users)
-            {
-                notification.JoinRoomNotification.Users.Add(new RoomUser
+                RoomState = new RoomStateNotification
                 {
-                    UserId = user.UserId,
+                    AllReady = _room.AllPlayersReady()
+                }
+            };
+
+            foreach (var user in _room.Users)
+            {
+                response.RoomState.Users.Add(new RoomUser
+                {
                     Username = user.Username,
                     Role = user.Role,
-                    Host = user.Host,
-                    Ready = user.Ready,
-                    Seed = user.Seed ?? 0,
-                    ProfilePicture = user.ProfilePicture,
-                    NameColor = user.NameColor,
-                    ShadowColor = user.ShadowColor,
-                    OutlineColor = user.OutlineColor,
-                    BackgroundColor = user.BackgroundColor
+                    IsHost = user.IsHost,
+                    IsReady = user.IsReady,
+                    Seed = user.Seed ?? 0
                 });
-                notification.JoinRoomNotification.Users[^1].HexCodes.AddRange(user.HexCodes);
             }
 
-            notification.JoinRoomNotification.AllReady = room.AllPlayersReady();
+            await responseStream.WriteAsync(response);
 
-            foreach (var client in clients)
-            {
-                await client.WriteAsync(notification);
-            }
-
+            // Keep stream alive until client disconnects
             while (!context.CancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(1000);
             }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error in room stream for user {request.Username}: {ex.Message}");
+        }
         finally
         {
-            room.RemovePlayer(request.UserId);
-            clients.Remove(responseStream);
-            clientStreams.Remove(request.UserId);
-
-            var leaveNotification = new RoomStreamResponse
+            if (_clients.ContainsKey(request.Username))
             {
-                LeaveRoomNotification = new LeaveRoomNotification
-                {
-                    Username = request.UserId // This should be the username, not the ID
-                }
-            };
-
-            foreach (User user in room.Users)
-            {
-                leaveNotification.LeaveRoomNotification.Users.Add(new RoomUser
-                {
-                    UserId = user.UserId,
-                    Username = user.Username,
-                    Role = user.Role,
-                    Host = user.Host,
-                    Ready = user.Ready,
-                    Seed = user.Seed ?? 0,
-                    ProfilePicture = user.ProfilePicture,
-                    NameColor = user.NameColor,
-                    ShadowColor = user.ShadowColor,
-                    OutlineColor = user.OutlineColor,
-                    BackgroundColor = user.BackgroundColor
-                });
-                leaveNotification.LeaveRoomNotification.Users[^1].HexCodes.AddRange(user.HexCodes);
-            }
-
-            foreach (var client in clients)
-            {
-                await client.WriteAsync(leaveNotification);
+                _clients.Remove(request.Username);
             }
         }
     }
 
-    public override async Task<JoinRoomResponse> JoinRoom(JoinRoomRequest request, ServerCallContext context)
+    public override async Task<SetReadyResponse> SetReady(SetReadyRequest request, ServerCallContext context)
     {
-        if (!await ValidateToken(request.UserId, request.PermanentToken))
+        _logger.LogInformation($"User {request.Username} setting ready status to {request.Ready}");
+
+        var (success, message) = _room.SetUserReady(request.Username, request.Ready);
+        if (!success)
         {
-            return new JoinRoomResponse
+            return new SetReadyResponse
             {
                 Success = false,
-                Message = "Invalid token"
-            };
-        }
-
-        var userResponse = await _accountClient.GetUserByUsernameAsync(new GetUserByUsernameRequest
-        {
-            Username = request.UserId // This should be changed to use GetUserById when implemented
-        });
-
-        if (!userResponse.Success)
-        {
-            return new JoinRoomResponse
-            {
-                Success = false,
-                Message = "User not found"
-            };
-        }
-
-        return new JoinRoomResponse
-        {
-            Success = true,
-            Message = "Successfully joined room",
-            User = new RoomUser
-            {
-                UserId = request.UserId,
-                Username = userResponse.Username,
-                Role = request.Role,
-                Host = room.Users.Count == 0,
-                Ready = request.Role == "Player" ? false : true,
-                ProfilePicture = userResponse.ProfilePicture,
-                NameColor = userResponse.NameColor,
-                ShadowColor = userResponse.ShadowColor,
-                OutlineColor = userResponse.OutlineColor,
-                BackgroundColor = userResponse.BackgroundColor
-            }
-        };
-    }
-
-    public override async Task<PlayerReadyResponse> PlayerReady(PlayerReadyRequest request, ServerCallContext context)
-    {
-        if (!await ValidateToken(request.UserId, request.PermanentToken))
-        {
-            return new PlayerReadyResponse
-            {
-                Success = false,
-                Message = "Invalid token",
+                Message = message,
                 Ready = false
             };
         }
 
-        room.TogglePlayerReady(request.UserId);
+        // Notify all clients about the ready status change
+        await BroadcastRoomState();
 
-        var notification = new RoomStreamResponse
-        {
-            PlayerReadyNotification = new PlayerReadyNotification()
-        };
-
-        foreach (User user in room.Users)
-        {
-            notification.PlayerReadyNotification.Users.Add(new RoomUser
-            {
-                UserId = user.UserId,
-                Username = user.Username,
-                Role = user.Role,
-                Host = user.Host,
-                Ready = user.Ready,
-                Seed = user.Seed ?? 0,
-                ProfilePicture = user.ProfilePicture,
-                NameColor = user.NameColor,
-                ShadowColor = user.ShadowColor,
-                OutlineColor = user.OutlineColor,
-                BackgroundColor = user.BackgroundColor
-            });
-            notification.PlayerReadyNotification.Users[^1].HexCodes.AddRange(user.HexCodes);
-        }
-
-        notification.PlayerReadyNotification.AllReady = room.AllPlayersReady();
-
-        foreach (var client in clients)
-        {
-            await client.WriteAsync(notification);
-        }
-
-        var myself = room.Users.FirstOrDefault(p => p.UserId == request.UserId);
-        return new PlayerReadyResponse
+        return new SetReadyResponse
         {
             Success = true,
-            Message = "Successfully toggled ready status",
-            Ready = myself?.Ready ?? false
+            Message = "Ready status updated successfully",
+            Ready = request.Ready
         };
     }
 
     public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
     {
-        if (!await ValidateToken(request.UserId, request.PermanentToken))
+        _logger.LogInformation($"User {request.Username} attempting to start match");
+
+        var (success, message) = _room.StartMatch();
+        if (!success)
         {
             return new StartMatchResponse
             {
                 Success = false,
-                Message = "Invalid token"
+                Message = message
             };
         }
 
-        room.AssignSeedingTemp();
-        User higherSeed = room.Users.FirstOrDefault(p => p.Seed == 1);
-        User lowerSeed = room.Users.FirstOrDefault(p => p.Seed == 2);
-        room.CurrentMatch = room.NewDuelMatch(higherSeed, lowerSeed);
-
-        var notification = new RoomStreamResponse
+        // Notify all clients that the match has started
+        var response = new RoomStreamResponse
         {
-            StartMatchNotification = new StartMatchNotification
+            StartMatch = new StartMatchNotification
             {
-                MatchStarted = room.AllPlayersReady()
+                MatchStarted = true
             }
         };
 
-        foreach (User user in room.Users.Where(u => u.Role == "Player"))
+        foreach (var user in _room.Users)
         {
-            notification.StartMatchNotification.Players.Add(new RoomUser
+            response.StartMatch.Users.Add(new RoomUser
             {
-                UserId = user.UserId,
                 Username = user.Username,
                 Role = user.Role,
-                Host = user.Host,
-                Ready = user.Ready,
-                Seed = user.Seed ?? 0,
-                ProfilePicture = user.ProfilePicture,
-                NameColor = user.NameColor,
-                ShadowColor = user.ShadowColor,
-                OutlineColor = user.OutlineColor,
-                BackgroundColor = user.BackgroundColor
+                IsHost = user.IsHost,
+                IsReady = user.IsReady,
+                Seed = user.Seed ?? 0
             });
-            notification.StartMatchNotification.Players[^1].HexCodes.AddRange(user.HexCodes);
         }
 
-        foreach (var client in clients)
-        {
-            await client.WriteAsync(notification);
-        }
+        await BroadcastToAll(response);
 
         return new StartMatchResponse
         {
             Success = true,
             Message = "Match started successfully"
         };
+    }
+
+    private async Task BroadcastRoomState()
+    {
+        var response = new RoomStreamResponse
+        {
+            RoomState = new RoomStateNotification
+            {
+                AllReady = _room.AllPlayersReady()
+            }
+        };
+
+        foreach (var user in _room.Users)
+        {
+            response.RoomState.Users.Add(new RoomUser
+            {
+                Username = user.Username,
+                Role = user.Role,
+                IsHost = user.IsHost,
+                IsReady = user.IsReady,
+                Seed = user.Seed ?? 0
+            });
+        }
+
+        await BroadcastToAll(response);
+    }
+
+    private async Task BroadcastToAll(RoomStreamResponse response)
+    {
+        foreach (var client in _clients.Values)
+        {
+            try
+            {
+                await client.WriteAsync(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error broadcasting to client: {ex.Message}");
+            }
+        }
     }
 }

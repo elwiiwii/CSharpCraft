@@ -63,11 +63,11 @@ public static class AccountHandler
                 try
                 {
                     var directory = Path.GetDirectoryName(BACKUP_TOKEN_FILE);
-                    if (directory is not null && !Directory.Exists(directory))
-                    {
+            if (directory is not null && !Directory.Exists(directory))
+            {
                         Console.WriteLine($"Creating directory: {directory}");
-                        Directory.CreateDirectory(directory);
-                    }
+                Directory.CreateDirectory(directory);
+            }
 
                     // Read the current token file
                     Console.WriteLine($"Reading token file: {TOKEN_FILE}");
@@ -93,9 +93,9 @@ public static class AccountHandler
                         Console.WriteLine($"Deleting token file: {TOKEN_FILE}");
                         File.Delete(TOKEN_FILE);
                     }
-                }
-                catch (Exception ex)
-                {
+        }
+        catch (Exception ex)
+        {
                     Console.WriteLine($"Warning: Could not backup token file: {ex.Message}");
                     Console.WriteLine($"Error type: {ex.GetType().Name}");
                     if (ex.InnerException is not null)
@@ -302,10 +302,10 @@ public static class AccountHandler
                 if (File.Exists(BACKUP_TOKEN_FILE))
                 {
                     File.Delete(BACKUP_TOKEN_FILE);
-                }
             }
-            catch (Exception ex)
-            {
+        }
+        catch (Exception ex)
+        {
                 Console.WriteLine($"Warning: Could not delete backup token file: {ex.Message}");
                 try
                 {
@@ -466,7 +466,7 @@ public static class AccountHandler
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
                 try
                 {
-                    await _channel.ConnectAsync(cts.Token);
+                await _channel.ConnectAsync(cts.Token);
                     Console.WriteLine("Successfully connected to server.");
                 }
                 catch (OperationCanceledException)
@@ -569,9 +569,9 @@ public static class AccountHandler
                 try
                 {
                     _channel.Dispose();
-                }
-                catch (Exception ex)
-                {
+            }
+            catch (Exception ex)
+            {
                     Console.WriteLine($"Error disposing channel: {ex.Message}");
                 }
                 _channel = null;
@@ -641,9 +641,9 @@ public static class AccountHandler
             catch (OperationCanceledException)
             {
                 // Normal cancellation
-            }
-            catch (Exception ex)
-            {
+                }
+                catch (Exception ex)
+                {
                 Console.WriteLine($"Token check failed: {ex.Message}");
                 await ForceLogout();
             }
@@ -718,9 +718,9 @@ public static class AccountHandler
                     try
                     {
                         File.Delete(backupFile);
-                    }
-                    catch (Exception ex)
-                    {
+        }
+        catch (Exception ex)
+        {
                         Console.WriteLine($"Error deleting backup token file: {ex.Message}");
                     }
                 }
@@ -844,10 +844,10 @@ public static class AccountHandler
                     Message = "Not connected to server."
                 };
             }
-        }
+                    }
 
-        try
-        {
+                    try
+                    {
             var response = await _client.LoginAsync(new LoginRequest
             {
                 Email = email,
@@ -907,9 +907,9 @@ public static class AccountHandler
             }
 
             return response;
-        }
-        catch (Exception ex)
-        {
+            }
+            catch (Exception ex)
+            {
             Console.WriteLine($"Error verifying 2FA: {ex.Message}");
             return new Verify2FAResponse
             {

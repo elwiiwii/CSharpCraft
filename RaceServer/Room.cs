@@ -1,84 +1,137 @@
-﻿using Grpc.Net.Client;
-using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace RaceServer
 {
-    public class Room(string name)
+    public class Room
     {
-        public string Name { get; } = name;
-        public readonly List<User> users = new();
-        public DuelMatch CurrentMatch = new();
+        public string Name { get; }
+        private readonly List<RoomPlayer> _users = new();
+        private DuelMatch? _currentMatch;
 
-        public IReadOnlyList<User> Users => users;
+        public IReadOnlyList<RoomPlayer> Users => _users.AsReadOnly();
+        public DuelMatch? CurrentMatch => _currentMatch;
 
-        public void AddPlayer(User user)
+        public Room(string name)
         {
-            users.Add(user);
+            Name = name;
         }
 
-        public void RemovePlayer(string userId)
+        public (bool success, string message) AddUser(RoomPlayer user)
         {
-            User user = users.FirstOrDefault(p => p.UserId == userId);
-
-            if (user is not null)
+            if (_users.Any(u => u.Username == user.Username))
             {
-                users.Remove(user);
+                return (false, "User already in room");
             }
-        }
-        
-        public void TogglePlayerReady(string userId)
-        {
-            User player = users.FirstOrDefault(p => p.UserId == userId);
-            if (player is not null && player.Role == "Player")
-                player.Ready = !player.Ready;
+
+            if (user.Role == "Player" && _users.Count(u => u.Role == "Player") >= 2)
+            {
+                return (false, "Room is full");
+            }
+
+            user.IsHost = _users.Count == 0;
+            _users.Add(user);
+            return (true, "User added successfully");
         }
 
-        public void AssignSeedingTemp()
+        public (bool success, string message) RemoveUser(string username)
         {
-            int seed = 1;
-            foreach (User user in users)
-            { 
-                if (user.Role == "Player")
-                {
-                    user.Seed = seed;
-                    seed++;
-                }
+            var user = _users.FirstOrDefault(u => u.Username == username);
+            if (user is null)
+            {
+                return (false, "User not found in room");
             }
+
+            _users.Remove(user);
+
+            // If the host left, assign a new host
+            if (user.IsHost && _users.Any())
+            {
+                _users[0].IsHost = true;
+            }
+
+            return (true, "User removed successfully");
+        }
+
+        public (bool success, string message) SetUserReady(string username, bool ready)
+        {
+            var user = _users.FirstOrDefault(u => u.Username == username);
+            if (user is null)
+            {
+                return (false, "User not found in room");
+            }
+
+            if (user.Role != "Player")
+            {
+                return (false, "Only players can set ready status");
+            }
+
+            user.IsReady = ready;
+            return (true, "Ready status updated successfully");
         }
 
         public bool AllPlayersReady()
         {
-            return users.All(p => p.Ready);
+            return _users.Where(u => u.Role == "Player").All(u => u.IsReady);
         }
 
-        public DuelMatch NewDuelMatch(User higherSeed, User lowerSeed)
+        public (bool success, string message) StartMatch()
         {
-            return new DuelMatch{ HigherSeed = higherSeed, LowerSeed = lowerSeed };
+            if (!AllPlayersReady())
+            {
+                return (false, "Not all players are ready");
+            }
+
+            var players = _users.Where(u => u.Role == "Player").ToList();
+            if (players.Count != 2)
+            {
+                return (false, "Need exactly 2 players to start a match");
+            }
+
+            // Assign seeds
+            players[0].Seed = 1;
+            players[1].Seed = 2;
+
+            _currentMatch = new DuelMatch
+            {
+                HigherSeed = players[0],
+                LowerSeed = players[1]
+            };
+
+            return (true, "Match started successfully");
+        }
+
+        public (bool success, string message) EndMatch(string winner)
+        {
+            if (_currentMatch is null)
+            {
+                return (false, "No active match");
+            }
+
+            _currentMatch = null;
+            foreach (var user in _users.Where(u => u.Role == "Player"))
+            {
+                user.IsReady = false;
+                user.Seed = null;
+            }
+
+            return (true, "Match ended successfully");
         }
     }
 
-    public class User
+    public class RoomPlayer
     {
-        public string UserId { get; set; }
         public string Username { get; set; }
         public string Role { get; set; } = "Player";
-        public bool Host { get; set; }
-        public bool Ready { get; set; } = true;
-        public int? Seed { get; set; } = null;
-        public int ProfilePicture { get; set; } = 27;
-        public string NameColor { get; set; } = "#FFFFFF";
-        public string ShadowColor { get; set; } = "#C2C3C7";
-        public string OutlineColor { get; set; } = "#FFFFFF";
-        public string BackgroundColor { get; set; } = "#111D35";
-        public List<string> HexCodes { get; set; } = new() { "#7E2553", "#FFCCAA", "#AB5236" };
+        public bool IsHost { get; set; }
+        public bool IsReady { get; set; }
+        public int? Seed { get; set; }
     }
 
     public class DuelMatch
     {
-        public User HigherSeed { get; set; }
-        public User LowerSeed { get; set; }
+        public RoomPlayer HigherSeed { get; set; }
+        public RoomPlayer LowerSeed { get; set; }
         public SeedTypes SeedTypes { get; set; } = new();
         public int CurrentGame { get; set; } = 1;
         public int BestOf { get; set; } = 5;
@@ -111,5 +164,4 @@ namespace RaceServer
         public string Player2Status { get; set; }
         public double FinishTime { get; set; }
     }
-
 }

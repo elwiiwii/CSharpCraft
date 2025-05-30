@@ -6,7 +6,7 @@ using FixMath;
 
 namespace CSharpCraft.RaceMode;
 
-public class PickBanScene(RoomHandler mainRace) : IScene, IDisposable
+public class PickBanScene() : IScene, IDisposable
 {
 #nullable enable
     private float animationTimer;
