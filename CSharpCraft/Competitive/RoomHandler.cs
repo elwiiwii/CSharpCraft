@@ -11,7 +11,7 @@ public static class RoomHandler
 {
     private static readonly GrpcChannel _channel;
     private static readonly GameService.GameServiceClient _service;
-    private static readonly CancellationTokenSource _cancellationTokenSource = new();
+    private static CancellationTokenSource? _cancellationTokenSource;
     private static AsyncServerStreamingCall<RoomStreamResponse>? _roomStream;
     public static readonly ConcurrentDictionary<int, RoomUser> _playerDictionary = new();
     public static RoomUser? _myself;
@@ -27,6 +27,7 @@ public static class RoomHandler
     {
         try
         {
+            Console.WriteLine($"Attempting to connect to room as {username} with role {role}");
             var response = await _service.ConnectToRoomAsync(new ConnectToRoomRequest
             {
                 Username = username,
@@ -39,6 +40,7 @@ public static class RoomHandler
                 return false;
             }
 
+            Console.WriteLine($"Successfully connected to room. IsHost: {response.IsHost}, IsReady: {response.IsReady}");
             _myself = new RoomUser
             {
                 Username = username,
@@ -54,13 +56,20 @@ public static class RoomHandler
         catch (Exception ex)
         {
             Console.WriteLine($"Error connecting to room: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
             return false;
         }
     }
 
     public static async Task DisconnectFromRoom()
     {
-        if (_myself is null) return;
+        if (_myself == null) return;
+
+        Console.WriteLine("Stopping room stream");
+        StopRoomStream();
 
         try
         {
@@ -72,37 +81,47 @@ public static class RoomHandler
             if (!response.Success)
             {
                 Console.WriteLine($"Failed to disconnect from room: {response.Message}");
+                return;
             }
+
+            Console.WriteLine("Successfully disconnected from room");
+            _playerDictionary.Clear();
+            _myself = null;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error disconnecting from room: {ex.Message}");
-        }
-        finally
-        {
-            StopRoomStream();
-            _myself = null;
-            _playerDictionary.Clear();
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
         }
     }
 
     private static async Task StartRoomStream(string username)
     {
+        Console.WriteLine($"Starting room stream for {username}");
         StopRoomStream();
 
         try
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            Console.WriteLine("Created new cancellation token source");
+            
             _roomStream = _service.RoomStream(new RoomStreamRequest
             {
                 Username = username
             });
+            Console.WriteLine("Room stream established");
 
             _ = Task.Run(async () =>
             {
                 try
                 {
+                    Console.WriteLine("Starting to read from room stream");
                     await foreach (var response in _roomStream.ResponseStream.ReadAllAsync(_cancellationTokenSource.Token))
                     {
+                        Console.WriteLine($"Received message type: {response.MessageCase}");
                         switch (response.MessageCase)
                         {
                             case RoomStreamResponse.MessageOneofCase.RoomState:
@@ -132,29 +151,48 @@ public static class RoomHandler
                 }
                 catch (OperationCanceledException)
                 {
-                    // Normal cancellation
+                    Console.WriteLine("Room stream cancelled normally");
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error in room stream: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    }
                 }
             });
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error starting room stream: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
             throw;
         }
     }
 
     public static void StopRoomStream()
     {
-        _cancellationTokenSource.Cancel();
-        _roomStream?.Dispose();
-        _roomStream = null;
+        Console.WriteLine("Stopping room stream");
+        if (_cancellationTokenSource != null)
+        {
+            Console.WriteLine("Cancelling token source");
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = null;
+        }
+        if (_roomStream != null)
+        {
+            Console.WriteLine("Disposing room stream");
+            _roomStream.Dispose();
+            _roomStream = null;
+        }
     }
 
-    public static async Task<bool> SetReady(bool ready)
+    public static async Task<bool> SetReady()
     {
         if (_myself is null) return false;
 
@@ -163,7 +201,7 @@ public static class RoomHandler
             var response = await _service.SetReadyAsync(new SetReadyRequest
             {
                 Username = _myself.Username,
-                Ready = ready
+                Ready = !_myself.IsReady
             });
 
             if (!response.Success)
@@ -210,12 +248,15 @@ public static class RoomHandler
 
     private static void HandleRoomState(RoomStateNotification notification)
     {
+        Console.WriteLine($"Handling room state with {notification.Users.Count} users");
         _playerDictionary.Clear();
         int index = 1;
         foreach (var user in notification.Users)
         {
+            Console.WriteLine($"Adding user to dictionary: {user.Username} (Role: {user.Role}, IsHost: {user.IsHost}, IsReady: {user.IsReady})");
             _playerDictionary.TryAdd(index++, user);
         }
+        Console.WriteLine($"Player dictionary now contains {_playerDictionary.Count} users");
     }
 
     private static void HandlePlayerReady(PlayerReadyNotification notification)
@@ -262,11 +303,6 @@ public static class RoomHandler
     private static void HandleEndMatch(EndMatchNotification notification)
     {
         // TODO: Implement end match handling
-    }
-
-    internal static async Task SetReady()
-    {
-        throw new NotImplementedException();
     }
 
     internal static async Task ChangeRole()

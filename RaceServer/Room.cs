@@ -1,55 +1,73 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace RaceServer
 {
     public class Room
     {
-        public string Name { get; }
+        private readonly ILogger<Room> _logger;
+        public string Name { get; init; }
         private readonly List<RoomPlayer> _users = new();
         private DuelMatch? _currentMatch;
 
         public IReadOnlyList<RoomPlayer> Users => _users.AsReadOnly();
         public DuelMatch? CurrentMatch => _currentMatch;
 
-        public Room(string name)
+        public Room(string name, ILogger<Room> logger)
         {
             Name = name;
+            _logger = logger;
+            _logger.LogInformation($"Created new room: {name}");
         }
 
         public (bool success, string message) AddUser(RoomPlayer user)
         {
+            _logger.LogInformation($"Attempting to add user {user.Username} to room {Name}");
+            _logger.LogInformation($"Current users in room: {string.Join(", ", _users.Select(u => u.Username))}");
+
             if (_users.Any(u => u.Username == user.Username))
             {
+                _logger.LogWarning($"User {user.Username} already in room {Name}");
                 return (false, "User already in room");
             }
 
             if (user.Role == "Player" && _users.Count(u => u.Role == "Player") >= 2)
             {
+                _logger.LogWarning($"Room {Name} is full");
                 return (false, "Room is full");
             }
 
             user.IsHost = _users.Count == 0;
             _users.Add(user);
+            _logger.LogInformation($"Added user {user.Username} to room {Name} as {(user.IsHost ? "host" : "player")}");
+            _logger.LogInformation($"Room {Name} now has {_users.Count} users: {string.Join(", ", _users.Select(u => u.Username))}");
             return (true, "User added successfully");
         }
 
         public (bool success, string message) RemoveUser(string username)
         {
+            _logger.LogInformation($"Attempting to remove user {username} from room {Name}");
+            _logger.LogInformation($"Current users in room: {string.Join(", ", _users.Select(u => u.Username))}");
+
             var user = _users.FirstOrDefault(u => u.Username == username);
             if (user is null)
             {
+                _logger.LogWarning($"User {username} not found in room {Name}");
                 return (false, "User not found in room");
             }
 
             _users.Remove(user);
+            _logger.LogInformation($"Removed user {username} from room {Name}");
 
             // If the host left, assign a new host
             if (user.IsHost && _users.Any())
             {
                 _users[0].IsHost = true;
+                _logger.LogInformation($"Assigned new host: {_users[0].Username}");
             }
 
+            _logger.LogInformation($"Room {Name} now has {_users.Count} users: {string.Join(", ", _users.Select(u => u.Username))}");
             return (true, "User removed successfully");
         }
 

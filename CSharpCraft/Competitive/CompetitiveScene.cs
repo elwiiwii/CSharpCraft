@@ -55,7 +55,7 @@ public class CompetitiveScene : IScene
             replays = new() { StartPos = (111, 46), EndPos = (125, 59), Label = "replays", ShadowTexture = "ReplaysShadow", IconTexture = "ReplaysIcon", Scene = new ReplaysScene(this) };
             statistics = new() { StartPos = (111, 63), EndPos = (125, 75), Label = "statistics", ShadowTexture = "StatisticsShadow", IconTexture = "StatisticsIcon", Scene = new StatisticsScene(this) };
             search = new() { StartPos = (112, 78), EndPos = (124, 90), Label = "search", ShadowTexture = "SearchShadow", IconTexture = "SearchIcon", Scene = new SearchScene(this) };
-            profile = new() { StartPos = (112, 93), EndPos = (124, 108), Label = "profile", ShadowTexture = "ProfileShadow", IconTexture = "ProfileIcon", Scene = new ProfileScene(this) };
+            profile = new() { StartPos = (112, 93), EndPos = (124, 108), Label = "profile", ShadowTexture = "ProfileShadow", IconTexture = "ProfileIcon", Scene = new ProfileScene(this, AccountHandler._myself.Username) };
             settings = new() { StartPos = (111, 111), EndPos = (125, 125), Label = "settings", ShadowTexture = "SettingsShadow", IconTexture = "SettingsIcon", Scene = new SettingsScene(this) };
             icons = [back, ranked, speedrun, unranked, @private, replays, statistics, search, profile, settings];
 
@@ -96,20 +96,9 @@ public class CompetitiveScene : IScene
     {
         p8.Batch.GraphicsDevice.Clear(Color.Black);
 
-        if (!isInitialized || isInitializing)
-        {
-            return;
-        }
+        if (!isInitialized || isInitializing) return;
 
-        // Get the size of the viewport
-        int viewportWidth = p8.Batch.GraphicsDevice.Viewport.Width;
-        int viewportHeight = p8.Batch.GraphicsDevice.Viewport.Height;
-
-        // Calculate the size of each cell
-        int w = viewportWidth / 128;
-        int h = viewportHeight / 128;
-
-        Vector2 size = new(w, h);
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
         p8.Batch.Draw(p8.TextureDictionary["CompetitiveBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
@@ -117,9 +106,9 @@ public class CompetitiveScene : IScene
 
         if (curIcon is not null) { labelLength = curIcon.Label.Length * 4; }
         else { labelLength = Math.Max(labelLength - labelLength / 4, 0); }
-        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightCenter"], new((63 - labelLength / 2) * w, 108 * h), null, Color.White, 0, Vector2.Zero, new Vector2(w * (labelLength + 1), h), SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 - 5 - labelLength / 2 - 1) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 + labelLength / 2 + 1) * w, 108 * h), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightCenter"], new((63 - labelLength / 2) * p8.Cell.Width, 108 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * (labelLength + 1), p8.Cell.Height), SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 - 5 - labelLength / 2 - 1) * p8.Cell.Width, 108 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 + labelLength / 2 + 1) * p8.Cell.Width, 108 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
         if (curIcon is not null) { Shared.Printcb(p8, curIcon.Label, 63, 111, 15, 1); }
 
         Shared.DrawCursor(p8, cursorX, cursorY);

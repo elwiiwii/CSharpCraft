@@ -1571,7 +1571,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             (c >= 'A' && c <= 'F'));
     }
 
-    public override async Task<GetUserByUsernameResponse> GetUserByUsername(GetUserByUsernameRequest request, ServerCallContext context)
+    public override async Task<GetUserResponse> GetUserByUsername(GetUserByUsernameRequest request, ServerCallContext context)
     {
         _logger.LogInformation($"Fetching user by username: {request.Username}");
         try
@@ -1581,7 +1581,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             var snapshot = await query.GetSnapshotAsync();
             if (snapshot.Count == 0)
             {
-                return new GetUserByUsernameResponse
+                return new GetUserResponse
                 {
                     Success = false,
                     Message = "User not found."
@@ -1589,7 +1589,7 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
             }
             var userDoc = snapshot[0];
             var userData = userDoc.ToDictionary();
-            return new GetUserByUsernameResponse
+            return new GetUserResponse
             {
                 Success = true,
                 Message = "User found.",
@@ -1606,7 +1606,47 @@ public class AccountServiceImpl : AccountService.AccountService.AccountServiceBa
         catch (Exception ex)
         {
             _logger.LogError($"Error fetching user by username: {ex.Message}");
-            return new GetUserByUsernameResponse
+            return new GetUserResponse
+            {
+                Success = false,
+                Message = "An error occurred while fetching the user."
+            };
+        }
+    }
+
+    public override async Task<GetUserResponse> GetUserById(GetUserByIdRequest request, ServerCallContext context)
+    {
+        _logger.LogInformation($"Fetching user by ID: {request.UserId}");
+        try
+        {
+            var userDoc = await _firestoreDb.Collection("users").Document(request.UserId).GetSnapshotAsync();
+            if (!userDoc.Exists)
+            {
+                return new GetUserResponse
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+            var userData = userDoc.ToDictionary();
+            return new GetUserResponse
+            {
+                Success = true,
+                Message = "User found.",
+                UserId = userDoc.Id,
+                Username = userData.ContainsKey("Username") ? userData["Username"].ToString() : string.Empty,
+                ProfilePicture = userData.ContainsKey("ProfilePicture") ? Convert.ToInt32(userData["ProfilePicture"]) : 27,
+                NameColor = userData.ContainsKey("NameColor") ? userData["NameColor"].ToString() : "#FFFFFF",
+                ShadowColor = userData.ContainsKey("ShadowColor") ? userData["ShadowColor"].ToString() : "#C2C3C7",
+                OutlineColor = userData.ContainsKey("OutlineColor") ? userData["OutlineColor"].ToString() : "#FFFFFF",
+                BackgroundColor = userData.ContainsKey("BackgroundColor") ? userData["BackgroundColor"].ToString() : "#111D35",
+                HexCodes = { userData.ContainsKey("HexCodes") ? ((IEnumerable<object>)userData["HexCodes"]).Select(x => x.ToString()) : new[] { "#7E2553", "#FFCCAA", "#AB5236" } }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error fetching user by ID: {ex.Message}");
+            return new GetUserResponse
             {
                 Success = false,
                 Message = "An error occurred while fetching the user."

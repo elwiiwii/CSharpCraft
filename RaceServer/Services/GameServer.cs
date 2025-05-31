@@ -10,17 +10,21 @@ namespace RaceServer.Services;
 public class GameServer : GameService.GameServiceBase
 {
     private readonly Dictionary<string, IServerStreamWriter<RoomStreamResponse>> _clients = new();
-    private readonly Room _room = new("TestRoom");
+    private readonly Room _room;
     private readonly ILogger<GameServer> _logger;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public GameServer(ILogger<GameServer> logger)
+    public GameServer(ILogger<GameServer> logger, ILoggerFactory loggerFactory, Room room)
     {
         _logger = logger;
+        _loggerFactory = loggerFactory;
+        _room = room;
     }
 
     public override async Task<ConnectToRoomResponse> ConnectToRoom(ConnectToRoomRequest request, ServerCallContext context)
     {
         _logger.LogInformation($"User {request.Username} attempting to connect to room as {request.Role}");
+        _logger.LogInformation($"Current room users before adding: {string.Join(", ", _room.Users.Select(u => u.Username))}");
 
         var user = new RoomPlayer
         {
@@ -31,6 +35,7 @@ public class GameServer : GameService.GameServiceBase
         var (success, message) = _room.AddUser(user);
         if (!success)
         {
+            _logger.LogWarning($"Failed to add user {request.Username} to room: {message}");
             return new ConnectToRoomResponse
             {
                 Success = false,
@@ -38,7 +43,11 @@ public class GameServer : GameService.GameServiceBase
             };
         }
 
+        _logger.LogInformation($"Successfully added user {request.Username} to room");
+        _logger.LogInformation($"Current room users after adding: {string.Join(", ", _room.Users.Select(u => u.Username))}");
+
         // Notify all clients about the new room state
+        _logger.LogInformation("Broadcasting room state to all clients");
         await BroadcastRoomState();
 
         return new ConnectToRoomResponse
@@ -100,8 +109,10 @@ public class GameServer : GameService.GameServiceBase
                 }
             };
 
+            _logger.LogInformation($"Current room users: {string.Join(", ", _room.Users.Select(u => u.Username))}");
             foreach (var user in _room.Users)
             {
+                _logger.LogInformation($"Adding user to room state: {user.Username} (Role: {user.Role}, IsHost: {user.IsHost}, IsReady: {user.IsReady})");
                 response.RoomState.Users.Add(new RoomUser
                 {
                     Username = user.Username,
@@ -112,6 +123,7 @@ public class GameServer : GameService.GameServiceBase
                 });
             }
 
+            _logger.LogInformation($"Sending room state with {response.RoomState.Users.Count} users");
             await responseStream.WriteAsync(response);
 
             // Keep stream alive until client disconnects
@@ -148,6 +160,7 @@ public class GameServer : GameService.GameServiceBase
             };
         }
 
+        _logger.LogInformation($"_clients.Count = {_clients.Count}");
         // Notify all clients about the ready status change
         await BroadcastRoomState();
 
@@ -205,6 +218,9 @@ public class GameServer : GameService.GameServiceBase
 
     private async Task BroadcastRoomState()
     {
+        _logger.LogInformation("Preparing to broadcast room state");
+        _logger.LogInformation($"Current room users: {string.Join(", ", _room.Users.Select(u => u.Username))}");
+
         var response = new RoomStreamResponse
         {
             RoomState = new RoomStateNotification
@@ -215,6 +231,7 @@ public class GameServer : GameService.GameServiceBase
 
         foreach (var user in _room.Users)
         {
+            _logger.LogInformation($"Adding user to room state: {user.Username} (Role: {user.Role}, IsHost: {user.IsHost}, IsReady: {user.IsReady})");
             response.RoomState.Users.Add(new RoomUser
             {
                 Username = user.Username,
@@ -225,20 +242,29 @@ public class GameServer : GameService.GameServiceBase
             });
         }
 
+        _logger.LogInformation($"_clients.Count = {_clients.Count}");
+        _logger.LogInformation($"Room state prepared with {response.RoomState.Users.Count} users");
         await BroadcastToAll(response);
+        _logger.LogInformation("Room state broadcast complete");
     }
 
     private async Task BroadcastToAll(RoomStreamResponse response)
     {
+        _logger.LogInformation($"Broadcasting to {_clients.Count} clients");
         foreach (var client in _clients.Values)
         {
             try
             {
                 await client.WriteAsync(response);
+                _logger.LogInformation("Successfully wrote to client");
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error broadcasting to client: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError($"Inner exception: {ex.InnerException.Message}");
+                }
             }
         }
     }

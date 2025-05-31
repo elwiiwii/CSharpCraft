@@ -7,7 +7,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.Competitive;
 
-public class ProfileScene(IScene prevScene) : IScene
+public class ProfileScene(IScene prevScene, string username) : IScene
 {
     public string SceneName { get => "profile"; }
     public double Fps { get => 60.0; }
@@ -19,14 +19,14 @@ public class ProfileScene(IScene prevScene) : IScene
     private float cursorY;
     private MouseState prevState;
 
-    private GetUserByUsernameResponse user;
+    private GetUserResponse user;
 
     public async void Init(Pico8Functions pico8)
     {
         p8 = pico8;
         back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = prevScene };
 
-        user = await AccountHandler.GetUserByUsername(AccountHandler._username);
+        user = await AccountHandler.GetUserByUsername(username);
         curIcon = null;
         prevState = Mouse.GetState();
         cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);

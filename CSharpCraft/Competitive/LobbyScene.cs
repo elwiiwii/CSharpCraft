@@ -1,12 +1,14 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
-using RaceServer;
+﻿using System.Data;
+using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using RaceServer;
+using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.RaceMode;
 
-public class LobbyScene() : IScene, IDisposable
+public class LobbyScene(string joinRole) : IScene, IDisposable
 {
 #nullable enable
     private Menu roomMenu = new();
@@ -22,19 +24,95 @@ public class LobbyScene() : IScene, IDisposable
     public double Fps { get => 60.0; }
     private Pico8Functions p8;
 
-    public void Init(Pico8Functions pico8)
-    {
-        p8 = pico8;
+    private bool isInitializing;
+    private bool isInitialized;
 
-        roomName = "????";
-        roomPassword = "????";
-        roomMenu = new Menu { Name = $"room name-{roomName}", Items = null, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };
-        actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41, Active = true };
-        rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41, Active = false };
+    public async void Init(Pico8Functions pico8)
+    {
+        if (isInitializing) return;
+        isInitializing = true;
+
+        try
+        {
+            p8 = pico8;
+
+            await AccountHandler.ConnectToServer();
+            if (!AccountHandler._isLoggedIn)
+            {
+                p8.LoadCart(new LoginScene(this));
+                return;
+            }
+
+            // Connect to room and wait for initial room state
+            var connected = await RoomHandler.ConnectToRoom(AccountHandler._myself.Username, joinRole);
+            if (!connected)
+            {
+                Console.WriteLine("Failed to connect to room");
+                p8.LoadCart(new LoginScene(this));
+                return;
+            }
+
+            Console.WriteLine("Waiting for initial room state...");
+            // Wait for initial room state
+            int retries = 0;
+            while (RoomHandler._playerDictionary.Count == 0 && retries < 50) // Increased retries and delay
+            {
+                Console.WriteLine($"Waiting for room state... (attempt {retries + 1}/50)");
+                await Task.Delay(200); // Increased delay
+                retries++;
+            }
+
+            if (RoomHandler._playerDictionary.Count == 0)
+            {
+                Console.WriteLine("Failed to receive initial room state");
+                if (RoomHandler._myself != null)
+                {
+                    Console.WriteLine($"Current user state - Username: {RoomHandler._myself.Username}, Role: {RoomHandler._myself.Role}, IsHost: {RoomHandler._myself.IsHost}, IsReady: {RoomHandler._myself.IsReady}");
+                }
+                p8.LoadCart(new LoginScene(this));
+                return;
+            }
+
+            Console.WriteLine($"Received room state with {RoomHandler._playerDictionary.Count} players");
+            foreach (var player in RoomHandler._playerDictionary)
+            {
+                Console.WriteLine($"Player {player.Key}: {player.Value.Username} (Role: {player.Value.Role}, IsHost: {player.Value.IsHost}, IsReady: {player.Value.IsReady})");
+            }
+
+            roomName = "????";
+            roomPassword = "????";
+            roomMenu = new Menu { Name = $"room name-{roomName}", Items = null, Xpos = 20, Ypos = 5, Width = 88, Height = 74 };
+            actionsMenu = new Menu { Name = "actions", Items = actionsItems, Xpos = 5, Ypos = 82, Width = 53, Height = 41, Active = true };
+            rulesMenu = new Menu { Name = "rules", Items = rulesItems, Xpos = 62, Ypos = 82, Width = 61, Height = 41, Active = false };
+
+            isInitialized = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
+            p8.LoadCart(new LoginScene(this));
+        }
+        finally
+        {
+            isInitializing = false;
+        }
     }
 
     public async void Update()
     {
+        if (!isInitialized || isInitializing) return;
+
+        // If we're no longer in a room, return to the login scene
+        if (RoomHandler._myself == null)
+        {
+            p8.LoadCart(new PrivateScene(new CompetitiveScene()));
+            return;
+        }
+
         bool allReady = true;
         foreach (KeyValuePair<int, RoomUser> player in RoomHandler._playerDictionary)
         {
@@ -49,7 +127,7 @@ public class LobbyScene() : IScene, IDisposable
         actionsItems.Add(new Item { Name = "change host", Active = RoomHandler._myself.IsHost, Method = RoomHandler.ChangeHost });
         actionsItems.Add(new Item { Name = "seeding", Active = RoomHandler._myself.IsHost, Method = RoomHandler.Seeding });
         actionsItems.Add(new Item { Name = "settings", Active = true, Method = RoomHandler.Settings });
-        actionsItems.Add(new Item { Name = "password", Active = true, Method = RoomHandler.Password });
+        actionsItems.Add(new Item { Name = "password", Active = RoomHandler._myself.IsHost, Method = RoomHandler.Password });
 
         rulesItems.Clear();
         rulesItems.Add(new Item { Name = "best of:5", Active = RoomHandler._myself.IsHost });
@@ -202,6 +280,8 @@ public class LobbyScene() : IScene, IDisposable
     {
         p8.Cls();
 
+        if (!isInitialized || isInitializing) return;
+
         Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
 
@@ -272,7 +352,7 @@ f15333335155515333333b1f351533333515515315556666666666666666ddd1666dddddddddd666
 f15333351533351533333b1f33533533351535151555566666666666666dddd1666dddddddddd66641dddddddddddddddd144444dddddd1111ddddddf16ddddd
 1533333353333353333333b13333515bb1533515f155566666666666666ddd1f6666ddd11ddd666641ddddddddddddddddd11444ddddd144441dddddf1dddddd
 1533333333333333335333b1333335b115333353f155566666666666666ddd1f6666dd1001dd666641ddddddddddddddddddd114ddddd14ff41dddddf1dd5555
-f15335333333333335153b1f333333b115533333f155566666666666666ddd1f666655100155666641dddddddddddddddddddd14ddddd144441dddddf1d55555
+f15353333333333335153b1f333333b115533333f155566666666666666ddd1f666655100155666641dddddddddddddddddddd14ddddd144441dddddf1d55555
 f1535153333333333351b1ff33333515511535331555566666666d66666dddd1666655111155666641dddddddddddddddddddd14dddd14444441ddddf1551111
 ff15153333333333333b1fff35335153355331531555666665d666666666ddd16666555555556666441dddddddddddddddddd14fdddd14444441ddddf1511111
 fff1533333333533333b1fff515535333333551515556666666666666666ddd16666655555566666f41dddddddddddddddddd14fddd1444114441dddf1111000

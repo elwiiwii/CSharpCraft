@@ -23,7 +23,8 @@ service AccountService {
   rpc Get2FAStatus (Get2FAStatusRequest) returns (Get2FAStatusResponse);
   rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
   rpc UpdateProfileCustomization(UpdateProfileCustomizationRequest) returns (UpdateProfileCustomizationResponse);
-  rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse);
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserResponse);
+  rpc GetUserById(GetUserByIdRequest) returns (GetUserResponse);
 }
 
 message CheckEmailExistsRequest {
@@ -220,7 +221,11 @@ message GetUserByUsernameRequest {
   string username = 1;
 }
 
-message GetUserByUsernameResponse {
+message GetUserByIdRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
   bool success = 1;
   string message = 2;
   string user_id = 3;

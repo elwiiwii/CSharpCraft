@@ -5,6 +5,7 @@ using Google.Cloud.Firestore;
 using Google.Apis.Auth.OAuth2;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using RaceServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +75,7 @@ builder.Services.AddSingleton<FirebaseAuth>(provider => FirebaseAuth.DefaultInst
 builder.Services.AddSingleton<FirestoreDb>(provider => firestoreDb);
 builder.Services.AddSingleton<TwoFactorService>();
 builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
+builder.Services.AddSingleton<Room>(provider => new Room("TestRoom", provider.GetRequiredService<ILogger<Room>>()));
 
 // Configure Email Service
 builder.Services.AddSingleton<EmailService>(sp =>
@@ -101,6 +103,7 @@ builder.Services.AddSingleton<TwoFactorService>(sp =>
 var app = builder.Build();
 
 app.MapGrpcService<AccountServiceImpl>();
+app.MapGrpcService<GameServer>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 app.Run();

@@ -50,7 +50,6 @@ public class JoinRoomScene() : IScene, IDisposable
                 p8.LoadCart(new LoginScene(this));
                 return;
             }
-            p8 = pico8;
 
             role = new();
             role.Value = "Player";
@@ -92,15 +91,14 @@ public class JoinRoomScene() : IScene, IDisposable
             {
                 if (joinAs.IsHovered)
                 {
-                    if (string.IsNullOrEmpty(AccountHandler._username))
+                    if (string.IsNullOrEmpty(AccountHandler._myself.Username))
                     {
                         prompt = "Please log in first";
                         return;
                     }
 
                     joinedRoom = true;
-                    await RoomHandler.ConnectToRoom(AccountHandler._username, role.Value);
-                    p8.LoadCart(new LobbyScene());
+                    p8.LoadCart(new LobbyScene(role.Value));
                 }
                 else if (roleBtn.IsHovered)
                 {
