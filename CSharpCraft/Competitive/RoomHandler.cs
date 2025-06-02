@@ -30,10 +30,10 @@ public static class RoomHandler
     {
         try
         {
-            JoinRoomResponse response = _service.JoinRoom(new JoinRoomRequest { Name = name, Role = role });
-            _myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host, Ready = response.Ready };
             _roomStream = _service.RoomStream(new RoomStreamRequest { Name = name, Role = role });
             _ = Task.Run(ReadRoomStream, _cancellationTokenSource.Token);
+            JoinRoomResponse response = _service.JoinRoom(new JoinRoomRequest { Name = name, Role = role });
+            _myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host, Ready = response.Ready };
             return true;
         }
         catch (RpcException ex)
@@ -43,7 +43,7 @@ public static class RoomHandler
         }
     }
 
-    public static async Task ReadRoomStream()
+    private static async Task ReadRoomStream()
     {
         await foreach (RoomStreamResponse response in _roomStream.ResponseStream.ReadAllAsync(_cancellationTokenSource.Token))
         {

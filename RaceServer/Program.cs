@@ -75,7 +75,7 @@ builder.Services.AddSingleton<FirebaseAuth>(provider => FirebaseAuth.DefaultInst
 builder.Services.AddSingleton<FirestoreDb>(provider => firestoreDb);
 builder.Services.AddSingleton<TwoFactorService>();
 builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
-builder.Services.AddSingleton<Room>(provider => new Room("TestRoom"));
+builder.Services.AddSingleton<GameServer>();
 
 // Configure Email Service
 builder.Services.AddSingleton<EmailService>(sp =>
