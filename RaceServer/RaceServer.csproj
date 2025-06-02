@@ -9,7 +9,7 @@
   <ItemGroup>
   	<PackageReference Include="Google.Cloud.Firestore" Version="3.10.0" />
   	<PackageReference Include="FirebaseAdmin" Version="3.2.0" />
-  	<PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
+  	<PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
   	<PackageReference Include="MailKit" Version="4.12.1" />
   	<PackageReference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" Version="9.0.5" />
   	<PackageReference Include="Otp.NET" Version="1.4.0" />
@@ -21,10 +21,6 @@
   <ItemGroup>
 	<Protobuf Include="Protos\account.proto" GrpcServices="Server" />
     <Protobuf Include="Protos\gameservice.proto" GrpcServices="Server" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
   </ItemGroup>
 
 </Project>

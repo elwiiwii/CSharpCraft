@@ -23,6 +23,7 @@ public static class RoomHandler
     {
         _channel = GrpcChannel.ForAddress("https://localhost:5072");
         _service = new GameService.GameServiceClient(_channel);
+        _cancellationTokenSource = new CancellationTokenSource();
     }
 
     public static async Task<bool> JoinRoom(string name, string role)
@@ -30,7 +31,9 @@ public static class RoomHandler
         try
         {
             JoinRoomResponse response = _service.JoinRoom(new JoinRoomRequest { Name = name, Role = role });
-            _myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host };
+            _myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host, Ready = response.Ready };
+            _roomStream = _service.RoomStream(new RoomStreamRequest { Name = name, Role = role });
+            _ = Task.Run(ReadRoomStream, _cancellationTokenSource.Token);
             return true;
         }
         catch (RpcException ex)
@@ -114,28 +117,25 @@ public static class RoomHandler
         }
     }
 
-    private static void HandleJoinRoomNotification(JoinRoomNotification notification)
+    private static void UpdatePlayerDictionary(IEnumerable<RoomUser> users)
     {
         _playerDictionary.Clear();
         int dummyIndex = 1;
-        foreach (RoomUser player in notification.Users)
+        foreach (RoomUser player in users)
         {
-            //Console.WriteLine(player);
             _playerDictionary.TryAdd(dummyIndex, player);
             dummyIndex++;
         }
     }
 
+    private static void HandleJoinRoomNotification(JoinRoomNotification notification)
+    {
+        UpdatePlayerDictionary(notification.Users);
+    }
+
     private static void HandlePlayerReadyNotification(PlayerReadyNotification notification)
     {
-        _playerDictionary.Clear();
-        int dummyIndex = 1;
-        foreach (RoomUser player in notification.Users)
-        {
-            //Console.WriteLine(player);
-            _playerDictionary.TryAdd(dummyIndex, player);
-            dummyIndex++;
-        }
+        UpdatePlayerDictionary(notification.Users);
     }
 
     public static async Task Password()
@@ -175,6 +175,13 @@ public static class RoomHandler
 
     public static async Task PlayerReady()
     {
+        if (_myself == null)
+        {
+            Console.WriteLine("_myself is null when trying to call PlayerReady");
+            return;
+        }
+        Console.WriteLine($"Calling PlayerReady for {_myself.Name}, current ready state: {_myself.Ready}");
         _myself.Ready = _service.PlayerReady(new PlayerReadyRequest { Name = _myself.Name }).Ready;
+        Console.WriteLine($"PlayerReady response received, new ready state: {_myself.Ready}");
     }
 }

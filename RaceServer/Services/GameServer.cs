@@ -8,104 +8,95 @@ using Microsoft.Extensions.Logging;
 
 namespace RaceServer.Services;
 
-public class GameServer : GameService.GameServiceBase
+public class GameServer(ILogger<GameServer> logger, Room room) : GameService.GameServiceBase
 {
-    private readonly List<IServerStreamWriter<RoomStreamResponse>> clients = new();
-
-    private readonly Room room = new("TestRoom");
-    private readonly ILogger<GameServer> logger;
-
-    public GameServer(ILogger<GameServer> logger)
-    {
-        this.logger = logger;
-    }
+    private readonly List<IServerStreamWriter<RoomStreamResponse>> clients = [];
+    private readonly Room room = room;
+    private readonly ILogger<GameServer> logger = logger;
 
     public override async Task RoomStream(RoomStreamRequest request, IServerStreamWriter<RoomStreamResponse> responseStream, ServerCallContext context)
     {
-        //todo add as player or spectator depending on what's in the request
-        //todo modify return message depending on whether the user is a player or a spectator
-
-        clients.Add(responseStream);
-
-        User newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0 ? true : false, Ready = request.Role == "Player" ? false : true };
-        room.AddPlayer(newUser);
-
-        RoomStreamResponse notification = new()
+        logger.LogInformation($"User {request.Name} joining room stream");
+        logger.LogInformation($"Current users in room before adding: {string.Join(", ", room.Users.Select(u => u.Name))}");
+        
+        try
         {
-            JoinRoomNotification = new JoinRoomNotification()
-        };
-        foreach (User user in room.Users)
-        {
-            RoomUser roomUser = new()
+            clients.Add(responseStream);
+
+            User newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0, Ready = request.Role != "Player" };
+            room.AddPlayer(newUser);
+            logger.LogInformation($"Added user {request.Name} to room. Total users: {room.Users.Count}");
+            logger.LogInformation($"Current users in room after adding: {string.Join(", ", room.Users.Select(u => u.Name))}");
+
+            RoomStreamResponse notification = new()
             {
-                Name = user.Name,
-                Role = user.Role,
-                Host = user.Host,
-                Ready = user.Ready
+                JoinRoomNotification = new JoinRoomNotification()
             };
-            notification.JoinRoomNotification.Users.Add(roomUser);
-        }
-
-        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
-        {
-            await client.WriteAsync(notification);
-        }
-
-        // Keep the stream open
-        while (!context.CancellationToken.IsCancellationRequested)
-        {
-            await Task.Delay(1000);
-        }
-
-        //todo remove player or spectator depending on request.Type == Player or Spectator
-        room.RemovePlayer(request.Name);
-
-        // Remove the client when the stream is closed
-        clients.Remove(responseStream);
-
-        // notify the player has left the room
-
-        notification = new RoomStreamResponse
-        {
-            JoinRoomNotification = new JoinRoomNotification()
-        };
-        foreach (User user in room.Users)
-        {
-            RoomUser roomUser = new()
+            foreach (User user in room.Users)
             {
-                Name = user.Name,
-                Role = user.Role,
-                Host = user.Host,
-                Ready = user.Ready
-            };
-            notification.JoinRoomNotification.Users.Add(roomUser);
+                RoomUser roomUser = new()
+                {
+                    Name = user.Name,
+                    Role = user.Role,
+                    Host = user.Host,
+                    Ready = user.Ready
+                };
+                notification.JoinRoomNotification.Users.Add(roomUser);
+            }
+
+            foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+            {
+                await client.WriteAsync(notification);
+            }
+
+            // Keep the stream open
+            while (!context.CancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000);
+            }
         }
-
-        //List<string> userNames = new List<string>();
-        //foreach (User user in room.Users)
-        //{
-        //    userNames.Add(user.Name);
-        //}
-        //
-        //joinMessage = new RoomStreamResponse
-        //{
-        //    Message = $"{request.Name} has left the room.",
-        //};
-        //users = new List<RoomUser>();
-        //foreach (User user in room.Users)
-        //{
-        //    RoomUser roomUser = new()
-        //    {
-        //        Name = user.Name,
-        //        Role = user.Role,
-        //        Host = user.Host
-        //    };
-        //    joinMessage.Users.Add(roomUser);
-        //}
-
-        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+        catch (Exception ex)
         {
-            await client.WriteAsync(notification);
+            logger.LogError(ex, $"Error in RoomStream for user {request.Name}");
+            throw;
+        }
+        finally
+        {
+            logger.LogInformation($"User {request.Name} leaving room stream");
+            logger.LogInformation($"Current users in room before removing: {string.Join(", ", room.Users.Select(u => u.Name))}");
+            room.RemovePlayer(request.Name);
+            clients.Remove(responseStream);
+            logger.LogInformation($"Removed user {request.Name} from room. Total users: {room.Users.Count}");
+            logger.LogInformation($"Current users in room after removing: {string.Join(", ", room.Users.Select(u => u.Name))}");
+
+            // Notify remaining clients
+            var notification = new RoomStreamResponse
+            {
+                JoinRoomNotification = new JoinRoomNotification()
+            };
+            foreach (User user in room.Users)
+            {
+                RoomUser roomUser = new()
+                {
+                    Name = user.Name,
+                    Role = user.Role,
+                    Host = user.Host,
+                    Ready = user.Ready
+                };
+                notification.JoinRoomNotification.Users.Add(roomUser);
+            }
+
+            foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+            {
+                try
+                {
+                    await client.WriteAsync(notification);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Error notifying clients about user {request.Name} leaving");
+                }
+            }
         }
     }
 
@@ -139,13 +130,18 @@ public class GameServer : GameService.GameServiceBase
         {
             Name = request.Name,
             Role = request.Role,
-            Host = room.Users.Count < 2 ? true : false, //todo this is jank
-            Ready = request.Role == "Player" ? false : true
+            Host = room.Users.Count < 2, //todo this is jank
+            Ready = request.Role != "Player"
         };
     }
 
     public override async Task<PlayerReadyResponse> PlayerReady(PlayerReadyRequest request, ServerCallContext context)
     {
+        if (string.IsNullOrEmpty(request.Name))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Name cannot be null or empty"));
+        }
+
         room.TogglePlayerReady(request.Name);
 
         RoomStreamResponse notification = new()
@@ -169,7 +165,12 @@ public class GameServer : GameService.GameServiceBase
             await client.WriteAsync(notification);
         }
 
-        User myself = room.users.FirstOrDefault(p => p.Name == request.Name);
+        User myself = room.Users.FirstOrDefault(p => p.Name == request.Name);
+        if (myself == null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, $"User {request.Name} not found in room"));
+        }
+
         return new PlayerReadyResponse
         {
             Ready = myself.Ready
@@ -179,8 +180,14 @@ public class GameServer : GameService.GameServiceBase
     public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
     {
         room.AssignSeedingTemp();
-        User h = room.users.FirstOrDefault(p => p.Seed == 1);
-        User l = room.users.FirstOrDefault(p => p.Seed == 2);
+        User h = room.Users.FirstOrDefault(p => p.Seed == 1);
+        User l = room.Users.FirstOrDefault(p => p.Seed == 2);
+        
+        if (h == null || l == null)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Could not find players with seeds 1 and 2"));
+        }
+        
         room.CurrentMatch = room.NewDuelMatch(h, l);
 
         RoomStreamResponse notification = new()
@@ -195,8 +202,8 @@ public class GameServer : GameService.GameServiceBase
 
         return new StartMatchResponse
         {
-
         };
     }
 
+}
 }
