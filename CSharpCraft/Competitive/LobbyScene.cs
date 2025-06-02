@@ -39,44 +39,17 @@ public class LobbyScene(string joinRole) : IScene, IDisposable
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.LoadCart(new LoginScene(this));
+                p8.LoadCart(new LoginScene(new CompetitiveScene()));
                 return;
             }
 
             // Connect to room and wait for initial room state
-            var connected = await RoomHandler.ConnectToRoom(AccountHandler._myself.Username, joinRole);
+            bool connected = await RoomHandler.JoinRoom(AccountHandler._myself.Username, joinRole);
             if (!connected)
             {
                 Console.WriteLine("Failed to connect to room");
-                p8.LoadCart(new LoginScene(this));
+                p8.LoadCart(new LoginScene(new CompetitiveScene()));
                 return;
-            }
-
-            Console.WriteLine("Waiting for initial room state...");
-            // Wait for initial room state
-            int retries = 0;
-            while (RoomHandler._playerDictionary.Count == 0 && retries < 50) // Increased retries and delay
-            {
-                Console.WriteLine($"Waiting for room state... (attempt {retries + 1}/50)");
-                await Task.Delay(200); // Increased delay
-                retries++;
-            }
-
-            if (RoomHandler._playerDictionary.Count == 0)
-            {
-                Console.WriteLine("Failed to receive initial room state");
-                if (RoomHandler._myself != null)
-                {
-                    Console.WriteLine($"Current user state - Username: {RoomHandler._myself.Username}, Role: {RoomHandler._myself.Role}, IsHost: {RoomHandler._myself.IsHost}, IsReady: {RoomHandler._myself.IsReady}");
-                }
-                p8.LoadCart(new LoginScene(this));
-                return;
-            }
-
-            Console.WriteLine($"Received room state with {RoomHandler._playerDictionary.Count} players");
-            foreach (var player in RoomHandler._playerDictionary)
-            {
-                Console.WriteLine($"Player {player.Key}: {player.Value.Username} (Role: {player.Value.Role}, IsHost: {player.Value.IsHost}, IsReady: {player.Value.IsReady})");
             }
 
             roomName = "????";
@@ -106,7 +79,6 @@ public class LobbyScene(string joinRole) : IScene, IDisposable
     {
         if (!isInitialized || isInitializing) return;
 
-        // If we're no longer in a room, return to the login scene
         if (RoomHandler._myself == null)
         {
             p8.LoadCart(new PrivateScene(new CompetitiveScene()));
@@ -116,25 +88,25 @@ public class LobbyScene(string joinRole) : IScene, IDisposable
         bool allReady = true;
         foreach (KeyValuePair<int, RoomUser> player in RoomHandler._playerDictionary)
         {
-            if (!player.Value.IsReady) { allReady = false; }
+            if (!player.Value.Ready) { allReady = false; }
         }
 
         actionsItems.Clear();
-        actionsItems.Add(new Item { Name = RoomHandler._myself.IsReady ? "unready" : "ready", Active = RoomHandler._myself.Role == "Player", Method = RoomHandler.SetReady });
-        actionsItems.Add(new Item { Name = "start match", Active = RoomHandler._myself.IsHost && allReady, Method = RoomHandler.StartMatch });
-        actionsItems.Add(new Item { Name = "leave room", Active = true, Method = RoomHandler.DisconnectFromRoom });
+        actionsItems.Add(new Item { Name = RoomHandler._myself.Ready ? "unready" : "ready", Active = RoomHandler._myself.Role == "Player", Method = RoomHandler.PlayerReady });
+        actionsItems.Add(new Item { Name = "start match", Active = RoomHandler._myself.Host && allReady, Method = RoomHandler.StartMatch });
+        actionsItems.Add(new Item { Name = "leave room", Active = true, Method = RoomHandler.LeaveRoom });
         actionsItems.Add(new Item { Name = "change role", Active = true, Method = RoomHandler.ChangeRole });
-        actionsItems.Add(new Item { Name = "change host", Active = RoomHandler._myself.IsHost, Method = RoomHandler.ChangeHost });
-        actionsItems.Add(new Item { Name = "seeding", Active = RoomHandler._myself.IsHost, Method = RoomHandler.Seeding });
+        actionsItems.Add(new Item { Name = "change host", Active = RoomHandler._myself.Host, Method = RoomHandler.ChangeHost });
+        actionsItems.Add(new Item { Name = "seeding", Active = RoomHandler._myself.Host, Method = RoomHandler.Seeding });
         actionsItems.Add(new Item { Name = "settings", Active = true, Method = RoomHandler.Settings });
-        actionsItems.Add(new Item { Name = "password", Active = RoomHandler._myself.IsHost, Method = RoomHandler.Password });
+        actionsItems.Add(new Item { Name = "password", Active = RoomHandler._myself.Host, Method = RoomHandler.Password });
 
         rulesItems.Clear();
-        rulesItems.Add(new Item { Name = "best of:5", Active = RoomHandler._myself.IsHost });
-        rulesItems.Add(new Item { Name = "mode:any%", Active = RoomHandler._myself.IsHost });
-        rulesItems.Add(new Item { Name = "finishers:1", Active = RoomHandler._myself.IsHost });
-        rulesItems.Add(new Item { Name = "unbans:on", Active = RoomHandler._myself.IsHost });
-        rulesItems.Add(new Item { Name = "adv:0-0", Active = RoomHandler._myself.IsHost });
+        rulesItems.Add(new Item { Name = "best of:5", Active = RoomHandler._myself.Host });
+        rulesItems.Add(new Item { Name = "mode:any%", Active = RoomHandler._myself.Host });
+        rulesItems.Add(new Item { Name = "finishers:1", Active = RoomHandler._myself.Host });
+        rulesItems.Add(new Item { Name = "unbans:on", Active = RoomHandler._myself.Host });
+        rulesItems.Add(new Item { Name = "adv:0-0", Active = RoomHandler._myself.Host });
 
         if (p8.Btnp(0)) { actionsMenu.Active = true; rulesMenu.Active = false; }
         if (p8.Btnp(1)) { rulesMenu.Active = true; actionsMenu.Active = false; }
@@ -317,12 +289,12 @@ public class LobbyScene(string joinRole) : IScene, IDisposable
         foreach (RoomUser player in RoomHandler._playerDictionary.Values)
         {
             p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2(25 * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-            p8.Print(player.Username, 36, 26 + i * 7, 7);
-            if (player.Role == "Player" && player.IsReady)
+            p8.Print(player.Name, 36, 26 + i * 7, 7);
+            if (player.Role == "Player" && player.Ready)
             {
-                p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((37 + player.Username.Length * 4) * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((37 + player.Name.Length * 4) * p8.Cell.Width, (26 + i * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
             }
-            if (player.IsHost)
+            if (player.Host)
             {
                 p8.Print("[", 81, 26 + i * 7, 5);
                 p8.Print("host", 84, 26 + i * 7, 5);

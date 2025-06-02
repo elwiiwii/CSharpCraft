@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Reflection;
+using CSharpCraft.RaceMode;
 
 namespace CSharpCraft;
 
@@ -241,6 +242,8 @@ class FNAGame : Game
         }
 
         p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile);
+        AccountHandler.p8 = p8;
+        RoomHandler.p8 = p8;
     }
 
 

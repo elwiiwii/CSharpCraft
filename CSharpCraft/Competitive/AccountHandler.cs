@@ -36,6 +36,7 @@ public static class AccountHandler
     public static bool _isLoggedIn;
     private const int TOKEN_CHECK_INTERVAL_MS = 2000; // 2 seconds
     public static GetUserResponse? _myself;
+    public static Pico8Functions? p8;
 
     static AccountHandler()
     {
@@ -705,6 +706,7 @@ public static class AccountHandler
             _userId = null;
             _isLoggedIn = false;
             ClearTokens();
+            p8.LoadCart(new LoginScene(new TitleScreen(false)));
         }
     }
 

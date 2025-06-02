@@ -2,184 +2,104 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace RaceServer
+namespace RaceServer;
+
+public class Room(string name)
 {
-    public class Room
+    public string Name { get; } = name;
+    public readonly List<User> users = new();
+    public DuelMatch CurrentMatch = new();
+
+    public IReadOnlyList<User> Users => users;
+
+    public void AddPlayer(User user)
     {
-        private readonly ILogger<Room> _logger;
-        public string Name { get; init; }
-        private readonly List<RoomPlayer> _users = new();
-        private DuelMatch? _currentMatch;
+        users.Add(user);
+    }
 
-        public IReadOnlyList<RoomPlayer> Users => _users.AsReadOnly();
-        public DuelMatch? CurrentMatch => _currentMatch;
+    public void RemovePlayer(string name)
+    {
+        User user = users.FirstOrDefault(p => p.Name == name);
 
-        public Room(string name, ILogger<Room> logger)
+        if (user is not null)
         {
-            Name = name;
-            _logger = logger;
-            _logger.LogInformation($"Created new room: {name}");
-        }
-
-        public (bool success, string message) AddUser(RoomPlayer user)
-        {
-            _logger.LogInformation($"Attempting to add user {user.Username} to room {Name}");
-            _logger.LogInformation($"Current users in room: {string.Join(", ", _users.Select(u => u.Username))}");
-
-            if (_users.Any(u => u.Username == user.Username))
-            {
-                _logger.LogWarning($"User {user.Username} already in room {Name}");
-                return (false, "User already in room");
-            }
-
-            if (user.Role == "Player" && _users.Count(u => u.Role == "Player") >= 2)
-            {
-                _logger.LogWarning($"Room {Name} is full");
-                return (false, "Room is full");
-            }
-
-            user.IsHost = _users.Count == 0;
-            _users.Add(user);
-            _logger.LogInformation($"Added user {user.Username} to room {Name} as {(user.IsHost ? "host" : "player")}");
-            _logger.LogInformation($"Room {Name} now has {_users.Count} users: {string.Join(", ", _users.Select(u => u.Username))}");
-            return (true, "User added successfully");
-        }
-
-        public (bool success, string message) RemoveUser(string username)
-        {
-            _logger.LogInformation($"Attempting to remove user {username} from room {Name}");
-            _logger.LogInformation($"Current users in room: {string.Join(", ", _users.Select(u => u.Username))}");
-
-            var user = _users.FirstOrDefault(u => u.Username == username);
-            if (user is null)
-            {
-                _logger.LogWarning($"User {username} not found in room {Name}");
-                return (false, "User not found in room");
-            }
-
-            _users.Remove(user);
-            _logger.LogInformation($"Removed user {username} from room {Name}");
-
-            // If the host left, assign a new host
-            if (user.IsHost && _users.Any())
-            {
-                _users[0].IsHost = true;
-                _logger.LogInformation($"Assigned new host: {_users[0].Username}");
-            }
-
-            _logger.LogInformation($"Room {Name} now has {_users.Count} users: {string.Join(", ", _users.Select(u => u.Username))}");
-            return (true, "User removed successfully");
-        }
-
-        public (bool success, string message) SetUserReady(string username, bool ready)
-        {
-            var user = _users.FirstOrDefault(u => u.Username == username);
-            if (user is null)
-            {
-                return (false, "User not found in room");
-            }
-
-            if (user.Role != "Player")
-            {
-                return (false, "Only players can set ready status");
-            }
-
-            user.IsReady = ready;
-            return (true, "Ready status updated successfully");
-        }
-
-        public bool AllPlayersReady()
-        {
-            return _users.Where(u => u.Role == "Player").All(u => u.IsReady);
-        }
-
-        public (bool success, string message) StartMatch()
-        {
-            if (!AllPlayersReady())
-            {
-                return (false, "Not all players are ready");
-            }
-
-            var players = _users.Where(u => u.Role == "Player").ToList();
-            if (players.Count != 2)
-            {
-                return (false, "Need exactly 2 players to start a match");
-            }
-
-            // Assign seeds
-            players[0].Seed = 1;
-            players[1].Seed = 2;
-
-            _currentMatch = new DuelMatch
-            {
-                HigherSeed = players[0],
-                LowerSeed = players[1]
-            };
-
-            return (true, "Match started successfully");
-        }
-
-        public (bool success, string message) EndMatch(string winner)
-        {
-            if (_currentMatch is null)
-            {
-                return (false, "No active match");
-            }
-
-            _currentMatch = null;
-            foreach (var user in _users.Where(u => u.Role == "Player"))
-            {
-                user.IsReady = false;
-                user.Seed = null;
-            }
-
-            return (true, "Match ended successfully");
+            users.Remove(user);
         }
     }
 
-    public class RoomPlayer
+    public void TogglePlayerReady(string name)
     {
-        public string Username { get; set; }
-        public string Role { get; set; } = "Player";
-        public bool IsHost { get; set; }
-        public bool IsReady { get; set; }
-        public int? Seed { get; set; }
+        User player = users.FirstOrDefault(p => p.Name == name);
+        if (player is not null && player.Role == "Player")
+            player.Ready = !player.Ready;
     }
 
-    public class DuelMatch
+    public void AssignSeedingTemp()
     {
-        public RoomPlayer HigherSeed { get; set; }
-        public RoomPlayer LowerSeed { get; set; }
-        public SeedTypes SeedTypes { get; set; } = new();
-        public int CurrentGame { get; set; } = 1;
-        public int BestOf { get; set; } = 5;
-        public string Category { get; set; } = "any%";
-        public int Finishers { get; set; } = 1;
-        public bool Unbans { get; set; } = true;
-        public (int, int) Advantage { get; set; } = (0, 0);
+        int seed = 1;
+        foreach (User user in users)
+        {
+            if (user.Role == "Player")
+            {
+                user.Seed = seed;
+                seed++;
+            }
+        }
     }
 
-    public class GroupMatch
+    public bool AllPlayersReady()
     {
-        public string Category { get; set; } = "any%";
-        public int Finishers { get; set; } = 1;
+        return users.All(p => p.Ready);
     }
 
-    public class SeedTypes
+    public DuelMatch NewDuelMatch(User higherSeed, User lowerSeed)
     {
-        public string Type1Status { get; set; } = "UNBANNED";
-        public string Type2Status { get; set; } = "UNBANNED";
-        public string Type3Status { get; set; } = "UNBANNED";
-        public string Type4Status { get; set; } = "UNBANNED";
-        public string Type5Status { get; set; } = "UNBANNED";
-        public string Type6Status { get; set; } = "UNBANNED";
-        public string Type7Status { get; set; } = "UNBANNED";
+        return new DuelMatch { HigherSeed = higherSeed, LowerSeed = lowerSeed };
     }
+}
 
-    public class GameReport
-    {
-        public string Player1Status { get; set; }
-        public string Player2Status { get; set; }
-        public double FinishTime { get; set; }
-    }
+public class User
+{
+    public string Name { get; set; }
+    public string Role { get; set; } = "Player";
+    public bool Host { get; set; }
+    public bool Ready { get; set; } = true;
+    public int? Seed { get; set; } = null;
+}
+
+public class DuelMatch
+{
+    public User HigherSeed { get; set; }
+    public User LowerSeed { get; set; }
+    public SeedTypes SeedTypes { get; set; } = new();
+    public int CurrentGame { get; set; } = 1;
+    public int BestOf { get; set; } = 5;
+    public string Category { get; set; } = "any%";
+    public int Finishers { get; set; } = 1;
+    public bool Unbans { get; set; } = true;
+    public (int, int) Advantage { get; set; } = (0, 0);
+}
+
+public class GroupMatch
+{
+    public string Category { get; set; } = "any%";
+    public int Finishers { get; set; } = 1;
+}
+
+public class SeedTypes
+{
+    public string Type1Status { get; set; } = "UNBANNED";
+    public string Type2Status { get; set; } = "UNBANNED";
+    public string Type3Status { get; set; } = "UNBANNED";
+    public string Type4Status { get; set; } = "UNBANNED";
+    public string Type5Status { get; set; } = "UNBANNED";
+    public string Type6Status { get; set; } = "UNBANNED";
+    public string Type7Status { get; set; } = "UNBANNED";
+}
+
+public class GameReport
+{
+    public string Player1Status { get; set; }
+    public string Player2Status { get; set; }
+    public double FinishTime { get; set; }
 }

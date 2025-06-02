@@ -138,7 +138,7 @@ public class JoinRoomScene() : IScene, IDisposable
             int i = 0;
             foreach (RoomUser player in RoomHandler._playerDictionary.Values)
             {
-                p8.Print(player.Username, 34, 13 + i * 6, 8);
+                p8.Print(player.Name, 34, 13 + i * 6, 8);
                 i++;
             }
         }

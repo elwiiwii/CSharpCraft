@@ -5,66 +5,71 @@ option csharp_namespace = "RaceServer";
 package race;
 
 service GameService {
-	rpc ConnectToRoom(ConnectToRoomRequest) returns (ConnectToRoomResponse);
-	rpc DisconnectFromRoom(DisconnectFromRoomRequest) returns (DisconnectFromRoomResponse);
-	rpc RoomStream(RoomStreamRequest) returns (stream RoomStreamResponse);
-	rpc SetReady(SetReadyRequest) returns (SetReadyResponse);
-	rpc StartMatch(StartMatchRequest) returns (StartMatchResponse);
-	rpc UpdateSeeds(UpdateSeedsRequest) returns (UpdateSeedsResponse);
-	rpc EndGame(EndGameRequest) returns (EndGameResponse);
-	rpc EndMatch(EndMatchRequest) returns (EndMatchResponse);
+	rpc RoomStream (RoomStreamRequest) returns (stream RoomStreamResponse);
+	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
+	rpc PlayerReady (PlayerReadyRequest) returns (PlayerReadyResponse);
+	rpc StartMatch (StartMatchRequest) returns (StartMatchResponse);
+	rpc UpdateSeeds (UpdateSeedsRequest) returns (UpdateSeedsResponse);
+	rpc EndGame (EndGameRequest) returns (EndGameResponse);
+	rpc EndMatch (EndMatchRequest) returns (EndMatchResponse);
 }
 
-message ConnectToRoomRequest {
-	string username = 1;
-	string role = 2;  // "Player" or "Spectator"
+
+
+message RoomUser {
+	string name = 1;
+	string role = 2;
+	bool host = 3;
+	bool ready = 4;
+	int32 seed = 5;
 }
 
-message ConnectToRoomResponse {
-	bool success = 1;
-	string message = 2;
-	bool is_host = 3;
-	bool is_ready = 4;
-}
 
-message DisconnectFromRoomRequest {
-	string username = 1;
-}
-
-message DisconnectFromRoomResponse {
-	bool success = 1;
-	string message = 2;
-}
 
 message RoomStreamRequest {
-	string username = 1;
+	string name = 1;
+	string role = 2;
+	bool host = 3;
 }
 
 message RoomStreamResponse {
 	oneof message {
-		RoomStateNotification room_state = 1;
-		PlayerReadyNotification player_ready = 2;
-		StartMatchNotification start_match = 3;
-		UpdateSeedsNotification update_seeds = 4;
-		EndGameNotification end_game = 5;
-		EndMatchNotification end_match = 6;
+		JoinRoomNotification join_room_notification = 1;
+		PlayerReadyNotification player_ready_notification = 2;
+		StartMatchNotification start_match_notification = 3;
+		UpdateSeedsNotification update_seeds_notification = 4;
+		EndGameNotification end_game_notification = 5;
+		EndMatchNotification end_match_notification = 6;
 	}
 }
 
-message RoomStateNotification {
+
+
+message JoinRoomRequest {
+	string name = 1;
+	string role = 2;
+}
+
+message JoinRoomResponse {
+	string name = 1;
+	string role = 2;
+	bool host = 3;
+	bool ready = 4;
+}
+
+message JoinRoomNotification {
 	repeated RoomUser users = 1;
 	bool all_ready = 2;
 }
 
-message SetReadyRequest {
-	string username = 1;
-	bool ready = 2;
+
+
+message PlayerReadyRequest {
+	string name = 1;
 }
 
-message SetReadyResponse {
-	bool success = 1;
-	string message = 2;
-	bool ready = 3;
+message PlayerReadyResponse {
+	bool ready = 1;
 }
 
 message PlayerReadyNotification {
@@ -72,67 +77,58 @@ message PlayerReadyNotification {
 	bool all_ready = 2;
 }
 
+
+
 message StartMatchRequest {
-	string username = 1;
+	string name = 1;
 }
 
 message StartMatchResponse {
-	bool success = 1;
-	string message = 2;
+	
 }
 
 message StartMatchNotification {
 	bool match_started = 1;
-	repeated RoomUser users = 2;
 }
 
+
+
 message UpdateSeedsRequest {
-	string username = 1;
-	int32 seed = 2;
+	
 }
 
 message UpdateSeedsResponse {
-	bool success = 1;
-	string message = 2;
+	
 }
 
 message UpdateSeedsNotification {
-	repeated RoomUser users = 1;
+	
 }
 
+
+
 message EndGameRequest {
-	string username = 1;
-	double finish_time = 2;
+	
 }
 
 message EndGameResponse {
-	bool success = 1;
-	string message = 2;
+	
 }
 
 message EndGameNotification {
-	string username = 1;
-	double finish_time = 2;
+	
 }
 
+
+
 message EndMatchRequest {
-	string username = 1;
+	
 }
 
 message EndMatchResponse {
-	bool success = 1;
-	string message = 2;
+	
 }
 
 message EndMatchNotification {
-	string winner = 1;
-	double time = 2;
-}
-
-message RoomUser {
-	string username = 1;
-	string role = 2;
-	bool is_host = 3;
-	bool is_ready = 4;
-	int32 seed = 5;
+	
 }
