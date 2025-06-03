@@ -6,11 +6,10 @@ namespace CSharpCraft.Pcraft;
 public abstract class PcraftBase : IScene, IDisposable
 {
     public abstract string SceneName { get; }
-    public double Fps { get => 30.0; }
-
-    public Pico8Functions? p8;
+    public virtual double Fps { get => 30.0; }
 
 #nullable enable
+    protected Pico8Functions? p8;
 
     protected List<Entity>? anvilRecipe;
 

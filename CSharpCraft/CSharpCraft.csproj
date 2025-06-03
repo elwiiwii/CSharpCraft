@@ -55,6 +55,8 @@
 		<None Remove="Content\Graphics\Itchio.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\LobbyBackground.png" />
+		<None Remove="Content\Graphics\LobbyPlayerListContainer.png" />
+		<None Remove="Content\Graphics\LobbySettingsContainer.png" />
 		<None Remove="Content\Graphics\MCSRranked.png" />
 		<None Remove="Content\Graphics\ModeShadow.png" />
 		<None Remove="Content\Graphics\MusicNote.png" />
@@ -233,6 +235,12 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\Cursor.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\LobbyPlayerListContainer.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\LobbySettingsContainer.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\MCSRranked.png">
