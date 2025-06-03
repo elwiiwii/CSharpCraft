@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
-using CSharpCraft.RaceMode;
+using CSharpCraft.Competitive;
 
 namespace CSharpCraft.Competitive;
 

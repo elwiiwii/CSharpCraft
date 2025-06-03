@@ -1,6 +1,6 @@
 ﻿using CSharpCraft.Pcraft;
 
-namespace CSharpCraft.RaceMode;
+namespace CSharpCraft.Competitive;
 
 public class VersusGame : SpeedrunBase
 {

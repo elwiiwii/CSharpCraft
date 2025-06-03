@@ -1,4 +1,4 @@
-﻿namespace CSharpCraft.RaceMode;
+﻿namespace CSharpCraft.Competitive;
 
 public class SeedType
 {

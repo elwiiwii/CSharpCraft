@@ -9,13 +9,16 @@ using RaceServer;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace CSharpCraft.RaceMode;
+namespace CSharpCraft.Competitive;
 
 public class JoinRoomScene() : IScene, IDisposable
 {
-#nullable enable
+    public string SceneName { get => "0"; }
+    public double Fps { get => 60.0; }
+    private Pico8Functions p8;
+
     private static ConcurrentString role = new();
-    
+
     private static bool joinedRoom;
     private string prompt;
 
@@ -24,14 +27,9 @@ public class JoinRoomScene() : IScene, IDisposable
     private KeyboardState prevKeyboardState;
     private MouseState prevMouseState;
 
-    private Button joinAs = new((34, 59), "join as", true);
-    private Button roleBtn = new((75, 59), "  ", true);
+    private Button joinAs;
+    private Button roleBtn;
 
-#nullable disable
-
-    public string SceneName { get => "0"; }
-    public double Fps { get => 60.0; }
-    private Pico8Functions p8;
     private bool isInitializing;
     private bool isInitialized;
 
@@ -55,6 +53,9 @@ public class JoinRoomScene() : IScene, IDisposable
             role.Value = "Player";
             joinedRoom = false;
             prompt = "";
+            joinAs = new(p8, (34, 59), "join as", true);
+            roleBtn = new(p8, (75, 59), "  ", true);
+
             prevKeyboardState = Keyboard.GetState();
             prevMouseState = Mouse.GetState();
             cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
@@ -84,8 +85,8 @@ public class JoinRoomScene() : IScene, IDisposable
 
         if (!joinedRoom)
         {
-            joinAs.Update(p8, cursorX, cursorY);
-            roleBtn.Update(p8, cursorX, cursorY);
+            joinAs.Update(cursorX, cursorY);
+            roleBtn.Update(cursorX, cursorY);
 
             if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton != ButtonState.Pressed)
             {
@@ -123,8 +124,8 @@ public class JoinRoomScene() : IScene, IDisposable
 
         if (!joinedRoom)
         {
-            joinAs.Draw(p8);
-            roleBtn.Draw(p8);
+            joinAs.Draw();
+            roleBtn.Draw();
             p8.Batch.Draw(p8.TextureDictionary[$"{role.Value}Icon"], new Vector2(80.25f * p8.Cell.Width, (role.Value == "Player" ? 61 : 60.75f) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
             
             if (!string.IsNullOrEmpty(prompt))

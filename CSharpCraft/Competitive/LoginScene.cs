@@ -72,13 +72,13 @@ public class LoginScene : IScene
         emailBox = new TextBox(p8, (29, 41), (69, 69), "email:");
         passwordBox = new TextBox(p8, (29, 53), (69, 69), "password:");
         twoFactorBox = new TextBox(p8, (29, 65), (69, 69), "2fa code:");
-        verifyButton = new Button((46, 53), "verify", false);
-        submitCodeButton = new Button((79, 53), "->", false);
-        registerButton = new Button((42, 77), "register", false);
+        verifyButton = new Button(p8, (46, 53), "verify", false);
+        submitCodeButton = new Button(p8, (79, 53), "->", false);
+        registerButton = new Button(p8, (42, 77), "register", false);
 
         codeBox = new TextBox(p8, (29, 53), (43, 43), "");
         usernameBox = new TextBox(p8, (29, 53), (69, 69), "username:");
-        loginButton = new Button((48, 65), "login", false);
+        loginButton = new Button(p8, (48, 65), "login", false);
 
         loginFlow.AddRange([emailBox, passwordBox, twoFactorBox]);
         registerFlow.AddRange([emailBox, codeBox, usernameBox, passwordBox]);
@@ -596,17 +596,17 @@ public class LoginScene : IScene
             if (isEmailVerified)
             {
                 registerButton.IsActive = !string.IsNullOrEmpty(usernameBox.Text) && !string.IsNullOrEmpty(passwordBox.Text);
-                registerButton.Update(p8, cursorX, cursorY);
+                registerButton.Update(cursorX, cursorY);
             }
             else if (isVerifyingCode)
             {
                 submitCodeButton.IsActive = !string.IsNullOrEmpty(codeBox.Text);
-                submitCodeButton.Update(p8, cursorX, cursorY);
+                submitCodeButton.Update(cursorX, cursorY);
             }
             else if (IsValidEmail(emailBox.Text))
             {
                 verifyButton.IsActive = true;
-                verifyButton.Update(p8, cursorX, cursorY);
+                verifyButton.Update(cursorX, cursorY);
             }
             else
             {
@@ -616,22 +616,22 @@ public class LoginScene : IScene
         else
         {
             loginButton.IsActive = !string.IsNullOrEmpty(emailBox.Text) && !string.IsNullOrEmpty(passwordBox.Text);
-            loginButton.Update(p8, cursorX, cursorY);
+            loginButton.Update(cursorX, cursorY);
         }
 
         if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
         {
-            loginRegisterSelector.Update(p8, cursorX, cursorY);
+            loginRegisterSelector.Update(cursorX, cursorY);
             
             if (isRegistering)
             {
-                emailBox.ActiveUpdate(p8, cursorX, cursorY);
+                emailBox.ActiveUpdate(cursorX, cursorY);
                 
                 if (!isEmailVerified)
                 {
                     if (isVerifyingCode)
                     {
-                        codeBox.ActiveUpdate(p8, cursorX, cursorY);
+                        codeBox.ActiveUpdate(cursorX, cursorY);
                         if (!string.IsNullOrEmpty(codeBox.Text) && submitCodeButton.IsHovered)
                         {
                             _ = SubmitVerificationCode();
@@ -644,9 +644,9 @@ public class LoginScene : IScene
                 }
                 else
                 {
-                    codeBox.ActiveUpdate(p8, cursorX, cursorY);
-                    usernameBox.ActiveUpdate(p8, cursorX, cursorY);
-                    passwordBox.ActiveUpdate(p8, cursorX, cursorY);
+                    codeBox.ActiveUpdate(cursorX, cursorY);
+                    usernameBox.ActiveUpdate(cursorX, cursorY);
+                    passwordBox.ActiveUpdate(cursorX, cursorY);
                     if (!string.IsNullOrEmpty(usernameBox.Text) && !string.IsNullOrEmpty(passwordBox.Text) && registerButton.IsHovered)
                     {
                         _ = RegisterUser();
@@ -655,9 +655,9 @@ public class LoginScene : IScene
             }
             else
             {
-                emailBox.ActiveUpdate(p8, cursorX, cursorY);
-                passwordBox.ActiveUpdate(p8, cursorX, cursorY);
-                twoFactorBox.ActiveUpdate(p8, cursorX, cursorY);
+                emailBox.ActiveUpdate(cursorX, cursorY);
+                passwordBox.ActiveUpdate(cursorX, cursorY);
+                twoFactorBox.ActiveUpdate(cursorX, cursorY);
                 if (loginButton.IsHovered)
                 {
                     _ = LoginUser();
@@ -682,37 +682,37 @@ public class LoginScene : IScene
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
-        loginRegisterSelector.Draw(p8);
+        loginRegisterSelector.Draw();
         
         if (isRegistering)
         {
-            emailBox.Draw(p8);
+            emailBox.Draw();
             
             if (isEmailVerified)
             {
-                usernameBox.Draw(p8);
-                passwordBox.Draw(p8);
-                registerButton.Draw(p8);
+                usernameBox.Draw();
+                passwordBox.Draw();
+                registerButton.Draw();
             }
             else if (isVerifyingCode)
             {
-                codeBox.Draw(p8);
-                submitCodeButton.Draw(p8);
+                codeBox.Draw();
+                submitCodeButton.Draw();
             }
             else if (IsValidEmail(emailBox.Text))
             {
-                verifyButton.Draw(p8);
+                verifyButton.Draw();
             }
         }
         else
         {
-            emailBox.Draw(p8);
-            passwordBox.Draw(p8);
+            emailBox.Draw();
+            passwordBox.Draw();
             if (requiresTwoFactor)
             {
-                twoFactorBox.Draw(p8);
+                twoFactorBox.Draw();
             }
-            loginButton.Draw(p8);
+            loginButton.Draw();
         }
 
         if (!string.IsNullOrEmpty(statusMessage))

@@ -4,7 +4,7 @@ using Color = Microsoft.Xna.Framework.Color;
 using CSharpCraft.Pico8;
 using FixMath;
 
-namespace CSharpCraft.RaceMode;
+namespace CSharpCraft.Competitive;
 
 public class PickBanScene() : IScene, IDisposable
 {

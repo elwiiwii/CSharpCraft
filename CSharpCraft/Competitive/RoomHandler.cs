@@ -7,7 +7,7 @@ using Grpc.Net.Client;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
 
-namespace CSharpCraft.RaceMode;
+namespace CSharpCraft.Competitive;
 
 public static class RoomHandler
 {
