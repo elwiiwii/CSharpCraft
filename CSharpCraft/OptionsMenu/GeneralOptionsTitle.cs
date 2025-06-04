@@ -23,9 +23,9 @@ public class GeneralOptionsTitle : IScene, IDisposable
 
     public void Update()
     {
-        if (p8.Btnp(0)) { p8.LoadCart(new ControlsOptions()); return; }
-        if (p8.Btnp(2)) { p8.LoadCart(new BackOptions2()); return; }
-        if (p8.Btnp(3)) { p8.LoadCart(new GeneralOptions()); return; }
+        if (p8.Btnp(0)) { p8.ScheduleScene(() => new ControlsOptions()); return; }
+        if (p8.Btnp(2)) { p8.ScheduleScene(() => new BackOptions2()); return; }
+        if (p8.Btnp(3)) { p8.ScheduleScene(() => new GeneralOptions()); return; }
     }
 
     public void Draw()

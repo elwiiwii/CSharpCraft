@@ -41,7 +41,7 @@ public class ProfileScene(IScene prevScene, string username) : IScene
 
         curIcon = Shared.UpdateIcon(p8, [back], cursorX, cursorY);
 
-        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.LoadCart(curIcon.Scene); }
+        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.ScheduleScene(() => curIcon.Scene); }
         prevState = state;
     }
 

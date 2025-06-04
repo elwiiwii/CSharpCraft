@@ -97,7 +97,7 @@ public class LobbyScene(string joinRole) : PcraftBase
 
         if (RoomHandler._myself == null)
         {
-            p8.LoadCart(new PrivateScene(new CompetitiveScene()));
+            p8.ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
             return;
         }
 
@@ -113,21 +113,21 @@ public class LobbyScene(string joinRole) : PcraftBase
         }
 
         actionsItems.Clear();
-        actionsItems.Add(new Item { Name = RoomHandler._myself.Ready ? "unready" : "ready", Active = RoomHandler._myself.Role == "Player", Method = RoomHandler.PlayerReady });
-        actionsItems.Add(new Item { Name = "start match", Active = RoomHandler._myself.Host && allReady, Method = RoomHandler.StartMatch });
-        actionsItems.Add(new Item { Name = "leave room", Active = true, Method = RoomHandler.LeaveRoom });
-        actionsItems.Add(new Item { Name = "change role", Active = true, Method = RoomHandler.ChangeRole });
-        actionsItems.Add(new Item { Name = "change host", Active = RoomHandler._myself.Host, Method = RoomHandler.ChangeHost });
-        actionsItems.Add(new Item { Name = "seeding", Active = RoomHandler._myself.Host, Method = RoomHandler.Seeding });
-        actionsItems.Add(new Item { Name = "settings", Active = true, Method = RoomHandler.Settings });
-        actionsItems.Add(new Item { Name = "password", Active = RoomHandler._myself.Host, Method = RoomHandler.Password });
+        actionsItems.Add(new Item(RoomHandler._myself.Ready ? "unready" : "ready", RoomHandler._myself.Role == "Player", RoomHandler.PlayerReady));
+        actionsItems.Add(new Item("start match", RoomHandler._myself.Host && allReady, RoomHandler.StartMatch));
+        actionsItems.Add(new Item("leave room", true, RoomHandler.LeaveRoom));
+        actionsItems.Add(new Item("change role", true, RoomHandler.ChangeRole));
+        actionsItems.Add(new Item("change host", RoomHandler._myself.Host, RoomHandler.ChangeHost));
+        actionsItems.Add(new Item("seeding", RoomHandler._myself.Host, RoomHandler.Seeding));
+        actionsItems.Add(new Item("settings", true, RoomHandler.Settings));
+        actionsItems.Add(new Item("password", RoomHandler._myself.Host, RoomHandler.Password));
 
         rulesItems.Clear();
-        rulesItems.Add(new Item { Name = "best of:5", Active = RoomHandler._myself.Host });
-        rulesItems.Add(new Item { Name = "mode:any%", Active = RoomHandler._myself.Host });
-        rulesItems.Add(new Item { Name = "finishers:1", Active = RoomHandler._myself.Host });
-        rulesItems.Add(new Item { Name = "unbans:on", Active = RoomHandler._myself.Host });
-        rulesItems.Add(new Item { Name = "adv:0-0", Active = RoomHandler._myself.Host });
+        rulesItems.Add(new Item("best of:5", RoomHandler._myself.Host));
+        rulesItems.Add(new Item("mode:any%", RoomHandler._myself.Host));
+        rulesItems.Add(new Item("finishers:1", RoomHandler._myself.Host));
+        rulesItems.Add(new Item("unbans:on", RoomHandler._myself.Host));
+        rulesItems.Add(new Item("adv:0-0", RoomHandler._myself.Host));
 
         playerList.Update(mouseState, prevMouseState);
         actionsSettings.Update(mouseState, prevMouseState);
@@ -154,7 +154,7 @@ public class LobbyScene(string joinRole) : PcraftBase
         ///}
 
 
-        if (p8.Btnp(4)) { p8.LoadCart(new PickBanScene()); }
+        if (p8.Btnp(4)) { p8.ScheduleScene(() => new PickBanScene()); }
 
         //if (p8.Btnp(5) && RoomHandler.myself.Role == "Player")
         //{

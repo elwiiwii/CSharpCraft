@@ -81,7 +81,7 @@ public class PrivateScene(IScene prevScene) : IScene
 
         curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
 
-        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.LoadCart(curIcon.Scene); }
+        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.ScheduleScene(() => curIcon.Scene); }
         prevState = state;
     }
 

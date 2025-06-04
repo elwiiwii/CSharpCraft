@@ -23,9 +23,9 @@ public class ControlsOptions : IScene, IDisposable
 
     public void Update()
     {
-        if (p8.Btnp(1)) { p8.LoadCart(new GeneralOptionsTitle()); return; }
-        if (p8.Btnp(2)) { p8.LoadCart(new BackOptions1()); return; }
-        if (p8.Btnp(3)) { p8.LoadCart(new KeyboardOptions()); return; }
+        if (p8.Btnp(1)) { p8.ScheduleScene(() => new GeneralOptionsTitle()); return; }
+        if (p8.Btnp(2)) { p8.ScheduleScene(() => new BackOptions1()); return; }
+        if (p8.Btnp(3)) { p8.ScheduleScene(() => new KeyboardOptions()); return; }
     }
 
     public void Draw()

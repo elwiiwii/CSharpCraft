@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Data;
 using System.Runtime.CompilerServices;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
@@ -237,10 +238,10 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         {
             if (player.Name.Length + 10 > menuWidth) { menuWidth = Math.Min(player.Name.Length, 16) + 10; }
         }
-        lBound = 63 - menuWidth * 2 - 9;
-        rBound = 63 + menuWidth * 2 + 9;
+        lBound = 63 - menuWidth * 2 - 6;
+        rBound = 63 + menuWidth * 2 + 6;
 
-        if (x > lBound * p8.Cell.Width && x < rBound * p8.Cell.Width && y > StartY * p8.Cell.Height && y < (StartY + 78) * p8.Cell.Height)
+        if (x > lBound * p8.Cell.Width && x < rBound * p8.Cell.Width && y > StartY * p8.Cell.Height && y < (StartY + 74) * p8.Cell.Height)
         {
             if (mouseState.ScrollWheelValue > prevMouseState.ScrollWheelValue)
             {
@@ -265,8 +266,8 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         //    if (player.Name.Length + 10 > menuWidth) { menuWidth = Math.Min(player.Name.Length, 16) + 10; }
         //}
         //int x = 63 - menuWidth * 2 - 9;
-        p8.Batch.Draw(p8.TextureDictionary["LobbyPlayerListContainer"], new Vector2(x * p8.Cell.Width, StartY * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["LobbyPlayerListContainer"], new Vector2((64 - x) * p8.Cell.Width, StartY * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        p8.Batch.Draw(p8.TextureDictionary["LobbyPlayerListContainer"], new Vector2((lBound - 3) * p8.Cell.Width, StartY * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary["LobbyPlayerListContainer"], new Vector2((rBound - 61) * p8.Cell.Width, StartY * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
         p8.Rectfill(63 - RoomName.Length * 2 - 1, StartY + 1, 63 + RoomName.Length * 2 + 1, StartY + 7, 13);
         Shared.Printc(p8, RoomName, 64, StartY + 2, 7);
         Shared.Printc(p8, $"password-{RoomPassword}", 64, StartY + 12, 7);
@@ -276,23 +277,23 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         {
             if (i >= Sel && i < Sel + 7)
             {
-                p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2((x + 8) * p8.Cell.Width, (StartY + 21 + (i - Sel) * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-                p8.Print(player.Name, x + 19, StartY + 21 + (i - Sel) * 7, 7);
+                p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2((lBound + 5) * p8.Cell.Width, (StartY + (player.Role == "Player" ? 21 : 20.75f) + (i - Sel) * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                p8.Print(player.Name, lBound + 16, StartY + 21 + (i - Sel) * 7, 7);
                 if (player.Ready)
                 {
-                    p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((x + 20 + player.Name.Length * 4) * p8.Cell.Width, (StartY + 21 + (i - Sel) * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((lBound + 17 + player.Name.Length * 4) * p8.Cell.Width, (StartY + 21 + (i - Sel) * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 }
                 if (player.Host)
                 {
-                    p8.Print("[", 127 - x - 31, StartY + 21 + (i - Sel) * 7, 5);
-                    p8.Print("host", 127 - x - 28, StartY + 21 + (i - Sel) * 7, 5);
-                    p8.Print("]", 127 - x - 13, StartY + 21 + (i - Sel) * 7, 5);
+                    p8.Print("[", rBound - 29, StartY + 21 + (i - Sel) * 7, 5);
+                    p8.Print("host", rBound - 26, StartY + 21 + (i - Sel) * 7, 5);
+                    p8.Print("]", rBound - 11, StartY + 21 + (i - Sel) * 7, 5);
                 }
                 i++;
             }
         }
         i = Math.Max(7, RoomHandler._playerDictionary.Count - 7);
-        int scrollBarX = 127 - x - 8;
+        int scrollBarX = rBound - 6;
         int scrollBarY = StartY + 19;
         p8.Rectfill(scrollBarX, scrollBarY, scrollBarX + 2, scrollBarY + 51, 13);
         p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 51, 1);
@@ -301,11 +302,12 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
     }
 }
 
-public class Item
+public class Item(string name, bool active, Func<Task>? onLeftClick = null, Func<Task>? onRightClick = null)
 {
-    public string Name { get; set; }
-    public bool Active { get; set; }
-    public Func<Task> Method { get; set; }
+    public string Name { get; set; } = name;
+    public bool Active { get; set; } = active;
+    public Func<Task>? OnLeftClick { get; set; } = onLeftClick;
+    public Func<Task>? OnRightClick { get; set; } = onRightClick;
 }
 
 public class RoomSettings
@@ -313,7 +315,8 @@ public class RoomSettings
     public (int x, int y) StartPos { get; init; }
     public string Title { get; init; }
     public List<Item> Items { get; init; }
-    public int Sel { get; private set; }
+    private int scrollIndex;
+    private int? sel;
     private Pico8Functions p8;
     private int rBound;
 
@@ -342,12 +345,21 @@ public class RoomSettings
         {
             if (mouseState.ScrollWheelValue > prevMouseState.ScrollWheelValue)
             {
-                Sel = Math.Max(0, Sel - 1);
+                scrollIndex = Math.Max(0, scrollIndex - 1);
             }
             else if (mouseState.ScrollWheelValue < prevMouseState.ScrollWheelValue)
             {
-                Sel = Math.Min(Math.Max(0, Items.Count - 4), Sel + 1);
+                scrollIndex = Math.Min(Math.Max(0, Items.Count - 4), scrollIndex + 1);
             }
+        }
+
+        sel = null;
+        if (x > (StartPos.x + 2) * p8.Cell.Width && x < (rBound - 6) * p8.Cell.Width && y > (StartPos.y + 9) * p8.Cell.Height && y < (StartPos.y + 37) * p8.Cell.Height)
+        {
+            sel = (int)Math.Floor((y / p8.Cell.Height - StartPos.y - 9) / 7);
+            var item = Items[(int)sel + scrollIndex];
+            if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && item.Active && item.OnLeftClick is not null) { _ = Task.Run(item.OnLeftClick); }
+            else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released && item.Active && item.OnRightClick is not null) { _ = Task.Run(item.OnRightClick); }
         }
     }
 
@@ -365,9 +377,13 @@ public class RoomSettings
         int i = 0;
         foreach (var item in Items)
         {
-            if (i >= Sel && i < Sel + 4)
+            if (i >= scrollIndex && i < scrollIndex + 4)
             {
-                p8.Print(item.Name, StartPos.x + 4, StartPos.y + 10 + (i - Sel) * 7, item.Active ? 7 : 0);
+                if (sel is not null && sel == i - scrollIndex)
+                {
+                    p8.Rectfill(StartPos.x + 2, StartPos.y + 9 + (i - scrollIndex) * 7, rBound - 7, StartPos.y + 9 + (i - scrollIndex) * 7 + 6, 17);
+                }
+                p8.Print(item.Name, StartPos.x + 4, StartPos.y + 10 + (i - scrollIndex) * 7, item.Active ? 7 : 0);
             }
             i++;
         }
@@ -378,6 +394,6 @@ public class RoomSettings
         p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY), 1);
         p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 33, 1);
         double range = 29.0 / Math.Max(4, Items.Count);
-        p8.Rectfill(scrollBarX + 1, StartPos.y + 5 + Sel * range, scrollBarX + 1, StartPos.y + 5 + (Sel + 4) * range, 6);
+        p8.Rectfill(scrollBarX + 1, StartPos.y + 5 + scrollIndex * range, scrollBarX + 1, StartPos.y + 5 + (scrollIndex + 4) * range, 6);
     }
 }

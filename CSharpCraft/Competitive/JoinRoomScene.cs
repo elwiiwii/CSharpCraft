@@ -99,7 +99,7 @@ public class JoinRoomScene() : IScene, IDisposable
                     }
 
                     joinedRoom = true;
-                    p8.LoadCart(new LobbyScene(role.Value));
+                    p8.ScheduleScene(() => new LobbyScene(role.Value));
                 }
                 else if (roleBtn.IsHovered)
                 {

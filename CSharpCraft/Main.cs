@@ -137,13 +137,13 @@ class FNAGame : Game
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
         {
-            p8.LoadCart(new TitleScreen(false));
+            p8.ScheduleScene(() => new TitleScreen(false));
             popup = ("quit (ctrl-q)", 1.5);
         }
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
         {
-            p8.LoadCart(p8._cart);
+            p8.ScheduleScene(() => p8._cart);
         }
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
@@ -253,6 +253,7 @@ class FNAGame : Game
         {
             // Shutdown AccountHandler first
             AccountHandler.Shutdown();
+            RoomHandler.Shutdown();
         }
         catch (Exception ex)
         {
@@ -285,6 +286,7 @@ class FNAGame : Game
         {
             // Ensure AccountHandler is shut down when the game exits
             AccountHandler.Shutdown();
+            RoomHandler.Shutdown();
         }
         catch (Exception ex)
         {

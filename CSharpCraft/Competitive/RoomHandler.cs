@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
+using System.Text.Json;
 using System.Threading;
 using CSharpCraft.Pico8;
 using Grpc.Core;
@@ -24,6 +25,61 @@ public static class RoomHandler
         _channel = GrpcChannel.ForAddress("https://localhost:5072");
         _service = new GameService.GameServiceClient(_channel);
         _cancellationTokenSource = new CancellationTokenSource();
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+    }
+
+    private static void OnProcessExit(object? sender, EventArgs e)
+    {
+        try
+        {
+            LeaveRoom();
+            _channel?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during process exit cleanup: {ex.Message}");
+        }
+    }
+
+    private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            LeaveRoom();
+            _channel?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during unhandled exception cleanup: {ex.Message}");
+        }
+    }
+
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        try
+        {
+            LeaveRoom();
+            _channel?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during unobserved task exception cleanup: {ex.Message}");
+        }
+    }
+
+    public static void Shutdown()
+    {
+        try
+        {
+            LeaveRoom();
+            _channel?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during shutdown cleanup: {ex.Message}");
+        }
     }
 
     public static async Task<bool> JoinRoom(string name, string role)
@@ -31,7 +87,21 @@ public static class RoomHandler
         try
         {
             _roomStream = _service.RoomStream(new RoomStreamRequest { Name = name, Role = role });
-            _ = Task.Run(ReadRoomStream, _cancellationTokenSource.Token);
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    await ReadRoomStream();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when leaving room, no need to log
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in room stream: {ex.Message}");
+                }
+            }, _cancellationTokenSource.Token);
             JoinRoomResponse response = _service.JoinRoom(new JoinRoomRequest { Name = name, Role = role });
             _myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host, Ready = response.Ready };
             return true;
@@ -45,53 +115,49 @@ public static class RoomHandler
 
     private static async Task ReadRoomStream()
     {
-        await foreach (RoomStreamResponse response in _roomStream.ResponseStream.ReadAllAsync(_cancellationTokenSource.Token))
+        try
         {
-            switch (response.MessageCase)
+            await foreach (RoomStreamResponse response in _roomStream.ResponseStream.ReadAllAsync(_cancellationTokenSource.Token))
             {
-                case RoomStreamResponse.MessageOneofCase.JoinRoomNotification:
-                    HandleJoinRoomNotification(response.JoinRoomNotification);
-                    break;
-                case RoomStreamResponse.MessageOneofCase.PlayerReadyNotification:
-                    HandlePlayerReadyNotification(response.PlayerReadyNotification);
-                    break;
-                case RoomStreamResponse.MessageOneofCase.StartMatchNotification:
-                    HandleStartMatchNotification(response.StartMatchNotification);
-                    break;
-                case RoomStreamResponse.MessageOneofCase.UpdateSeedsNotification:
-                    HandleUpdateSeedsNotification(response.UpdateSeedsNotification);
-                    break;
-                case RoomStreamResponse.MessageOneofCase.None:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (response.MessageCase)
+                {
+                    case RoomStreamResponse.MessageOneofCase.JoinRoomNotification:
+                        HandleJoinRoomNotification(response.JoinRoomNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.LeaveRoomNotification:
+                        HandleLeaveRoomNotification(response.LeaveRoomNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.PlayerReadyNotification:
+                        HandlePlayerReadyNotification(response.PlayerReadyNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.StartMatchNotification:
+                        HandleStartMatchNotification(response.StartMatchNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.UpdateSeedsNotification:
+                        HandleUpdateSeedsNotification(response.UpdateSeedsNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.None:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-            // response.Message needs to be written to a ConcurrentString (see ConcurrentString.cs), which the draw method can draw from
-            //joinMessage.Value = response.Message; // roomJoiningMessage is displayed later in 'draw'
-            //Console.WriteLine(response.Message);
-
-            // this would be in 'draw'
-            //Console.WriteLine("Players in the room:");
-
-
-            //mainRace.myself = response.Myself;
-
-            // this would write to a ConcurrentDictionary of players, which the draw method can draw from
-            //mainRace.playerDictionary.Clear();
-            //int dummyIndex = 1;
-            //foreach (var player in response.Users)
-            //{
-            //    //Console.WriteLine(player);
-            //    mainRace.playerDictionary.TryAdd(dummyIndex, player);
-            //    dummyIndex++;
-            //}
-
-            //Console.WriteLine("Spectators in the room:");
-            //foreach (var spectator in response.Spectators)
-            //{
-            //    Console.WriteLine(spectator);
-            //}
         }
+        catch (OperationCanceledException)
+        {
+            // Expected when leaving room, no need to log
+            throw; // Re-throw to be handled by the caller
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in room stream: {ex.Message}");
+            throw; // Re-throw to be handled by the caller
+        }
+    }
+
+    private static void HandleLeaveRoomNotification(LeaveRoomNotification notification)
+    {
+        UpdatePlayerDictionary(notification.Users);
     }
 
     private static void HandleUpdateSeedsNotification(UpdateSeedsNotification updateSeedsNotification)
@@ -106,10 +172,10 @@ public static class RoomHandler
             switch (_myself.Role)
             {
                 case "Player":
-                    p8.LoadCart(new PickBanScene());
+                    p8.ScheduleScene(() => new PickBanScene());
                     break;
                 case "Spectator":
-                    p8.LoadCart(new PickBanScene()); //should be spectator version when i make the spectator scene
+                    p8.ScheduleScene(() => new PickBanScene()); //should be spectator version when i make the spectator scene
                     break;
                 default:
                     break;
@@ -165,7 +231,39 @@ public static class RoomHandler
 
     public static async Task LeaveRoom()
     {
-        throw new NotImplementedException();
+        try
+        {
+            // First cancel the room stream to prevent any new messages
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
+            _roomStream = null;
+
+            // Then try to leave the room if we have a valid _myself
+            if (_myself is null)
+            {
+                _service.LeaveRoom(new LeaveRoomRequest { Name = AccountHandler._myself.Username });
+            }
+            else
+            {
+                _service.LeaveRoom(new LeaveRoomRequest { Name = _myself.Name });
+            }
+        }
+        catch
+        {
+            Console.WriteLine("Error leaving room, _myself may be null or not initialized properly.");
+        }
+        finally
+        {
+            // Clear state first
+            _myself = null;
+            _playerDictionary.Clear();
+
+            // Schedule the scene change for the next frame to avoid texture disposal issues
+            if (p8 != null)
+            {
+                p8.ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
+            }
+        }
     }
 
     public static async Task StartMatch()

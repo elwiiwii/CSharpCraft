@@ -90,6 +90,7 @@ public class Pico8Functions : IDisposable
     private readonly CosDict cosDict = new();
     private readonly SinDict sinDict = new();
     Random random = new();
+    private Func<IScene>? scheduledSceneChange;
 
     public Pico8Functions(IScene cart, TitleScreen _titleScreen, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, GameWindow _window, OptionsFile _optionsFile)
     {
@@ -126,6 +127,11 @@ public class Pico8Functions : IDisposable
         curMenuItems = [];
 
         LoadCart(cart);
+    }
+
+    public void ScheduleScene(Func<IScene> sceneFactory)
+    {
+        scheduledSceneChange = sceneFactory;
     }
 
     public void LoadCart(IScene cart)
@@ -362,6 +368,12 @@ public class Pico8Functions : IDisposable
             PlaySound(true);
 
             _cart.Update();
+
+            if (scheduledSceneChange is not null)
+            {
+                LoadCart(scheduledSceneChange());
+                scheduledSceneChange = null;
+            }
         }
 
         buttons.Update(this);
@@ -1185,7 +1197,4 @@ public class Pico8Functions : IDisposable
             }
         }
     }
-
-
-
 }

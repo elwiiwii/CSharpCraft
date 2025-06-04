@@ -87,7 +87,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
         if (p8.Btnp(2)) { menuSelected -= 1; }
         if (p8.Btnp(3)) { menuSelected += 1; }
 
-        if (menuSelected < 0) { p8.LoadCart(new GeneralOptionsTitle()); return; }
+        if (menuSelected < 0) { p8.ScheduleScene(() => new GeneralOptionsTitle()); return; }
         menuSelected = GeneralFunctions.Loop(menuSelected, propertyList.Count);
     }
 

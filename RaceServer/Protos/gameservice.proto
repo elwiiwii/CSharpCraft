@@ -7,6 +7,7 @@ package race;
 service GameService {
 	rpc RoomStream (RoomStreamRequest) returns (stream RoomStreamResponse);
 	rpc JoinRoom (JoinRoomRequest) returns (JoinRoomResponse);
+	rpc LeaveRoom (LeaveRoomRequest) returns (LeaveRoomResponse);
 	rpc PlayerReady (PlayerReadyRequest) returns (PlayerReadyResponse);
 	rpc StartMatch (StartMatchRequest) returns (StartMatchResponse);
 	rpc UpdateSeeds (UpdateSeedsRequest) returns (UpdateSeedsResponse);
@@ -35,11 +36,12 @@ message RoomStreamRequest {
 message RoomStreamResponse {
 	oneof message {
 		JoinRoomNotification join_room_notification = 1;
-		PlayerReadyNotification player_ready_notification = 2;
-		StartMatchNotification start_match_notification = 3;
-		UpdateSeedsNotification update_seeds_notification = 4;
-		EndGameNotification end_game_notification = 5;
-		EndMatchNotification end_match_notification = 6;
+		LeaveRoomNotification leave_room_notification = 2;
+		PlayerReadyNotification player_ready_notification = 3;
+		StartMatchNotification start_match_notification = 4;
+		UpdateSeedsNotification update_seeds_notification = 5;
+		EndGameNotification end_game_notification = 6;
+		EndMatchNotification end_match_notification = 7;
 	}
 }
 
@@ -60,6 +62,21 @@ message JoinRoomResponse {
 message JoinRoomNotification {
 	repeated RoomUser users = 1;
 	bool all_ready = 2;
+}
+
+
+
+message LeaveRoomRequest {
+	string name = 1;
+}
+
+message LeaveRoomResponse {
+	bool success = 1;
+}
+
+message LeaveRoomNotification {
+	repeated RoomUser users = 2;
+	bool all_ready = 3;
 }
 
 

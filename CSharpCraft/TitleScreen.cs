@@ -36,6 +36,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
             try
             {
                 AccountHandler.Shutdown();
+                RoomHandler.Shutdown();
             }
             catch (Exception ex)
             {
@@ -51,7 +52,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
 
         if (frame >= 39 && ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5)))
         {
-            p8.LoadCart(p8.Scenes[menuSelected]);
+            p8.ScheduleScene(() => p8.Scenes[menuSelected]);
         }
 
         prevState = state;

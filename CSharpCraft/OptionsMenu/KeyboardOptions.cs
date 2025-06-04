@@ -35,8 +35,8 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
     {
         if (menuSelected.ver == -1)
         {
-            if (p8.Btnp(1)) { p8.LoadCart(new ControllerOptions()); return; }
-            if (p8.Btnp(2)) { p8.LoadCart(new ControlsOptions()); return; }
+            if (p8.Btnp(1)) { p8.ScheduleScene(() => new ControllerOptions()); return; }
+            if (p8.Btnp(2)) { p8.ScheduleScene(() => new ControlsOptions()); return; }
             if (p8.Btnp(3)) { menuSelected.ver += 1; }
             return;
         }

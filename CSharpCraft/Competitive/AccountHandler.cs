@@ -706,7 +706,7 @@ public static class AccountHandler
             _userId = null;
             _isLoggedIn = false;
             ClearTokens();
-            p8.LoadCart(new LoginScene(new TitleScreen(false)));
+            p8.ScheduleScene(() => new LoginScene(new TitleScreen(false)));
         }
     }
 

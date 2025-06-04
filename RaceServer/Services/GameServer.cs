@@ -135,6 +135,58 @@ public class GameServer : GameService.GameServiceBase
         };
     }
 
+    public override async Task<LeaveRoomResponse> LeaveRoom(LeaveRoomRequest request, ServerCallContext context)
+    {
+        try
+        {
+            // First notify all clients about the room change
+            RoomStreamResponse notification = new()
+            {
+                LeaveRoomNotification = new LeaveRoomNotification()
+            };
+            foreach (User user in room.Users)
+            {
+                RoomUser roomUser = new()
+                {
+                    Name = user.Name,
+                    Role = user.Role,
+                    Host = user.Host,
+                    Ready = user.Ready
+                };
+                notification.LeaveRoomNotification.Users.Add(roomUser);
+            }
+
+            // Send notifications to all clients except the one leaving
+            foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+            {
+                try
+                {
+                    await client.WriteAsync(notification);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to notify client about room change");
+                }
+            }
+
+            // Then remove the player
+            room.RemovePlayer(request.Name);
+
+            return new LeaveRoomResponse
+            {
+                Success = true
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in LeaveRoom for user {Name}", request.Name);
+            return new LeaveRoomResponse
+            {
+                Success = false
+            };
+        }
+    }
+
     public override async Task<PlayerReadyResponse> PlayerReady(PlayerReadyRequest request, ServerCallContext context)
     {
         room.TogglePlayerReady(request.Name);

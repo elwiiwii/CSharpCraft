@@ -319,7 +319,7 @@ public class LoginScene : IScene
                 }
                 else
                 {
-                    p8.LoadCart(prevScene);
+                    p8.ScheduleScene(() => prevScene);
                     statusMessage = response.Message;
                 }
             }
