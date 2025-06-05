@@ -10,6 +10,7 @@ public class GeneralOptionsTitle : IScene, IDisposable
 
     public string SceneName { get => "options"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
 
     GeneralOptions drawScene = new(-1);

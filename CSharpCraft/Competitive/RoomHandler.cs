@@ -241,7 +241,7 @@ public static class RoomHandler
             // Then try to leave the room if we have a valid _myself
             if (_myself is null)
             {
-                _service.LeaveRoom(new LeaveRoomRequest { Name = AccountHandler._myself.Username });
+                if (AccountHandler._myself is not null) _service.LeaveRoom(new LeaveRoomRequest { Name = AccountHandler._myself.Username });
             }
             else
             {
@@ -259,7 +259,7 @@ public static class RoomHandler
             _playerDictionary.Clear();
 
             // Schedule the scene change for the next frame to avoid texture disposal issues
-            if (p8 != null)
+            if (p8 is not null)
             {
                 p8.ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
             }
@@ -273,7 +273,7 @@ public static class RoomHandler
 
     public static async Task PlayerReady()
     {
-        if (_myself == null)
+        if (_myself is null)
         {
             Console.WriteLine("_myself is null when trying to call PlayerReady");
             return;

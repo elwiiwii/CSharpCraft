@@ -7,6 +7,7 @@ public abstract class PcraftBase : IScene, IDisposable
 {
     public abstract string SceneName { get; }
     public virtual double Fps { get => 30.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
 
 #nullable enable
     protected Pico8Functions? p8;

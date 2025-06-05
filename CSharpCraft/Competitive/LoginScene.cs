@@ -15,6 +15,7 @@ public class LoginScene : IScene
 {
     public string SceneName { get => "login"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
     private IScene prevScene;
     private float cursorX;

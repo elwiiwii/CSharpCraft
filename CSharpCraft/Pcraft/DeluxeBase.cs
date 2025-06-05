@@ -7,6 +7,7 @@ public abstract class DeluxeBase : IScene, IDisposable
 {
     public abstract string SceneName { get; }
     public double Fps { get => 30.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
 
     private static Pico8Functions? p8;
 

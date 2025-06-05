@@ -6,6 +6,7 @@ public class ExitScene : IScene, IDisposable
 {
     public string SceneName { get => "exit"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
 
     public void Init(Pico8Functions pico8)
     {

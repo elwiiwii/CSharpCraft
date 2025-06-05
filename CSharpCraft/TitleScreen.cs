@@ -11,6 +11,7 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
 {
     public string SceneName { get => "TitleScreen"; }
     public double Fps { get => 30.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
     private readonly string version = "1.1.3";
 

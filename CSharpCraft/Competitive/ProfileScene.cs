@@ -11,6 +11,7 @@ public class ProfileScene(IScene prevScene, string username) : IScene
 {
     public string SceneName { get => "profile"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
     private Icon back;
 

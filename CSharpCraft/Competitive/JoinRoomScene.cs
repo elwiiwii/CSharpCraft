@@ -15,6 +15,7 @@ public class JoinRoomScene() : IScene, IDisposable
 {
     public string SceneName { get => "0"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
 
     private static ConcurrentString role = new();
@@ -45,7 +46,7 @@ public class JoinRoomScene() : IScene, IDisposable
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.LoadCart(new LoginScene(this));
+                p8.ScheduleScene(() => new LoginScene(this));
                 return;
             }
 
@@ -66,7 +67,7 @@ public class JoinRoomScene() : IScene, IDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
-            p8.LoadCart(new LoginScene(this));
+            p8.ScheduleScene(() => new LoginScene(this));
         }
         finally
         {

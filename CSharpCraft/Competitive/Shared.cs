@@ -2,6 +2,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SixLabors.ImageSharp.Metadata;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.Competitive;
@@ -45,6 +46,11 @@ public static class Shared
     public static void Printc(Pico8Functions p8, string t, int x, int y, int c)
     {
         p8.Print(t, x - t.Length * 2, y, c);
+    }
+
+    public static void Printr(Pico8Functions p8, string t, int x, int y, int c)
+    {
+        p8.Print(t, x - t.Length * 4 + 1, y, c);
     }
 
     public static void Printcb(Pico8Functions p8, string t, int x, int y, int c1, int c2)

@@ -12,6 +12,7 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
 
     public string SceneName { get => "options"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
 
     private (int hor, int ver) menuSelected;

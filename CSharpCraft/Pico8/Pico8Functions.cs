@@ -19,6 +19,7 @@ public class Pico8Functions : IDisposable
     public Dictionary<string, SoundEffect> MusicDictionary { get; }
     public OptionsFile OptionsFile { get; set; }
     public Texture2D Pixel { get; }
+    public (int w, int h) Resolution { get; private set; } = (128, 128);
     public List<IScene> Scenes { get; }
     public Dictionary<string, SoundEffect> SoundEffectDictionary { get; }
     public Dictionary<string, Texture2D> TextureDictionary { get; }
@@ -134,7 +135,7 @@ public class Pico8Functions : IDisposable
         scheduledSceneChange = sceneFactory;
     }
 
-    public void LoadCart(IScene cart)
+    private void LoadCart(IScene cart)
     {
         if (_cart is not null)
         {
@@ -153,6 +154,8 @@ public class Pico8Functions : IDisposable
         buttons.Reset(this);
 
         SoundDispose();
+
+        UpdateViewport();
 
         void Continue()
         {
@@ -234,7 +237,11 @@ public class Pico8Functions : IDisposable
                         if (propertyName is null) { return; }
                         propertyName.SetValue(OptionsFile, !OptionsFile.Gen_Fullscreen);
                         OptionsFile.JsonWrite(OptionsFile);
-                        Graphics.ToggleFullScreen();
+                        Graphics.IsFullScreen = OptionsFile.Gen_Fullscreen;
+                        Graphics.PreferredBackBufferWidth = OptionsFile.Gen_Window_Width / 128 * Resolution.w;
+                        Graphics.PreferredBackBufferHeight = OptionsFile.Gen_Window_Height / 128 * Resolution.h;
+                        Graphics.ApplyChanges();
+                        UpdateViewport();
                     }
                 }
                 Menuitem(3, () => $"fullscreen:{(OptionsFile.Gen_Fullscreen ? "on" : "off")}", () => Fullscreen(), curMenuItems);
@@ -341,7 +348,7 @@ public class Pico8Functions : IDisposable
 
     public void Update()
     {
-        Cell = (GraphicsDevice.Viewport.Width / 128, GraphicsDevice.Viewport.Height / 128);
+        Cell = (GraphicsDevice.Viewport.Width / _cart.Resolution.w, GraphicsDevice.Viewport.Height / _cart.Resolution.h);
         if (!(_cart.SceneName == "TitleScreen") && Btnp(6))
         {
             isPaused = !isPaused;
@@ -1196,5 +1203,39 @@ public class Pico8Functions : IDisposable
                 }
             }
         }
+    }
+
+    public void UpdateViewport()
+    {
+        double windowWidth = Window.ClientBounds.Width;
+        double windowHeight = Window.ClientBounds.Height;
+
+        if (!Graphics.IsFullScreen)
+        {
+            windowWidth /= Resolution.w;
+            windowHeight /= Resolution.h;
+            windowWidth *= _cart.Resolution.w;
+            windowHeight *= _cart.Resolution.h;
+
+            Graphics.PreferredBackBufferWidth = (int)windowWidth;
+            Graphics.PreferredBackBufferHeight = (int)windowHeight;
+            Graphics.ApplyChanges();
+        }
+        Resolution = _cart.Resolution;
+
+        int scale = Math.Min((int)windowWidth / _cart.Resolution.w, (int)windowHeight / _cart.Resolution.h);
+        int width = _cart.Resolution.w * scale;
+        int height = _cart.Resolution.h * scale;
+
+        // Calculate the exact center of the client area
+        double centerX = windowWidth / 2.0;
+        double centerY = windowHeight / 2.0;
+
+        // Calculate the top left corner of the square so that its center aligns with the client area's center
+        int left = (int)Math.Round(centerX - width / 2.0);
+        int top = (int)Math.Round(centerY - height / 2.0);
+
+        // Set the viewport to the square area
+        GraphicsDevice.Viewport = new Viewport(left, top, width, height);
     }
 }

@@ -10,6 +10,7 @@ public class CompetitiveScene : IScene
 {
     public string SceneName { get => "competitive"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
     private Icon back;
     private Icon ranked;
@@ -43,7 +44,7 @@ public class CompetitiveScene : IScene
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.LoadCart(new LoginScene(this));
+                p8.ScheduleScene(() => new LoginScene(this));
                 return;
             }
 
@@ -70,7 +71,7 @@ public class CompetitiveScene : IScene
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
-            p8.LoadCart(new LoginScene(this));
+            p8.ScheduleScene(() => new LoginScene(this));
         }
         finally
         {

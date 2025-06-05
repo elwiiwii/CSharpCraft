@@ -11,6 +11,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
     public string SceneName { get => "options"; }
     public double Fps { get => 60.0; }
+    public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
 
     private int menuSelected;
@@ -47,7 +48,11 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
             {
                 curProperty.SetValue(p8.OptionsFile, !(bool)curProperty.GetValue(p8.OptionsFile));
                 OptionsFile.JsonWrite(p8.OptionsFile);
-                p8.Graphics.ToggleFullScreen();
+                p8.Graphics.IsFullScreen = p8.OptionsFile.Gen_Fullscreen;
+                p8.Graphics.PreferredBackBufferWidth = p8.OptionsFile.Gen_Window_Width / 128 * p8.Resolution.w;
+                p8.Graphics.PreferredBackBufferHeight = p8.OptionsFile.Gen_Window_Height / 128 * p8.Resolution.h;
+                p8.Graphics.ApplyChanges();
+                p8.UpdateViewport();
             }
 
             if (p8.Btnp(0))

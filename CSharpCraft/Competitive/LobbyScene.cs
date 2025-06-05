@@ -47,7 +47,7 @@ public class LobbyScene(string joinRole) : PcraftBase
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.LoadCart(new LoginScene(new CompetitiveScene()));
+                p8.ScheduleScene(() => new LoginScene(new CompetitiveScene()));
                 return;
             }
 
@@ -56,7 +56,7 @@ public class LobbyScene(string joinRole) : PcraftBase
             if (!connected)
             {
                 Console.WriteLine("Failed to connect to room");
-                p8.LoadCart(new LoginScene(new CompetitiveScene()));
+                p8.ScheduleScene(() => new LoginScene(new CompetitiveScene()));
                 return;
             }
 
@@ -79,11 +79,11 @@ public class LobbyScene(string joinRole) : PcraftBase
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
-            if (ex.InnerException != null)
+            if (ex.InnerException is not null)
             {
                 Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
             }
-            p8.LoadCart(new LoginScene(this));
+            p8.ScheduleScene(() => new LoginScene(this));
         }
         finally
         {
@@ -95,7 +95,7 @@ public class LobbyScene(string joinRole) : PcraftBase
     {
         if (!isInitialized || isInitializing) return;
 
-        if (RoomHandler._myself == null)
+        if (RoomHandler._myself is null)
         {
             p8.ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
             return;

@@ -42,6 +42,7 @@ class FNAGame : Game
     private KeyboardState prevState;
 
     private (string text, double frame) popup;
+    private (int w, int h) resolution = (128, 128);
 
 #nullable disable
 
@@ -82,8 +83,7 @@ class FNAGame : Game
 
         //optionsFile = OptionsFile.Initialize();
 
-        UpdateViewport();
-        
+        p8.UpdateViewport();
         
         scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
@@ -160,7 +160,11 @@ class FNAGame : Game
             PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Fullscreen");
             propertyName.SetValue(p8.OptionsFile, !p8.OptionsFile.Gen_Fullscreen);
             OptionsFile.JsonWrite(p8.OptionsFile);
-            graphics.ToggleFullScreen();
+            graphics.IsFullScreen = p8.OptionsFile.Gen_Fullscreen;
+            graphics.PreferredBackBufferWidth = p8.OptionsFile.Gen_Window_Width / 128 * p8.Resolution.w;
+            graphics.PreferredBackBufferHeight = p8.OptionsFile.Gen_Window_Height / 128 * p8.Resolution.h;
+            graphics.ApplyChanges();
+            p8.UpdateViewport();
             popup = ($"fullscreen {(p8.OptionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
         }
 
@@ -184,7 +188,7 @@ class FNAGame : Game
         p8.Draw();
 
         int clampFrame = Math.Abs((int)Math.Floor(popup.frame)) > 7 ? 7 : Math.Abs((int)Math.Floor(popup.frame));
-        if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, 128 - clampFrame, 127, 128 - clampFrame + 7); }
+        if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, p8.Resolution.h - clampFrame, p8.Resolution.w - 1, p8.Resolution.h - clampFrame + 7); }
 
         // Draw the grid
         /*for (int i = 0; i <= 128; i++)
@@ -296,30 +300,9 @@ class FNAGame : Game
         base.OnExiting(sender, args);
     }
 
-    private void UpdateViewport()
-    {
-        // Calculate the size of the largest square that fits in the client area
-        int maxSize = Math.Min(Window.ClientBounds.Width, Window.ClientBounds.Height);
-
-        // Round the size down to the nearest multiple of 128
-        int size = (maxSize / 128) * 128;
-
-        // Calculate the exact center of the client area
-        double centerX = Window.ClientBounds.Width / 2.0;
-        double centerY = Window.ClientBounds.Height / 2.0;
-
-        // Calculate the top left corner of the square so that its center aligns with the client area's center
-        int left = (int)Math.Round(centerX - size / 2.0);
-        int top = (int)Math.Round(centerY - size / 2.0);
-
-        // Set the viewport to the square area
-        GraphicsDevice.Viewport = new Viewport(left, top, size, size);
-    }
-
-
     private void Window_ClientSizeChanged(object sender, EventArgs e)
     {
-        UpdateViewport();
+        p8.UpdateViewport();
     }
 
 }
