@@ -116,9 +116,10 @@ public class JoinRoomScene() : IScene, IDisposable
     public void Draw()
     {
         p8.Batch.GraphicsDevice.Clear(Color.Black);
+
         p8.Rectfill(0, 0, 127, 127, 17);
 
-        if (!isInitialized || isInitializing) return;
+        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
 
         Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);

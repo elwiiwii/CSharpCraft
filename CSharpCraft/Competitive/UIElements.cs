@@ -162,10 +162,10 @@ public class TextBox
     public bool HandleInput(char c)
     {
         if (!IsActive) return false;
-        
+
         if (inputValidator is not null && !inputValidator(c)) return false;
         if (Text.Length >= maxLength) return false;
-        
+
         Text += c;
         return true;
     }
@@ -173,7 +173,7 @@ public class TextBox
     public bool HandlePaste(string text)
     {
         if (!IsActive) return false;
-        
+
         var validText = new System.Text.StringBuilder();
         foreach (var c in text)
         {
@@ -182,20 +182,20 @@ public class TextBox
                 validText.Append(c);
             }
         }
-        
+
         if (validText.Length > 0)
         {
             Text += validText.ToString();
             return true;
         }
-        
+
         return false;
     }
 
     public bool HandleBackspace()
     {
         if (!IsActive || Text.Length == 0) return false;
-        
+
         Text = Text[..^1];
         return true;
     }
@@ -358,8 +358,14 @@ public class RoomSettings
         {
             sel = (int)Math.Floor((y / p8.Cell.Height - StartPos.y - 9) / 7);
             var item = Items[(int)sel + scrollIndex];
-            if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && item.Active && item.OnLeftClick is not null) { _ = Task.Run(item.OnLeftClick); }
-            else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released && item.Active && item.OnRightClick is not null) { _ = Task.Run(item.OnRightClick); }
+            if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && item.Active && item.OnLeftClick is not null)
+            {
+                _ = Task.Run(item.OnLeftClick);
+            }
+            else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released && item.Active && item.OnRightClick is not null)
+            {
+                _ = Task.Run(item.OnRightClick);
+            }
         }
     }
 
@@ -395,5 +401,82 @@ public class RoomSettings
         p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 33, 1);
         double range = 29.0 / Math.Max(4, Items.Count);
         p8.Rectfill(scrollBarX + 1, StartPos.y + 5 + scrollIndex * range, scrollBarX + 1, StartPos.y + 5 + (scrollIndex + 4) * range, 6);
+    }
+}
+
+public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurface, int type, bool unbansOn, bool isBanned = false, bool isAvailable = true)
+{
+    public (int x, int y) StartPos { get; init; } = startPos;
+    public bool IsSurface { get; set; } = isSurface;
+    public int Type { get; set; } = type;
+    public bool UnbansOn { get; set; } = unbansOn;
+    public bool IsBanned { get; set; } = isBanned;
+    public bool IsAvailable { get; set; } = isAvailable;
+    private Pico8Functions p8 = _p8;
+    private bool isHovered = false;
+
+    public void Update(MouseState mouseState, MouseState prevMouseState)
+    {
+        float x = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
+        float y = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+
+        isHovered = false;
+        if (x > StartPos.x * p8.Cell.Width && x < (StartPos.x + 22) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 22) * p8.Cell.Height)
+        {
+            isHovered = true;
+            if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
+            {
+
+            }
+            else if (mouseState.RightButton == ButtonState.Pressed && prevMouseState.RightButton == ButtonState.Released)
+            {
+
+            }
+        }
+    }
+
+    public void Draw()
+    {
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+
+        if (Type > 0 && Type <= 5)
+        {
+            p8.Batch.Draw(p8.TextureDictionary[$"{(IsSurface ? "Surface" : "Cave")}{Type}Test"], new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary[$"SeedSelector"], new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, p8.Colors[isHovered && IsAvailable ? 14 : 2], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            if (IsBanned)
+                p8.Batch.Draw(p8.TextureDictionary[$"SeedCross"], new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), null, p8.Colors[isHovered && IsAvailable ? 14 : 2], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            if (!IsAvailable || (!UnbansOn && IsBanned))
+                p8.Batch.Draw(p8.TextureDictionary[$"SeedGreyOut"], new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        }
+    }
+}
+
+public class SeedPickButton(Pico8Functions _p8, (int x, int y) startPos, string label, bool isActive = true)
+{
+    public (int x, int y) StartPos { get; set; } = startPos;
+    public string Label { get; set; } = label;
+    public bool IsActive { get; set; } = isActive;
+    public bool IsHovered { get; internal set; } = false;
+    private Pico8Functions? p8 = _p8;
+
+    public void Update(float x, float y)
+    {
+        if (IsActive && x > StartPos.x * p8.Cell.Width && x < (StartPos.x + (Label.Length * 4) + 5) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+        {
+            IsHovered = true;
+        }
+        else
+        {
+            IsHovered = false;
+        }
+    }
+
+    public void Draw()
+    {
+        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+        p8.Batch.Draw(p8.TextureDictionary[$"SeedPick{(IsHovered ? "Highlight" : "Background")}Center"], new((StartPos.x + 2) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height), SpriteEffects.None, 0);
+        p8.Print(Label, StartPos.x + 3, StartPos.y + 2, IsHovered ? 15 : 22);
+        p8.Batch.Draw(p8.TextureDictionary[$"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge"], new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        p8.Batch.Draw(p8.TextureDictionary[$"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge"], new((StartPos.x + (Label.Length * 4) + 3) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
     }
 }

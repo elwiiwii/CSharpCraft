@@ -1,5 +1,7 @@
-﻿using CSharpCraft.Pico8;
+﻿using CSharpCraft.Pcraft;
+using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
 
@@ -25,14 +27,20 @@ public class PickBanScene : IScene, IDisposable
     private int gameCount;
     private (int h, int l) advantage;
     private List<Game> games = [];
+    private int sel;
+    private List<SeedTypeUI> seedTypes = [];
+    private SeedPickButton gentlemenButton;
 
     private class Game
     {
-        public string Time { get; set; }
-        public int SurfaceType { get; set; }
-        public int CaveType { get; set; }
-        public bool HigherWin { get; set; }
-        public bool LowerWin { get; set; }
+        public string? Time { get; set; } = null;
+        public double? Percentage { get; set; } = null;
+        public int? SurfaceType { get; set; } = null;
+        public int? SurfacePicker { get; set; } = null;
+        public int? CaveType { get; set; } = null;
+        public int? CavePicker { get; set; } = null;
+        public bool HigherWin { get; set; } = false;
+        public bool LowerWin { get; set; } = false;
     }
 
     public async void Init(Pico8Functions pico8)
@@ -56,6 +64,14 @@ public class PickBanScene : IScene, IDisposable
             cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
             cursorY = prevMouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
+            for (int i = 0; i < 5; i++)
+            {
+                seedTypes.Add(new(p8, (141, 2 + i * 23), true, i + 1, false));
+                seedTypes.Add(new(p8, (166, 2 + i * 23), false, i + 1, false));
+            }
+
+            gentlemenButton = new(p8, (144, 117), "gentlemen");
+
             higherSeed = new RoomUser
             {
                 Name = "__higher__seed__",
@@ -74,42 +90,84 @@ public class PickBanScene : IScene, IDisposable
                 Seed = 2
             };
 
-            score = (2, 2);
+            score = (3, 3);
             bestOf = 7;
-            gameCount = 5;
+            gameCount = 7;
             advantage = (0, 0);
 
             games.Add(new Game
             {
                 Time = "4:00.00",
-                SurfaceType = 0,
-                CaveType = 0,
-                HigherWin = true
-            });
-
-            games.Add(new Game
-            {
-                Time = "4:00.00",
+                Percentage = 80,
                 SurfaceType = 1,
+                SurfacePicker = 0,
                 CaveType = 1,
-                LowerWin = true
-            });
-
-            games.Add(new Game
-            {
-                Time = "4:00.00",
-                SurfaceType = 2,
-                CaveType = 2,
+                CavePicker = 1,
                 HigherWin = true
             });
 
             games.Add(new Game
             {
                 Time = "4:00.00",
-                SurfaceType = 3,
-                CaveType = 3,
+                Percentage = 80,
+                SurfaceType = 2,
+                SurfacePicker = 1,
+                CaveType = 2,
+                CavePicker = 0,
                 LowerWin = true
             });
+
+            games.Add(new Game
+            {
+                Time = "4:00.00",
+                Percentage = 80,
+                SurfaceType = 3,
+                SurfacePicker = 1,
+                CaveType = 3,
+                CavePicker = 0,
+                HigherWin = true
+            });
+
+            games.Add(new Game
+            {
+                Time = "4:00.00",
+                Percentage = 80,
+                SurfaceType = 3,
+                SurfacePicker = 0,
+                CaveType = 3,
+                CavePicker = 1,
+                LowerWin = true
+            });
+            
+            games.Add(new Game
+            {
+                Time = "4:00.00",
+                Percentage = 80,
+                SurfaceType = 4,
+                SurfacePicker = 1,
+                CaveType = 4,
+                CavePicker = 0,
+                HigherWin = true
+            });
+
+            games.Add(new Game
+            {
+                Time = "4:00.00",
+                Percentage = 80,
+                SurfaceType = 5,
+                SurfacePicker = 0,
+                CaveType = 5,
+                CavePicker = 1,
+                LowerWin = true
+            });
+
+            games.Add(new Game
+            {
+                CaveType = 4,
+                CavePicker = 1,
+            });
+
+            sel = Math.Max(0, gameCount - 5);
 
             isInitialized = true;
         }
@@ -143,51 +201,97 @@ public class PickBanScene : IScene, IDisposable
         cursorX = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
         cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
+        //if (cursorX > 0 * p8.Cell.Width && cursorX < 135 * p8.Cell.Width && cursorY > 0 * p8.Cell.Height && cursorY < 103 * p8.Cell.Height)
+        
+        if (mouseState.ScrollWheelValue > prevMouseState.ScrollWheelValue)
+        {
+            sel = Math.Max(0, sel - 1);
+        }
+        else if (mouseState.ScrollWheelValue < prevMouseState.ScrollWheelValue)
+        {
+            sel = Math.Min(Math.Max(0, gameCount - 5), sel + 1);
+        }
+        
+        foreach (SeedTypeUI seedType in seedTypes)
+        {
+            seedType.Update(mouseState, prevMouseState);
+        }
+        gentlemenButton.Update(cursorX, cursorY);
+
         prevKeyboardState = keyboardState;
         prevMouseState = mouseState;
     }
 
     public void Draw()
     {
-        p8.Cls();
-
-        if (!isInitialized || isInitializing) return;
+        p8.Batch.GraphicsDevice.Clear(Color.Black);
 
         p8.Rectfill(0, 0, 191, 127, 17);
+
+        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 96, 61, 15); return; }
 
         Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
 
         for (int i = 0; i < 5; i ++)
         {
-            p8.Print($"game {gameCount - i}", 24, 6 + (gameCount - i - 1) * 20, 7);
-            if (gameCount - i - 1 < games.Count)
+            if (sel + i < Math.Min(gameCount, games.Count))
             {
-                p8.Print(games[gameCount - i - 1].Time, 24, 13 + (gameCount - i - 1) * 20, 7);
-                if (games[gameCount - i - 1].HigherWin)
+                if (games[sel + i].SurfaceType is not null && games[sel + i].SurfaceType > 0 && games[sel + i].SurfaceType <= 5)
                 {
-                    Shared.Printc(p8, higherSeed.Name, 93, 6 + (gameCount - i - 1) * 20, 24);
+                    p8.Batch.Draw(p8.TextureDictionary[$"Surface{games[sel + i].SurfaceType}Test"], new Vector2(3 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), new Rectangle(0, 0, 10, 18), Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
                 }
-                else if (games[gameCount - i - 1].LowerWin)
+                if (games[sel + i].CaveType is not null && games[sel + i].CaveType > 0 && games[sel + i].CaveType <= 5)
                 {
-                    Shared.Printc(p8, lowerSeed.Name, 93, 6 + (gameCount - i - 1) * 20, 28);
+                    p8.Batch.Draw(p8.TextureDictionary[$"Cave{games[sel + i].CaveType}Test"], new Vector2(13 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), new Rectangle(10, 0, 8, 18), Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                }
+
+                int col;
+                if (games[sel + i].CavePicker is null) col = 7;
+                else col = games[sel + i].CavePicker == 0 ? 24 : 28;
+                p8.Batch.Draw(p8.TextureDictionary["SeedPickIndicator"], new Vector2(11 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), null, p8.Colors[col], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                if (games[sel + i].SurfacePicker is null) col = 7;
+                else col = games[sel + i].SurfacePicker == 0 ? 24 : 28;
+                p8.Batch.Draw(p8.TextureDictionary["SeedPickIndicator"], new Vector2(3 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), null, p8.Colors[col], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+
+                p8.Print($"game {sel + i + 1}", 24, 6 + i * 20, 7);
+                if (games[sel + i].Time is not null) p8.Print(games[sel + i].Time, 24, 13 + i * 20, 7);
+                if (games[sel + i].HigherWin && !games[sel + i].LowerWin)
+                {
+                    Shared.Printc(p8, higherSeed.Name, 93, 6 + i * 20, 24);
+                    if (games[sel + i].Percentage is not null) Shared.Printr(p8, $"{games[sel + i].Percentage}%", 124, 13 + i * 20, 28);
+                    p8.Print("victory", 79, 13 + i * 20, 7);
+                }
+                else if (!games[sel + i].HigherWin && games[sel + i].LowerWin)
+                {
+                    Shared.Printc(p8, lowerSeed.Name, 93, 6 + i * 20, 28);
+                    if (games[sel + i].Percentage is not null) Shared.Printr(p8, $"{games[sel + i].Percentage}%", 124, 13 + i * 20, 24);
+                    p8.Print("victory", 79, 13 + i * 20, 7);
+                }
+                else if (games[sel + i].HigherWin && games[sel + i].LowerWin)
+                {
+                    Shared.Printc(p8, "tied", 93, 6 + i * 20, 7);
+                    Shared.Printc(p8, "game", 93, 13 + i * 20, 7);
                 }
                 else
                 {
-                    Shared.Printc(p8, "tied", 93, 6 + (gameCount - i - 1) * 20, 7);
+                    p8.Print("picking...", 79, 13 + i * 20, 7);
                 }
-                Shared.Printc(p8, "victory", 93, 13 + (gameCount - i - 1) * 20, 7);
-            }
-            else
-            {
-
             }
         }
+
+        foreach (SeedTypeUI seedType in seedTypes)
+        {
+            seedType.Draw();
+        }
+        gentlemenButton.Draw();
 
         p8.Rectfill(133, 0, 135, 127, 13);
         p8.Rectfill(0, 104, 132, 104, 13);
         p8.Rectfill(0, 105, 134, 127, 17);
         p8.Rectfill(67, 105, 67, 113, 13);
+        double range = 102.0 / Math.Max(5, gameCount);
+        p8.Rectfill(134, 1 + sel * range, 134, 1 + (sel + 5) * range, 6);
 
         Shared.Printc(p8, higherSeed.Name, 34, 107, 24);
         p8.Print($"seed #{higherSeed.Seed}", 2, 114, 6);
@@ -195,7 +299,7 @@ public class PickBanScene : IScene, IDisposable
 
         Shared.Printc(p8, lowerSeed.Name, 102, 107, 28);
         Shared.Printr(p8, $"seed #{lowerSeed.Seed}", 133, 114, 6);
-        Shared.Printc(p8, $"stats  coming  soon", 67, 121, 5);
+        Shared.Printc(p8, $"best of {bestOf}", 67, 121, 5);
 
         Shared.DrawCursor(p8, cursorX, cursorY);
     }

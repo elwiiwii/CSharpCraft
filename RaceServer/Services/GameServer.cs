@@ -212,7 +212,7 @@ public class GameServer : GameService.GameServiceBase
             await client.WriteAsync(notification);
         }
 
-        User myself = room.users.FirstOrDefault(p => p.Name == request.Name);
+        User myself = room.Users.FirstOrDefault(p => p.Name == request.Name);
         return new PlayerReadyResponse
         {
             Ready = myself.Ready
@@ -222,9 +222,8 @@ public class GameServer : GameService.GameServiceBase
     public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
     {
         room.AssignSeedingTemp();
-        User h = room.users.FirstOrDefault(p => p.Seed == 1);
-        User l = room.users.FirstOrDefault(p => p.Seed == 2);
-        room.CurrentMatch = room.NewDuelMatch(h, l);
+        User h = room.Users.FirstOrDefault(p => p.Seed == 1);
+        User l = room.Users.FirstOrDefault(p => p.Seed == 2);
 
         RoomStreamResponse notification = new()
         {

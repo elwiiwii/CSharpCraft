@@ -41,6 +41,11 @@
 		<None Remove="Content\Graphics\BigFont.png" />
 		<None Remove="Content\Graphics\BlankBackground.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
+		<None Remove="Content\Graphics\Cave1Test.png" />
+		<None Remove="Content\Graphics\Cave2Test.png" />
+		<None Remove="Content\Graphics\Cave3Test.png" />
+		<None Remove="Content\Graphics\Cave4Test.png" />
+		<None Remove="Content\Graphics\Cave5Test.png" />
 		<None Remove="Content\Graphics\Checker.png" />
 		<None Remove="Content\Graphics\CompetitiveBackground.png" />
 		<None Remove="Content\Graphics\Comptest.png" />
@@ -88,6 +93,13 @@
 		<None Remove="Content\Graphics\SearchShadow.png" />
 		<None Remove="Content\Graphics\SeedCross.png" />
 		<None Remove="Content\Graphics\SeedGreyOut.png" />
+		<None Remove="Content\Graphics\SeedPickBackgroundCenter.png" />
+		<None Remove="Content\Graphics\SeedPickBackgroundEdge.png" />
+		<None Remove="Content\Graphics\SeedPickCenter.png" />
+		<None Remove="Content\Graphics\SeedPickEdge.png" />
+		<None Remove="Content\Graphics\SeedPickHighlightCenter.png" />
+		<None Remove="Content\Graphics\SeedPickHighlightEdge.png" />
+		<None Remove="Content\Graphics\SeedPickIndicator.png" />
 		<None Remove="Content\Graphics\SeedQuestion.png" />
 		<None Remove="Content\Graphics\SeedSelector.png" />
 		<None Remove="Content\Graphics\SeedSelectorArrow.png" />
@@ -121,6 +133,11 @@
 		<None Remove="Content\Graphics\StatisticsIcon.png" />
 		<None Remove="Content\Graphics\StatisticsShadow.png" />
 		<None Remove="Content\Graphics\Steam.png" />
+		<None Remove="Content\Graphics\Surface1Test.png" />
+		<None Remove="Content\Graphics\Surface2Test.png" />
+		<None Remove="Content\Graphics\Surface3Test.png" />
+		<None Remove="Content\Graphics\Surface4Test.png" />
+		<None Remove="Content\Graphics\Surface5Test.png" />
 		<None Remove="Content\Graphics\Tick.png" />
 		<None Remove="Content\Graphics\Twitch.png" />
 		<None Remove="Content\Graphics\Twitter.png" />
@@ -225,6 +242,21 @@
 	  <Content Include="Content\Graphics\BlankBackground.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\Cave1Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Cave2Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Cave3Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Cave4Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Cave5Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\Checker.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -288,6 +320,21 @@
 	  <Content Include="Content\Graphics\SearchShadow.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Content\Graphics\SeedPickBackgroundCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedPickBackgroundEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedPickHighlightCenter.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedPickHighlightEdge.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\SeedPickIndicator.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Content\Graphics\SettingsIcon.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -304,6 +351,21 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\StatisticsShadow.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Surface1Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Surface2Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Surface3Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Surface4Test.png">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Content\Graphics\Surface5Test.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\UnrankedBackground.png">

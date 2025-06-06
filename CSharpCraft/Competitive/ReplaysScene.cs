@@ -87,7 +87,9 @@ public class ReplaysScene(IScene prevScene) : IScene
     {
         p8.Batch.GraphicsDevice.Clear(Color.Black);
 
-        if (!isInitialized || isInitializing) return;
+        p8.Rectfill(0, 0, 127, 127, 17);
+
+        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
 
         p8.Rectfill(0, 0, 127, 127, 17);
 

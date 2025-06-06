@@ -167,9 +167,11 @@ public class LobbyScene(string joinRole) : PcraftBase
 
     public override void Draw()
     {
-        p8.Cls();
+        p8.Batch.GraphicsDevice.Clear(Color.Black);
 
-        if (!isInitialized || isInitializing) return;
+        p8.Rectfill(0, 0, 127, 127, 17);
+
+        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
 
         Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);

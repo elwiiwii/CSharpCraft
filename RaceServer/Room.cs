@@ -1,17 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 
 
 namespace RaceServer;
 
-public class Room(string name)
+public class Room
 {
-    public string Name { get; } = name;
-    public readonly List<User> users = new();
-    public DuelMatch CurrentMatch = new();
+    public string Name { get; }
+    public string? Password { get; set; } = null;
+    private readonly List<User> users = [];
+    public Match? CurrentMatch = null;
 
     public IReadOnlyList<User> Users => users;
+
+    public Room(string name)
+    {
+        Name = name;
+        CurrentMatch = NewMatch();
+    }
 
     public void AddPlayer(User user)
     {
@@ -53,9 +61,9 @@ public class Room(string name)
         return users.All(p => p.Ready);
     }
 
-    public DuelMatch NewDuelMatch(User higherSeed, User lowerSeed)
+    public Match NewMatch()
     {
-        return new DuelMatch { HigherSeed = higherSeed, LowerSeed = lowerSeed };
+        return new();
     }
 }
 
@@ -68,39 +76,53 @@ public class User
     public int? Seed { get; set; } = null;
 }
 
-public class DuelMatch
+public class Match
 {
-    public User HigherSeed { get; set; }
-    public User LowerSeed { get; set; }
-    public SeedTypes SeedTypes { get; set; } = new();
-    public int CurrentGame { get; set; } = 1;
-    public int BestOf { get; set; } = 5;
-    public string Category { get; set; } = "any%";
-    public int Finishers { get; set; } = 1;
-    public bool Unbans { get; set; } = true;
-    public (int, int) Advantage { get; set; } = (0, 0);
+    public List<User> Players { get; set; } = [];
+    public int Finishers { get; set; }
+    public int BestOf { get; set; }
+    public int CurrentGame { get; set; }
+    public (int h, int l) Advantage { get; set; }
+    public (int h, int l) Score { get; set; }
+    public List<GameReport> GameReports { get; set; } = [];
+    public string? Category { get; set; }
+    public List<SeedType> SeedTypes { get; set; } = [];
+    public bool BansOn { get; set; }
+    public bool UnbansOn { get; set; }
+
+    //public Match(List<User> players, int finishers = 1, int bestOf = 5, (int h, int l)? advantage = null, string category = "any%", List<SeedType>? seedTypes = null, bool bansOn = false, bool unbansOn = false)
+    //{
+    //    Players = players;
+    //    Finishers = Math.Max(1, Math.Min(players.Count, finishers));
+    //    BestOf = players.Count == 2 ? bestOf: 1;
+    //    CurrentGame = 1;
+    //    Advantage = advantage ?? (0, 0);
+    //    Score = players.Count == 2 ? advantage ?? (0, 0) : (0, 0);
+    //    GameReports = [];
+    //    GameReports.Add(new());
+    //    Category = category;
+    //    SeedTypes = seedTypes ?? [];
+    //    BansOn = bansOn;
+    //    UnbansOn = unbansOn;
+    //}
 }
 
-public class GroupMatch
+public class SeedType(bool isSurface, int type, bool isBanned, bool isAvailable)
 {
-    public string Category { get; set; } = "any%";
-    public int Finishers { get; set; } = 1;
-}
-
-public class SeedTypes
-{
-    public string Type1Status { get; set; } = "UNBANNED";
-    public string Type2Status { get; set; } = "UNBANNED";
-    public string Type3Status { get; set; } = "UNBANNED";
-    public string Type4Status { get; set; } = "UNBANNED";
-    public string Type5Status { get; set; } = "UNBANNED";
-    public string Type6Status { get; set; } = "UNBANNED";
-    public string Type7Status { get; set; } = "UNBANNED";
+    public bool IsSurface { get; set; } = isSurface;
+    public int Type { get; set; } = type;
+    public bool IsBanned { get; set; } = isBanned;
+    public bool IsAvailable { get; set; } = isAvailable;
 }
 
 public class GameReport
 {
-    public string Player1Status { get; set; }
-    public string Player2Status { get; set; }
-    public double FinishTime { get; set; }
+    public string? Time { get; set; } = null;
+    public double? Percentage { get; set; } = null;
+    public int? SurfaceType { get; set; } = null;
+    public int? SurfacePicker { get; set; } = null;
+    public int? CaveType { get; set; } = null;
+    public int? CavePicker { get; set; } = null;
+    public bool HigherWin { get; set; } = false;
+    public bool LowerWin { get; set; } = false;
 }
