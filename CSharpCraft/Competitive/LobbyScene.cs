@@ -11,7 +11,7 @@ using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.Competitive;
 
-public class LobbyScene(string joinRole) : PcraftBase
+public class LobbyScene(Role joinRole) : PcraftBase
 {
 #nullable enable
     private List<Item> actionsItems = new();
@@ -106,15 +106,13 @@ public class LobbyScene(string joinRole) : PcraftBase
         cursorX = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
         cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
 
-        bool allReady = true;
-        foreach (KeyValuePair<int, RoomUser> player in RoomHandler._playerDictionary)
-        {
-            if (!player.Value.Ready) { allReady = false; }
-        }
+        bool canStart = true;
+        if (RoomHandler._playerDictionary.Where(x => x.Value.Ready == false).Count() > 0) canStart = false;
+        if (RoomHandler._playerDictionary.Where(x => x.Value.Role == Role.Player).Count() < 2) canStart = false;
 
         actionsItems.Clear();
-        actionsItems.Add(new Item(RoomHandler._myself.Ready ? "unready" : "ready", RoomHandler._myself.Role == "Player", RoomHandler.PlayerReady));
-        actionsItems.Add(new Item("start match", RoomHandler._myself.Host && allReady, RoomHandler.StartMatch));
+        actionsItems.Add(new Item(RoomHandler._myself.Ready ? "unready" : "ready", RoomHandler._myself.Role == Role.Player, RoomHandler.PlayerReady));
+        actionsItems.Add(new Item("start match", RoomHandler._myself.Host && canStart, RoomHandler.StartMatch));
         actionsItems.Add(new Item("leave room", true, RoomHandler.LeaveRoom));
         actionsItems.Add(new Item("change role", true, RoomHandler.ChangeRole));
         actionsItems.Add(new Item("change host", RoomHandler._myself.Host, RoomHandler.ChangeHost));

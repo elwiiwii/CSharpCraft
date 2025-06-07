@@ -12,12 +12,13 @@ public class GameServer : GameService.GameServiceBase
 {
     private readonly List<IServerStreamWriter<RoomStreamResponse>> clients = new();
 
-    private readonly Room room = new("TestRoom");
+    private readonly Room room;
     private readonly ILogger<GameServer> logger;
 
     public GameServer(ILogger<GameServer> logger)
     {
         this.logger = logger;
+        room = new("TestRoom", null, this.logger);
     }
 
     public override async Task RoomStream(RoomStreamRequest request, IServerStreamWriter<RoomStreamResponse> responseStream, ServerCallContext context)
@@ -28,14 +29,14 @@ public class GameServer : GameService.GameServiceBase
         {
             clients.Add(responseStream);
 
-            User newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0, Ready = request.Role != "Player" };
+            RoomUser newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0, Ready = request.Role != Role.Player };
             room.AddPlayer(newUser);
 
             RoomStreamResponse notification = new()
             {
                 JoinRoomNotification = new JoinRoomNotification()
             };
-            foreach (User user in room.Users)
+            foreach (RoomUser user in room.Users)
             {
                 RoomUser roomUser = new()
                 {
@@ -74,7 +75,7 @@ public class GameServer : GameService.GameServiceBase
             {
                 JoinRoomNotification = new JoinRoomNotification()
             };
-            foreach (User user in room.Users)
+            foreach (RoomUser user in room.Users)
             {
                 RoomUser roomUser = new()
                 {
@@ -105,7 +106,7 @@ public class GameServer : GameService.GameServiceBase
             {
                 JoinRoomNotification = new JoinRoomNotification()
             };
-            foreach (User user in room.Users)
+            foreach (RoomUser user in room.Users)
             {
                 RoomUser roomUser = new()
                 {
@@ -130,8 +131,8 @@ public class GameServer : GameService.GameServiceBase
         {
             Name = request.Name,
             Role = request.Role,
-            Host = room.Users.Count < 2 ? true : false, //todo this is jank
-            Ready = request.Role == "Player" ? false : true
+            Host = room.Users.Where(p => p.Host).Count() == 0,
+            Ready = request.Role != Role.Player
         };
     }
 
@@ -144,7 +145,7 @@ public class GameServer : GameService.GameServiceBase
             {
                 LeaveRoomNotification = new LeaveRoomNotification()
             };
-            foreach (User user in room.Users)
+            foreach (RoomUser user in room.Users)
             {
                 RoomUser roomUser = new()
                 {
@@ -195,7 +196,7 @@ public class GameServer : GameService.GameServiceBase
         {
             PlayerReadyNotification = new PlayerReadyNotification()
         };
-        foreach (User user in room.Users)
+        foreach (RoomUser user in room.Users)
         {
             RoomUser roomUser = new()
             {
@@ -212,7 +213,7 @@ public class GameServer : GameService.GameServiceBase
             await client.WriteAsync(notification);
         }
 
-        User myself = room.Users.FirstOrDefault(p => p.Name == request.Name);
+        RoomUser myself = room.Users.FirstOrDefault(p => p.Name == request.Name);
         return new PlayerReadyResponse
         {
             Ready = myself.Ready
@@ -222,8 +223,8 @@ public class GameServer : GameService.GameServiceBase
     public override async Task<StartMatchResponse> StartMatch(StartMatchRequest request, ServerCallContext context)
     {
         room.AssignSeedingTemp();
-        User h = room.Users.FirstOrDefault(p => p.Seed == 1);
-        User l = room.Users.FirstOrDefault(p => p.Seed == 2);
+        RoomUser h = room.Users.FirstOrDefault(p => p.Seed == 1);
+        RoomUser l = room.Users.FirstOrDefault(p => p.Seed == 2);
 
         RoomStreamResponse notification = new()
         {

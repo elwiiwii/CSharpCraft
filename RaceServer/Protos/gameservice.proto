@@ -17,9 +17,50 @@ service GameService {
 
 
 
+enum Role {
+	PLAYER = 0;
+	SPECTATOR = 1;
+}
+
+enum MatchStatus {
+	MATCH_WAITING = 0;
+	MATCH_IN_PROGRESS = 1;
+	MATCH_PAUSED = 2;
+	MATCH_HIGHER_WIN = 3;
+	MATCH_LOWER_WIN = 4;
+	MATCH_DRAW = 5;
+	MATCH_COMPLETED = 6;
+	MATCH_CANCELLED = 7;
+}
+
+enum SeedStatus {
+	AVAILABLE = 0;
+	UNAVAILABLE = 1;
+	PICKED = 2;
+	BANNED = 3;
+}
+
+enum GameStatus {
+	GAME_WAITING = 0;
+	GAME_IN_PROGRESS = 1;
+	GAME_PAUSED = 2;
+	GAME_HIGHER_WIN_TIME = 3;
+	GAME_HIGHER_WIN_FF = 4;
+	GAME_LOWER_WIN_TIME = 5;
+	GAME_LOWER_WIN_FF = 6;
+	GAME_DRAW_TIME = 7;
+	GAME_DRAW_VOTE = 8;
+	GAME_COMPLETED = 9;
+	GAME_CANCELLED = 10;
+}
+
+enum Category {
+	ANY_VANILLA = 0;
+}
+
 message RoomUser {
 	string name = 1;
-	string role = 2;
+	Role role = 2;
 	bool host = 3;
 	bool ready = 4;
 	int32 seed = 5;
@@ -29,7 +70,7 @@ message RoomUser {
 
 message RoomStreamRequest {
 	string name = 1;
-	string role = 2;
+	Role role = 2;
 	bool host = 3;
 }
 
@@ -49,12 +90,12 @@ message RoomStreamResponse {
 
 message JoinRoomRequest {
 	string name = 1;
-	string role = 2;
+	Role role = 2;
 }
 
 message JoinRoomResponse {
 	string name = 1;
-	string role = 2;
+	Role role = 2;
 	bool host = 3;
 	bool ready = 4;
 }

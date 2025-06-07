@@ -18,7 +18,7 @@ public class JoinRoomScene() : IScene, IDisposable
     public (int w, int h) Resolution { get => (128, 128); }
     private Pico8Functions p8;
 
-    private static ConcurrentString role = new();
+    private static Role role;
 
     private static bool joinedRoom;
     private string prompt;
@@ -50,8 +50,7 @@ public class JoinRoomScene() : IScene, IDisposable
                 return;
             }
 
-            role = new();
-            role.Value = "Player";
+            role = Role.Player;
             joinedRoom = false;
             prompt = "";
             joinAs = new(p8, (34, 59), "join as", true);
@@ -100,11 +99,11 @@ public class JoinRoomScene() : IScene, IDisposable
                     }
 
                     joinedRoom = true;
-                    p8.ScheduleScene(() => new LobbyScene(role.Value));
+                    p8.ScheduleScene(() => new LobbyScene(role));
                 }
                 else if (roleBtn.IsHovered)
                 {
-                    role.Value = role.Value == "Player" ? "Spectator" : "Player";
+                    role = role == Role.Player ? Role.Spectator : Role.Player;
                 }
             }
         }
@@ -128,7 +127,7 @@ public class JoinRoomScene() : IScene, IDisposable
         {
             joinAs.Draw();
             roleBtn.Draw();
-            p8.Batch.Draw(p8.TextureDictionary[$"{role.Value}Icon"], new Vector2(80.25f * p8.Cell.Width, (role.Value == "Player" ? 61 : 60.75f) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+            p8.Batch.Draw(p8.TextureDictionary[$"{role}Icon"], new Vector2(80.25f * p8.Cell.Width, (role == Role.Player ? 61 : 60.75f) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
             
             if (!string.IsNullOrEmpty(prompt))
             {

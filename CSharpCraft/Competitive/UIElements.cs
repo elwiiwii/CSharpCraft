@@ -277,7 +277,7 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         {
             if (i >= Sel && i < Sel + 7)
             {
-                p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2((lBound + 5) * p8.Cell.Width, (StartY + (player.Role == "Player" ? 21 : 20.75f) + (i - Sel) * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2((lBound + 5) * p8.Cell.Width, (StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
                 p8.Print(player.Name, lBound + 16, StartY + 21 + (i - Sel) * 7, 7);
                 if (player.Ready)
                 {

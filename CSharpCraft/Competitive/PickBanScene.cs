@@ -75,7 +75,7 @@ public class PickBanScene : IScene, IDisposable
             higherSeed = new RoomUser
             {
                 Name = "__higher__seed__",
-                Role = "Player",
+                Role = Role.Player,
                 Host = false,
                 Ready = true,
                 Seed = 1
@@ -84,7 +84,7 @@ public class PickBanScene : IScene, IDisposable
             lowerSeed = new RoomUser
             {
                 Name = "__lower___seed__",
-                Role = "Player",
+                Role = Role.Player,
                 Host = false,
                 Ready = true,
                 Seed = 2

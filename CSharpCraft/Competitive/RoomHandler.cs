@@ -82,7 +82,7 @@ public static class RoomHandler
         }
     }
 
-    public static async Task<bool> JoinRoom(string name, string role)
+    public static async Task<bool> JoinRoom(string name, Role role)
     {
         try
         {
@@ -158,6 +158,7 @@ public static class RoomHandler
     private static void HandleLeaveRoomNotification(LeaveRoomNotification notification)
     {
         UpdatePlayerDictionary(notification.Users);
+        UpdateMyself(notification.Users);
     }
 
     private static void HandleUpdateSeedsNotification(UpdateSeedsNotification updateSeedsNotification)
@@ -171,16 +172,23 @@ public static class RoomHandler
         {
             switch (_myself.Role)
             {
-                case "Player":
+                case Role.Player:
                     p8.ScheduleScene(() => new PickBanScene());
                     break;
-                case "Spectator":
+                case Role.Spectator:
                     p8.ScheduleScene(() => new PickBanScene()); //should be spectator version when i make the spectator scene
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    private static void UpdateMyself(IEnumerable<RoomUser> users)
+    {
+        _myself = users.FirstOrDefault(x => x.Name == _myself.Name);
+        if (_myself is null) users.FirstOrDefault(x => x.Name == AccountHandler._myself.Username);
+        if (_myself is null) LeaveRoom();
     }
 
     private static void UpdatePlayerDictionary(IEnumerable<RoomUser> users)
@@ -202,6 +210,7 @@ public static class RoomHandler
     private static void HandlePlayerReadyNotification(PlayerReadyNotification notification)
     {
         UpdatePlayerDictionary(notification.Users);
+        UpdateMyself(notification.Users);
     }
 
     public static async Task Password()

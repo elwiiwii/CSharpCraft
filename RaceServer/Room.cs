@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
+using RaceServer.Services;
 
 
 namespace RaceServer;
@@ -10,45 +11,54 @@ public class Room
 {
     public string Name { get; }
     public string? Password { get; set; } = null;
-    private readonly List<User> users = [];
+    private List<RoomUser> users = [];
     public Match? CurrentMatch = null;
+    private readonly ILogger<GameServer> logger;
 
-    public IReadOnlyList<User> Users => users;
+    public IReadOnlyList<RoomUser> Users => users;
 
-    public Room(string name)
+    public Room(string name, string? password, ILogger<GameServer> logger)
     {
         Name = name;
-        CurrentMatch = NewMatch();
+        Password = password;
+        CurrentMatch = new Match(users);
+        this.logger = logger;
     }
 
-    public void AddPlayer(User user)
+    public void AddPlayer(RoomUser user)
     {
+        if (users.FirstOrDefault(p => p.Host) is not null && user.Host) user.Host = false;
         users.Add(user);
+        if (CurrentMatch is null) CurrentMatch = new Match(users);
+        CurrentMatch.UpdateAll(logger, users);
     }
 
     public void RemovePlayer(string name)
     {
-        User user = users.FirstOrDefault(p => p.Name == name);
+        RoomUser user = users.FirstOrDefault(p => p.Name == name);
 
         if (user is not null)
         {
             users.Remove(user);
+            if (user.Host) users[0].Host = true;
         }
+        if (CurrentMatch is null) CurrentMatch = new Match(users);
+        CurrentMatch.UpdateAll(logger, users);
     }
 
     public void TogglePlayerReady(string name)
     {
-        User player = users.FirstOrDefault(p => p.Name == name);
-        if (player is not null && player.Role == "Player")
+        RoomUser player = users.FirstOrDefault(p => p.Name == name);
+        if (player is not null && player.Role == Role.Player)
             player.Ready = !player.Ready;
     }
 
     public void AssignSeedingTemp()
     {
         int seed = 1;
-        foreach (User user in users)
+        foreach (RoomUser user in users)
         {
-            if (user.Role == "Player")
+            if (user.Role == Role.Player)
             {
                 user.Seed = seed;
                 seed++;
@@ -61,58 +71,227 @@ public class Room
         return users.All(p => p.Ready);
     }
 
-    public Match NewMatch()
+    public void StartMatch(ILogger logger)
     {
-        return new();
+        if (CurrentMatch is null)
+        {
+            logger.LogError("Cannot start match: CurrentMatch is null.");
+            return;
+        }
+        if (users.Count < 2)
+        {
+            logger.LogError("Cannot start match: Not enough players.");
+            return;
+        }
+        if (!AllPlayersReady())
+        {
+            logger.LogError("Cannot start match: Not all players are ready.");
+            return;
+        }
     }
-}
-
-public class User
-{
-    public string Name { get; set; }
-    public string Role { get; set; } = "Player";
-    public bool Host { get; set; }
-    public bool Ready { get; set; } = true;
-    public int? Seed { get; set; } = null;
 }
 
 public class Match
 {
-    public List<User> Players { get; set; } = [];
-    public int Finishers { get; set; }
-    public int BestOf { get; set; }
-    public int CurrentGame { get; set; }
-    public (int h, int l) Advantage { get; set; }
-    public (int h, int l) Score { get; set; }
-    public List<GameReport> GameReports { get; set; } = [];
-    public string? Category { get; set; }
-    public List<SeedType> SeedTypes { get; set; } = [];
-    public bool BansOn { get; set; }
-    public bool UnbansOn { get; set; }
+    public MatchStatus Status { get; private set; }
+    public List<RoomUser> Players { get; private set; } = [];
+    public int Finishers { get; private set; }
+    public int BestOf { get; private set; }
+    public int CurrentGame { get; private set; }
+    public (int h, int l) Advantage { get; private set; }
+    public (int h, int l) Score { get; private set; }
+    public List<GameReport> GameReports { get; private set; } = [];
+    public Category Category { get; private set; }
+    public List<SeedType> SeedTypes { get; private set; } = [];
+    public bool PicksOn { get; private set; }
+    public bool BansOn { get; private set; }
+    public bool UnbansOn { get; private set; }
+    private static readonly List<SeedType> defaultSeeds = [
+        new(true, 1), new(true, 2), new(true, 3), new(true, 4), new(true, 5),
+        new(false, 1), new(false, 2), new(false, 3), new(false, 4), new(false, 5)
+        ];
 
-    //public Match(List<User> players, int finishers = 1, int bestOf = 5, (int h, int l)? advantage = null, string category = "any%", List<SeedType>? seedTypes = null, bool bansOn = false, bool unbansOn = false)
-    //{
-    //    Players = players;
-    //    Finishers = Math.Max(1, Math.Min(players.Count, finishers));
-    //    BestOf = players.Count == 2 ? bestOf: 1;
-    //    CurrentGame = 1;
-    //    Advantage = advantage ?? (0, 0);
-    //    Score = players.Count == 2 ? advantage ?? (0, 0) : (0, 0);
-    //    GameReports = [];
-    //    GameReports.Add(new());
-    //    Category = category;
-    //    SeedTypes = seedTypes ?? [];
-    //    BansOn = bansOn;
-    //    UnbansOn = unbansOn;
-    //}
+    public Match(List<RoomUser> players, Match? match = null)
+    {
+        Status = MatchStatus.MatchWaiting;
+        players = players.Where(x => x.Role == Role.Player).ToList();
+        Players = players;
+        Finishers = match?.Finishers ?? 1;
+        BestOf = match?.BestOf ?? (players.Count == 2 ? 5 : 1);
+        CurrentGame = 1;
+        Advantage = match?.Advantage ?? (0, 0);
+        Score = players.Count == 2 ? match?.Advantage ?? (0, 0) : (0, 0);
+        GameReports = [];
+        GameReports.Add(new());
+        Category = match?.Category ?? Category.AnyVanilla;
+        SeedTypes = match?.SeedTypes ?? defaultSeeds;
+        PicksOn = match?.PicksOn ?? true;
+        BansOn = match?.BansOn ?? false;
+        UnbansOn = match?.UnbansOn ?? false;
+    }
+
+    public void UpdateAll(ILogger logger, List<RoomUser> players)
+    {
+        UpdatePlayers(logger, players);
+        UpdateState(logger, MatchStatus.MatchWaiting);
+        UpdateFinishers(logger, Finishers);
+        UpdateBestOf(logger, players, BestOf);
+        UpdateCurrentGame(logger, CurrentGame);
+        UpdateAdvantage(logger, players, Advantage);
+        UpdateScore(logger, players, Score);
+        UpdateGameReports(logger, GameReports);
+        UpdateCategory(logger, Category);
+        UpdateSeedTypes(logger, SeedTypes);
+        UpdatePicksOn(logger, PicksOn);
+        UpdateBansOn(logger, BansOn);
+        UpdateUnbansOn(logger, UnbansOn);
+    }
+
+    public void UpdateState(ILogger logger, MatchStatus status)
+    {
+        Status = status;
+    }
+
+    public void UpdatePlayers(ILogger logger, List<RoomUser> players)
+    {
+        Players = players.Where(x => x.Role == Role.Player).ToList();
+    }
+
+    public void UpdateFinishers(ILogger logger, int finishers)
+    {
+        if (finishers < 1)
+        {
+            logger.LogError("Cannot start match: Not enough players.");
+            Finishers = 1;
+            return;
+        }
+        if (finishers > Players.Count)
+        {
+            logger.LogError("Cannot set finishers: More finishers than players.");
+            Finishers = Players.Count;
+            return;
+        }
+        Finishers = finishers;
+    }
+
+    public void UpdateBestOf(ILogger logger, List<RoomUser> players, int bestOf)
+    {
+        UpdatePlayers(logger, players);
+        if (Players.Count > 2)
+        {
+            BestOf = 1;
+            return;
+        }
+        if (bestOf < 1)
+        {
+            logger.LogError("Best of must be at least 1. Setting to 1.");
+            BestOf = 1;
+            return;
+        }
+        BestOf = bestOf;
+    }
+
+    public void UpdateCurrentGame(ILogger logger, int curGame)
+    {
+        if (curGame < 1)
+        {
+            logger.LogError("Current game must be at least 1. Setting to 1.");
+            CurrentGame = 1;
+            return;
+        }
+        if (curGame > BestOf)
+        {
+            logger.LogError("Current game cannot be greater than Best of. Ending match.");
+            // todo end match
+            return;
+        }
+        CurrentGame = curGame;
+    }
+
+    public void UpdateAdvantage(ILogger logger, List<RoomUser> players, (int h, int l) adv)
+    {
+        UpdatePlayers(logger, players);
+        if (Players.Count != 2)
+        {
+            logger.LogError("Advantage can only be set for 2 players. Setting to (0, 0).");
+            Advantage = (0, 0);
+            return;
+        }
+        if (adv.h < 0 || adv.l < 0)
+        {
+            logger.LogError("Advantage cannot be negative. Setting to (0, 0).");
+            Advantage = (0, 0);
+            return;
+        }
+        if (adv.h > Math.Round(BestOf / 2.0, MidpointRounding.AwayFromZero) || adv.l > Math.Round(BestOf / 2.0, MidpointRounding.AwayFromZero))
+        {
+            logger.LogError("Advantage cannot be greater than Best of. Setting to (0, 0).");
+            Advantage = (0, 0);
+            return;
+        }
+        Advantage = adv;
+        Score = adv;
+    }
+
+    public void UpdateScore(ILogger logger, List<RoomUser> players, (int h, int l) score)
+    {
+        UpdatePlayers(logger, players);
+        if (Players.Count != 2)
+        {
+            logger.LogError("Score can only be set for 2 players. Setting to (0, 0).");
+            Score = (0, 0);
+            return;
+        }
+        if (score.h < 0 || score.l < 0)
+        {
+            logger.LogError("Score cannot be negative. Setting to (0, 0).");
+            Score = (0, 0);
+            return;
+        }
+        if (score.h >= Math.Round(BestOf / 2.0, MidpointRounding.AwayFromZero) || score.l >= Math.Round(BestOf / 2.0, MidpointRounding.AwayFromZero))
+        {
+            // todo end match
+            return;
+        }
+        Score = score;
+    }
+
+    public void UpdateGameReports(ILogger logger, List<GameReport> games)
+    {
+        GameReports = games;
+    }
+
+    public void UpdateCategory(ILogger logger, Category cat)
+    {
+        Category = cat;
+    }
+
+    public void UpdateSeedTypes(ILogger logger, List<SeedType> types)
+    {
+        SeedTypes = types;
+    }
+
+    public void UpdatePicksOn(ILogger logger, bool state)
+    {
+        PicksOn = state;
+    }
+
+    public void UpdateBansOn(ILogger logger, bool state)
+    {
+        BansOn = state;
+    }
+
+    public void UpdateUnbansOn(ILogger logger, bool state)
+    {
+        UnbansOn = BansOn && state;
+    }
 }
 
-public class SeedType(bool isSurface, int type, bool isBanned, bool isAvailable)
+public class SeedType(bool isSurface, int type, SeedStatus status = SeedStatus.Available)
 {
     public bool IsSurface { get; set; } = isSurface;
     public int Type { get; set; } = type;
-    public bool IsBanned { get; set; } = isBanned;
-    public bool IsAvailable { get; set; } = isAvailable;
+    public SeedStatus Status { get; set; } = status;
 }
 
 public class GameReport
@@ -123,6 +302,5 @@ public class GameReport
     public int? SurfacePicker { get; set; } = null;
     public int? CaveType { get; set; } = null;
     public int? CavePicker { get; set; } = null;
-    public bool HigherWin { get; set; } = false;
-    public bool LowerWin { get; set; } = false;
+    public GameStatus GameEnd { get; set; } = GameStatus.GameWaiting;
 }

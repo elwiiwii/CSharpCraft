@@ -11,7 +11,7 @@ namespace CSharpCraft.Pico8;
 
 public class Pico8Functions : IDisposable
 {
-	public SpriteBatch Batch { get; }
+    public SpriteBatch Batch { get; }
     public (F32 x, F32 y) CameraOffset { get; internal set; } = (F32.Zero, F32.Zero);
     public (int Width, int Height) Cell { get; internal set; }
     public GraphicsDeviceManager Graphics { get; }
@@ -70,7 +70,7 @@ public class Pico8Functions : IDisposable
     private Color[] _sprites;
     private Dictionary<string, List<SongInst>> _music;
     private Dictionary<string, Dictionary<int, string>> _sfx;
-    
+
     public IScene _cart;
     public List<List<MusicInst>> channelMusic = [];
     public List<SoundEffectInstance> channel0 = [];
@@ -465,7 +465,7 @@ public class Pico8Functions : IDisposable
 
             Batch.Draw(TextureDictionary["PauseArrow"], new Vector2((xborder + 4) * Cell.Width, (i - 1 + menuSelected * 8) * Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-            for(int j = 0; j < curMenuItems.Count; j++)
+            for (int j = 0; j < curMenuItems.Count; j++)
             {
                 int indent = menuSelected == j ? 1 : 0;
                 Print(curMenuItems[j].GetName(), xborder + indent + 12, i, 7);
@@ -1102,7 +1102,7 @@ public class Pico8Functions : IDisposable
         int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
         List<int> cacheList = [spriteNumberFlr];
-        for (int i  = 0; i < PalColors.Count; i++)
+        for (int i = 0; i < PalColors.Count; i++)
         {
             cacheList.Add((int)PalColors[i].C0.PackedValue);
             cacheList.Add((int)PalColors[i].C1.PackedValue);
