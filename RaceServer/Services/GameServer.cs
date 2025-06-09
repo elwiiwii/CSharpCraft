@@ -228,7 +228,7 @@ public class GameServer : GameService.GameServiceBase
 
         RoomStreamResponse notification = new()
         {
-            StartMatchNotification = new StartMatchNotification { MatchStarted = room.AllPlayersReady() }
+            StartMatchNotification = new StartMatchNotification { MatchState = room.CurrentMatch.ToMatchState() }
         };
 
         foreach (IServerStreamWriter<RoomStreamResponse> client in clients)

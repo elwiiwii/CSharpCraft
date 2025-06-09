@@ -107,8 +107,16 @@ public class Match
     public bool BansOn { get; private set; }
     public bool UnbansOn { get; private set; }
     private static readonly List<SeedType> defaultSeeds = [
-        new(true, 1), new(true, 2), new(true, 3), new(true, 4), new(true, 5),
-        new(false, 1), new(false, 2), new(false, 3), new(false, 4), new(false, 5)
+        new() { IsSurface = true, Type = 1, Status = SeedStatus.Available },
+        new() { IsSurface = true, Type = 2, Status = SeedStatus.Available },
+        new() { IsSurface = true, Type = 3, Status = SeedStatus.Available },
+        new() { IsSurface = true, Type = 4, Status = SeedStatus.Available },
+        new() { IsSurface = true, Type = 5, Status = SeedStatus.Available },
+        new() { IsSurface = false, Type = 1, Status = SeedStatus.Available },
+        new() { IsSurface = false, Type = 2, Status = SeedStatus.Available },
+        new() { IsSurface = false, Type = 3, Status = SeedStatus.Available },
+        new() { IsSurface = false, Type = 4, Status = SeedStatus.Available },
+        new() { IsSurface = false, Type = 5, Status = SeedStatus.Available },
         ];
 
     public Match(List<RoomUser> players, Match? match = null)
@@ -128,6 +136,63 @@ public class Match
         PicksOn = match?.PicksOn ?? true;
         BansOn = match?.BansOn ?? false;
         UnbansOn = match?.UnbansOn ?? false;
+    }
+
+    public MatchState ToMatchState()
+    {
+        var matchState = new MatchState
+        {
+            Status = Status,
+            Finishers = Finishers,
+            BestOf = BestOf,
+            CurrentGame = CurrentGame,
+            AdvantageH = Advantage.h,
+            AdvantageL = Advantage.l,
+            ScoreH = Score.h,
+            ScoreL = Score.l,
+            Category = Category,
+            PicksOn = PicksOn,
+            BansOn = BansOn,
+            UnbansOn = UnbansOn
+        };
+
+        foreach (RoomUser player in Players)
+        {
+            matchState.Players.Add(new RoomUser
+            {
+                Name = player.Name,
+                Role = player.Role,
+                Host = player.Host,
+                Ready = player.Ready,
+                Seed = player.Seed
+            });
+        }
+
+        foreach (GameReport report in GameReports)
+        {
+            matchState.GameReports.Add(new GameReport
+            {
+                Time = report.Time,
+                Percentage = report.Percentage,
+                SurfaceType = report.SurfaceType,
+                SurfacePicker = report.SurfacePicker,
+                CaveType = report.CaveType,
+                CavePicker = report.CavePicker,
+                GameEnd = report.GameEnd
+            });
+        }
+
+        foreach (SeedType seed in SeedTypes)
+        {
+            matchState.SeedTypes.Add(new SeedType
+            {
+                IsSurface = seed.IsSurface,
+                Type = seed.Type,
+                Status = seed.Status
+            });
+        }
+
+        return matchState;
     }
 
     public void UpdateAll(ILogger logger, List<RoomUser> players)
@@ -287,20 +352,20 @@ public class Match
     }
 }
 
-public class SeedType(bool isSurface, int type, SeedStatus status = SeedStatus.Available)
-{
-    public bool IsSurface { get; set; } = isSurface;
-    public int Type { get; set; } = type;
-    public SeedStatus Status { get; set; } = status;
-}
-
-public class GameReport
-{
-    public string? Time { get; set; } = null;
-    public double? Percentage { get; set; } = null;
-    public int? SurfaceType { get; set; } = null;
-    public int? SurfacePicker { get; set; } = null;
-    public int? CaveType { get; set; } = null;
-    public int? CavePicker { get; set; } = null;
-    public GameStatus GameEnd { get; set; } = GameStatus.GameWaiting;
-}
+//public class SeedType(bool isSurface, int type, SeedStatus status = SeedStatus.Available)
+//{
+//    public bool IsSurface { get; set; } = isSurface;
+//    public int Type { get; set; } = type;
+//    public SeedStatus Status { get; set; } = status;
+//}
+//
+//public class GameReport
+//{
+//    public string? Time { get; set; } = null;
+//    public double? Percentage { get; set; } = null;
+//    public int? SurfaceType { get; set; } = null;
+//    public int? SurfacePicker { get; set; } = null;
+//    public int? CaveType { get; set; } = null;
+//    public int? CavePicker { get; set; } = null;
+//    public GameStatus GameEnd { get; set; } = GameStatus.GameWaiting;
+//}

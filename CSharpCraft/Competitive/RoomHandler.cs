@@ -168,7 +168,7 @@ public static class RoomHandler
 
     private static void HandleStartMatchNotification(StartMatchNotification startMatchNotification)
     {
-        if (startMatchNotification.MatchStarted)
+        if (startMatchNotification.MatchState.PicksOn || startMatchNotification.MatchState.BansOn)
         {
             switch (_myself.Role)
             {
@@ -177,6 +177,20 @@ public static class RoomHandler
                     break;
                 case Role.Spectator:
                     p8.ScheduleScene(() => new PickBanScene()); //should be spectator version when i make the spectator scene
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            switch (_myself.Role)
+            {
+                case Role.Player:
+                    p8.ScheduleScene(() => new PickBanScene());
+                    break;
+                case Role.Spectator:
+                    //should be spectator version when i make the spectator scene
                     break;
                 default:
                     break;

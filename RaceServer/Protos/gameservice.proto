@@ -66,6 +66,40 @@ message RoomUser {
 	int32 seed = 5;
 }
 
+message MatchState {
+	MatchStatus status = 1;
+	repeated RoomUser players = 2;
+	int32 finishers = 3;
+	int32 best_of = 4;
+	int32 current_game = 5;
+	int32 advantage_h = 6;
+	int32 advantage_l = 7;
+	int32 score_h = 8;
+	int32 score_l = 9;
+	repeated GameReport game_reports = 10;
+	Category category = 11;
+	repeated SeedType seed_types = 12;
+	bool picks_on = 13;
+	bool bans_on = 14;
+	bool unbans_on = 15;
+}
+
+message GameReport {
+	string time = 1;
+	double percentage = 2;
+	int32 surface_type = 3;
+	int32 surface_picker = 4;
+	int32 cave_type = 5;
+	int32 cave_picker = 6;
+	GameStatus game_end = 7;
+}
+
+message SeedType {
+	bool is_surface = 1;
+	int32 type = 2;
+	SeedStatus status = 3;
+}
+
 
 
 message RoomStreamRequest {
@@ -146,7 +180,7 @@ message StartMatchResponse {
 }
 
 message StartMatchNotification {
-	bool match_started = 1;
+	MatchState match_state = 1;
 }
 
 
