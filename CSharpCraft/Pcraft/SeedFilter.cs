@@ -119,7 +119,7 @@ public static class SeedFilter
 
     private static readonly Random random = new();
 
-    private static CancellationTokenSource cts = new();
+    public static CancellationTokenSource Cts = new();
 
     public static readonly Dictionary<string, int> TileNum = new()
     {

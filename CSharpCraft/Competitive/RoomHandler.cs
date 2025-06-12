@@ -1,11 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using System.Data;
-using System.Text.Json;
-using System.Threading;
+using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
 using Grpc.Core;
 using Grpc.Net.Client;
-using Microsoft.Xna.Framework.Input;
 using RaceServer;
 
 namespace CSharpCraft.Competitive;
@@ -19,6 +16,8 @@ public static class RoomHandler
     public static readonly ConcurrentDictionary<int, RoomUser> _playerDictionary = new();
     public static RoomUser? _myself;
     public static Pico8Functions? p8;
+
+    public static MatchState? _curMatch;
 
     static RoomHandler()
     {
@@ -133,6 +132,9 @@ public static class RoomHandler
                     case RoomStreamResponse.MessageOneofCase.StartMatchNotification:
                         HandleStartMatchNotification(response.StartMatchNotification);
                         break;
+                    case RoomStreamResponse.MessageOneofCase.SendSeedNotification:
+                        HandleSendSeedNotification(response.SendSeedNotification);
+                        break;
                     case RoomStreamResponse.MessageOneofCase.UpdateSeedsNotification:
                         HandleUpdateSeedsNotification(response.UpdateSeedsNotification);
                         break;
@@ -155,6 +157,13 @@ public static class RoomHandler
         }
     }
 
+    private static void HandleSendSeedNotification(SendSeedNotification sendSeedNotification)
+    {
+        SeedFilter.Cts?.Cancel();
+        SeedFilter.Cts = new();
+        _curMatch = sendSeedNotification.MatchState;
+    }
+
     private static void HandleLeaveRoomNotification(LeaveRoomNotification notification)
     {
         UpdatePlayerDictionary(notification.Users);
@@ -168,6 +177,8 @@ public static class RoomHandler
 
     private static void HandleStartMatchNotification(StartMatchNotification startMatchNotification)
     {
+        _curMatch = startMatchNotification.MatchState;
+
         if (startMatchNotification.MatchState.PicksOn || startMatchNotification.MatchState.BansOn)
         {
             switch (_myself.Role)
@@ -187,7 +198,7 @@ public static class RoomHandler
             switch (_myself.Role)
             {
                 case Role.Player:
-                    p8.ScheduleScene(() => new PickBanScene());
+                    p8.ScheduleScene(() => new PcraftCompetitive());
                     break;
                 case Role.Spectator:
                     //should be spectator version when i make the spectator scene

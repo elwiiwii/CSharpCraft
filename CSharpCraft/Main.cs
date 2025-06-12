@@ -89,7 +89,7 @@ class FNAGame : Game
         scenes.Add(new PcraftSpeedrun());
         //scenes.Add(new DeluxeSingleplayer());
         //scenes.Add(new MainRace());
-        scenes.Add(new SeedFilter());
+        scenes.Add(new PcraftFilter());
         scenes.Add(new LoadSeed());
         scenes.Add(new Visualiser());
         scenes.Add(new ControlsOptions());

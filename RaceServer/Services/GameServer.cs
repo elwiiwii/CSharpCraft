@@ -242,4 +242,23 @@ public class GameServer : GameService.GameServiceBase
         };
     }
 
+    public override async Task<SendSeedResponse> SendSeed(SendSeedRequest request, ServerCallContext context)
+    {
+        room.CurrentMatch.SetSeed(logger, request.IsSurface, request.Seed.ToArray());
+
+        RoomStreamResponse notification = new()
+        {
+            SendSeedNotification = new() { MatchState = room.CurrentMatch.ToMatchState() }
+        };
+
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
+
+        return new SendSeedResponse
+        {
+            Success = true
+        };
+    }
 }

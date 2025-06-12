@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using RaceServer.Services;
 
@@ -319,6 +320,26 @@ public class Match
             return;
         }
         Score = score;
+    }
+
+    public void SetSeed(ILogger logger, bool isSurface, int[] seed)
+    {
+        if (isSurface)
+        {
+            GameReports.LastOrDefault()?.SurfaceSeed.Clear();
+            foreach (var tile in seed)
+            {
+                GameReports.LastOrDefault()?.SurfaceSeed.Add(tile);
+            }
+        }
+        else
+        {
+            GameReports.LastOrDefault()?.CaveSeed.Clear();
+            foreach (var tile in seed)
+            {
+                GameReports.LastOrDefault()?.CaveSeed.Add(tile);
+            }
+        }
     }
 
     public void UpdateGameReports(ILogger logger, List<GameReport> games)
