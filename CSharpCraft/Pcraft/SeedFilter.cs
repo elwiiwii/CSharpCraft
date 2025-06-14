@@ -270,7 +270,7 @@ public static class SeedFilter
         return mval;
     }
 
-    public static async Task<(F32[][], int[])> CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, Func<int, int, F32, F32, int, F32[][]> noise, CancellationToken ct)
+    public static async Task<(F32[][], int[])> CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, Func<int, int, F32, F32, int, F32[][]> noise, CancellationToken ct, bool useAllThreads = true)
     {
         var tcs = new TaskCompletionSource<(F32[][], int[])>();
         F32[][] resultMap = null;
@@ -280,7 +280,13 @@ public static class SeedFilter
         {
             try
             {
-                Parallel.For(0, int.MaxValue, (index, state) =>
+                var options = new ParallelOptions
+                {
+                    CancellationToken = ct,
+                    MaxDegreeOfParallelism = useAllThreads ? -1 : Math.Max(1, Environment.ProcessorCount - 1)
+                };
+
+                Parallel.For(0, int.MaxValue, options, (index, state) =>
                 {
                     if (ct.IsCancellationRequested || found)
                     {

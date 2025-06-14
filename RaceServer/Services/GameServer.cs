@@ -244,6 +244,15 @@ public class GameServer : GameService.GameServiceBase
 
     public override async Task<SendSeedResponse> SendSeed(SendSeedRequest request, ServerCallContext context)
     {
+        if ((request.IsSurface && room.CurrentMatch.GameReports[^1].SurfaceSeed is not null) ||
+            (!request.IsSurface && room.CurrentMatch.GameReports[^1].CaveSeed is not null))
+        {
+            return new SendSeedResponse
+            {
+                Success = false
+            };
+        }
+
         room.CurrentMatch.SetSeed(logger, request.IsSurface, request.Seed.ToArray());
 
         RoomStreamResponse notification = new()
@@ -257,6 +266,29 @@ public class GameServer : GameService.GameServiceBase
         }
 
         return new SendSeedResponse
+        {
+            Success = true
+        };
+    }
+
+    public override async Task<TogglePicksResponse> TogglePicks(TogglePicksRequest request, ServerCallContext context)
+    {
+        room.CurrentMatch.UpdatePicksOn(logger, !room.CurrentMatch.PicksOn);
+
+        RoomStreamResponse notification = new()
+        {
+            TogglePicksNotification = new()
+            {
+                MatchState = room.CurrentMatch.ToMatchState()
+            }
+        };
+
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
+
+        return new TogglePicksResponse
         {
             Success = true
         };

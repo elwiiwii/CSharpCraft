@@ -14,6 +14,7 @@ service GameService {
 	rpc UpdateSeeds (UpdateSeedsRequest) returns (UpdateSeedsResponse);
 	rpc EndGame (EndGameRequest) returns (EndGameResponse);
 	rpc EndMatch (EndMatchRequest) returns (EndMatchResponse);
+	rpc TogglePicks (TogglePicksRequest) returns (TogglePicksResponse);
 }
 
 
@@ -121,6 +122,7 @@ message RoomStreamResponse {
 		UpdateSeedsNotification update_seeds_notification = 6;
 		EndGameNotification end_game_notification = 7;
 		EndMatchNotification end_match_notification = 8;
+		TogglePicksNotification toggle_picks_notification = 9;
 	}
 }
 
@@ -243,4 +245,18 @@ message EndMatchResponse {
 
 message EndMatchNotification {
 	
+}
+
+
+
+message TogglePicksRequest {
+	string name = 1;
+}
+
+message TogglePicksResponse {
+	bool success = 1;
+}
+
+message TogglePicksNotification {
+	MatchState match_state = 1;
 }

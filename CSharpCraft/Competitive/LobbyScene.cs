@@ -121,10 +121,12 @@ public class LobbyScene(Role joinRole) : PcraftBase
         actionsItems.Add(new Item("password", RoomHandler._myself.Host, RoomHandler.Password));
 
         rulesItems.Clear();
-        rulesItems.Add(new Item("best of:5", RoomHandler._myself.Host));
-        rulesItems.Add(new Item("mode:any%", RoomHandler._myself.Host));
-        rulesItems.Add(new Item("finishers:1", RoomHandler._myself.Host));
-        rulesItems.Add(new Item("unbans:on", RoomHandler._myself.Host));
+        rulesItems.Add(new Item("best of:5", RoomHandler._myself.Host, RoomHandler.BestOfUp, RoomHandler.BestOfDown));
+        rulesItems.Add(new Item("mode:any%", RoomHandler._myself.Host, RoomHandler.CategoryUp, RoomHandler.CategoryDown));
+        rulesItems.Add(new Item("finishers:1", RoomHandler._myself.Host, RoomHandler.FinishersUp, RoomHandler.FinishersDown));
+        rulesItems.Add(new Item($"picks:{(RoomHandler._curMatch.PicksOn ? "on" : "off")}", RoomHandler._myself.Host, RoomHandler.TogglePicks));
+        rulesItems.Add(new Item($"bans:{(RoomHandler._curMatch.BansOn ? "on" : "off")}", RoomHandler._myself.Host, RoomHandler.ToggleBans));
+        rulesItems.Add(new Item($"unbans:{(RoomHandler._curMatch.BansOn && RoomHandler._curMatch.UnbansOn ? "on" : "off")}", RoomHandler._myself.Host, RoomHandler.ToggleUnbans));
         rulesItems.Add(new Item("adv:0-0", RoomHandler._myself.Host));
 
         playerList.Update(mouseState, prevMouseState);

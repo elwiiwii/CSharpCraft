@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
+using FixMath;
 using Grpc.Core;
 using Grpc.Net.Client;
 using RaceServer;
@@ -86,9 +87,9 @@ public static class RoomHandler
         try
         {
             _roomStream = _service.RoomStream(new RoomStreamRequest { Name = name, Role = role });
-            _ = Task.Run(async () => 
+            _ = Task.Run(async () =>
             {
-                try 
+                try
                 {
                     await ReadRoomStream();
                 }
@@ -138,6 +139,9 @@ public static class RoomHandler
                     case RoomStreamResponse.MessageOneofCase.UpdateSeedsNotification:
                         HandleUpdateSeedsNotification(response.UpdateSeedsNotification);
                         break;
+                    case RoomStreamResponse.MessageOneofCase.TogglePicksNotification:
+                        HandleTogglePicksNotification(response.TogglePicksNotification);
+                        break;
                     case RoomStreamResponse.MessageOneofCase.None:
                         break;
                     default:
@@ -155,6 +159,11 @@ public static class RoomHandler
             Console.WriteLine($"Error in room stream: {ex.Message}");
             throw; // Re-throw to be handled by the caller
         }
+    }
+
+    private static void HandleTogglePicksNotification(TogglePicksNotification togglePicksNotification)
+    {
+        _curMatch = togglePicksNotification.MatchState;
     }
 
     private static void HandleSendSeedNotification(SendSeedNotification sendSeedNotification)
@@ -315,5 +324,94 @@ public static class RoomHandler
         Console.WriteLine($"Calling PlayerReady for {_myself.Name}, current ready state: {_myself.Ready}");
         _myself.Ready = _service.PlayerReady(new PlayerReadyRequest { Name = _myself.Name }).Ready;
         Console.WriteLine($"PlayerReady response received, new ready state: {_myself.Ready}");
+    }
+
+    public static async Task SendSeed(bool isSurface, F32[][] seed)
+    {
+        if (_curMatch is null)
+        {
+            Console.WriteLine("Current match state is null, cannot send seed.");
+            return;
+        }
+
+        SendSeedRequest request = new()
+        {
+            Name = _myself?.Name ?? AccountHandler._myself.Username,
+            IsSurface = isSurface
+        };
+
+        for (int i = 0; i < seed.Length; i++)
+        {
+            for (int j = 0; j < seed[i].Length; j++)
+            {
+                request.Seed[i * seed[i].Length + j] = F32.FloorToInt(seed[i][j]);
+            }
+        }
+
+        try
+        {
+            await _service.SendSeedAsync(request);
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error sending seed: {ex.Status.Detail}");
+        }
+    }
+
+    internal static async Task BestOfUp()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task BestOfDown()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task CategoryUp()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task CategoryDown()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task FinishersUp()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task FinishersDown()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task TogglePicks()
+    {
+        TogglePicksRequest request = new()
+        {
+            Name = _myself?.Name ?? AccountHandler._myself.Username
+        };
+
+        try
+        {
+            await _service.TogglePicksAsync(request);
+        }
+        catch (RpcException ex)
+        {
+            Console.WriteLine($"Error sending seed: {ex.Status.Detail}");
+        }
+    }
+
+    internal static async Task ToggleBans()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static async Task ToggleUnbans()
+    {
+        throw new NotImplementedException();
     }
 }

@@ -2,6 +2,7 @@
 using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
 using FixMath;
+using Microsoft.Xna.Framework.Input;
 
 namespace CSharpCraft.Pcraft;
 
@@ -12,10 +13,14 @@ public class PcraftCompetitive : SpeedrunBase
     private readonly List<DensityCheck> densityChecks = [];
     private readonly List<DensityComparison> densityComparisons = [];
     private readonly Random random = new();
+    private Task ResetLevelTask;
+    private CancellationTokenSource cts = new();
 
     public override void Init(Pico8Functions pico8)
     {
         base.Init(pico8);
+        cts = new();
+        ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
     }
 
     private async Task<Level> CreateLevelAsync(int xx, int yy, int sizex, int sizey, bool IsUnderground, CancellationToken ct)
@@ -42,7 +47,7 @@ public class PcraftCompetitive : SpeedrunBase
             {
                 List<DensityCheck> caveDensityChecks = densityChecks.Where(check => check.IsCave).ToList();
                 List<DensityComparison> caveDensityComparisons = densityComparisons.Where(check => check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, ct);
+                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, ct, false);
 
                 if (typeCount[8] < 30) { needmap = true; }
                 if (typeCount[9] < 20) { needmap = true; }
@@ -53,7 +58,7 @@ public class PcraftCompetitive : SpeedrunBase
             {
                 List<DensityCheck> surfaceDensityChecks = densityChecks.Where(check => !check.IsCave).ToList();
                 List<DensityComparison> surfaceDensityComparisons = densityComparisons.Where(check => !check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, ct);
+                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, ct, false);
 
                 if (typeCount[3] < 30) { needmap = true; }
                 if (typeCount[4] < 30) { needmap = true; }
@@ -62,8 +67,8 @@ public class PcraftCompetitive : SpeedrunBase
 
             if (!needmap)
             {
-                plx = F32.Neg1;
-                ply = F32.Neg1;
+                //plx = F32.Neg1;
+                //ply = F32.Neg1;
 
                 List<(int x, int y)> spawnableTiles = [];
 
@@ -84,49 +89,51 @@ public class PcraftCompetitive : SpeedrunBase
                     }
                 }
 
-                if (spawnableTiles.Count > 0)
+                if (spawnableTiles.Count < 0)
                 {
-                    int indx = random.Next(spawnableTiles.Count);
-                    (int x, int y) tile = spawnableTiles[indx];
-
-                    plx = F32.FromInt(tile.x * 16 + 8);
-                    ply = F32.FromInt(tile.y * 16 + 8);
-                }
-
-                if (plx < 0)
-                {
+                //    int indx = random.Next(spawnableTiles.Count);
+                //    (int x, int y) tile = spawnableTiles[indx];
+                //
+                //    plx = F32.FromInt(tile.x * 16 + 8);
+                //    ply = F32.FromInt(tile.y * 16 + 8);
+                //}
+                //
+                //if (plx < 0)
+                //{
                     needmap = true;
                     //surfaceFailCount++;
                 }
             }
         }
 
-        for (int i = 0; i < levelsx; i++)
-        {
-            for (int j = 0; j < levelsy; j++)
-            {
-                p8.Mset(i + levelx, j + levely, level[i][j].Double);
-            }
-        }
 
-        holex = levelsx / 2 + levelx;
-        holey = levelsy / 2 + levely;
 
-        for (int i = -1; i <= 1; i++)
-        {
-            for (int j = -1; j <= 1; j++)
-            {
-                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
-            }
-        }
-
-        p8.Mset(holex, holey, 11);
-
-        clx = plx;
-        cly = ply;
-
-        cmx = plx;
-        cmy = ply;
+        //for (int i = 0; i < levelsx; i++)
+        //{
+        //    for (int j = 0; j < levelsy; j++)
+        //    {
+        //        p8.Mset(i + levelx, j + levely, level[i][j].Double);
+        //    }
+        //}
+        //
+        //holex = levelsx / 2 + levelx;
+        //holey = levelsy / 2 + levely;
+        //
+        //for (int i = -1; i <= 1; i++)
+        //{
+        //    for (int j = -1; j <= 1; j++)
+        //    {
+        //        p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+        //    }
+        //}
+        //
+        //p8.Mset(holex, holey, 11);
+        //
+        //clx = plx;
+        //cly = ply;
+        //
+        //cmx = plx;
+        //cmy = ply;
     }
 
     private async Task ResetLevelAsync(CancellationToken ct)
