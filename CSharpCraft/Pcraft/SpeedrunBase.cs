@@ -11,6 +11,7 @@ public abstract class SpeedrunBase : PcraftBase
     protected F32 frameTimer = F32.Zero;
     protected string timer = "0:00.00";
 
+    protected int worldSeed = 0;
     protected int rngSeed = 0;
 
     protected bool stdPlayerSpawn = true;
@@ -30,10 +31,12 @@ public abstract class SpeedrunBase : PcraftBase
     protected int[] wastedHits = new int[9];
     protected bool pickupAction = false;
     protected bool placeAction = false;
-
+    
     protected new DataItem[] data = new DataItem[8192];
 
     protected int zReset = 0;
+
+    protected Random? worldRng = null;
 
     protected Random? sandTimer = null;
     protected Random? wheatTimer = null;
@@ -121,7 +124,7 @@ public abstract class SpeedrunBase : PcraftBase
         { player, null },
         { zombi, null }
     };
-
+    
     protected override void Craft(Entity req)
     {
         foreach (Entity e in req.Req)
@@ -210,7 +213,7 @@ public abstract class SpeedrunBase : PcraftBase
         placeAction = false;
 
         zReset = 0;
-
+        worldRng = new Random(worldSeed);
         int incr = 0;
         WatRng = new Random(rngSeed + incr);
         incr++;
@@ -1292,6 +1295,97 @@ public abstract class SpeedrunBase : PcraftBase
         }
     }
 
+    protected virtual F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep, Random? random = null)
+    {
+        F32[][] n = new F32[sx + 1][];
+
+        for (int i = 0; i <= sx; i++)
+        {
+            n[i] = new F32[sy + 1];
+            for (int j = 0; j <= sy; j++)
+            {
+                n[i][j] = F32.Half;
+            }
+        }
+
+        int step = sx;
+        F32 scale = startscale;
+
+        while (step > 1)
+        {
+            F32 cscal = scale;
+            if (step == featstep) { cscal = F32.One; }
+
+            for (int i = 0; i < sx; i += step)
+            {
+                for (int j = 0; j < sy; j += step)
+                {
+                    F32 c1 = n[i][j];
+                    F32 c2 = n[i + step][j];
+                    F32 c3 = n[i][j + step];
+                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
+                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
+                }
+            }
+
+            for (int i = 0; i < sx; i += step)
+            {
+                for (int j = 0; j < sy; j += step)
+                {
+                    F32 c1 = n[i][j];
+                    F32 c2 = n[i + step][j];
+                    F32 c3 = n[i][j + step];
+                    F32 c4 = n[i + step][j + step];
+                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (p8.Rnd(1, random) - F32.Half) * cscal;
+                }
+            }
+
+            step /= 2;
+            scale *= scalemod;
+        }
+
+        return n;
+    }
+
+    protected virtual F32[][] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e, int seed)
+    {
+        Random r = new(seed);
+        F32[][] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx, r);
+        F32[][] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8, r);
+        F32[][] cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8, r);
+        F32[][] cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4, r);
+
+        for (int i = 0; i < 11; i++)
+        {
+            typeCount[i] = 0;
+        }
+
+        for (int i = 0; i <= sx; i++)
+        {
+            for (int j = 0; j <= sy; j++)
+            {
+                F32 v = F32.Abs(cur[i][j] - cur2[i][j]);
+                F32 v2 = F32.Abs(cur[i][j] - cur3[i][j]);
+                F32 v3 = F32.Abs(cur[i][j] - cur4[i][j]);
+                F32 dist = F32.Max(F32.Abs(F32.FromDouble((double)i / sx - 0.5)) * 2, F32.Abs(F32.FromDouble((double)j / sy - 0.5)) * 2);
+                dist = dist * dist * dist * dist;
+                F32 coast = v * 4 - dist * 4;
+
+                int id = a;
+                if (coast > F32.FromDouble(0.3)) { id = b; } // sand
+                if (coast > F32.FromDouble(0.6)) { id = c; } // grass
+                if (coast > F32.FromDouble(0.3) && v2 > F32.Half) { id = d; } // stone
+                if (id == c && v3 > F32.Half) { id = e; } // tree
+
+                typeCount[id] += 1;
+
+                cur[i][j] = F32.FromInt(id);
+            }
+        }
+
+        return cur;
+    }
+
     protected override void CreateMap()
     {
         bool needmap = true;
@@ -1302,7 +1396,7 @@ public abstract class SpeedrunBase : PcraftBase
 
             if (levelUnder)
             {
-                level = CreateMapStep(levelsx, levelsy, 3, 8, 1, 9, 10);
+                level = CreateMapStep(levelsx, levelsy, 3, 8, 1, 9, 10, worldSeed);
 
                 if (typeCount[8] < 30) { needmap = true; }
                 if (typeCount[9] < 20) { needmap = true; }
@@ -1310,7 +1404,7 @@ public abstract class SpeedrunBase : PcraftBase
             }
             else
             {
-                level = CreateMapStep(levelsx, levelsy, 0, 1, 2, 3, 4);
+                level = CreateMapStep(levelsx, levelsy, 0, 1, 2, 3, 4, worldSeed);
 
                 if (typeCount[3] < 30) { needmap = true; }
                 if (typeCount[4] < 30) { needmap = true; }

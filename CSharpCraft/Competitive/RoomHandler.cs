@@ -133,9 +133,6 @@ public static class RoomHandler
                     case RoomStreamResponse.MessageOneofCase.StartMatchNotification:
                         HandleStartMatchNotification(response.StartMatchNotification);
                         break;
-                    case RoomStreamResponse.MessageOneofCase.SendSeedNotification:
-                        HandleSendSeedNotification(response.SendSeedNotification);
-                        break;
                     case RoomStreamResponse.MessageOneofCase.UpdateSeedsNotification:
                         HandleUpdateSeedsNotification(response.UpdateSeedsNotification);
                         break;
@@ -164,13 +161,6 @@ public static class RoomHandler
     private static void HandleTogglePicksNotification(TogglePicksNotification togglePicksNotification)
     {
         _curMatch = togglePicksNotification.MatchState;
-    }
-
-    private static void HandleSendSeedNotification(SendSeedNotification sendSeedNotification)
-    {
-        SeedFilter.Cts?.Cancel();
-        SeedFilter.Cts = new();
-        _curMatch = sendSeedNotification.MatchState;
     }
 
     private static void HandleLeaveRoomNotification(LeaveRoomNotification notification)
@@ -324,38 +314,6 @@ public static class RoomHandler
         Console.WriteLine($"Calling PlayerReady for {_myself.Name}, current ready state: {_myself.Ready}");
         _myself.Ready = _service.PlayerReady(new PlayerReadyRequest { Name = _myself.Name }).Ready;
         Console.WriteLine($"PlayerReady response received, new ready state: {_myself.Ready}");
-    }
-
-    public static async Task SendSeed(bool isSurface, F32[][] seed)
-    {
-        if (_curMatch is null)
-        {
-            Console.WriteLine("Current match state is null, cannot send seed.");
-            return;
-        }
-
-        SendSeedRequest request = new()
-        {
-            Name = _myself?.Name ?? AccountHandler._myself.Username,
-            IsSurface = isSurface
-        };
-
-        for (int i = 0; i < seed.Length; i++)
-        {
-            for (int j = 0; j < seed[i].Length; j++)
-            {
-                request.Seed[i * seed[i].Length + j] = F32.FloorToInt(seed[i][j]);
-            }
-        }
-
-        try
-        {
-            await _service.SendSeedAsync(request);
-        }
-        catch (RpcException ex)
-        {
-            Console.WriteLine($"Error sending seed: {ex.Status.Detail}");
-        }
     }
 
     internal static async Task BestOfUp()

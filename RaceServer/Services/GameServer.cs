@@ -14,6 +14,7 @@ public class GameServer : GameService.GameServiceBase
 
     private readonly Room room;
     private readonly ILogger<GameServer> logger;
+    private readonly object lockObject = new();
 
     public GameServer(ILogger<GameServer> logger)
     {
@@ -225,6 +226,8 @@ public class GameServer : GameService.GameServiceBase
         room.AssignSeedingTemp();
         RoomUser h = room.Users.FirstOrDefault(p => p.Seed == 1);
         RoomUser l = room.Users.FirstOrDefault(p => p.Seed == 2);
+        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].WorldSeed = new Random().Next(0, int.MaxValue);
+        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].RngSeed = new Random().Next(0, int.MaxValue);
 
         RoomStreamResponse notification = new()
         {
@@ -239,35 +242,6 @@ public class GameServer : GameService.GameServiceBase
         return new StartMatchResponse
         {
 
-        };
-    }
-
-    public override async Task<SendSeedResponse> SendSeed(SendSeedRequest request, ServerCallContext context)
-    {
-        if ((request.IsSurface && room.CurrentMatch.GameReports[^1].SurfaceSeed is not null) ||
-            (!request.IsSurface && room.CurrentMatch.GameReports[^1].CaveSeed is not null))
-        {
-            return new SendSeedResponse
-            {
-                Success = false
-            };
-        }
-
-        room.CurrentMatch.SetSeed(logger, request.IsSurface, request.Seed.ToArray());
-
-        RoomStreamResponse notification = new()
-        {
-            SendSeedNotification = new() { MatchState = room.CurrentMatch.ToMatchState() }
-        };
-
-        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
-        {
-            await client.WriteAsync(notification);
-        }
-
-        return new SendSeedResponse
-        {
-            Success = true
         };
     }
 

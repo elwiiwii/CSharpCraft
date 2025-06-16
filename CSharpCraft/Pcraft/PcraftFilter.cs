@@ -66,6 +66,58 @@ public class PcraftFilter : PcraftBase, IDisposable
         return l;
     }
 
+    private F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep, Random? random = null)
+    {
+        F32[][] n = new F32[sx + 1][];
+
+        for (int i = 0; i <= sx; i++)
+        {
+            n[i] = new F32[sy + 1];
+            for (int j = 0; j <= sy; j++)
+            {
+                n[i][j] = F32.Half;
+            }
+        }
+
+        int step = sx;
+        F32 scale = startscale;
+
+        while (step > 1)
+        {
+            F32 cscal = scale;
+            if (step == featstep) { cscal = F32.One; }
+
+            for (int i = 0; i < sx; i += step)
+            {
+                for (int j = 0; j < sy; j += step)
+                {
+                    F32 c1 = n[i][j];
+                    F32 c2 = n[i + step][j];
+                    F32 c3 = n[i][j + step];
+                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
+                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
+                }
+            }
+
+            for (int i = 0; i < sx; i += step)
+            {
+                for (int j = 0; j < sy; j += step)
+                {
+                    F32 c1 = n[i][j];
+                    F32 c2 = n[i + step][j];
+                    F32 c3 = n[i][j + step];
+                    F32 c4 = n[i + step][j + step];
+                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (p8.Rnd(1, random) - F32.Half) * cscal;
+                }
+            }
+
+            step /= 2;
+            scale *= scalemod;
+        }
+
+        return n;
+    }
+
     private async Task CreateMapAsync(CancellationToken ct)
     {
         bool needmap = true;
@@ -78,7 +130,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             {
                 List<DensityCheck> caveDensityChecks = densityChecks.Where(check => check.IsCave).ToList();
                 List<DensityComparison> caveDensityComparisons = densityComparisons.Where(check => check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, ct);
+                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, random.Next(int.MaxValue), ct);
                 
                 if (typeCount[8] < 30) { needmap = true; }
                 if (typeCount[9] < 20) { needmap = true; }
@@ -89,7 +141,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             {
                 List<DensityCheck> surfaceDensityChecks = densityChecks.Where(check => !check.IsCave).ToList();
                 List<DensityComparison> surfaceDensityComparisons = densityComparisons.Where(check => !check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, ct);
+                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, random.Next(int.MaxValue), ct);
 
                 if (typeCount[3] < 30) { needmap = true; }
                 if (typeCount[4] < 30) { needmap = true; }

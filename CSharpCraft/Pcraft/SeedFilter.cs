@@ -270,7 +270,7 @@ public static class SeedFilter
         return mval;
     }
 
-    public static async Task<(F32[][], int[])> CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, Func<int, int, F32, F32, int, F32[][]> noise, CancellationToken ct, bool useAllThreads = true)
+    public static async Task<(F32[][], int[])> CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, Func<int, int, F32, F32, int, Random?, F32[][]> noise, int seed, CancellationToken ct, bool useAllThreads = true)
     {
         var tcs = new TaskCompletionSource<(F32[][], int[])>();
         F32[][] resultMap = null;
@@ -301,10 +301,12 @@ public static class SeedFilter
                     List<DensityCheck> densityChecksClone = densityChecks.Select(c => c.Clone()).ToList();
                     List<DensityComparison> densityComparisonsClone = densityComparisons.Select(c => c.Clone()).ToList();
 
-                    F32[][] cur = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
-                    F32[][] cur2 = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
-                    F32[][] cur3 = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
-                    F32[][] cur4 = noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
+                    Random r = new(seed + Math.Abs(index * 4));
+
+                    F32[][] cur = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx, r);
+                    F32[][] cur2 = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8, r);
+                    F32[][] cur3 = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8, r);
+                    F32[][] cur4 = noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4, r);
 
                     int maxRadius = Math.Min(sx / 2 - 1, Math.Max(1, MaxRadius(densityChecksClone, densityComparisonsClone)));
                     int minRadius = Math.Min(sx / 2 - 1, Math.Max(1, MinRadius(densityChecksClone, densityComparisonsClone, sx)));

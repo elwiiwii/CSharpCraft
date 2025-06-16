@@ -12,128 +12,19 @@ public class PcraftCompetitive : SpeedrunBase
 
     private readonly List<DensityCheck> densityChecks = [];
     private readonly List<DensityComparison> densityComparisons = [];
-    private readonly Random random = new();
+    private bool isGenerating;
+    private bool isGenerated;
+
     private Task ResetLevelTask;
     private CancellationTokenSource cts = new();
+    private int worldSeed;
 
     public override void Init(Pico8Functions pico8)
     {
         base.Init(pico8);
         cts = new();
+        isGenerating = true;
         ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
-    }
-
-    private async Task<Level> CreateLevelAsync(int xx, int yy, int sizex, int sizey, bool IsUnderground, CancellationToken ct)
-    {
-        Level l = new() { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new F32[8192] };
-        SetLevel(l);
-        levelUnder = IsUnderground;
-        await CreateMapAsync(ct);
-        FillEne(l);
-        l.Stx = F32.FromInt((holex - levelx) * 16 + 8);
-        l.Sty = F32.FromInt((holey - levely) * 16 + 8);
-        return l;
-    }
-
-    private async Task CreateMapAsync(CancellationToken ct)
-    {
-        bool needmap = true;
-
-        while (needmap)
-        {
-            needmap = false;
-
-            if (levelUnder)
-            {
-                List<DensityCheck> caveDensityChecks = densityChecks.Where(check => check.IsCave).ToList();
-                List<DensityComparison> caveDensityComparisons = densityComparisons.Where(check => check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, ct, false);
-
-                if (typeCount[8] < 30) { needmap = true; }
-                if (typeCount[9] < 20) { needmap = true; }
-                if (typeCount[10] < 15) { needmap = true; }
-                //if (needmap) caveFailCount++;
-            }
-            else
-            {
-                List<DensityCheck> surfaceDensityChecks = densityChecks.Where(check => !check.IsCave).ToList();
-                List<DensityComparison> surfaceDensityComparisons = densityComparisons.Where(check => !check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, ct, false);
-
-                if (typeCount[3] < 30) { needmap = true; }
-                if (typeCount[4] < 30) { needmap = true; }
-                //if (needmap) surfaceFailCount++;
-            }
-
-            if (!needmap)
-            {
-                //plx = F32.Neg1;
-                //ply = F32.Neg1;
-
-                List<(int x, int y)> spawnableTiles = [];
-
-                for (int i = -4; i <= 4; i++)
-                {
-                    if (i == 0) { continue; }
-                    for (int j = -4; j <= 4; j++)
-                    {
-                        if (j == 0) { continue; }
-                        int depx = levelsx / 2 + i;
-                        int depy = levelsy / 2 + j;
-                        F32 c = level[depx][depy];
-
-                        if (c == 1 || c == 2)
-                        {
-                            spawnableTiles.Add((depx, depy));
-                        }
-                    }
-                }
-
-                if (spawnableTiles.Count < 0)
-                {
-                //    int indx = random.Next(spawnableTiles.Count);
-                //    (int x, int y) tile = spawnableTiles[indx];
-                //
-                //    plx = F32.FromInt(tile.x * 16 + 8);
-                //    ply = F32.FromInt(tile.y * 16 + 8);
-                //}
-                //
-                //if (plx < 0)
-                //{
-                    needmap = true;
-                    //surfaceFailCount++;
-                }
-            }
-        }
-
-
-
-        //for (int i = 0; i < levelsx; i++)
-        //{
-        //    for (int j = 0; j < levelsy; j++)
-        //    {
-        //        p8.Mset(i + levelx, j + levely, level[i][j].Double);
-        //    }
-        //}
-        //
-        //holex = levelsx / 2 + levelx;
-        //holey = levelsy / 2 + levely;
-        //
-        //for (int i = -1; i <= 1; i++)
-        //{
-        //    for (int j = -1; j <= 1; j++)
-        //    {
-        //        p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
-        //    }
-        //}
-        //
-        //p8.Mset(holex, holey, 11);
-        //
-        //clx = plx;
-        //cly = ply;
-        //
-        //cmx = plx;
-        //cmy = ply;
     }
 
     private async Task ResetLevelAsync(CancellationToken ct)
@@ -153,6 +44,8 @@ public class PcraftCompetitive : SpeedrunBase
         placeAction = false;
 
         zReset = 0;
+        worldSeed = RoomHandler._curMatch.GameReports[^1].WorldSeed;
+        rngSeed = RoomHandler._curMatch.GameReports[^1].RngSeed;
 
         int incr = 0;
         WatRng = new Random(rngSeed + incr);
@@ -226,7 +119,7 @@ public class PcraftCompetitive : SpeedrunBase
             Rndwat[i] = new F32[16];
             for (int j = 0; j <= 15; j++)
             {
-                Rndwat[i][j] = p8.Rnd(100, WatRng);
+                Rndwat[i][j] = p8.Rnd(100);
             }
         }
 
@@ -239,10 +132,128 @@ public class PcraftCompetitive : SpeedrunBase
 
         p8.Add(invent, tmpworkbench);
         p8.Add(invent, Inst(pickuptool));
+
+        curMenu = null;
+        p8.Music(1);
+        isGenerating = false;
+        isGenerated = true;
+    }
+
+    private async Task<Level> CreateLevelAsync(int xx, int yy, int sizex, int sizey, bool IsUnderground, CancellationToken ct)
+    {
+        Level l = new() { X = xx, Y = yy, Sx = sizex, Sy = sizey, IsUnder = IsUnderground, Ent = [], Ene = [], Dat = new F32[8192] };
+        SetLevel(l);
+        levelUnder = IsUnderground;
+        await CreateMapAsync(ct);
+        FillEne(l);
+        l.Stx = F32.FromInt((holex - levelx) * 16 + 8);
+        l.Sty = F32.FromInt((holey - levely) * 16 + 8);
+        return l;
+    }
+
+    private async Task CreateMapAsync(CancellationToken ct)
+    {
+        bool needmap = true;
+
+        while (needmap)
+        {
+            needmap = false;
+
+            if (levelUnder)
+            {
+                List<DensityCheck> caveDensityChecks = densityChecks.Where(check => check.IsCave).ToList();
+                List<DensityComparison> caveDensityComparisons = densityComparisons.Where(check => check.IsCave).ToList();
+                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, worldSeed, ct, false);
+
+                if (typeCount[8] < 30) { needmap = true; }
+                if (typeCount[9] < 20) { needmap = true; }
+                if (typeCount[10] < 15) { needmap = true; }
+                //if (needmap) caveFailCount++;
+            }
+            else
+            {
+                List<DensityCheck> surfaceDensityChecks = densityChecks.Where(check => !check.IsCave).ToList();
+                List<DensityComparison> surfaceDensityComparisons = densityComparisons.Where(check => !check.IsCave).ToList();
+                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, worldSeed, ct, false);
+
+                if (typeCount[3] < 30) { needmap = true; }
+                if (typeCount[4] < 30) { needmap = true; }
+                //if (needmap) surfaceFailCount++;
+            }
+
+            if (!needmap)
+            {
+                plx = F32.Neg1;
+                ply = F32.Neg1;
+
+                List<(int x, int y)> spawnableTiles = [];
+
+                for (int i = -4; i <= 4; i++)
+                {
+                    if (i == 0) { continue; }
+                    for (int j = -4; j <= 4; j++)
+                    {
+                        if (j == 0) { continue; }
+                        int depx = levelsx / 2 + i;
+                        int depy = levelsy / 2 + j;
+                        F32 c = level[depx][depy];
+
+                        if (c == 1 || c == 2)
+                        {
+                            spawnableTiles.Add((depx, depy));
+                        }
+                    }
+                }
+
+                if (spawnableTiles.Count > 0)
+                {
+                    int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, pSpawnRng));
+                    (int x, int y) tile = spawnableTiles[indx];
+
+                    plx = F32.FromInt(tile.x * 16 + 8);
+                    ply = F32.FromInt(tile.y * 16 + 8);
+                }
+
+                if (plx < 0)
+                {
+                    needmap = true;
+                    //surfaceFailCount++;
+                }
+            }
+        }
+
+        for (int i = 0; i < levelsx; i++)
+        {
+            for (int j = 0; j < levelsy; j++)
+            {
+                p8.Mset(i + levelx, j + levely, level[i][j].Double);
+            }
+        }
+
+        holex = levelsx / 2 + levelx;
+        holey = levelsy / 2 + levely;
+
+        for (int i = -1; i <= 1; i++)
+        {
+            for (int j = -1; j <= 1; j++)
+            {
+                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+            }
+        }
+
+        p8.Mset(holex, holey, 11);
+
+        clx = plx;
+        cly = ply;
+
+        cmx = plx;
+        cmy = ply;
     }
 
     public override void Update()
     {
+        if (!isGenerated || isGenerating) return;
+
         if (runtimer == 1)
         {
             frameTimer += F32.FromRaw(1);
@@ -623,6 +634,23 @@ public class PcraftCompetitive : SpeedrunBase
 
     public override void Draw()
     {
+        if (!isGenerated || isGenerating)
+        {
+            p8.Cls(17);
+            p8.Camera();
+
+            var caveChecks = densityChecks.Where(check => check.IsCave).ToList();
+            var caveComps = densityComparisons.Where(check => check.IsCave).ToList();
+            var caveFailCount = Math.Max(caveChecks.Count > 0 ? caveChecks.Max(x => x.TryCount) : 0, caveComps.Count > 0 ? caveComps.Max(x => x.TryCount) : 0);
+            Shared.Printc(p8, $"generating cave ({caveFailCount})", 64, 57, 15);
+
+            var surfaceChecks = densityChecks.Where(check => !check.IsCave).ToList();
+            var surfaceComps = densityComparisons.Where(check => !check.IsCave).ToList();
+            var surfaceFailCount = Math.Max(surfaceChecks.Count > 0 ? surfaceChecks.Max(x => x.TryCount) : 0, surfaceComps.Count > 0 ? surfaceComps.Max(x => x.TryCount) : 0);
+            Shared.Printc(p8, $"generating surface ({surfaceFailCount})", 64, 65, 15);
+            return;
+        }
+
         if (curMenu is not null && curMenu.Spr is not null)
         {
             p8.Camera();
@@ -703,6 +731,7 @@ public class PcraftCompetitive : SpeedrunBase
     public override void Dispose()
     {
         base.Dispose();
-        
+        cts?.Cancel();
+        cts?.Dispose();
     }
 }

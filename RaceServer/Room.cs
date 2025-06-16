@@ -179,7 +179,9 @@ public class Match
                 SurfacePicker = report.SurfacePicker,
                 CaveType = report.CaveType,
                 CavePicker = report.CavePicker,
-                GameEnd = report.GameEnd
+                WorldSeed = report.WorldSeed,
+                RngSeed = report.RngSeed,
+                GameStatus = report.GameStatus
             });
         }
 
@@ -320,26 +322,6 @@ public class Match
             return;
         }
         Score = score;
-    }
-
-    public void SetSeed(ILogger logger, bool isSurface, int[] seed)
-    {
-        if (isSurface)
-        {
-            GameReports.LastOrDefault()?.SurfaceSeed.Clear();
-            foreach (var tile in seed)
-            {
-                GameReports.LastOrDefault()?.SurfaceSeed.Add(tile);
-            }
-        }
-        else
-        {
-            GameReports.LastOrDefault()?.CaveSeed.Clear();
-            foreach (var tile in seed)
-            {
-                GameReports.LastOrDefault()?.CaveSeed.Add(tile);
-            }
-        }
     }
 
     public void UpdateGameReports(ILogger logger, List<GameReport> games)

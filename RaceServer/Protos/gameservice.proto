@@ -10,7 +10,6 @@ service GameService {
 	rpc LeaveRoom (LeaveRoomRequest) returns (LeaveRoomResponse);
 	rpc PlayerReady (PlayerReadyRequest) returns (PlayerReadyResponse);
 	rpc StartMatch (StartMatchRequest) returns (StartMatchResponse);
-	rpc SendSeed (SendSeedRequest) returns (SendSeedResponse);
 	rpc UpdateSeeds (UpdateSeedsRequest) returns (UpdateSeedsResponse);
 	rpc EndGame (EndGameRequest) returns (EndGameResponse);
 	rpc EndMatch (EndMatchRequest) returns (EndMatchResponse);
@@ -91,11 +90,11 @@ message GameReport {
 	double percentage = 2;
 	int32 surface_type = 3;
 	int32 surface_picker = 4;
-	repeated int32 surface_seed = 5;
-	int32 cave_type = 6;
-	int32 cave_picker = 7;
-	repeated int32 cave_seed = 8;
-	GameStatus game_end = 9;
+	int32 cave_type = 5;
+	int32 cave_picker = 6;
+	int32 world_seed = 7;
+	int32 rng_seed = 8;
+	GameStatus game_status = 9;
 }
 
 message SeedType {
@@ -118,11 +117,10 @@ message RoomStreamResponse {
 		LeaveRoomNotification leave_room_notification = 2;
 		PlayerReadyNotification player_ready_notification = 3;
 		StartMatchNotification start_match_notification = 4;
-		SendSeedNotification send_seed_notification = 5;
-		UpdateSeedsNotification update_seeds_notification = 6;
-		EndGameNotification end_game_notification = 7;
-		EndMatchNotification end_match_notification = 8;
-		TogglePicksNotification toggle_picks_notification = 9;
+		UpdateSeedsNotification update_seeds_notification = 5;
+		EndGameNotification end_game_notification = 6;
+		EndMatchNotification end_match_notification = 7;
+		TogglePicksNotification toggle_picks_notification = 8;
 	}
 }
 
@@ -186,22 +184,6 @@ message StartMatchResponse {
 }
 
 message StartMatchNotification {
-	MatchState match_state = 1;
-}
-
-
-
-message SendSeedRequest {
-	string name = 1;
-	bool is_surface = 2;
-	repeated int32 seed = 3;
-}
-
-message SendSeedResponse {
-	bool success = 1;
-}
-
-message SendSeedNotification {
 	MatchState match_state = 1;
 }
 
