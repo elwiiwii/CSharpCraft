@@ -29,6 +29,15 @@ public class Room
     public void AddPlayer(RoomUser user)
     {
         if (users.FirstOrDefault(p => p.Host) is not null && user.Host) user.Host = false;
+        if (users.Count < 1)
+        {
+            user.Generator = true;
+        }
+        else if (user.ThreadCount > users.Max(u => u.ThreadCount))
+        {
+            users.Where(p => p.Generator).ToList().ForEach(p => p.Generator = false);
+            user.Generator = true;
+        }
         users.Add(user);
         if (CurrentMatch is null) CurrentMatch = new Match(users);
         CurrentMatch.UpdateAll(logger, users);
@@ -41,7 +50,8 @@ public class Room
         if (user is not null)
         {
             users.Remove(user);
-            if (user.Host) users[0].Host = true;
+            if (user.Host && users.Count > 0) users[0].Host = true;
+            if (user.Generator && users.Count > 0) users.OrderByDescending(u => u.ThreadCount).FirstOrDefault().Generator = true;
         }
         if (CurrentMatch is null) CurrentMatch = new Match(users);
         CurrentMatch.UpdateAll(logger, users);

@@ -30,7 +30,7 @@ public class GameServer : GameService.GameServiceBase
         {
             clients.Add(responseStream);
 
-            RoomUser newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0, Ready = request.Role != Role.Player };
+            RoomUser newUser = new() { Name = request.Name, Role = request.Role, Host = room.Users.Count == 0, Ready = request.Role != Role.Player, ThreadCount = request.ThreadCount };
             room.AddPlayer(newUser);
 
             RoomStreamResponse notification = new()
@@ -44,7 +44,9 @@ public class GameServer : GameService.GameServiceBase
                     Name = user.Name,
                     Role = user.Role,
                     Host = user.Host,
-                    Ready = user.Ready
+                    Ready = user.Ready,
+                    Seed = user.Seed,
+                    ThreadCount = user.ThreadCount
                 };
                 notification.JoinRoomNotification.Users.Add(roomUser);
             }
@@ -83,7 +85,9 @@ public class GameServer : GameService.GameServiceBase
                     Name = user.Name,
                     Role = user.Role,
                     Host = user.Host,
-                    Ready = user.Ready
+                    Ready = user.Ready,
+                    Seed = user.Seed,
+                    ThreadCount = user.ThreadCount
                 };
                 notification.JoinRoomNotification.Users.Add(roomUser);
             }
@@ -114,7 +118,9 @@ public class GameServer : GameService.GameServiceBase
                     Name = user.Name,
                     Role = user.Role,
                     Host = user.Host,
-                    Ready = user.Ready
+                    Ready = user.Ready,
+                    Seed = user.Seed,
+                    ThreadCount = user.ThreadCount
                 };
                 notification.JoinRoomNotification.Users.Add(roomUser);
             }
@@ -130,10 +136,13 @@ public class GameServer : GameService.GameServiceBase
     {
         return new JoinRoomResponse
         {
-            Name = request.Name,
-            Role = request.Role,
-            Host = room.Users.Where(p => p.Host).Count() == 0,
-            Ready = request.Role != Role.Player
+            Myself = new RoomUser
+            {
+                Name = request.Name,
+                Role = request.Role,
+                Host = room.Users.Where(p => p.Host).Count() == 0,
+                Ready = request.Role != Role.Player
+            }
         };
     }
 
@@ -153,7 +162,9 @@ public class GameServer : GameService.GameServiceBase
                     Name = user.Name,
                     Role = user.Role,
                     Host = user.Host,
-                    Ready = user.Ready
+                    Ready = user.Ready,
+                    Seed = user.Seed,
+                    ThreadCount = user.ThreadCount
                 };
                 notification.LeaveRoomNotification.Users.Add(roomUser);
             }
@@ -204,7 +215,9 @@ public class GameServer : GameService.GameServiceBase
                 Name = user.Name,
                 Role = user.Role,
                 Host = user.Host,
-                Ready = user.Ready
+                Ready = user.Ready,
+                Seed = user.Seed,
+                ThreadCount = user.ThreadCount
             };
             notification.PlayerReadyNotification.Users.Add(roomUser);
         }
@@ -263,6 +276,31 @@ public class GameServer : GameService.GameServiceBase
         }
 
         return new TogglePicksResponse
+        {
+            Success = true
+        };
+    }
+
+    public override async Task<SendSeedResponse> SendSeed(SendSeedRequest request, ServerCallContext context)
+    {
+        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].WorldSeed = request.WorldSeed;
+        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].SurfaceIndex = request.SurfaceIndex;
+        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].CaveIndex = request.CaveIndex;
+
+        RoomStreamResponse notification = new()
+        {
+            SendSeedNotification = new()
+            {
+                MatchState = room.CurrentMatch.ToMatchState()
+            }
+        };
+
+        foreach (IServerStreamWriter<RoomStreamResponse> client in clients)
+        {
+            await client.WriteAsync(notification);
+        }
+
+        return new SendSeedResponse
         {
             Success = true
         };

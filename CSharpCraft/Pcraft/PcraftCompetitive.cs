@@ -24,7 +24,7 @@ public class PcraftCompetitive : SpeedrunBase
         base.Init(pico8);
         cts = new();
         isGenerating = true;
-        ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
+        if (RoomHandler._myself.Generator) ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
     }
 
     private async Task ResetLevelAsync(CancellationToken ct)

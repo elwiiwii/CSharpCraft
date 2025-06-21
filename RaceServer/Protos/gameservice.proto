@@ -14,6 +14,7 @@ service GameService {
 	rpc EndGame (EndGameRequest) returns (EndGameResponse);
 	rpc EndMatch (EndMatchRequest) returns (EndMatchResponse);
 	rpc TogglePicks (TogglePicksRequest) returns (TogglePicksResponse);
+	rpc SendSeed (SendSeedRequest) returns (SendSeedResponse);
 }
 
 
@@ -65,6 +66,8 @@ message RoomUser {
 	bool host = 3;
 	bool ready = 4;
 	int32 seed = 5;
+	int32 thread_count = 6;
+	bool generator = 7;
 }
 
 message MatchState {
@@ -90,11 +93,13 @@ message GameReport {
 	double percentage = 2;
 	int32 surface_type = 3;
 	int32 surface_picker = 4;
-	int32 cave_type = 5;
-	int32 cave_picker = 6;
-	int32 world_seed = 7;
-	int32 rng_seed = 8;
-	GameStatus game_status = 9;
+	int32 surface_index = 5;
+	int32 cave_type = 6;
+	int32 cave_picker = 7;
+	int32 cave_index = 8;
+	int32 world_seed = 9;
+	int32 rng_seed = 10;
+	GameStatus game_status = 11;
 }
 
 message SeedType {
@@ -109,6 +114,7 @@ message RoomStreamRequest {
 	string name = 1;
 	Role role = 2;
 	bool host = 3;
+	int32 thread_count = 4;
 }
 
 message RoomStreamResponse {
@@ -121,6 +127,7 @@ message RoomStreamResponse {
 		EndGameNotification end_game_notification = 6;
 		EndMatchNotification end_match_notification = 7;
 		TogglePicksNotification toggle_picks_notification = 8;
+		SendSeedNotification send_seed_notification = 9;
 	}
 }
 
@@ -132,10 +139,7 @@ message JoinRoomRequest {
 }
 
 message JoinRoomResponse {
-	string name = 1;
-	Role role = 2;
-	bool host = 3;
-	bool ready = 4;
+	RoomUser myself = 1;
 }
 
 message JoinRoomNotification {
@@ -240,5 +244,22 @@ message TogglePicksResponse {
 }
 
 message TogglePicksNotification {
+	MatchState match_state = 1;
+}
+
+
+
+message SendSeedRequest {
+	string name = 1;
+	int32 world_seed = 2;
+	int32 surface_index = 3;
+	int32 cave_index = 4;
+}
+
+message SendSeedResponse {
+	bool success = 1;
+}
+
+message SendSeedNotification {
 	MatchState match_state = 1;
 }

@@ -103,7 +103,7 @@ public static class RoomHandler
                 }
             }, _cancellationTokenSource.Token);
             JoinRoomResponse response = _service.JoinRoom(new JoinRoomRequest { Name = name, Role = role });
-            _myself = new RoomUser { Name = response.Name, Role = response.Role, Host = response.Host, Ready = response.Ready };
+            _myself = response.Myself;
             return true;
         }
         catch (RpcException ex)
@@ -138,6 +138,9 @@ public static class RoomHandler
                         break;
                     case RoomStreamResponse.MessageOneofCase.TogglePicksNotification:
                         HandleTogglePicksNotification(response.TogglePicksNotification);
+                        break;
+                    case RoomStreamResponse.MessageOneofCase.SendSeedNotification:
+                        HandleSendSeedNotification(response.SendSeedNotification);
                         break;
                     case RoomStreamResponse.MessageOneofCase.None:
                         break;
@@ -197,14 +200,31 @@ public static class RoomHandler
             switch (_myself.Role)
             {
                 case Role.Player:
-                    p8.ScheduleScene(() => new PcraftCompetitive());
+                    p8.ScheduleScene(() => new GenSeedCompetitive());
                     break;
                 case Role.Spectator:
-                    //should be spectator version when i make the spectator scene
+                    p8.ScheduleScene(() => new GenSeedCompetitive());
                     break;
                 default:
                     break;
             }
+        }
+    }
+
+    private static void HandleSendSeedNotification(SendSeedNotification sendSeedNotification)
+    {
+        _curMatch = sendSeedNotification.MatchState;
+
+        switch (_myself.Role)
+        {
+            case Role.Player:
+                p8.ScheduleScene(() => new PcraftCompetitive());
+                break;
+            case Role.Spectator:
+                //should be spectator version when i make the spectator scene
+                break;
+            default:
+                break;
         }
     }
 
@@ -371,5 +391,15 @@ public static class RoomHandler
     internal static async Task ToggleUnbans()
     {
         throw new NotImplementedException();
+    }
+
+    public static async Task SendSeed(int worldSeed, int surfaceIndex, int caveIndex)
+    {
+        if (_myself is null)
+        {
+            Console.WriteLine("_myself is null when trying to call SendSeed");
+            return;
+        }
+        _ = _service.SendSeed(new SendSeedRequest { Name = _myself.Name, WorldSeed = worldSeed, SurfaceIndex = surfaceIndex, CaveIndex = caveIndex });
     }
 }
