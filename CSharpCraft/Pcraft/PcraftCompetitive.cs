@@ -17,52 +17,44 @@ public class PcraftCompetitive : SpeedrunBase
 
     protected override void CreateMap()
     {
-        bool needmap = true;
-
-        while (needmap)
+        if (levelUnder)
         {
-            needmap = false;
+            level = CreateMapStep(levelsx, levelsy, 3, 8, 1, 9, 10, worldSeed + RoomHandler._curMatch.GameReports[^1].CaveIndex);
+        }
+        else
+        {
+            level = CreateMapStep(levelsx, levelsy, 0, 1, 2, 3, 4, worldSeed + RoomHandler._curMatch.GameReports[^1].SurfaceIndex);
+        }
 
-            if (levelUnder)
+        plx = F32.FromInt((levelsx / 2 + 1) * 16 + 8);
+        ply = F32.FromInt((levelsy / 2) * 16 + 8);
+
+        List<(int x, int y)> spawnableTiles = [];
+
+        for (int i = -4; i <= 4; i++)
+        {
+            if (i == 0) { continue; }
+            for (int j = -4; j <= 4; j++)
             {
-                level = CreateMapStep(levelsx, levelsy, 3, 8, 1, 9, 10, worldSeed + RoomHandler._curMatch.GameReports[^1].CaveIndex);
+                if (j == 0) { continue; }
+                int depx = levelsx / 2 + i;
+                int depy = levelsy / 2 + j;
+                F32 c = level[depx][depy];
 
-                if (typeCount[8] < 30) { needmap = true; }
-                if (typeCount[9] < 20) { needmap = true; }
-                if (typeCount[10] < 15) { needmap = true; }
-            }
-            else
-            {
-                level = CreateMapStep(levelsx, levelsy, 0, 1, 2, 3, 4, worldSeed + RoomHandler._curMatch.GameReports[^1].SurfaceIndex);
-
-                if (typeCount[3] < 30) { needmap = true; }
-                if (typeCount[4] < 30) { needmap = true; }
-            }
-
-            if (!needmap)
-            {
-                plx = F32.Neg1;
-                ply = F32.Neg1;
-
-                for (int i = 0; i <= 500; i++)
+                if (c == 1 || c == 2)
                 {
-                    int depx = F32.FloorToInt(levelsx / 8 + p8.Rnd(levelsx * 6 / 8, pSpawnRng));
-                    int depy = F32.FloorToInt(levelsy / 8 + p8.Rnd(levelsy * 6 / 8, pSpawnRng));
-                    F32 c = level[depx][depy];
-
-                    if (c == 1 || c == 2)
-                    {
-                        plx = F32.FromInt(depx * 16 + 8);
-                        ply = F32.FromInt(depy * 16 + 8);
-                        break;
-                    }
-                }
-
-                if (plx < 0)
-                {
-                    needmap = true;
+                    spawnableTiles.Add((depx, depy));
                 }
             }
+        }
+
+        if (spawnableTiles.Count > 0)
+        {
+            int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, pSpawnRng));
+            (int x, int y) tile = spawnableTiles[indx];
+
+            plx = F32.FromInt(tile.x * 16 + 8);
+            ply = F32.FromInt(tile.y * 16 + 8);
         }
 
         for (int i = 0; i < levelsx; i++)

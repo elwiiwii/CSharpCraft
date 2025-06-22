@@ -99,6 +99,11 @@ public class Room
             logger.LogError("Cannot start match: Not all players are ready.");
             return;
         }
+
+        CurrentMatch.UpdateState(logger, MatchStatus.MatchInProgress);
+        CurrentMatch.GameReports[^1].GameStatus = GameStatus.GameInProgress;
+        CurrentMatch.GameReports[^1].WorldSeed = new Random().Next(0, int.MaxValue);
+        CurrentMatch.GameReports[^1].RngSeed = new Random().Next(0, int.MaxValue);
     }
 }
 

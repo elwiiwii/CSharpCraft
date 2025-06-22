@@ -246,6 +246,7 @@ public class GameServer : GameService.GameServiceBase
         RoomUser l = room.Users.FirstOrDefault(p => p.Seed == 2);
         room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].WorldSeed = new Random().Next(0, int.MaxValue);
         room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].RngSeed = new Random().Next(0, int.MaxValue);
+        room.StartMatch(logger);
 
         RoomStreamResponse notification = new()
         {
@@ -288,9 +289,9 @@ public class GameServer : GameService.GameServiceBase
 
     public override async Task<SendSeedResponse> SendSeed(SendSeedRequest request, ServerCallContext context)
     {
-        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].WorldSeed = request.WorldSeed;
-        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].SurfaceIndex = request.SurfaceIndex;
-        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].CaveIndex = request.CaveIndex;
+        room.CurrentMatch.GameReports[^1].WorldSeed = request.WorldSeed;
+        room.CurrentMatch.GameReports[^1].SurfaceIndex = request.SurfaceIndex;
+        room.CurrentMatch.GameReports[^1].CaveIndex = request.CaveIndex;
 
         RoomStreamResponse notification = new()
         {

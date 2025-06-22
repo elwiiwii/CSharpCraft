@@ -26,8 +26,9 @@ public class GenSeedCompetitive : SpeedrunBase
         base.Init(pico8);
         if (RoomHandler._myself.Generator)
         {
+            worldSeed = RoomHandler._curMatch.GameReports[^1].WorldSeed;
             cts = new();
-            if (RoomHandler._myself.Generator) ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
+            ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
         }
     }
 
