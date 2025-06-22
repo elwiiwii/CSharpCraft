@@ -86,7 +86,7 @@ public static class RoomHandler
     {
         try
         {
-            _roomStream = _service.RoomStream(new RoomStreamRequest { Name = name, Role = role });
+            _roomStream = _service.RoomStream(new RoomStreamRequest { Name = name, Role = role, ThreadCount = Environment.ProcessorCount });
             _ = Task.Run(async () =>
             {
                 try
@@ -222,6 +222,7 @@ public static class RoomHandler
                 break;
             case Role.Spectator:
                 //should be spectator version when i make the spectator scene
+                p8.ScheduleScene(() => new PcraftCompetitive());
                 break;
             default:
                 break;
@@ -249,6 +250,7 @@ public static class RoomHandler
     private static void HandleJoinRoomNotification(JoinRoomNotification notification)
     {
         UpdatePlayerDictionary(notification.Users);
+        UpdateMyself(notification.Users);
     }
 
     private static void HandlePlayerReadyNotification(PlayerReadyNotification notification)

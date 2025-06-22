@@ -46,7 +46,8 @@ public class GameServer : GameService.GameServiceBase
                     Host = user.Host,
                     Ready = user.Ready,
                     Seed = user.Seed,
-                    ThreadCount = user.ThreadCount
+                    ThreadCount = user.ThreadCount,
+                    Generator = user.Generator
                 };
                 notification.JoinRoomNotification.Users.Add(roomUser);
             }
@@ -87,7 +88,8 @@ public class GameServer : GameService.GameServiceBase
                     Host = user.Host,
                     Ready = user.Ready,
                     Seed = user.Seed,
-                    ThreadCount = user.ThreadCount
+                    ThreadCount = user.ThreadCount,
+                    Generator = user.Generator
                 };
                 notification.JoinRoomNotification.Users.Add(roomUser);
             }
@@ -120,7 +122,8 @@ public class GameServer : GameService.GameServiceBase
                     Host = user.Host,
                     Ready = user.Ready,
                     Seed = user.Seed,
-                    ThreadCount = user.ThreadCount
+                    ThreadCount = user.ThreadCount,
+                    Generator = user.Generator
                 };
                 notification.JoinRoomNotification.Users.Add(roomUser);
             }
@@ -164,7 +167,8 @@ public class GameServer : GameService.GameServiceBase
                     Host = user.Host,
                     Ready = user.Ready,
                     Seed = user.Seed,
-                    ThreadCount = user.ThreadCount
+                    ThreadCount = user.ThreadCount,
+                    Generator = user.Generator
                 };
                 notification.LeaveRoomNotification.Users.Add(roomUser);
             }
@@ -217,7 +221,8 @@ public class GameServer : GameService.GameServiceBase
                 Host = user.Host,
                 Ready = user.Ready,
                 Seed = user.Seed,
-                ThreadCount = user.ThreadCount
+                ThreadCount = user.ThreadCount,
+                Generator = user.Generator
             };
             notification.PlayerReadyNotification.Users.Add(roomUser);
         }

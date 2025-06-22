@@ -270,9 +270,9 @@ public static class SeedFilter
         return mval;
     }
 
-    public static async Task<(F32[][], int[])> CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, Func<int, int, F32, F32, int, Random?, F32[][]> noise, int seed, CancellationToken ct, bool useAllThreads = true)
+    public static async Task<(F32[][], int[], int)> CreateMapStepCheck(List<DensityCheck> densityChecks, List<DensityComparison> densityComparisons, int sx, int sy, int a, int b, int c, int d, int e, Func<int, int, F32, F32, int, Random?, F32[][]> noise, int seed, CancellationToken ct, bool useAllThreads = true)
     {
-        var tcs = new TaskCompletionSource<(F32[][], int[])>();
+        var tcs = new TaskCompletionSource<(F32[][], int[], int)>();
         F32[][] resultMap = null;
         int[] resultTypeCount = null;
 
@@ -301,7 +301,7 @@ public static class SeedFilter
                     List<DensityCheck> densityChecksClone = densityChecks.Select(c => c.Clone()).ToList();
                     List<DensityComparison> densityComparisonsClone = densityComparisons.Select(c => c.Clone()).ToList();
 
-                    Random r = new(seed + Math.Abs(index * 4));
+                    Random r = new(seed + index);
 
                     F32[][] cur = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx, r);
                     F32[][] cur2 = noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8, r);
@@ -388,7 +388,7 @@ public static class SeedFilter
                                 resultMap = cur;
                                 resultTypeCount = temp_typeCount;
                                 state.Stop();
-                                tcs.TrySetResult((resultMap, resultTypeCount));
+                                tcs.TrySetResult((resultMap, resultTypeCount, index));
                             }
                         }
                     }
@@ -398,7 +398,7 @@ public static class SeedFilter
             {
                 if (!tcs.Task.IsCompleted)
                 {
-                    tcs.TrySetResult((null, null));
+                    tcs.TrySetResult((null, null, -1));
                 }
             }
         }, ct);

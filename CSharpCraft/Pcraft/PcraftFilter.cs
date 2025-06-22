@@ -130,7 +130,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             {
                 List<DensityCheck> caveDensityChecks = densityChecks.Where(check => check.IsCave).ToList();
                 List<DensityComparison> caveDensityComparisons = densityComparisons.Where(check => check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, random.Next(int.MaxValue), ct);
+                (level, typeCount, _) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, random.Next(int.MaxValue), ct);
                 
                 if (typeCount[8] < 30) { needmap = true; }
                 if (typeCount[9] < 20) { needmap = true; }
@@ -141,7 +141,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             {
                 List<DensityCheck> surfaceDensityChecks = densityChecks.Where(check => !check.IsCave).ToList();
                 List<DensityComparison> surfaceDensityComparisons = densityComparisons.Where(check => !check.IsCave).ToList();
-                (level, typeCount) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, random.Next(int.MaxValue), ct);
+                (level, typeCount, _) = await SeedFilter.CreateMapStepCheck(surfaceDensityChecks, surfaceDensityComparisons, levelsx, levelsy, 0, 1, 2, 3, 4, Noise, random.Next(int.MaxValue), ct);
 
                 if (typeCount[3] < 30) { needmap = true; }
                 if (typeCount[4] < 30) { needmap = true; }
