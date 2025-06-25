@@ -665,7 +665,7 @@ public class Pico8Functions : IDisposable
         if (destaddr == 0x1000 && sourceaddr == 0x2000 && len == 0x1000)
         {
             Dispose();
-            Color[] secondHalf = Pico8Utils.MapDataToColorArray(this, _cart.MapData.Substring(0, _cart.MapDimensions.x * _cart.MapDimensions.y * 2));
+            Color[] secondHalf = Pico8Utils.MapDataToColorArray(this, _cart.MapData.Substring(0, _cart.MapDimensions.x * _cart.MapDimensions.y), 1);
             secondHalf.CopyTo(_sprites, _cart.MapDimensions.x * _cart.MapDimensions.y);
         }
     }

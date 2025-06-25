@@ -48,6 +48,11 @@ public static class Shared
         p8.Print(t, x - t.Length * 2, y, c);
     }
 
+    public static void PrintcBig(Pico8Functions p8, string t, int x, int y, Color c)
+    {
+        p8.PrintBig(t, x - t.Length * 4, y, c);
+    }
+
     public static void Printr(Pico8Functions p8, string t, int x, int y, int c)
     {
         p8.Print(t, x - t.Length * 4 + 1, y, c);

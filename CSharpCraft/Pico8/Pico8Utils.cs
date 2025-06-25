@@ -38,13 +38,17 @@ public static class Pico8Utils
         return val;
     }
 
-    public static Color[] MapDataToColorArray(Pico8Functions p8, string s)
+    public static Color[] MapDataToColorArray(Pico8Functions p8, string s, int n)
     {
-        Color[] val = new Color[s.Length / 2];
-        for (int i = 0; i < s.Length / 2; i++)
+        Color[] val = new Color[s.Length / n];
+        for (int i = 0; i < s.Length / n; i++)
         {
-            char[] chunk = s.Substring(i * 2, 2).ToCharArray();
-            int index = (chunk[0] - 35) * 91 + chunk[1] - 35;
+            char[] chunk = s.Substring(i * n, n).ToCharArray();
+            int index = 0;
+            for (int j = 0; j < n; j++)
+            {
+                index += (chunk[j] - 35) * 91 * (n - j);
+            }
             val[i] = p8.Colors[index % 16];
         }
 

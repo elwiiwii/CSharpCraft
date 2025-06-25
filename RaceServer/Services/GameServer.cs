@@ -244,8 +244,6 @@ public class GameServer : GameService.GameServiceBase
         room.AssignSeedingTemp();
         RoomUser h = room.Users.FirstOrDefault(p => p.Seed == 1);
         RoomUser l = room.Users.FirstOrDefault(p => p.Seed == 2);
-        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].WorldSeed = new Random().Next(0, int.MaxValue);
-        room.CurrentMatch.GameReports[room.CurrentMatch.GameReports.Count - 1].RngSeed = new Random().Next(0, int.MaxValue);
         room.StartMatch(logger);
 
         RoomStreamResponse notification = new()

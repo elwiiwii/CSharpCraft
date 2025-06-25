@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using RaceServer.Services;
-
+using System.Security.Cryptography;
 
 namespace RaceServer;
 
@@ -15,6 +15,7 @@ public class Room
     private List<RoomUser> users = [];
     public Match? CurrentMatch = null;
     private readonly ILogger<GameServer> logger;
+    private Random random = new();
 
     public IReadOnlyList<RoomUser> Users => users;
 
@@ -22,9 +23,14 @@ public class Room
     {
         Name = name;
         Password = password;
-        CurrentMatch = new Match(users);
         this.logger = logger;
+        CurrentMatch = new Match(users);
     }
+
+    //public static int GetRandomInt()
+    //{
+    //    return BitConverter.ToInt32(RandomNumberGenerator.GetBytes(4), 0) & int.MaxValue;
+    //}
 
     public void AddPlayer(RoomUser user)
     {
@@ -102,8 +108,8 @@ public class Room
 
         CurrentMatch.UpdateState(logger, MatchStatus.MatchInProgress);
         CurrentMatch.GameReports[^1].GameStatus = GameStatus.GameInProgress;
-        CurrentMatch.GameReports[^1].WorldSeed = new Random().Next(0, int.MaxValue);
-        CurrentMatch.GameReports[^1].RngSeed = new Random().Next(0, int.MaxValue);
+        CurrentMatch.GameReports[^1].WorldSeed = random.Next();
+        CurrentMatch.GameReports[^1].RngSeed = random.Next();
     }
 }
 
