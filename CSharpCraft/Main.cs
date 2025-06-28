@@ -85,6 +85,7 @@ class FNAGame : Game
         
         //scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
+        scenes.Add(new CatCraft());
         scenes.Add(new PcraftSpeedrun());
         //scenes.Add(new DeluxeSingleplayer());
         //scenes.Add(new MainRace());

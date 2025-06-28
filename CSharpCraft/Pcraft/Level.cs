@@ -15,4 +15,5 @@ public class Level
     public int Sy { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
+    public List<Entity>? Cat { get; set; }
 }

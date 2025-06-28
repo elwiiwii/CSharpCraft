@@ -1,13 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net9.0.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Platforms>AnyCPU;x64</Platforms>
 		<PublishSingleFile>true</PublishSingleFile>
-	</PropertyGroup>
+	  <UserSecretsId>31b9c999-82ba-473b-8cd8-a0d554033698</UserSecretsId>
+  </PropertyGroup>
 
 	<Target Name="CreateSeedsFolder" BeforeTargets="Build">
 		<MakeDir Directories="$(OutputPath)Seeds" />
@@ -27,17 +28,11 @@
 		<None Remove="Content\Graphics\Arrow.png" />
 		<None Remove="Content\Graphics\Arrow5.png" />
 		<None Remove="Content\Graphics\ArrowV.png" />
-		<None Remove="Content\Graphics\BackIcon.png" />
-		<None Remove="Content\Graphics\BackShadow.png" />
 		<None Remove="Content\Graphics\Bandcamp.png" />
-		<None Remove="Content\Graphics\BlankBackground.png" />
 		<None Remove="Content\Graphics\Bluesky.png" />
 		<None Remove="Content\Graphics\Checker.png" />
-		<None Remove="Content\Graphics\CompetitiveBackground.png" />
-		<None Remove="Content\Graphics\Comptest.png" />
 		<None Remove="Content\Graphics\Credits.png" />
 		<None Remove="Content\Graphics\CSharpCraftLogo.png" />
-		<None Remove="Content\Graphics\Cursor.png" />
 		<None Remove="Content\Graphics\Discord.png" />
 		<None Remove="Content\Graphics\font.png" />
 		<None Remove="Content\Graphics\font2.png" />
@@ -46,12 +41,7 @@
 		<None Remove="Content\Graphics\Itchio.png" />
 		<None Remove="Content\Graphics\KeybindsMenu.png" />
 		<None Remove="Content\Graphics\LobbyBackground.png" />
-		<None Remove="Content\Graphics\MCSRranked.png" />
-		<None Remove="Content\Graphics\ModeShadow.png" />
 		<None Remove="Content\Graphics\MusicNote.png" />
-		<None Remove="Content\Graphics\NameBubbleCenter.png" />
-		<None Remove="Content\Graphics\NameBubbleEdge.png" />
-		<None Remove="Content\Graphics\NewRoomIcon.png" />
 		<None Remove="Content\Graphics\OptionsBackground0.png" />
 		<None Remove="Content\Graphics\OptionsBackground1.png" />
 		<None Remove="Content\Graphics\OptionsBackground2.png" />
@@ -64,16 +54,6 @@
 		<None Remove="Content\Graphics\PauseArrow.png" />
 		<None Remove="Content\Graphics\Pico8.png" />
 		<None Remove="Content\Graphics\PlayerIcon.png" />
-		<None Remove="Content\Graphics\PrivateBackground.png" />
-		<None Remove="Content\Graphics\PrivateIcon.png" />
-		<None Remove="Content\Graphics\ProfileIcon.png" />
-		<None Remove="Content\Graphics\ProfileShadow.png" />
-		<None Remove="Content\Graphics\RankedBackground.png" />
-		<None Remove="Content\Graphics\RankedIcon.png" />
-		<None Remove="Content\Graphics\ReplaysIcon.png" />
-		<None Remove="Content\Graphics\ReplaysShadow.png" />
-		<None Remove="Content\Graphics\SearchIcon.png" />
-		<None Remove="Content\Graphics\SearchShadow.png" />
 		<None Remove="Content\Graphics\SeedCross.png" />
 		<None Remove="Content\Graphics\SeedGreyOut.png" />
 		<None Remove="Content\Graphics\SeedQuestion.png" />
@@ -95,25 +75,15 @@
 		<None Remove="Content\Graphics\SelectorBorder.png" />
 		<None Remove="Content\Graphics\SelectorCenter.png" />
 		<None Remove="Content\Graphics\SelectorHalf.png" />
-		<None Remove="Content\Graphics\SettingsIcon.png" />
-		<None Remove="Content\Graphics\SettingsShadow.png" />
 		<None Remove="Content\Graphics\SmallNameBanner.png" />
-		<None Remove="Content\Graphics\SmallNameBubbleCenter.png" />
-		<None Remove="Content\Graphics\SmallNameBubbleEdge.png" />
 		<None Remove="Content\Graphics\SmallSelector.png" />
 		<None Remove="Content\Graphics\SpectatorIcon.png" />
-		<None Remove="Content\Graphics\SpeedrunBackground.png" />
-		<None Remove="Content\Graphics\SpeedrunIcon.png" />
 		<None Remove="Content\Graphics\Spotify.png" />
 		<None Remove="Content\Graphics\SpriteSheet1.png" />
-		<None Remove="Content\Graphics\StatisticsIcon.png" />
-		<None Remove="Content\Graphics\StatisticsShadow.png" />
 		<None Remove="Content\Graphics\Steam.png" />
 		<None Remove="Content\Graphics\Tick.png" />
 		<None Remove="Content\Graphics\Twitch.png" />
 		<None Remove="Content\Graphics\Twitter.png" />
-		<None Remove="Content\Graphics\UnrankedBackground.png" />
-		<None Remove="Content\Graphics\UnrankedIcon.png" />
 		<None Remove="Content\Graphics\WaitingForInput.png" />
 		<None Remove="Content\Graphics\Website.png" />
 		<None Remove="Content\Graphics\Youtube.png" />
@@ -122,7 +92,6 @@
 		<None Remove="Content\Music\music_4.wav" />
 		<None Remove="Content\Music\pcraft_new_boss.wav" />
 		<None Remove="Content\Music\pcraft_new_cave.wav" />
-		<None Remove="Content\Music\pcraft_new_death.wav" />
 		<None Remove="Content\Music\pcraft_new_surface.wav" />
 		<None Remove="Content\Music\pcraft_new_title.wav" />
 		<None Remove="Content\Music\pcraft_og_cave_0.wav" />
@@ -174,109 +143,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="Content\Graphics\BackIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\BackShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\BlankBackground.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	  <Content Include="Content\Graphics\Checker.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\CompetitiveBackground.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\Comptest.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\Cursor.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\MCSRranked.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\ModeShadow.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Graphics\MusicNote.png">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Content\Graphics\NameBubbleCenter.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\NameBubbleEdge.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\NewRoomIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\PrivateBackground.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\PrivateIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\ProfileIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\ProfileShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\RankedBackground.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\RankedIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\ReplaysIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\ReplaysShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SearchIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SearchShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SettingsIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SettingsShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SmallNameBubbleCenter.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SmallNameBubbleEdge.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SpeedrunBackground.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\SpeedrunIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\StatisticsIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\StatisticsShadow.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\UnrankedBackground.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Graphics\UnrankedIcon.png">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	  <Content Include="Content\Music\menu.wav">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Content\Music\pcraft_new_death.wav">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Content\Music\pcraft_og_cave_0.wav">
@@ -637,14 +510,14 @@
 
 	<ItemGroup>
 	  <PackageReference Include="DeepCloner" Version="0.10.4" />
-	  <PackageReference Include="Google.Protobuf" Version="3.30.2" />
-	  <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
-	  <PackageReference Include="Grpc.Tools" Version="2.72.0">
+	  <PackageReference Include="Google.Protobuf" Version="3.30.1" />
+	  <PackageReference Include="Grpc.Net.Client" Version="2.70.0" />
+	  <PackageReference Include="Grpc.Tools" Version="2.71.0">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
 	  <PackageReference Include="NativeFileDialogs.Net" Version="1.2.1" />
-	  <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
+	  <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
 	</ItemGroup>
 
 	<ItemGroup>
