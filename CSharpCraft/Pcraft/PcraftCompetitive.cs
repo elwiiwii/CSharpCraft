@@ -14,6 +14,8 @@ public class PcraftCompetitive : SpeedrunBase
 
     public override void Init(Pico8Functions pico8)
     {
+        worldSeed = RoomHandler._curMatch.GameReports[^1].WorldSeed;
+        rngSeed = RoomHandler._curMatch.GameReports[^1].RngSeed;
         base.Init(pico8);
         ResetLevel();
         curMenu = null;
@@ -227,14 +229,11 @@ public class PcraftCompetitive : SpeedrunBase
             return;
         }
 
-        for (int i = 0; i <= 5; i++)
+        if (time >= 10 && time < 11)
         {
-            if (p8.Btnp(i))
-            {
-                runtimer = 1;
-            }
+            runtimer = 1;
         }
-
+        
         if (switchLevel)
         {
             if (zReset == 0) { ladderResets[0]++; } else { ladderResets[1]++; }
