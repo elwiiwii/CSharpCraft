@@ -11,8 +11,8 @@ public class GenSeedCompetitive : SpeedrunBase
 {
     public override string SceneName => "seed_gen";
 
-    private readonly List<DensityCheck> densityChecks = [];
-    private readonly List<DensityComparison> densityComparisons = [];
+    private List<DensityCheck> densityChecks = [];
+    private List<DensityComparison> densityComparisons = [];
 
     private Task ResetLevelTask;
     private CancellationTokenSource cts = new();
@@ -28,6 +28,10 @@ public class GenSeedCompetitive : SpeedrunBase
         {
             worldSeed = RoomHandler._curMatch.GameReports[^1].WorldSeed;
             Console.WriteLine(worldSeed);
+            densityChecks.AddRange(RankedFilters.RankedSurfaceChecks[RoomHandler._curMatch.GameReports[^1].SurfaceType - 1]);
+            densityChecks.AddRange(RankedFilters.RankedCaveChecks[RoomHandler._curMatch.GameReports[^1].CaveType - 1]);
+            densityComparisons.AddRange(RankedFilters.RankedSurfaceComps[RoomHandler._curMatch.GameReports[^1].SurfaceType - 1]);
+            densityComparisons.AddRange(RankedFilters.RankedCaveComps[RoomHandler._curMatch.GameReports[^1].CaveType - 1]);
             cts = new();
             ResetLevelTask = Task.Run(() => ResetLevelAsync(cts.Token));
         }
@@ -64,7 +68,7 @@ public class GenSeedCompetitive : SpeedrunBase
                 (level, typeCount, caveIndex) = await SeedFilter.CreateMapStepCheck(caveDensityChecks, caveDensityComparisons, levelsx, levelsy, 3, 8, 1, 9, 10, Noise, worldSeed, ct, false);
 
                 if (typeCount[8] < 30) { needmap = true; }
-                if (typeCount[9] < 20) { needmap = true; }
+                //if (typeCount[9] < 20) { needmap = true; }
                 if (typeCount[10] < 15) { needmap = true; }
                 //if (needmap) caveFailCount++;
             }

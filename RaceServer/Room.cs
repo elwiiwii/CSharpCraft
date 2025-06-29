@@ -108,6 +108,8 @@ public class Room
 
         CurrentMatch.UpdateState(logger, MatchStatus.MatchInProgress);
         CurrentMatch.GameReports[^1].GameStatus = GameStatus.GameInProgress;
+        CurrentMatch.GameReports[^1].SurfaceType = random.Next(1, 5);
+        CurrentMatch.GameReports[^1].CaveType = random.Next(1, 5);
         CurrentMatch.GameReports[^1].WorldSeed = random.Next();
         CurrentMatch.GameReports[^1].RngSeed = random.Next();
     }
