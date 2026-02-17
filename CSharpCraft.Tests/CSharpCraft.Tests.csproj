@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CSharpCraft.Game\CSharpCraft.Game.csproj" />
+		<ProjectReference Include="..\CSharpCraft.Pico8\CSharpCraft.Pico8.csproj" />
 		<ProjectReference Include="..\CSharpCraft.FixMath\CSharpCraft.FixMath.csproj" />
 	</ItemGroup>
 
