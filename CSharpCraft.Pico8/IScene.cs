@@ -8,8 +8,9 @@ public interface IScene
     
     /// <summary>
     /// Initialize the scene with dependency-injected services
+    /// Note: During Phase 1 refactoring, services may be null. Phase 2 will require proper injection.
     /// </summary>
-    void Init(IGraphicsEngine graphics, IAudioManager audio, IInputManager input, ISceneManager sceneManager, IGameClock gameClock);
+    void Init(IGraphicsEngine? graphics, IAudioManager? audio, IInputManager? input, ISceneManager? sceneManager, IGameClock? gameClock);
     
     void Update();
     void Draw();

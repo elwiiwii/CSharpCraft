@@ -23,6 +23,8 @@ public class Pico8Functions : IDisposable
     public Dictionary<string, Texture2D> TextureDictionary { get; }
     public object? TitleSceneInstance { get; }
     public GameWindow Window { get; }
+    public IInputBindingProvider InputBindings { get; set; }
+    public IAudioGraphicsSettings Settings { get; set; }
 
     // pico-8 colors https://pico-8.fandom.com/wiki/Palette
     public List<Color> Colors { get; } =
@@ -104,6 +106,8 @@ public class Pico8Functions : IDisposable
         TextureDictionary = _textureDictionary;
         TitleSceneInstance = titleScreen;
         Window = _window;
+        InputBindings = new InputBindings();
+        Settings = new ReflectionAudioGraphicsSettings(optionsData);
 
         buttons = new();
         buttons.Reset(this);
@@ -114,8 +118,8 @@ public class Pico8Functions : IDisposable
         musicTransition = new();
         lastMusicCall = null;
 
-        curSoundtrack = GetOptionPropertyValue<int>(OptionsData, "Pcraft_Soundtrack") ?? 0;
-        curSfxPack = GetOptionPropertyValue<int>(OptionsData, "Pcraft_Sfx_Pack") ?? 0;
+        curSoundtrack = Settings.CurrentSoundtrack;
+        curSfxPack = Settings.CurrentSfxPack;
 
         _sprites = [];
         _flags = [];
@@ -124,6 +128,7 @@ public class Pico8Functions : IDisposable
         _sfx = [];
         mainMenuItems = [];
         curMenuItems = [];
+        _cart = cart;
 
         LoadCart(cart);
     }
@@ -155,6 +160,42 @@ public class Pico8Functions : IDisposable
                 var value = prop.GetValue(optionsData);
                 if (value is T tValue) return tValue;
             }
+        }
+        catch { }
+        return null;
+    }
+
+    /// <summary>
+    /// Dynamically get a type from game assemblies without direct reference.
+    /// </summary>
+    private Type? TryGetGameType(string fullTypeName)
+    {
+        try
+        {
+            var gameAssembly = System.Reflection.Assembly.Load("CSharpCraft.Game");
+            return gameAssembly?.GetType(fullTypeName);
+        }
+        catch { }
+        return null;
+    }
+
+    /// <summary>
+    /// Dynamically get a static property or field from game types.
+    /// </summary>
+    private object? TryGetGameStatic(string fullTypeName, string? memberName)
+    {
+        try
+        {
+            var type = TryGetGameType(fullTypeName);
+            if (type == null) return null;
+            
+            if (memberName == null) return Activator.CreateInstance(type);
+            
+            var prop = type.GetProperty(memberName, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            if (prop != null) return prop.GetValue(null);
+            
+            var field = type.GetField(memberName, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            if (field != null) return field.GetValue(null);
         }
         catch { }
         return null;
@@ -212,69 +253,59 @@ public class Pico8Functions : IDisposable
                 {
                     if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
                     {
-                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Sound_On");
+                        var optionsType = TryGetGameType("CSharpCraft.OptionsMenu.OptionsFile");
+                        if (optionsType is null) { return; }
+                        PropertyInfo? propertyName = optionsType.GetProperty("Gen_Sound_On");
                         if (propertyName is null) { return; }
-                        propertyName.SetValue(OptionsFile, !OptionsFile.Gen_Sound_On);
-                        OptionsFile.JsonWrite(OptionsFile);
-                        if (!OptionsFile.Gen_Sound_On) { Mute(); }
+                        var optionsInstance = TryGetGameStatic("CSharpCraft.OptionsMenu.OptionsFile", null);
+                        if (optionsInstance is null) { return; }
+                        propertyName.SetValue(optionsInstance, !(bool)(propertyName.GetValue(optionsInstance) ?? true));
+                        var writeMethod = optionsType.GetMethod("JsonWrite");
+                        if (writeMethod != null) { writeMethod.Invoke(null, new[] { optionsInstance }); }
+                        if (!Settings.SoundEnabled) { Mute(); }
                     }
                 }
-                Menuitem(0, () => $"sound:{(OptionsFile.Gen_Sound_On ? "on" : "off")}", () => Sound(), curMenuItems);
+                Menuitem(0, () => $"sound:{(Settings.SoundEnabled ? "on" : "off")}", () => Sound(), curMenuItems);
 
                 void MusicVol()
                 {
                     if (Btnp(0))
                     {
-                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Music_Vol");
-                        if (propertyName is null) { return; }
-                        propertyName.SetValue(OptionsFile, Math.Max(OptionsFile.Gen_Music_Vol - 10, 0));
-                        OptionsFile.JsonWrite(OptionsFile);
+                        Settings.MusicVolume = Math.Max(Settings.MusicVolume - 10, 0);
                     }
                     if (Btnp(1))
                     {
-                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Music_Vol");
-                        if (propertyName is null) { return; }
-                        propertyName.SetValue(OptionsFile, Math.Min(OptionsFile.Gen_Music_Vol + 10, 100));
-                        OptionsFile.JsonWrite(OptionsFile);
+                        Settings.MusicVolume = Math.Min(Settings.MusicVolume + 10, 100);
                     }
                 }
-                Menuitem(1, () => $"music vol:{OptionsFile.Gen_Music_Vol}%", () => MusicVol(), curMenuItems);
+                Menuitem(1, () => $"music vol:{Settings.MusicVolume}%", () => MusicVol(), curMenuItems);
 
                 void SfxVol()
                 {
                     if (Btnp(0))
                     {
-                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Sfx_Vol");
-                        if (propertyName is null) { return; }
-                        propertyName.SetValue(OptionsFile, Math.Max(OptionsFile.Gen_Sfx_Vol - 10, 0));
-                        OptionsFile.JsonWrite(OptionsFile);
+                        Settings.SfxVolume = Math.Max(Settings.SfxVolume - 10, 0);
                     }
                     if (Btnp(1))
                     {
-                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Sfx_Vol");
-                        if (propertyName is null) { return; }
-                        propertyName.SetValue(OptionsFile, Math.Min(OptionsFile.Gen_Sfx_Vol + 10, 100));
-                        OptionsFile.JsonWrite(OptionsFile);
+                        Settings.SfxVolume = Math.Min(Settings.SfxVolume + 10, 100);
                     }
                 }
-                Menuitem(2, () => $"sfx vol:{OptionsFile.Gen_Sfx_Vol}%", () => SfxVol(), curMenuItems);
+                Menuitem(2, () => $"sfx vol:{Settings.SfxVolume}%", () => SfxVol(), curMenuItems);
 
                 void Fullscreen()
                 {
                     if (Btnp(4) || Btnp(5))
                     {
-                        PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Gen_Fullscreen");
-                        if (propertyName is null) { return; }
-                        propertyName.SetValue(OptionsFile, !OptionsFile.Gen_Fullscreen);
-                        OptionsFile.JsonWrite(OptionsFile);
-                        Graphics.IsFullScreen = OptionsFile.Gen_Fullscreen;
-                        Graphics.PreferredBackBufferWidth = OptionsFile.Gen_Window_Width / 128 * Resolution.w;
-                        Graphics.PreferredBackBufferHeight = OptionsFile.Gen_Window_Height / 128 * Resolution.h;
+                        Settings.IsFullscreen = !Settings.IsFullscreen;
+                        Graphics.IsFullScreen = Settings.IsFullscreen;
+                        Graphics.PreferredBackBufferWidth = Settings.WindowWidth / 128 * Resolution.w;
+                        Graphics.PreferredBackBufferHeight = Settings.WindowHeight / 128 * Resolution.h;
                         Graphics.ApplyChanges();
                         UpdateViewport();
                     }
                 }
-                Menuitem(3, () => $"fullscreen:{(OptionsFile.Gen_Fullscreen ? "on" : "off")}", () => Fullscreen(), curMenuItems);
+                Menuitem(3, () => $"fullscreen:{(Settings.IsFullscreen ? "on" : "off")}", () => Fullscreen(), curMenuItems);
 
                 void Back()
                 {
@@ -300,15 +331,12 @@ public class Pico8Functions : IDisposable
                     {
                         curSfxPack += 1;
                     }
-                    curSfxPack = GeneralFunctions.Loop(curSfxPack, _sfx.Count);
-                    PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Pcraft_Sfx_Pack");
-                    if (propertyName is null) { return; }
-                    propertyName.SetValue(OptionsFile, curSfxPack);
-                    OptionsFile.JsonWrite(OptionsFile);
+                    curSfxPack = Pico8MathUtils.Loop(curSfxPack, _sfx.Count);
+                    Settings.CurrentSfxPack = curSfxPack;
                 }
                 if (_sfx.Count > 1)
                 {
-                    Menuitem(3, () => $"sfx:{_sfx.ElementAt(OptionsFile.Pcraft_Sfx_Pack).Key}", () => Sfx(), curMenuItems);
+                    Menuitem(3, () => $"sfx:{_sfx.ElementAt(Settings.CurrentSfxPack).Key}", () => Sfx(), curMenuItems);
                 }
 
                 void Soundtrack()
@@ -321,11 +349,8 @@ public class Pico8Functions : IDisposable
                     {
                         curSoundtrack += 1;
                     }
-                    curSoundtrack = GeneralFunctions.Loop(curSoundtrack, _music.Count);
-                    PropertyInfo? propertyName = typeof(OptionsFile).GetProperty("Pcraft_Soundtrack");
-                    if (propertyName is null) { return; }
-                    propertyName.SetValue(OptionsFile, curSoundtrack);
-                    OptionsFile.JsonWrite(OptionsFile);
+                    curSoundtrack = Pico8MathUtils.Loop(curSoundtrack, _music.Count);
+                    Settings.CurrentSoundtrack = curSoundtrack;
                     if (Btnp(0) || Btnp(1))
                     {
                         SoundDispose();
@@ -334,7 +359,7 @@ public class Pico8Functions : IDisposable
                 }
                 if (_music.Count > 1)
                 {
-                    Menuitem(3, () => $"music:{_music.ElementAt(OptionsFile.Pcraft_Soundtrack).Key}", () => Soundtrack(), curMenuItems);
+                    Menuitem(3, () => $"music:{_music.ElementAt(Settings.CurrentSoundtrack).Key}", () => Soundtrack(), curMenuItems);
                 }
             }
         }
@@ -353,7 +378,20 @@ public class Pico8Functions : IDisposable
         {
             if (Btnp(4) || Btnp(5))
             {
-                LoadCart(new TitleScreen(false));
+                // Dynamically create TitleScreen from game assembly to avoid direct dependency
+                try
+                {
+                    var titleScreenType = TryGetGameType("CSharpCraft.Game.TitleScreen");
+                    if (titleScreenType != null)
+                    {
+                        var titleScreen = Activator.CreateInstance(titleScreenType, false);
+                        if (titleScreen is IScene scene)
+                        {
+                            LoadCart(scene);
+                        }
+                    }
+                }
+                catch { }
             }
         }
         Menuitem(3, () => "exit", () => Exit(), mainMenuItems);
@@ -372,7 +410,8 @@ public class Pico8Functions : IDisposable
     public void Init()
     {
         isPaused = false;
-        _cart.Init(this);
+        // TODO: Pass proper service instances - Phase 2 will extract these into separate classes
+        _cart.Init(null, null, null, null, null);
     }
 
 
@@ -394,7 +433,7 @@ public class Pico8Functions : IDisposable
 
             if (Btnp(2)) { menuSelected -= 1; }
             if (Btnp(3)) { menuSelected += 1; }
-            menuSelected = GeneralFunctions.Loop(menuSelected, curMenuItems);
+            menuSelected = Pico8MathUtils.Loop(menuSelected, curMenuItems);
 
             PlaySound(false);
         }
@@ -415,7 +454,7 @@ public class Pico8Functions : IDisposable
 
         buttons.Update(this);
 
-        float fadeStep = OptionsFile.Gen_Music_Vol / 1600.0f;
+        float fadeStep = Settings.MusicVolume / 1600.0f;
 
         foreach (List<MusicInst> song in channelMusic)
         {
@@ -426,34 +465,34 @@ public class Pico8Functions : IDisposable
                     curTrack += 1;
                     song[curTrack].Track.IsLooped = song[curTrack].Loop;
                     song[curTrack].Track.Play();
-                    if (OptionsFile.Gen_Sound_On) { song[curTrack].Track.Volume = OptionsFile.Gen_Music_Vol / 100.0f; }
+                    if (Settings.SoundEnabled) { song[curTrack].Track.Volume = Settings.MusicVolume / 100.0f; }
                 }
             }
 
             if (musicTransition.fromSong is null || musicTransition.toSong is null)
             {
                 musicTransition = new();
-                if (OptionsFile.Gen_Sound_On && lastMusicCall is not null && song[curTrack].Name == _music.ElementAt(curSoundtrack).Value[(int)lastMusicCall].Tracks[curTrack].name)
+                if (Settings.SoundEnabled && lastMusicCall is not null && song[curTrack].Name == _music.ElementAt(Settings.CurrentSoundtrack).Value[(int)lastMusicCall].Tracks[curTrack].name)
                 {
-                    song[curTrack].Track.Volume = OptionsFile.Gen_Music_Vol / 100.0f;
+                    song[curTrack].Track.Volume = Settings.MusicVolume / 100.0f;
                 }
             }
         }
 
-        if (OptionsFile.Gen_Sound_On && musicTransition.fromSong is not null && musicTransition.toSong is not null && musicTransition.fromSong[curTrack].State == SoundState.Playing && musicTransition.toSong[curTrack].State == SoundState.Playing)
+        if (Settings.SoundEnabled && musicTransition.fromSong is not null && musicTransition.toSong is not null && musicTransition.fromSong[curTrack].State == SoundState.Playing && musicTransition.toSong[curTrack].State == SoundState.Playing)
         {
             if (musicTransition.fromSong[curTrack].Volume > 0.0f)
             {
                 musicTransition.fromSong[curTrack].Volume -= fadeStep;
             }
-            if (musicTransition.toSong[curTrack].Volume < OptionsFile.Gen_Music_Vol / 100.0f)
+            if (musicTransition.toSong[curTrack].Volume < Settings.MusicVolume / 100.0f)
             {
                 musicTransition.toSong[curTrack].Volume += fadeStep;
             }
-            if (musicTransition.fromSong[curTrack].Volume <= 0.0f && musicTransition.toSong[curTrack].Volume >= OptionsFile.Gen_Music_Vol / 100.0f)
+            if (musicTransition.fromSong[curTrack].Volume <= 0.0f && musicTransition.toSong[curTrack].Volume >= Settings.MusicVolume / 100.0f)
             {
                 musicTransition.fromSong[curTrack].Volume = 0.0f;
-                musicTransition.toSong[curTrack].Volume = OptionsFile.Gen_Music_Vol / 100.0f;
+                musicTransition.toSong[curTrack].Volume = Settings.MusicVolume / 100.0f;
                 musicTransition = new();
             }
         }
@@ -737,7 +776,7 @@ public class Pico8Functions : IDisposable
     public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
     {
         lastMusicCall = n;
-        SongInst curSong = _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value[n];
+        SongInst curSong = _music.ElementAt(Settings.CurrentSoundtrack).Value[n];
 
         if (channelMusic.Count > 0 && channelMusic[0][0].Group == curSong.Group)
         {
@@ -765,7 +804,7 @@ public class Pico8Functions : IDisposable
         {
             SoundDispose();
 
-            foreach (SongInst song in _music.ElementAt(OptionsFile.Pcraft_Soundtrack).Value)
+            foreach (SongInst song in _music.ElementAt(Settings.CurrentSoundtrack).Value)
             {
                 if (song.Group == curSong.Group)
                 {
@@ -782,7 +821,7 @@ public class Pico8Functions : IDisposable
             {
                 item[0].Track.IsLooped = item[0].Loop;
                 item[0].Track.Play();
-                item[0].Track.Volume = item[0].Name == curSong.Tracks[0].name ? OptionsFile.Gen_Sound_On ? OptionsFile.Gen_Music_Vol / 100.0f : 0 : 0;
+                item[0].Track.Volume = item[0].Name == curSong.Tracks[0].name ? Settings.SoundEnabled ? Settings.MusicVolume / 100.0f : 0 : 0;
                 curTrack = 0;
             }
         }
@@ -1058,12 +1097,12 @@ public class Pico8Functions : IDisposable
                 sfxInstance.Dispose();
             }
 
-            SoundEffectInstance instance = SoundEffectDictionary[_sfx.ElementAt(OptionsFile.Pcraft_Sfx_Pack).Value[nFlr]].CreateInstance();
+            SoundEffectInstance instance = SoundEffectDictionary[_sfx.ElementAt(Settings.CurrentSfxPack).Value[nFlr]].CreateInstance();
 
             c.Add(instance);
 
             instance.Play();
-            instance.Volume = OptionsFile.Gen_Sound_On ? OptionsFile.Gen_Sfx_Vol / 100.0f : 0;
+            instance.Volume = Settings.SoundEnabled ? Settings.SfxVolume / 100.0f : 0;
         }
         else
         {

@@ -97,7 +97,7 @@ public interface IGraphicsEngine
     /// <summary>
     /// Draw sprite (Pico-8 spr function)
     /// </summary>
-    void DrawSprite(int spriteNum, F32 x, F32 y, F32 scaleX = 1, F32 scaleY = 1, bool flipX = false, bool flipY = false);
+    void DrawSprite(int spriteNum, F32 x, F32 y, F32? scaleX = null, F32? scaleY = null, bool flipX = false, bool flipY = false);
 
     /// <summary>
     /// Draw tilemap (Pico-8 map function)

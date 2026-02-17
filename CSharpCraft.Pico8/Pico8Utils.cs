@@ -175,40 +175,40 @@ public static class Pico8Utils
     {
         return i switch
         {
-            0 => IsBindingDown(0, p8.OptionsFile.Kbm_Left.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Left.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Left.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Left.Bind2),
+            0 => IsBindingDown(0, p8.InputBindings.KeyboardLeft.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardLeft.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerLeft.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerLeft.Bind2),
 
-            1 => IsBindingDown(0, p8.OptionsFile.Kbm_Right.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Right.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Right.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Right.Bind2),
+            1 => IsBindingDown(0, p8.InputBindings.KeyboardRight.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardRight.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerRight.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerRight.Bind2),
 
-            2 => IsBindingDown(0, p8.OptionsFile.Kbm_Up.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Up.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Up.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Up.Bind2),
+            2 => IsBindingDown(0, p8.InputBindings.KeyboardUp.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardUp.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerUp.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerUp.Bind2),
 
-            3 => IsBindingDown(0, p8.OptionsFile.Kbm_Down.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Down.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Down.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Down.Bind2),
+            3 => IsBindingDown(0, p8.InputBindings.KeyboardDown.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardDown.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerDown.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerDown.Bind2),
 
-            4 => IsBindingDown(0, p8.OptionsFile.Kbm_Menu.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Menu.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Menu.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Menu.Bind2),
+            4 => IsBindingDown(0, p8.InputBindings.KeyboardMenu.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardMenu.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerMenu.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerMenu.Bind2),
 
-            5 => IsBindingDown(0, p8.OptionsFile.Kbm_Use.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Use.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Use.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Use.Bind2),
+            5 => IsBindingDown(0, p8.InputBindings.KeyboardUse.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardUse.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerUse.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerUse.Bind2),
 
-            6 => IsBindingDown(0, p8.OptionsFile.Kbm_Pause.Bind1) ||
-                 IsBindingDown(0, p8.OptionsFile.Kbm_Pause.Bind2) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Pause.Bind1) ||
-                 IsBindingDown(1, p8.OptionsFile.Con_Pause.Bind2),
+            6 => IsBindingDown(0, p8.InputBindings.KeyboardPause.Bind1) ||
+                 IsBindingDown(0, p8.InputBindings.KeyboardPause.Bind2) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerPause.Bind1) ||
+                 IsBindingDown(1, p8.InputBindings.ControllerPause.Bind2),
             _ => false,
         };
     }
