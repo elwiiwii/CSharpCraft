@@ -2,6 +2,7 @@ using CSharpCraft.Pico8;
 using CSharpCraft.Tests.Pico8.Mocks;
 using FixMath;
 using Xunit;
+using FluentAssertions;
 
 namespace CSharpCraft.Tests.Pico8;
 
@@ -28,9 +29,9 @@ public class GraphicsPrimitivesTests
         _graphics.Cls(clearColor);
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
-        Assert.Equal("Cls", _graphics.DrawCalls[0].operation);
-        Assert.Equal(clearColor, _graphics.DrawCalls[0].param);
+        _graphics.DrawCalls.Should().HaveCount(1);
+        _graphics.DrawCalls[0].operation.Should().Be("Cls");
+        _graphics.DrawCalls[0].param.Should().Be(clearColor);
     }
 
     [Fact]
@@ -45,10 +46,10 @@ public class GraphicsPrimitivesTests
         _graphics.Circle(x, y, 0.5, color); // Using circle as proxy for pset-like behavior
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
-        Assert.Equal("Circle", _graphics.DrawCalls[0].operation);
-        Assert.Equal(10f, _graphics.DrawCalls[0].x);
-        Assert.Equal(20f, _graphics.DrawCalls[0].y);
+        _graphics.DrawCalls.Should().HaveCount(1);
+        _graphics.DrawCalls[0].operation.Should().Be("Circle");
+        _graphics.DrawCalls[0].x.Should().Be(10f);
+        _graphics.DrawCalls[0].y.Should().Be(20f);
     }
 
     [Fact]
@@ -64,11 +65,11 @@ public class GraphicsPrimitivesTests
         _graphics.Circle(x, y, radius, color);
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
+        _graphics.DrawCalls.Should().HaveCount(1);
         var call = _graphics.DrawCalls[0];
-        Assert.Equal("Circle", call.operation);
-        Assert.Equal(64f, call.x);
-        Assert.Equal(64f, call.y);
+        call.operation.Should().Be("Circle");
+        call.x.Should().Be(64f);
+        call.y.Should().Be(64f);
     }
 
     [Fact]
@@ -84,9 +85,9 @@ public class GraphicsPrimitivesTests
         _graphics.CircleFilled(centerX, centerY, radius, color);
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
+        _graphics.DrawCalls.Should().HaveCount(1);
         var call = _graphics.DrawCalls[0];
-        Assert.Equal("CircleFilled", call.operation);
+        call.operation.Should().Be("CircleFilled");
     }
 
     [Fact]
@@ -103,9 +104,9 @@ public class GraphicsPrimitivesTests
         _graphics.RectangleFilled(x1, y1, x2, y2, color);
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
+        _graphics.DrawCalls.Should().HaveCount(1);
         var call = _graphics.DrawCalls[0];
-        Assert.Equal("RectangleFilled", call.operation);
+        call.operation.Should().Be("RectangleFilled");
     }
 
     [Fact]
@@ -122,9 +123,9 @@ public class GraphicsPrimitivesTests
         _graphics.Line(x0, y0, x1, y1, color);
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
+        _graphics.DrawCalls.Should().HaveCount(1);
         var call = _graphics.DrawCalls[0];
-        Assert.Equal("Line", call.operation);
+        call.operation.Should().Be("Line");
     }
 
     [Fact]
@@ -140,9 +141,9 @@ public class GraphicsPrimitivesTests
         _graphics.Print(text, x, y, color);
 
         // Assert
-        Assert.Single(_graphics.DrawCalls);
+        _graphics.DrawCalls.Should().HaveCount(1);
         var call = _graphics.DrawCalls[0];
-        Assert.Equal("Print", call.operation);
+        call.operation.Should().Be("Print");
     }
 
     [Fact]
@@ -156,8 +157,8 @@ public class GraphicsPrimitivesTests
         _graphics.SetCamera(camX, camY);
 
         // Assert
-        Assert.Equal(camX, _graphics.CameraOffset.x);
-        Assert.Equal(camY, _graphics.CameraOffset.y);
+        _graphics.CameraOffset.x.Should().Be(camX);
+        _graphics.CameraOffset.y.Should().Be(camY);
     }
 
     [Fact]
@@ -170,8 +171,8 @@ public class GraphicsPrimitivesTests
         _graphics.ResetCamera();
 
         // Assert
-        Assert.Equal(F32.Zero, _graphics.CameraOffset.x);
-        Assert.Equal(F32.Zero, _graphics.CameraOffset.y);
+        _graphics.CameraOffset.x.Should().Be(F32.Zero);
+        _graphics.CameraOffset.y.Should().Be(F32.Zero);
     }
 
     [Fact]
@@ -184,10 +185,10 @@ public class GraphicsPrimitivesTests
         _graphics.Print("TEXT", F32.FromInt(5), F32.FromInt(5), 7);
 
         // Assert
-        Assert.Equal(4, _graphics.DrawCalls.Count);
-        Assert.Equal("Cls", _graphics.DrawCalls[0].operation);
-        Assert.Equal("Circle", _graphics.DrawCalls[1].operation);
-        Assert.Equal("RectangleFilled", _graphics.DrawCalls[2].operation);
-        Assert.Equal("Print", _graphics.DrawCalls[3].operation);
+        _graphics.DrawCalls.Should().HaveCount(4);
+        _graphics.DrawCalls[0].operation.Should().Be("Cls");
+        _graphics.DrawCalls[1].operation.Should().Be("Circle");
+        _graphics.DrawCalls[2].operation.Should().Be("RectangleFilled");
+        _graphics.DrawCalls[3].operation.Should().Be("Print");
     }
 }

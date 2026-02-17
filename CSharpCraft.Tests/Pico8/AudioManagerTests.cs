@@ -1,6 +1,7 @@
 using CSharpCraft.Pico8;
 using CSharpCraft.Tests.Pico8.Mocks;
 using Xunit;
+using FluentAssertions;
 
 namespace CSharpCraft.Tests.Pico8;
 
@@ -28,10 +29,10 @@ public class AudioManagerTests
         _audio.PlayMusic(trackId, fade);
 
         // Assert
-        Assert.Single(_audio.PlaybackCalls);
+        _audio.PlaybackCalls.Should().HaveCount(1);
         var call = _audio.PlaybackCalls[0];
-        Assert.Equal("PlayMusic", call.operation);
-        Assert.Equal(trackId, call.id);
+        call.operation.Should().Be("PlayMusic");
+        call.id.Should().Be(trackId);
     }
 
     [Fact]
@@ -45,10 +46,10 @@ public class AudioManagerTests
         _audio.PlaySfx(sfxId, channel);
 
         // Assert
-        Assert.Single(_audio.PlaybackCalls);
+        _audio.PlaybackCalls.Should().HaveCount(1);
         var call = _audio.PlaybackCalls[0];
-        Assert.Equal("PlaySfx", call.operation);
-        Assert.Equal(sfxId, call.id);
+        call.operation.Should().Be("PlaySfx");
+        call.id.Should().Be(sfxId);
     }
 
     [Fact]
@@ -61,10 +62,10 @@ public class AudioManagerTests
         _audio.PlaySfx(3, 3);
 
         // Assert
-        Assert.Equal(4, _audio.PlaybackCalls.Count);
+        _audio.PlaybackCalls.Should().HaveCount(4);
         for (int i = 0; i < 4; i++)
         {
-            Assert.Equal("PlaySfx", _audio.PlaybackCalls[i].operation);
+            _audio.PlaybackCalls[i].operation.Should().Be("PlaySfx");
         }
     }
 
@@ -77,9 +78,9 @@ public class AudioManagerTests
         _audio.Mute();
 
         // Assert
-        Assert.Equal(3, _audio.PlaybackCalls.Count);
+        _audio.PlaybackCalls.Should().HaveCount(3);
         var lastCall = _audio.PlaybackCalls[2];
-        Assert.Equal("Mute", lastCall.operation);
+        lastCall.operation.Should().Be("Mute");
     }
 
     [Fact]
@@ -91,10 +92,10 @@ public class AudioManagerTests
         _audio.PlayMusic(2);
 
         // Assert
-        Assert.Equal(3, _audio.PlaybackCalls.Count);
-        Assert.Equal("PlayMusic", _audio.PlaybackCalls[0].operation);
-        Assert.Equal("PlayMusic", _audio.PlaybackCalls[1].operation);
-        Assert.Equal("PlayMusic", _audio.PlaybackCalls[2].operation);
+        _audio.PlaybackCalls.Should().HaveCount(3);
+        _audio.PlaybackCalls[0].operation.Should().Be("PlayMusic");
+        _audio.PlaybackCalls[1].operation.Should().Be("PlayMusic");
+        _audio.PlaybackCalls[2].operation.Should().Be("PlayMusic");
     }
 
     [Fact]
@@ -104,8 +105,8 @@ public class AudioManagerTests
         _audio.PlaySfx(5); // Use default channel -1
 
         // Assert
-        Assert.Single(_audio.PlaybackCalls);
-        Assert.Equal("PlaySfx", _audio.PlaybackCalls[0].operation);
+        _audio.PlaybackCalls.Should().HaveCount(1);
+        _audio.PlaybackCalls[0].operation.Should().Be("PlaySfx");
     }
 
     [Fact]
@@ -118,10 +119,10 @@ public class AudioManagerTests
         _audio.Mute();            // Pause all audio
 
         // Assert
-        Assert.Equal(4, _audio.PlaybackCalls.Count);
-        Assert.Equal("PlayMusic", _audio.PlaybackCalls[0].operation);
-        Assert.Equal("PlaySfx", _audio.PlaybackCalls[1].operation);
-        Assert.Equal("PlaySfx", _audio.PlaybackCalls[2].operation);
-        Assert.Equal("Mute", _audio.PlaybackCalls[3].operation);
+        _audio.PlaybackCalls.Should().HaveCount(4);
+        _audio.PlaybackCalls[0].operation.Should().Be("PlayMusic");
+        _audio.PlaybackCalls[1].operation.Should().Be("PlaySfx");
+        _audio.PlaybackCalls[2].operation.Should().Be("PlaySfx");
+        _audio.PlaybackCalls[3].operation.Should().Be("Mute");
     }
 }

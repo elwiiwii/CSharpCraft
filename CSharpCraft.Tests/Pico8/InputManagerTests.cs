@@ -3,6 +3,7 @@ using Moq;
 using CSharpCraft.Pico8;
 using CSharpCraft.Tests.Pico8.Mocks;
 using FixMath;
+using FluentAssertions;
 
 namespace CSharpCraft.Tests.Pico8;
 
@@ -26,7 +27,7 @@ public class InputManagerTests
         bool result = _input.Btn(0);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -39,7 +40,7 @@ public class InputManagerTests
         bool result = _input.Btn(0);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -53,7 +54,7 @@ public class InputManagerTests
         bool result = _input.Btn(0);
 
         // Assert
-        Assert.False(result);
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -65,9 +66,9 @@ public class InputManagerTests
         _input.SetButtonState(2, true);
 
         // Act & Assert
-        Assert.True(_input.Btn(0));
-        Assert.False(_input.Btn(1));
-        Assert.True(_input.Btn(2));
+        _input.Btn(0).Should().BeTrue();
+        _input.Btn(1).Should().BeFalse();
+        _input.Btn(2).Should().BeTrue();
     }
 
     [Fact]
@@ -89,7 +90,7 @@ public class InputManagerTests
         // Arrange, Act & Assert
         for (int i = 0; i < 7; i++)
         {
-            Assert.False(_input.Btn(i));
+            _input.Btn(i).Should().BeFalse();
         }
     }
 
@@ -102,11 +103,11 @@ public class InputManagerTests
         _input.SetButtonState(4, true); // Menu
 
         // Assert
-        Assert.True(_input.Btn(0));
-        Assert.True(_input.Btn(1));
-        Assert.False(_input.Btn(2)); // Up - not pressed
-        Assert.False(_input.Btn(3)); // Down - not pressed
-        Assert.True(_input.Btn(4));  // Menu - pressed
+        _input.Btn(0).Should().BeTrue();
+        _input.Btn(1).Should().BeTrue();
+        _input.Btn(2).Should().BeFalse(); // Up - not pressed
+        _input.Btn(3).Should().BeFalse(); // Down - not pressed
+        _input.Btn(4).Should().BeTrue();  // Menu - pressed
     }
 
     [Fact]
@@ -116,7 +117,7 @@ public class InputManagerTests
         var buttons = _input.GetButtonState();
 
         // Assert
-        Assert.NotNull(buttons);
+        buttons.Should().NotBeNull();
     }
 
     [Fact]
@@ -126,8 +127,8 @@ public class InputManagerTests
         var stick = _input.GetAnalogStick(0);
 
         // Assert
-        Assert.Equal(F32.Zero, stick.x);
-        Assert.Equal(F32.Zero, stick.y);
+        stick.x.Should().Be(F32.Zero);
+        stick.y.Should().Be(F32.Zero);
     }
 
     [Fact]
@@ -135,20 +136,20 @@ public class InputManagerTests
     {
         // Arrange & Act - Simulates moving left, jumping
         _input.SetButtonState(0, true); // Press left
-        Assert.True(_input.Btn(0));
+        _input.Btn(0).Should().BeTrue();
 
         _input.SetButtonState(4, true); // Press action
-        Assert.True(_input.Btn(4));
+        _input.Btn(4).Should().BeTrue();
 
         _input.SetButtonState(0, false); // Release left
-        Assert.False(_input.Btn(0));
+        _input.Btn(0).Should().BeFalse();
 
         _input.SetButtonState(4, false); // Release action
-        Assert.False(_input.Btn(4));
+        _input.Btn(4).Should().BeFalse();
 
         // Assert
-        Assert.False(_input.Btn(0));
-        Assert.False(_input.Btn(4));
+        _input.Btn(0).Should().BeFalse();
+        _input.Btn(4).Should().BeFalse();
     }
 
     [Fact]
@@ -166,8 +167,8 @@ public class InputManagerTests
         var result2 = inputManagerMock.Object.Btn(1);
 
         // Assert
-        Assert.True(result1);
-        Assert.False(result2);
+        result1.Should().BeTrue();
+        result2.Should().BeFalse();
     }
 
     [Fact]
@@ -181,7 +182,7 @@ public class InputManagerTests
         var result = inputManagerMock.Object.Btnp(4);
 
         // Assert
-        Assert.True(result);
+        result.Should().BeTrue();
         inputManagerMock.Verify(x => x.Btnp(4, It.IsAny<int>()), Times.Once);
     }
 }
