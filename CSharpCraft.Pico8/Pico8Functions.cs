@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
 using System.Reflection;
+using CSharpCraft.Pico8.Services;
 
 namespace CSharpCraft.Pico8;
 
@@ -93,6 +94,11 @@ public class Pico8Functions : IDisposable
     Random random = new();
     private Func<IScene>? scheduledSceneChange;
 
+    // Phase 3.2: Service fields for orchestration
+    private UtilityService? _utilityService;
+    private MenuService? _menuService;
+    private MapService? _mapService;
+
     public Pico8Functions(IScene cart, object? titleScreen, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, GameWindow _window, object? optionsData)
     {
         Batch = _batch;
@@ -129,6 +135,11 @@ public class Pico8Functions : IDisposable
         mainMenuItems = [];
         curMenuItems = [];
         _cart = cart;
+
+        // Phase 3.2: Initialize utility services
+        _utilityService = new UtilityService(cosDict, sinDict, _flags, random);
+        _menuService = new MenuService();
+        _mapService = new MapService(null!, _map, cart, _utilityService); // GraphicsService set after its creation
 
         LoadCart(cart);
     }
@@ -208,10 +219,7 @@ public class Pico8Functions : IDisposable
 
     private void LoadCart(IScene cart)
     {
-        if (_cart is not null)
-        {
-            _cart.Dispose();
-        }
+        _cart?.Dispose();
         _sprites = [];
         _flags = [];
         _map = [];
@@ -669,9 +677,7 @@ public class Pico8Functions : IDisposable
 
     public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
     {
-        angle = Mod(angle, 1);
-        F32 val = F32.FromRaw((int)(cosDict.LookupTable[angle.Raw / 10.0] * 10));
-        return val;
+        return _utilityService?.Cos(angle) ?? F32.Zero;
     }
 
 
@@ -683,7 +689,7 @@ public class Pico8Functions : IDisposable
 
     public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
     {
-        table.Remove(value);
+        _utilityService?.Del(table, value);
     }
 
 
@@ -701,7 +707,7 @@ public class Pico8Functions : IDisposable
 
     public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
     {
-        return _flags[n];
+        return _utilityService?.Fget(n) ?? 0;
     }
 
 
@@ -713,19 +719,7 @@ public class Pico8Functions : IDisposable
 
     public void Map(double celx, double cely, double sx, double sy, double celw, double celh, int flags = 0) // https://pico-8.fandom.com/wiki/Map
     {
-        int cwFlr = (int)Math.Floor(celw);
-        int chFlr = (int)Math.Floor(celh);
-
-        for (int i = 0; i <= cwFlr; i++)
-        {
-            for (int j = 0; j <= chFlr; j++)
-            {
-                if (flags == 0 || flags == Fget(Mget(celx + i, cely + j)))
-                {
-                    Spr(Mget(i + celx, j + cely), sx + i * 8, sy + j * 8);
-                }
-            }
-        }
+        _mapService?.Map(celx, cely, sx, sy, celw, celh, flags);
     }
 
 
@@ -742,17 +736,13 @@ public class Pico8Functions : IDisposable
 
     public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null) // https://pico-8.fandom.com/wiki/Menuitem
     {
-        if (list is null) { list = curMenuItems; }
-        list.Insert(pos, new MenuItem(getName, function));
+        _menuService?.Menuitem(pos, getName, function, list);
     }
 
 
     public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
     {
-        int xFlr = Math.Abs((int)Math.Floor(celx));
-        int yFlr = Math.Abs((int)Math.Floor(cely));
-
-        return _map[xFlr + yFlr * _cart.MapDimensions.x];
+        return _mapService?.Mget(celx, cely) ?? 0;
     }
 
 
@@ -765,11 +755,7 @@ public class Pico8Functions : IDisposable
 
     public void Mset(double celx, double cely, double snum = 0) // https://pico-8.fandom.com/wiki/Mset
     {
-        int xFlr = (int)Math.Floor(celx);
-        int yFlr = (int)Math.Floor(cely);
-        int sFlr = (int)Math.Floor(snum);
-
-        _map[xFlr + yFlr * _cart.MapDimensions.x] = sFlr;
+        _mapService?.Mset(celx, cely, snum);
     }
 
 
@@ -1113,9 +1099,7 @@ public class Pico8Functions : IDisposable
 
     public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
     {
-        angle = Mod(angle, 1);
-        F32 val = F32.FromRaw((int)(sinDict.LookupTable[angle.Raw / 10.0] * 10));
-        return val;
+        return _utilityService?.Sin(angle) ?? F32.Zero;
     }
 
 
@@ -1140,7 +1124,7 @@ public class Pico8Functions : IDisposable
 
     public void Srand(int seed) // https://pico-8.fandom.com/wiki/Srand
     {
-        random = new(seed);
+        _utilityService?.Srand(seed);
     }
 
 
