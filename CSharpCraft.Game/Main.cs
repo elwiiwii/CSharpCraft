@@ -150,10 +150,10 @@ class FNAGame : Game
         {
             optionsFile.Gen_Fullscreen = !optionsFile.Gen_Fullscreen;
             OptionsFile.JsonWrite(optionsFile);
-            graphics.IsFullScreen = optionsFile.Gen_Fullscreen;
-            graphics.PreferredBackBufferWidth = optionsFile.Gen_Window_Width / 128 * p8.Resolution.w;
-            graphics.PreferredBackBufferHeight = optionsFile.Gen_Window_Height / 128 * p8.Resolution.h;
-            graphics.ApplyChanges();
+            GameRendering.Current.ApplyDisplaySettings(
+                optionsFile.Gen_Fullscreen,
+                optionsFile.Gen_Window_Width / 128 * p8.Resolution.w,
+                optionsFile.Gen_Window_Height / 128 * p8.Resolution.h);
             p8.UpdateViewport();
             popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
         }
@@ -237,6 +237,7 @@ class FNAGame : Game
 
         OptionsFile.Current = optionsFile;
         p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile, optionsFile, new ServiceFactory());
+        GameRendering.Current = new FnaTextureRenderer(batch, textureDictionary, Window, graphics);
         AccountHandler.p8 = p8;
         RoomHandler.p8 = p8;
     }

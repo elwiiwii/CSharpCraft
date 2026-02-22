@@ -1,7 +1,6 @@
 ﻿using CSharpCraft.Credits.Credits;
 using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace CSharpCraft.Credits;
@@ -140,10 +139,7 @@ public class CreditsScene : IScene, IDisposable
     {
         p8.Cls(1);
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 halfsize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
-
-        p8.Batch.Draw(p8.TextureDictionary["Credits"], new Vector2(27 * p8.Cell.Width, 8 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("Credits", new Vector2(27 * p8.Cell.Width, 8 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
 
         int icon_gap = 4;
         int item_gap = 4;
@@ -168,7 +164,7 @@ public class CreditsScene : IScene, IDisposable
                 else
                 {
                     Vector2 position2 = new((xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap) * p8.Cell.Width, (ystart - 5 + menuSelected.ver * 9 + yoff) * p8.Cell.Height);
-                    p8.Batch.Draw(p8.TextureDictionary["ArrowV"], position2, null, p8.Colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    GameRendering.Current.Draw("ArrowV", position2, p8.Colors[7], p8.Cell.Width, p8.Cell.Height);
                     p8.Print(credits[menuSelected.ver].Links[menuSelected.hor - 1].link.Replace("https://", ""),
                         xstart + 6 + credits[menuSelected.ver].Name.Length * 4 + 8 * credits[menuSelected.ver].Links.Count,
                         ystart + menuSelected.ver * 9 + yoff,
@@ -182,7 +178,7 @@ public class CreditsScene : IScene, IDisposable
             foreach ((string type , string link) icon in item.Links)
             {
                 Vector2 position = new((xstart + item.Name.Length * 4 + xpos + icon_gap - 1) * p8.Cell.Width, (ypos + yoff + ystart - 1) * p8.Cell.Height);
-                p8.Batch.Draw(p8.TextureDictionary[icon.type], position, null, Color.White, 0, Vector2.Zero, halfsize, SpriteEffects.None, 0);
+                GameRendering.Current.Draw(icon.type, position, Color.White, p8.Cell.Width / 2f, p8.Cell.Height / 2f);
                 xpos += 8;
             }
 

@@ -4,7 +4,6 @@ using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
 using Color = Microsoft.Xna.Framework.Color;
@@ -67,8 +66,7 @@ public class LobbyScene(Role joinRole) : PcraftBase
 
             prevKeyboardState = Keyboard.GetState();
             prevMouseState = Mouse.GetState();
-            cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-            cursorY = prevMouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+            (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(prevMouseState.X, prevMouseState.Y);
             base.Init();
             ResetLevel();
 
@@ -101,8 +99,7 @@ public class LobbyScene(Role joinRole) : PcraftBase
 
         KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
-        cursorX = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
 
         bool canStart = true;
         if (RoomHandler._playerDictionary.Where(x => x.Value.Ready == false).Count() > 0) canStart = false;
@@ -165,14 +162,11 @@ public class LobbyScene(Role joinRole) : PcraftBase
 
     public override void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
         if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
-
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
 
         p8.Camera(clx - 64, cly - 64);
         DrawBack();

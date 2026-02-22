@@ -1,6 +1,5 @@
 ﻿using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -62,8 +61,7 @@ public class CompetitiveScene : IScene
             labelLength = 0;
             curIcon = null;
             prevState = Mouse.GetState();
-            cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-            cursorY = prevState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+            (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(prevState.X, prevState.Y);
             
             isInitialized = true;
         }
@@ -83,8 +81,7 @@ public class CompetitiveScene : IScene
         if (!isInitialized || isInitializing) return;
 
         MouseState state = Mouse.GetState();
-        cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(state.X, state.Y);
 
         curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
 
@@ -94,23 +91,21 @@ public class CompetitiveScene : IScene
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
         if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-
-        p8.Batch.Draw(p8.TextureDictionary["CompetitiveBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("CompetitiveBackground", new(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
 
         Shared.DrawIcons(p8, icons, cursorX, cursorY);
 
         if (curIcon is not null) { labelLength = curIcon.Label.Length * 4; }
         else { labelLength = Math.Max(labelLength - labelLength / 4, 0); }
-        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightCenter"], new((63 - labelLength / 2) * p8.Cell.Width, 108 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * (labelLength + 1), p8.Cell.Height), SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 - 5 - labelLength / 2 - 1) * p8.Cell.Width, 108 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["12pxHighlightEdge"], new((63 + labelLength / 2 + 1) * p8.Cell.Width, 108 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw("12pxHighlightCenter", new((63 - labelLength / 2) * p8.Cell.Width, 108 * p8.Cell.Height), Color.White, p8.Cell.Width * (labelLength + 1), p8.Cell.Height);
+        GameRendering.Current.Draw("12pxHighlightEdge", new((63 - 5 - labelLength / 2 - 1) * p8.Cell.Width, 108 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("12pxHighlightEdge", new((63 + labelLength / 2 + 1) * p8.Cell.Width, 108 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
         if (curIcon is not null) { Shared.Printcb(p8, curIcon.Label, 63, 111, 15, 1); }
 
         Shared.DrawCursor(p8, cursorX, cursorY);

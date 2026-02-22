@@ -1,6 +1,5 @@
 ﻿using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -109,22 +108,20 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
     {
         p8.Cls();
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-
-        p8.Batch.Draw(p8.TextureDictionary["OptionsBackground4"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("OptionsBackground4", new Vector2(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
 
         if (waitingForInput)
         {
-            p8.Batch.Draw(p8.TextureDictionary["WaitingForInput"], new Vector2(20 * p8.Cell.Width, 51 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            GameRendering.Current.Draw("WaitingForInput", new Vector2(20 * p8.Cell.Width, 51 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
         }
         else
         {
-            p8.Batch.Draw(p8.TextureDictionary["KeybindsMenu"], new Vector2(8 * p8.Cell.Width, 46 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            GameRendering.Current.Draw("KeybindsMenu", new Vector2(8 * p8.Cell.Width, 46 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
 
             if (menuSelected.ver >= 0)
             {
                 Vector2 position5 = new((46 + 36 * menuSelected.hor) * p8.Cell.Width, (menuSelected.ver * 6 + 55) * p8.Cell.Height);
-                p8.Batch.Draw(p8.TextureDictionary["Arrow"], position5, null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                GameRendering.Current.Draw("Arrow", position5, p8.Colors[6], p8.Cell.Width, p8.Cell.Height, flipX: true);
             }
             else if (menuSelected.ver == -1)
             {
@@ -133,8 +130,8 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
 
             Vector2 position3 = new(16 * p8.Cell.Width, 31 * p8.Cell.Height);
             Vector2 position4 = new(30 * p8.Cell.Width, 31 * p8.Cell.Height);
-            p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], position3, null, p8.Colors[7], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary["SelectorHalf"], position4, null, p8.Colors[7], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+            GameRendering.Current.Draw("SelectorHalf", position3, p8.Colors[7], p8.Cell.Width, p8.Cell.Height);
+            GameRendering.Current.Draw("SelectorHalf", position4, p8.Colors[7], p8.Cell.Width, p8.Cell.Height, flipX: true);
 
             p8.Print("keyboard", 19, 33, 7);
             p8.Print("controller", 19 + 54, 33, 7);

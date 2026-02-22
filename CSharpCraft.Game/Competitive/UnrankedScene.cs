@@ -1,6 +1,5 @@
 ﻿using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -52,8 +51,7 @@ public class UnrankedScene(IScene prevScene) : IScene
 
             curIcon = null;
             prevState = Mouse.GetState();
-            cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-            cursorY = prevState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+            (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(prevState.X, prevState.Y);
 
             isInitialized = true;
         }
@@ -73,8 +71,7 @@ public class UnrankedScene(IScene prevScene) : IScene
         if (!isInitialized || isInitializing) return;
 
         MouseState state = Mouse.GetState();
-        cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(state.X, state.Y);
 
         curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
 
@@ -84,15 +81,13 @@ public class UnrankedScene(IScene prevScene) : IScene
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
         if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-
-        p8.Batch.Draw(p8.TextureDictionary["UnrankedBackground"], new(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("UnrankedBackground", new(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
 
         Shared.DrawIcons(p8, icons, cursorX, cursorY);
 

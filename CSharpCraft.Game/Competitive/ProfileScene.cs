@@ -1,7 +1,6 @@
 ﻿using AccountService;
 using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -29,15 +28,13 @@ public class ProfileScene(IScene prevScene, string username) : IScene
         user = await AccountHandler.GetUserByUsername(username);
         curIcon = null;
         prevState = Mouse.GetState();
-        cursorX = prevState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = prevState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(prevState.X, prevState.Y);
     }
 
     public void Update()
     {
         MouseState state = Mouse.GetState();
-        cursorX = state.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = state.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(state.X, state.Y);
 
         curIcon = Shared.UpdateIcon(p8, [back], cursorX, cursorY);
 
@@ -47,7 +44,7 @@ public class ProfileScene(IScene prevScene, string username) : IScene
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         p8.Rectfill(0, 0, 127, 127, 17);
 

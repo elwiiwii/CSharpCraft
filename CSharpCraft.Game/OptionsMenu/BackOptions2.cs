@@ -1,6 +1,5 @@
 ﻿using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu;
@@ -31,11 +30,9 @@ public class BackOptions2 : IScene, IDisposable
     {
         p8.Cls();
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-
         drawScene.Draw();
 
-        p8.Batch.Draw(p8.TextureDictionary["OptionsBackground1"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("OptionsBackground1", new Vector2(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
 
     }
     public string SpriteImage => "";

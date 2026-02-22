@@ -1,6 +1,5 @@
 ﻿using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu;
@@ -52,10 +51,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
             {
                 f.Gen_Fullscreen = !f.Gen_Fullscreen;
                 OptionsFile.JsonWrite(f);
-                p8.Graphics.IsFullScreen = f.Gen_Fullscreen;
-                p8.Graphics.PreferredBackBufferWidth = f.Gen_Window_Width / 128 * p8.Resolution.w;
-                p8.Graphics.PreferredBackBufferHeight = f.Gen_Window_Height / 128 * p8.Resolution.h;
-                p8.Graphics.ApplyChanges();
+                GameRendering.Current.ApplyDisplaySettings(f.Gen_Fullscreen, f.Gen_Window_Width / 128 * p8.Resolution.w, f.Gen_Window_Height / 128 * p8.Resolution.h);
                 p8.UpdateViewport();
             }),
 
@@ -67,9 +63,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
                     ? Math.Max(128, f.Gen_Window_Width - 128)
                     : Math.Min(16384, f.Gen_Window_Width + 128);
                 OptionsFile.JsonWrite(f);
-                p8.Graphics.PreferredBackBufferWidth = f.Gen_Window_Width;
-                p8.Graphics.PreferredBackBufferHeight = f.Gen_Window_Height;
-                p8.Graphics.ApplyChanges();
+                GameRendering.Current.ApplyDisplaySettings(f.Gen_Fullscreen, f.Gen_Window_Width, f.Gen_Window_Height);
             }),
 
         new("window_height",
@@ -80,9 +74,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
                     ? Math.Max(128, f.Gen_Window_Height - 128)
                     : Math.Min(16384, f.Gen_Window_Height + 128);
                 OptionsFile.JsonWrite(f);
-                p8.Graphics.PreferredBackBufferWidth = f.Gen_Window_Width;
-                p8.Graphics.PreferredBackBufferHeight = f.Gen_Window_Height;
-                p8.Graphics.ApplyChanges();
+                GameRendering.Current.ApplyDisplaySettings(f.Gen_Fullscreen, f.Gen_Window_Width, f.Gen_Window_Height);
             }),
     ];
 
@@ -119,9 +111,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
     {
         p8.Cls();
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        
-        p8.Batch.Draw(p8.TextureDictionary["OptionsBackground5"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("OptionsBackground5", new Vector2(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
 
         var optionsFile = OptionsFile.Current;
         int x = 15;
@@ -131,10 +121,10 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
         if (menuSelected > -1)
         {
             Vector2 position5 = new((x - 4) * p8.Cell.Width, (menuSelected * step + y) * p8.Cell.Height);
-            p8.Batch.Draw(p8.TextureDictionary["Arrow"], position5, null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+            GameRendering.Current.Draw("Arrow", position5, p8.Colors[6], p8.Cell.Width, p8.Cell.Height, flipX: true);
         }
 
-        p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * p8.Cell.Width, (y - 5) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("Checker", new Vector2(x * p8.Cell.Width, (y - 5) * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
 
         foreach (var setting in Settings)
         {
@@ -142,7 +132,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
             y += step;
         }
 
-        p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * p8.Cell.Width, (y + 1) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);
+        GameRendering.Current.Draw("Checker", new Vector2(x * p8.Cell.Width, (y + 1) * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipY: true);
     }
     public string SpriteImage => "";
     public string SpriteData => @"";

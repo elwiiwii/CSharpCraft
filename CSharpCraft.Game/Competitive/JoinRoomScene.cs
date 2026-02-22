@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -57,8 +56,7 @@ public class JoinRoomScene() : IScene, IDisposable
 
             prevKeyboardState = Keyboard.GetState();
             prevMouseState = Mouse.GetState();
-            cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-            cursorY = prevMouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+            (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(prevMouseState.X, prevMouseState.Y);
 
             isInitialized = true;
         }
@@ -79,8 +77,7 @@ public class JoinRoomScene() : IScene, IDisposable
 
         KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
-        cursorX = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
 
         if (!joinedRoom)
         {
@@ -113,20 +110,17 @@ public class JoinRoomScene() : IScene, IDisposable
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         p8.Rectfill(0, 0, 127, 127, 17);
 
         if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
-
         if (!joinedRoom)
         {
             joinAs.Draw();
             roleBtn.Draw();
-            p8.Batch.Draw(p8.TextureDictionary[$"{role}Icon"], new Vector2(80.25f * p8.Cell.Width, (role == Role.Player ? 61 : 60.75f) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+            GameRendering.Current.Draw($"{role}Icon", new Vector2(80.25f * p8.Cell.Width, (role == Role.Player ? 61 : 60.75f) * p8.Cell.Height), Color.White, p8.Cell.Width / 2f, p8.Cell.Height / 2f);
             
             if (!string.IsNullOrEmpty(prompt))
             {

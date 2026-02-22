@@ -1,7 +1,6 @@
 ﻿using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -61,21 +60,19 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         Vector2 position = new(1 * p8.Cell.Width, 1 * p8.Cell.Height);
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
-        Texture2D logo = p8.TextureDictionary["CSharpCraftLogo"];
-        p8.Batch.Draw(logo, position, null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("CSharpCraftLogo", position, Color.White, p8.Cell.Width, p8.Cell.Height);
 
         if (frame >= 5) { p8.Print($"c# craft {version}", 0, 18, 6); }
         if (frame >= 6) { p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
-        if (frame >= 7) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(3 * p8.Cell.Width, 36 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-        if (frame >= 11) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(11 * p8.Cell.Width, 38 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-        if (frame >= 15) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(19 * p8.Cell.Width, 36 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-        if (frame >= 19) { p8.Batch.Draw(p8.TextureDictionary["MusicNote"], new(27 * p8.Cell.Width, 34 * p8.Cell.Height), null, p8.Colors[13], 0, Vector2.Zero, size, SpriteEffects.None, 0); }
+        if (frame >= 7) { GameRendering.Current.Draw("MusicNote", new(3 * p8.Cell.Width, 36 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
+        if (frame >= 11) { GameRendering.Current.Draw("MusicNote", new(11 * p8.Cell.Width, 38 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
+        if (frame >= 15) { GameRendering.Current.Draw("MusicNote", new(19 * p8.Cell.Width, 36 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
+        if (frame >= 19) { GameRendering.Current.Draw("MusicNote", new(27 * p8.Cell.Width, 34 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
 
         if (frame >= 29) { p8.Print("choose a game mode", 0, 50, 6); }
 

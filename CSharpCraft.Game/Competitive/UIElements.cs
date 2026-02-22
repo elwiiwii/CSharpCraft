@@ -7,7 +7,6 @@ using FixMath;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
 using static System.Net.Mime.MediaTypeNames;
@@ -69,19 +68,18 @@ public class Selector
 
     public void Draw()
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
         for (int i = 0; i < Options.Length; i++)
         {
             int x = (i == 0 || i == Sel) ? 5 : -4;
             int w = i == Sel ? Options[i].Name.Length * 4 + 1 : Options[i].Name.Length * 4 + 5;
-            p8.Batch.Draw(p8.TextureDictionary[$"10px{(i == Sel ? "Highlight" : "Background")}Center"], new((Options[i].Area.x1 + x) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * w, p8.Cell.Height), SpriteEffects.None, 0);
+            GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}Center", new((Options[i].Area.x1 + x) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * w, p8.Cell.Height);
             p8.Print(Options[i].Name, Options[i].Area.x1 + ((i == 0 || i == Sel) ? 6 : 1), StartPos.y + 2, i == Sel ? 15 : 29);
         }
         for (int i = 0; i < Options.Length; i++)
         {
             int x = (i == 0 || i == Sel) ? 5 : -4;
-            if (Sel >= i) { p8.Batch.Draw(p8.TextureDictionary[$"10px{(i == Sel ? "Highlight" : "Background")}{(i <= 0 ? "" : "Overlap")}Edge"], new((Options[i].Area.x1 + x - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0); }
-            if (Sel <= i) { p8.Batch.Draw(p8.TextureDictionary[$"10px{(i == Sel ? "Highlight" : "Background")}{(i >= Options.Length - 1 ? "" : "Overlap")}Edge"], new((Options[i].Area.x2 - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0); }
+            if (Sel >= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i <= 0 ? "" : "Overlap")}Edge", new((Options[i].Area.x1 + x - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height); }
+            if (Sel <= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i >= Options.Length - 1 ? "" : "Overlap")}Edge", new((Options[i].Area.x2 - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true); }
         }
     }
 }
@@ -108,11 +106,10 @@ public class Button(Pico8Functions _p8, (int x, int y) startPos, string label, b
 
     public void Draw()
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        p8.Batch.Draw(p8.TextureDictionary[$"10px{(IsHovered ? "Highlight" : "Background")}Center"], new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height), SpriteEffects.None, 0);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Center", new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height);
         p8.Print(Label, StartPos.x + 6, StartPos.y + 2, IsHovered ? 15 : 29);
-        p8.Batch.Draw(p8.TextureDictionary[$"10px{(IsHovered ? "Highlight" : "Background")}Edge"], new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary[$"10px{(IsHovered ? "Highlight" : "Background")}Edge"], new((StartPos.x + (Label.Length * 4) + 6) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new((StartPos.x + (Label.Length * 4) + 6) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
     }
 }
 
@@ -205,10 +202,9 @@ public class TextBox
         frameCount++;
         string indicator = " ";
         if (IsActive && frameCount / 30 % 2 == 0) { indicator = "|"; }
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        p8.Batch.Draw(p8.TextureDictionary[$"10pxBackgroundCenter"], new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * Math.Max(Math.Min((Label + Text).Length + 1, Size.max - 10), Size.min - 10), p8.Cell.Height), SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary[$"10pxBackgroundEdge"], new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary[$"10pxBackgroundEdge"], new(Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw($"10pxBackgroundCenter", new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * Math.Max(Math.Min((Label + Text).Length + 1, Size.max - 10), Size.min - 10), p8.Cell.Height);
+        GameRendering.Current.Draw($"10pxBackgroundEdge", new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw($"10pxBackgroundEdge", new(Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
         string s = Label + Text + indicator;
         int startIndex = !IsActive ? 0 : Math.Max(0, s.Length - ((Size.max - 12) / 4));
         int length = s.Length > ((Size.max - 11) / 4) ? ((Size.max - 11) / 4) : s.Length;
@@ -229,8 +225,9 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
 
     public void Update(MouseState mouseState, MouseState prevMouseState)
     {
-        float x = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        float y = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        var cursor = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
+        float x = cursor.X;
+        float y = cursor.Y;
 
         int menuWidth = 16;
         if (RoomName.Length > menuWidth) { menuWidth = Math.Min(RoomName.Length, 26); }
@@ -256,9 +253,6 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
 
     public void Draw()
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
-
         //int menuWidth = 16;
         //if (RoomName.Length > menuWidth) { menuWidth = Math.Min(RoomName.Length, 26); }
         //foreach (var player in RoomHandler._playerDictionary.Values)
@@ -266,8 +260,8 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         //    if (player.Name.Length + 10 > menuWidth) { menuWidth = Math.Min(player.Name.Length, 16) + 10; }
         //}
         //int x = 63 - menuWidth * 2 - 9;
-        p8.Batch.Draw(p8.TextureDictionary["LobbyPlayerListContainer"], new Vector2((lBound - 3) * p8.Cell.Width, StartY * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["LobbyPlayerListContainer"], new Vector2((rBound - 61) * p8.Cell.Width, StartY * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((lBound - 3) * p8.Cell.Width, StartY * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((rBound - 61) * p8.Cell.Width, StartY * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
         p8.Rectfill(63 - RoomName.Length * 2 - 1, StartY + 1, 63 + RoomName.Length * 2 + 1, StartY + 7, 13);
         Shared.Printc(p8, RoomName, 64, StartY + 2, 7);
         Shared.Printc(p8, $"password-{RoomPassword}", 64, StartY + 12, 7);
@@ -277,11 +271,11 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         {
             if (i >= Sel && i < Sel + 7)
             {
-                p8.Batch.Draw(p8.TextureDictionary[$"{player.Role}Icon"], new Vector2((lBound + 5) * p8.Cell.Width, (StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+                GameRendering.Current.Draw($"{player.Role}Icon", new Vector2((lBound + 5) * p8.Cell.Width, (StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7) * p8.Cell.Height), Color.White, p8.Cell.Width / 2f, p8.Cell.Height / 2f);
                 p8.Print(player.Name, lBound + 16, StartY + 21 + (i - Sel) * 7, 7);
                 if (player.Ready)
                 {
-                    p8.Batch.Draw(p8.TextureDictionary["Tick"], new Vector2((lBound + 17 + player.Name.Length * 4) * p8.Cell.Width, (StartY + 21 + (i - Sel) * 7) * p8.Cell.Height), null, p8.Colors[6], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    GameRendering.Current.Draw("Tick", new Vector2((lBound + 17 + player.Name.Length * 4) * p8.Cell.Width, (StartY + 21 + (i - Sel) * 7) * p8.Cell.Height), p8.Colors[6], p8.Cell.Width, p8.Cell.Height);
                 }
                 if (player.Host)
                 {
@@ -330,8 +324,9 @@ public class RoomSettings
 
     public void Update(MouseState mouseState, MouseState prevMouseState)
     {
-        float x = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        float y = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        var cursor = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
+        float x = cursor.X;
+        float y = cursor.Y;
 
         int menuWidth = 8;
         if (Title.Length + 1 > menuWidth) { menuWidth = Title.Length + 1; }
@@ -371,10 +366,8 @@ public class RoomSettings
 
     public void Draw()
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-
-        p8.Batch.Draw(p8.TextureDictionary["LobbySettingsContainer"], new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["LobbySettingsContainer"], new Vector2((rBound - 40) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2((rBound - 40) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
 
         int centerX = StartPos.x + (rBound - StartPos.x) / 2;
         p8.Rectfill(centerX - Title.Length * 2 - 1, StartPos.y + 2, centerX + Title.Length * 2 - 1, StartPos.y + 7, 13);
@@ -417,8 +410,9 @@ public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurf
 
     public void Update(MouseState mouseState, MouseState prevMouseState)
     {
-        float x = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        float y = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        var cursor = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
+        float x = cursor.X;
+        float y = cursor.Y;
 
         isHovered = false;
         if (x > StartPos.x * p8.Cell.Width && x < (StartPos.x + 22) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 22) * p8.Cell.Height)
@@ -437,16 +431,14 @@ public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurf
 
     public void Draw()
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-
         if (Type > 0 && Type <= 5)
         {
-            p8.Batch.Draw(p8.TextureDictionary[$"{(IsSurface ? "Surface" : "Cave")}{Type}Test"], new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary[$"SeedSelector"], new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, p8.Colors[isHovered && IsAvailable ? 14 : 2], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            GameRendering.Current.Draw($"{(IsSurface ? "Surface" : "Cave")}{Type}Test", new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+            GameRendering.Current.Draw("SeedSelector", new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), p8.Colors[isHovered && IsAvailable ? 14 : 2], p8.Cell.Width, p8.Cell.Height);
             if (IsBanned)
-                p8.Batch.Draw(p8.TextureDictionary[$"SeedCross"], new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), null, p8.Colors[isHovered && IsAvailable ? 14 : 2], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                GameRendering.Current.Draw("SeedCross", new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), p8.Colors[isHovered && IsAvailable ? 14 : 2], p8.Cell.Width, p8.Cell.Height);
             if (!IsAvailable || (!UnbansOn && IsBanned))
-                p8.Batch.Draw(p8.TextureDictionary[$"SeedGreyOut"], new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                GameRendering.Current.Draw("SeedGreyOut", new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
         }
     }
 }
@@ -473,10 +465,9 @@ public class SeedPickButton(Pico8Functions _p8, (int x, int y) startPos, string 
 
     public void Draw()
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        p8.Batch.Draw(p8.TextureDictionary[$"SeedPick{(IsHovered ? "Highlight" : "Background")}Center"], new((StartPos.x + 2) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, new Vector2(p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height), SpriteEffects.None, 0);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Center", new((StartPos.x + 2) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height);
         p8.Print(Label, StartPos.x + 3, StartPos.y + 2, IsHovered ? 15 : 22);
-        p8.Batch.Draw(p8.TextureDictionary[$"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge"], new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary[$"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge"], new((StartPos.x + (Label.Length * 4) + 3) * p8.Cell.Width, StartPos.y * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new((StartPos.x + (Label.Length * 4) + 3) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
     }
 }

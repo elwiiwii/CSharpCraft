@@ -1,7 +1,6 @@
 ﻿using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
 
@@ -60,8 +59,9 @@ public class PickBanScene : IScene, IDisposable
 
             prevKeyboardState = Keyboard.GetState();
             prevMouseState = Mouse.GetState();
-            cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-            cursorY = prevMouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+            var cursor = GameRendering.Current.GetCursorPosition(prevMouseState.X, prevMouseState.Y);
+            cursorX = cursor.X;
+            cursorY = cursor.Y;
 
             for (int i = 0; i < 5; i++)
             {
@@ -197,8 +197,9 @@ public class PickBanScene : IScene, IDisposable
 
         KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
-        cursorX = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        var cursorUpdate = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
+        cursorX = cursorUpdate.X;
+        cursorY = cursorUpdate.Y;
 
         //if (cursorX > 0 * p8.Cell.Width && cursorX < 135 * p8.Cell.Width && cursorY > 0 * p8.Cell.Height && cursorY < 103 * p8.Cell.Height)
         
@@ -223,14 +224,11 @@ public class PickBanScene : IScene, IDisposable
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         p8.Rectfill(0, 0, 191, 127, 17);
 
         if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 96, 61, 15); return; }
-
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
 
         for (int i = 0; i < 5; i ++)
         {
@@ -238,20 +236,20 @@ public class PickBanScene : IScene, IDisposable
             {
                 if (games[sel + i].SurfaceType is not null && games[sel + i].SurfaceType > 0 && games[sel + i].SurfaceType <= 5)
                 {
-                    p8.Batch.Draw(p8.TextureDictionary[$"Surface{games[sel + i].SurfaceType}Test"], new Vector2(3 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), new Rectangle(0, 0, 10, 18), Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    GameRendering.Current.Draw($"Surface{games[sel + i].SurfaceType}Test", new Vector2(3 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), new Rectangle(0, 0, 10, 18), Color.White, p8.Cell.Width, p8.Cell.Height);
                 }
                 if (games[sel + i].CaveType is not null && games[sel + i].CaveType > 0 && games[sel + i].CaveType <= 5)
                 {
-                    p8.Batch.Draw(p8.TextureDictionary[$"Cave{games[sel + i].CaveType}Test"], new Vector2(13 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), new Rectangle(10, 0, 8, 18), Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                    GameRendering.Current.Draw($"Cave{games[sel + i].CaveType}Test", new Vector2(13 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), new Rectangle(10, 0, 8, 18), Color.White, p8.Cell.Width, p8.Cell.Height);
                 }
 
                 int col;
                 if (games[sel + i].CavePicker is null) col = 7;
                 else col = games[sel + i].CavePicker == 0 ? 24 : 28;
-                p8.Batch.Draw(p8.TextureDictionary["SeedPickIndicator"], new Vector2(11 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), null, p8.Colors[col], 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+                GameRendering.Current.Draw("SeedPickIndicator", new Vector2(11 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), p8.Colors[col], p8.Cell.Width, p8.Cell.Height, flipX: true);
                 if (games[sel + i].SurfacePicker is null) col = 7;
                 else col = games[sel + i].SurfacePicker == 0 ? 24 : 28;
-                p8.Batch.Draw(p8.TextureDictionary["SeedPickIndicator"], new Vector2(3 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), null, p8.Colors[col], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                GameRendering.Current.Draw("SeedPickIndicator", new Vector2(3 * p8.Cell.Width, (3 + i * 20) * p8.Cell.Height), p8.Colors[col], p8.Cell.Width, p8.Cell.Height);
 
                 p8.Print($"game {sel + i + 1}", 24, 6 + i * 20, 7);
                 if (games[sel + i].Time is not null) p8.Print(games[sel + i].Time, 24, 13 + i * 20, 7);

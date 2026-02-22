@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using CSharpCraft.Pico8;
 using CSharpCraft.OptionsMenu;
@@ -155,38 +154,32 @@ public class PickBanSceneOld() : IScene, IDisposable
 
     private void DrawSeedType(SeedType seedType, bool animated)
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 quarterSize = new(p8.Cell.Width / 4f, p8.Cell.Height / 4f);
-
         int color = 2;
         bool animationCheck = animated && seedType.Status == "UNBANNED" && !seedType.Unavailable;
 
-        p8.Batch.Draw(p8.TextureDictionary[animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name], new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
+        GameRendering.Current.Draw(animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name, new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), Color.White, p8.Cell.Width / 4f, p8.Cell.Height / 4f);
         
         if (seedType.Status == "BANNED")
         {
             color = 1;
-            p8.Batch.Draw(p8.TextureDictionary["SeedSelector"], new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), null, seedType.Selected ? p8.Colors[14] : p8.Colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary["SeedCross"], new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), null, seedType.Selected ? p8.Colors[14] : p8.Colors[1], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), seedType.Selected ? p8.Colors[14] : p8.Colors[color], p8.Cell.Width, p8.Cell.Height);
+            GameRendering.Current.Draw("SeedCross", new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), seedType.Selected ? p8.Colors[14] : p8.Colors[1], p8.Cell.Width, p8.Cell.Height);
         }
         else
         {
-            p8.Batch.Draw(p8.TextureDictionary["SeedSelector"], new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), null, seedType.Selected ? p8.Colors[14] : p8.Colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), seedType.Selected ? p8.Colors[14] : p8.Colors[color], p8.Cell.Width, p8.Cell.Height);
         }
         if (seedType.Status == "PLAYED" || seedType.Unavailable)
         {
             color = 1;
-            p8.Batch.Draw(p8.TextureDictionary["SeedSelector"], new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), null, seedType.Selected ? p8.Colors[14] : p8.Colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
-            p8.Batch.Draw(p8.TextureDictionary["SeedGreyOut"], new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+            GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), seedType.Selected ? p8.Colors[14] : p8.Colors[color], p8.Cell.Width, p8.Cell.Height);
+            GameRendering.Current.Draw("SeedGreyOut", new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
         }
     }
 
     private void DrawInitialSeedSelection(SeedType seedType, int order)
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 quarterSize = new(p8.Cell.Width / 4f, p8.Cell.Height / 4f);
-
-        p8.Batch.Draw(p8.TextureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
+        GameRendering.Current.Draw(seedType.Name, new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), Color.White, p8.Cell.Width / 4f, p8.Cell.Height / 4f);
 
         int color = 2;
         if (order > turn)
@@ -202,15 +195,12 @@ public class PickBanSceneOld() : IScene, IDisposable
             color = 14;
         }
 
-        p8.Batch.Draw(p8.TextureDictionary["SeedSelectorArrow"], new Vector2((seedType.Xpos - 9) * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), null, p8.Colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("SeedSelectorArrow", new Vector2((seedType.Xpos - 9) * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), p8.Colors[color], p8.Cell.Width, p8.Cell.Height);
     }
 
     private void DrawSeedSelection(SeedType seedType, int order)
     {
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 quarterSize = new(p8.Cell.Width / 4f, p8.Cell.Height / 4f);
-
-        p8.Batch.Draw(p8.TextureDictionary[seedType.Name], new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, quarterSize, SpriteEffects.None, 0);
+        GameRendering.Current.Draw(seedType.Name, new Vector2((seedType.Xpos + 2) * p8.Cell.Width, (seedType.Ypos + 2) * p8.Cell.Height), Color.White, p8.Cell.Width / 4f, p8.Cell.Height / 4f);
 
         int color = 2;
         if (order > gameCount)
@@ -227,7 +217,7 @@ public class PickBanSceneOld() : IScene, IDisposable
             color = 14;
         }
 
-        p8.Batch.Draw(p8.TextureDictionary["SeedSelector"], new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), null, p8.Colors[color], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * p8.Cell.Width, seedType.Ypos * p8.Cell.Height), p8.Colors[color], p8.Cell.Width, p8.Cell.Height);
     }
 
     private void Printc(string t, int x, int y, int c)
@@ -244,12 +234,8 @@ public class PickBanSceneOld() : IScene, IDisposable
     {
         p8.Cls();
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
-        Vector2 halfSize = new(p8.Cell.Width / 2f, p8.Cell.Height / 2f);
-        Vector2 quarterSize = new(p8.Cell.Width / 4f, p8.Cell.Height / 4f);
-
-        p8.Batch.Draw(p8.TextureDictionary["SmallNameBanner"], new Vector2(0 * p8.Cell.Width, 4 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary["SmallNameBanner"], new Vector2(73 * p8.Cell.Width, 4 * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipHorizontally, 0);
+        GameRendering.Current.Draw("SmallNameBanner", new Vector2(0 * p8.Cell.Width, 4 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("SmallNameBanner", new Vector2(73 * p8.Cell.Width, 4 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
         p8.Circfill(F32.FromInt(47) - player1Score.ToString().Length, F32.FromInt(9), 3, 1);
         p8.Circfill(F32.FromInt(47) + player1Score.ToString().Length, F32.FromInt(9), 3, 1);
         p8.Rectfill(47 - 1 - player1Score.ToString().Length, 6, 47 + 1 + player1Score.ToString().Length, 12, 1);
@@ -262,8 +248,8 @@ public class PickBanSceneOld() : IScene, IDisposable
         Printc($"{player2Score}", 81, 7, 7);
         p8.Print(player2Name, 87, 7, 7);
 
-        p8.Batch.Draw(p8.TextureDictionary["Game"], new Vector2(56 * p8.Cell.Width, 6 * p8.Cell.Height), null, p8.Colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
-        p8.Batch.Draw(p8.TextureDictionary[$"{gameCount}"], new Vector2(62 * p8.Cell.Width, 12 * p8.Cell.Height), null, p8.Colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
+        GameRendering.Current.Draw("Game", new Vector2(56 * p8.Cell.Width, 6 * p8.Cell.Height), p8.Colors[7], p8.Cell.Width / 2f, p8.Cell.Height / 2f);
+        GameRendering.Current.Draw($"{gameCount}", new Vector2(62 * p8.Cell.Width, 12 * p8.Cell.Height), p8.Colors[7], p8.Cell.Width / 2f, p8.Cell.Height / 2f);
 
         string s1 = $"{player1Name}'s turn";
         string s2 = $"[{KeyNames.keyNames[OptionsFile.Current.Kbm_Menu.Bind1]}] for random action";

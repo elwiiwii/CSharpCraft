@@ -1,7 +1,6 @@
 ﻿using System.Net.Mail;
 using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using AccountService;
@@ -153,8 +152,7 @@ public class LoginScene : IScene
         EnableInputMode(InputMode.None);
         prevKeyboardState = Keyboard.GetState();
         prevMouseState = Mouse.GetState();
-        cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = prevMouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(prevMouseState.X, prevMouseState.Y);
     }
 
     private void EnableInputMode(InputMode mode)
@@ -527,8 +525,7 @@ public class LoginScene : IScene
     {
         KeyboardState keyboardState = Keyboard.GetState();
         MouseState mouseState = Mouse.GetState();
-        cursorX = mouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
-        cursorY = mouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
+        (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(mouseState.X, mouseState.Y);
 
         if (isProcessing) goto end_of_update;
 
@@ -676,7 +673,7 @@ public class LoginScene : IScene
 
     public void Draw()
     {
-        p8.Batch.GraphicsDevice.Clear(Color.Black);
+        GameRendering.Current.ClearDevice(Color.Black);
 
         Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
 
