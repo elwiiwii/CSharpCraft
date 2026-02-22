@@ -1,5 +1,11 @@
 ﻿namespace CSharpCraft.Pico8;
 
+/// <summary>
+/// Scene lifecycle interface.
+/// Scenes access the PICO-8 API through the static Pico8 class.
+/// No dependency injection parameters — the static API is always available
+/// after GameOrchestrator.Initialize() has been called.
+/// </summary>
 public interface IScene
 {
     string SceneName { get; }
@@ -7,9 +13,9 @@ public interface IScene
     (int w, int h) Resolution { get; }
     
     /// <summary>
-    /// Initialize the scene with dependency-injected services
+    /// Initialize the scene. Use the static Pico8 API for all game operations.
     /// </summary>
-    void Init(IGraphicsEngine? graphics = null, IAudioManager? audio = null, IInputManager? input = null, ISceneManager? sceneManager = null, IGameClock? gameClock = null);
+    void Init();
     
     void Update();
     void Draw();

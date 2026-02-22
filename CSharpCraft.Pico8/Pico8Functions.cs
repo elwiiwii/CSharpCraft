@@ -303,8 +303,7 @@ public class Pico8Functions : IDisposable
     public void Init()
     {
         _pauseMenuState?.Reset();
-        // TODO: Pass proper service instances - Phase 2 will extract these into separate classes
-        _cart.Init(null, null, null, null, null);
+        _cart.Init();
     }
 
 

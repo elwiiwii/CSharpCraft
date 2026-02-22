@@ -6,7 +6,7 @@ namespace CSharpCraft.Pico8;
 /// Manages palette remapping and color lookups with efficient O(1) dictionary lookups.
 /// Replaces inefficient FindAll() calls in hot rendering paths.
 /// </summary>
-public class PaletteManager
+public class PaletteManager : IPaletteManager
 {
     private readonly List<Color> _staticPalette;
     private Dictionary<Color, PalCol> _paletteMap = [];

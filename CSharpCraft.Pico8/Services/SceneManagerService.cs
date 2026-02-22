@@ -70,9 +70,9 @@ public class SceneManagerService : ISceneManager
         // Dispose previous scene
         _currentScene?.Dispose();
 
-        // Initialize new scene with available services
+        // Initialize new scene — scenes access the static Pico8 API
         _currentScene = scene;
-        _currentScene.Init(_graphicsEngine, _audioManager, _inputManager, this, _gameClock);
+        _currentScene.Init();
     }
 
     /// <summary>

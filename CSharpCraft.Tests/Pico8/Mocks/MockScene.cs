@@ -22,7 +22,7 @@ public class MockScene : IScene
     public bool UpdateCalled { get; private set; }
     public bool DrawCalled { get; private set; }
 
-    public void Init(IGraphicsEngine? graphics, IAudioManager? audio, IInputManager? input, ISceneManager? sceneManager, IGameClock? gameClock)
+    public void Init()
     {
         InitCalled = true;
     }

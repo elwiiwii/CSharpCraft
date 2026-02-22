@@ -128,4 +128,39 @@ public class GraphicsAPI : IGraphicsAPI
         // TODO: Phase 2 - Clear screen to specified color
         // Draws a full-screen rectangle with the specified color
     }
+
+    public void Print(string text, double x, double y, double c)
+    {
+        // TODO: Phase 5 - Implement text rendering using PICO-8 font
+    }
+
+    public void Spr(double n, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
+    {
+        // TODO: Phase 5 - Implement sprite drawing from sprite sheet
+    }
+
+    public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = -1, double dh = -1, bool flip_x = false, bool flip_y = false)
+    {
+        // TODO: Phase 5 - Implement stretched sprite drawing
+    }
+
+    public void Map(double celx, double cely, double sx, double sy, double celw, double celh, int flags = 0)
+    {
+        // TODO: Phase 5 - Implement tilemap rendering
+    }
+
+    public void Line(F32 x0, F32 y0, F32 x1, F32 y1, int c)
+    {
+        // TODO: Phase 5 - Implement line drawing using Bresenham's algorithm
+    }
+
+    public void Memcpy(int destaddr, int sourceaddr, int len)
+    {
+        // TODO: Phase 5 - Implement memory copy for sprite/map manipulation
+    }
+
+    public void Reload(int dest = 0, int source = 0, int len = 0, string filename = "")
+    {
+        // TODO: Phase 5 - Implement cart data reload
+    }
 }
