@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -6,9 +6,9 @@ namespace CSharpCraft.Pico8;
 
 public static class Pico8Utils
 {
-    public static Color[] ImageToColorArray(Pico8Functions p8, string filename)
+    public static Color[] ImageToColorArray(Dictionary<string, Texture2D> textureDictionary, string filename)
     {
-        Texture2D texture = p8.TextureDictionary[filename];
+        Texture2D texture = textureDictionary[filename];
         
         if (texture is null)
             throw new ArgumentNullException(nameof(filename));
@@ -20,25 +20,22 @@ public static class Pico8Utils
             throw new FileLoadException("Texture must be a multiple of 8 in both dimensions");
 
         Color[] colorArray = new Color[texture.Width * texture.Height];
-
         texture.GetData(colorArray);
-
         return colorArray;
     }
 
-    public static Color[] DataToColorArray(Pico8Functions p8, string s, int n)
+    public static Color[] DataToColorArray(List<Color> colors, string s, int n)
     {
         Color[] val = new Color[s.Length / n];
         for (int i = 0; i < s.Length / n; i++)
         {
             int index = Convert.ToInt32($"0x{s.Substring(i * n, n)}", 16);
-            val[i] = p8.Colors[index % 16];
+            val[i] = colors[index % 16];
         }
-
         return val;
     }
 
-    public static Color[] MapDataToColorArray(Pico8Functions p8, string s, int n)
+    public static Color[] MapDataToColorArray(List<Color> colors, string s, int n)
     {
         Color[] val = new Color[s.Length / n];
         for (int i = 0; i < s.Length / n; i++)
@@ -49,12 +46,10 @@ public static class Pico8Utils
             {
                 index += (chunk[j] - 35) * 91 * (n - j);
             }
-            val[i] = p8.Colors[index % 16];
+            val[i] = colors[index % 16];
         }
-
         return val;
     }
-
 
     public static int[] DataToArray(string s, int n)
     {
@@ -63,7 +58,6 @@ public static class Pico8Utils
         {
             val[i] = Convert.ToInt32($"0x{s.Substring(i * n, n)}", 16);
         }
-
         return val;
     }
 
@@ -100,20 +94,24 @@ public static class Pico8Utils
         return new Color(r, g, b);
     }
 
-    public static Texture2D CreateTextureFromSpriteData(Pico8Functions p8, Color[] spriteData, int spriteX, int spriteY, int spriteWidth, int spriteHeight)
+    public static Texture2D CreateTextureFromSpriteData(
+        GraphicsDevice graphicsDevice,
+        Color[] spriteData,
+        List<PalCol> palColors,
+        int spriteX, int spriteY, int spriteWidth, int spriteHeight)
     {
-        Texture2D texture = new(p8.GraphicsDevice, spriteWidth, spriteHeight);
+        Texture2D texture = new(graphicsDevice, spriteWidth, spriteHeight);
 
         Color[] colorData = new Color[spriteWidth * spriteHeight];
 
         for (int i = spriteX + spriteY * 128, j = 0; j < spriteWidth * spriteHeight; i++, j++)
         {
-            Color col = p8.PalColors.FindAll(x => x.C0 == spriteData[i]).Count > 0 ? p8.PalColors.First(x => x.C0 == spriteData[i]).C1 : spriteData[i];
-            if (p8.PalColors.FindAll(x => x.C0 == spriteData[i]).Count > 0 && p8.PalColors.First(x => x.C0 == spriteData[i]).Trans == false)
+            Color col = palColors.FindAll(x => x.C0 == spriteData[i]).Count > 0 ? palColors.First(x => x.C0 == spriteData[i]).C1 : spriteData[i];
+            if (palColors.FindAll(x => x.C0 == spriteData[i]).Count > 0 && palColors.First(x => x.C0 == spriteData[i]).Trans == false)
             {
-                colorData[j] = p8.PalColors.First(x => x.C0 == spriteData[i]).C1;
+                colorData[j] = palColors.First(x => x.C0 == spriteData[i]).C1;
             }
-            else if (p8.PalColors.FindAll(x => x.C0 == spriteData[i]).Count <= 0)
+            else if (palColors.FindAll(x => x.C0 == spriteData[i]).Count <= 0)
             {
                 colorData[j] = spriteData[i];
             }
@@ -122,7 +120,6 @@ public static class Pico8Utils
         }
 
         texture.SetData(colorData);
-
         return texture;
     }
 
@@ -154,7 +151,6 @@ public static class Pico8Utils
         return false;
     }
 
-
     private static bool IsMouseButton(string bind)
     {
         MouseState mouse_state = Mouse.GetState();
@@ -170,47 +166,50 @@ public static class Pico8Utils
         };
     }
 
-
-    public static bool Ptn(Pico8Functions p8, int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
+    /// <summary>
+    /// Physical button test - checks raw input state for a button index.
+    /// Uses InputBindings from the current Pico8 context.
+    /// </summary>
+    public static bool Ptn(int i, int p = 0)
     {
+        var bindings = Pico8.InputBindings;
         return i switch
         {
-            0 => IsBindingDown(0, p8.InputBindings.KeyboardLeft.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardLeft.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerLeft.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerLeft.Bind2),
+            0 => IsBindingDown(0, bindings.KeyboardLeft.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardLeft.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerLeft.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerLeft.Bind2),
 
-            1 => IsBindingDown(0, p8.InputBindings.KeyboardRight.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardRight.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerRight.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerRight.Bind2),
+            1 => IsBindingDown(0, bindings.KeyboardRight.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardRight.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerRight.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerRight.Bind2),
 
-            2 => IsBindingDown(0, p8.InputBindings.KeyboardUp.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardUp.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerUp.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerUp.Bind2),
+            2 => IsBindingDown(0, bindings.KeyboardUp.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardUp.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerUp.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerUp.Bind2),
 
-            3 => IsBindingDown(0, p8.InputBindings.KeyboardDown.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardDown.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerDown.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerDown.Bind2),
+            3 => IsBindingDown(0, bindings.KeyboardDown.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardDown.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerDown.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerDown.Bind2),
 
-            4 => IsBindingDown(0, p8.InputBindings.KeyboardMenu.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardMenu.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerMenu.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerMenu.Bind2),
+            4 => IsBindingDown(0, bindings.KeyboardMenu.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardMenu.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerMenu.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerMenu.Bind2),
 
-            5 => IsBindingDown(0, p8.InputBindings.KeyboardUse.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardUse.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerUse.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerUse.Bind2),
+            5 => IsBindingDown(0, bindings.KeyboardUse.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardUse.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerUse.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerUse.Bind2),
 
-            6 => IsBindingDown(0, p8.InputBindings.KeyboardPause.Bind1) ||
-                 IsBindingDown(0, p8.InputBindings.KeyboardPause.Bind2) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerPause.Bind1) ||
-                 IsBindingDown(1, p8.InputBindings.ControllerPause.Bind2),
+            6 => IsBindingDown(0, bindings.KeyboardPause.Bind1) ||
+                 IsBindingDown(0, bindings.KeyboardPause.Bind2) ||
+                 IsBindingDown(1, bindings.ControllerPause.Bind1) ||
+                 IsBindingDown(1, bindings.ControllerPause.Bind2),
             _ => false,
         };
     }
-
 }

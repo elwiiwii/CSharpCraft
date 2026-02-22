@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -10,24 +11,23 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
     public string SceneName { get => "options"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
 
     private int menuSelected;
 
     private record SettingDescriptor(
         string DisplayName,
         Func<OptionsFile, string> GetDisplay,
-        Action<OptionsFile, Pico8Functions, int>? OnChange);
+        Action<OptionsFile, int>? OnChange);
 
     private static readonly List<SettingDescriptor> Settings =
     [
         new("sound_on",
             f => f.Gen_Sound_On.ToString().ToLower(),
-            (f, p8, dir) => { f.Gen_Sound_On = !f.Gen_Sound_On; OptionsFile.JsonWrite(f); p8.Mute(); }),
+            (f, dir) => { f.Gen_Sound_On = !f.Gen_Sound_On; OptionsFile.JsonWrite(f); Mute(); }),
 
         new("music_vol",
             f => f.Gen_Music_Vol.ToString(),
-            (f, p8, dir) =>
+            (f, dir) =>
             {
                 f.Gen_Music_Vol = dir < 0
                     ? Math.Max(0, f.Gen_Music_Vol - 10)
@@ -37,7 +37,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
         new("sfx_vol",
             f => f.Gen_Sfx_Vol.ToString(),
-            (f, p8, dir) =>
+            (f, dir) =>
             {
                 f.Gen_Sfx_Vol = dir < 0
                     ? Math.Max(0, f.Gen_Sfx_Vol - 10)
@@ -47,17 +47,17 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
         new("fullscreen",
             f => f.Gen_Fullscreen.ToString().ToLower(),
-            (f, p8, dir) =>
+            (f, dir) =>
             {
                 f.Gen_Fullscreen = !f.Gen_Fullscreen;
                 OptionsFile.JsonWrite(f);
-                GameRendering.Current.ApplyDisplaySettings(f.Gen_Fullscreen, f.Gen_Window_Width / 128 * p8.Resolution.w, f.Gen_Window_Height / 128 * p8.Resolution.h);
-                p8.UpdateViewport();
+                GameRendering.Current.ApplyDisplaySettings(f.Gen_Fullscreen, f.Gen_Window_Width, f.Gen_Window_Height);
+                UpdateViewport();
             }),
 
         new("window_width",
             f => f.Gen_Window_Width.ToString(),
-            (f, p8, dir) =>
+            (f, dir) =>
             {
                 f.Gen_Window_Width = dir < 0
                     ? Math.Max(128, f.Gen_Window_Width - 128)
@@ -68,7 +68,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
         new("window_height",
             f => f.Gen_Window_Height.ToString(),
-            (f, p8, dir) =>
+            (f, dir) =>
             {
                 f.Gen_Window_Height = dir < 0
                     ? Math.Max(128, f.Gen_Window_Height - 128)
@@ -91,27 +91,27 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
         var setting = Settings[menuSelected];
         var optionsFile = OptionsFile.Current;
 
-        if (p8.Btnp(0) && setting.OnChange != null)
+        if (Btnp(0) && setting.OnChange != null)
         {
-            setting.OnChange(optionsFile, p8, -1);
+            setting.OnChange(optionsFile, -1);
         }
-        if (p8.Btnp(1) && setting.OnChange != null)
+        if (Btnp(1) && setting.OnChange != null)
         {
-            setting.OnChange(optionsFile, p8, 1);
+            setting.OnChange(optionsFile, 1);
         }
 
-        if (p8.Btnp(2)) { menuSelected -= 1; }
-        if (p8.Btnp(3)) { menuSelected += 1; }
+        if (Btnp(2)) { menuSelected -= 1; }
+        if (Btnp(3)) { menuSelected += 1; }
 
-        if (menuSelected < 0) { p8.ScheduleScene(() => new GeneralOptionsTitle()); return; }
+        if (menuSelected < 0) { ScheduleScene(() => new GeneralOptionsTitle()); return; }
         menuSelected = GeneralFunctions.Loop(menuSelected, Settings.Count);
     }
 
     public void Draw()
     {
-        p8.Cls();
+        Cls();
 
-        GameRendering.Current.Draw("OptionsBackground5", new Vector2(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("OptionsBackground5", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
 
         var optionsFile = OptionsFile.Current;
         int x = 15;
@@ -120,19 +120,19 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
         if (menuSelected > -1)
         {
-            Vector2 position5 = new((x - 4) * p8.Cell.Width, (menuSelected * step + y) * p8.Cell.Height);
-            GameRendering.Current.Draw("Arrow", position5, p8.Colors[6], p8.Cell.Width, p8.Cell.Height, flipX: true);
+            Vector2 position5 = new((x - 4) * CellWidth, (menuSelected * step + y) * CellHeight);
+            GameRendering.Current.Draw("Arrow", position5, Colors[6], CellWidth, CellHeight, flipX: true);
         }
 
-        GameRendering.Current.Draw("Checker", new Vector2(x * p8.Cell.Width, (y - 5) * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("Checker", new Vector2(x * CellWidth, (y - 5) * CellHeight), Color.White, CellWidth, CellHeight);
 
         foreach (var setting in Settings)
         {
-            p8.Print($"{setting.DisplayName} : {setting.GetDisplay(optionsFile)}", x + 2, y, 6);
+            Print($"{setting.DisplayName} : {setting.GetDisplay(optionsFile)}", x + 2, y, 6);
             y += step;
         }
 
-        GameRendering.Current.Draw("Checker", new Vector2(x * p8.Cell.Width, (y + 1) * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipY: true);
+        GameRendering.Current.Draw("Checker", new Vector2(x * CellWidth, (y + 1) * CellHeight), Color.White, CellWidth, CellHeight, flipY: true);
     }
     public string SpriteImage => "";
     public string SpriteData => @"";

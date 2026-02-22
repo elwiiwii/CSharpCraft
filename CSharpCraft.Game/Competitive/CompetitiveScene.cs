@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -10,7 +11,6 @@ public class CompetitiveScene : IScene
     public string SceneName { get => "competitive"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
     private Icon back;
     private Icon ranked;
     private Icon speedrun;
@@ -42,11 +42,11 @@ public class CompetitiveScene : IScene
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.ScheduleScene(() => new LoginScene(this));
+                ScheduleScene(() => new LoginScene(this));
                 return;
             }
 
-            back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = p8.TitleSceneInstance as IScene };
+            back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = Scenes[0] as IScene };
             ranked = new() { StartPos = (30, 32), EndPos = (61, 63), Label = "ranked", ShadowTexture = "ModeShadow", IconTexture = "RankedIcon", Scene = new RankedScene(this) };
             speedrun = new() { StartPos = (66, 32), EndPos = (97, 63), Label = "speedrun", ShadowTexture = "ModeShadow", IconTexture = "SpeedrunIcon", Scene = new SpeedrunScene(this) };
             unranked = new() { StartPos = (30, 68), EndPos = (61, 99), Label = "unranked", ShadowTexture = "ModeShadow", IconTexture = "UnrankedIcon", Scene = new UnrankedScene(this) };
@@ -68,7 +68,7 @@ public class CompetitiveScene : IScene
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
-            p8.ScheduleScene(() => new LoginScene(this));
+            ScheduleScene(() => new LoginScene(this));
         }
         finally
         {
@@ -83,9 +83,9 @@ public class CompetitiveScene : IScene
         MouseState state = Mouse.GetState();
         (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(state.X, state.Y);
 
-        curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
+        curIcon = Shared.UpdateIcon(icons, cursorX, cursorY);
 
-        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.ScheduleScene(() => curIcon.Scene); }
+        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { ScheduleScene(() => curIcon.Scene); }
         prevState = state;
     }
 
@@ -93,22 +93,22 @@ public class CompetitiveScene : IScene
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
-        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
+        if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        GameRendering.Current.Draw("CompetitiveBackground", new(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("CompetitiveBackground", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
 
-        Shared.DrawIcons(p8, icons, cursorX, cursorY);
+        Shared.DrawIcons(icons, cursorX, cursorY);
 
         if (curIcon is not null) { labelLength = curIcon.Label.Length * 4; }
         else { labelLength = Math.Max(labelLength - labelLength / 4, 0); }
-        GameRendering.Current.Draw("12pxHighlightCenter", new((63 - labelLength / 2) * p8.Cell.Width, 108 * p8.Cell.Height), Color.White, p8.Cell.Width * (labelLength + 1), p8.Cell.Height);
-        GameRendering.Current.Draw("12pxHighlightEdge", new((63 - 5 - labelLength / 2 - 1) * p8.Cell.Width, 108 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-        GameRendering.Current.Draw("12pxHighlightEdge", new((63 + labelLength / 2 + 1) * p8.Cell.Width, 108 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
-        if (curIcon is not null) { Shared.Printcb(p8, curIcon.Label, 63, 111, 15, 1); }
+        GameRendering.Current.Draw("12pxHighlightCenter", new Vector2((63 - labelLength / 2) * CellWidth, 108 * CellHeight), Color.White, CellWidth * (labelLength + 1), CellHeight);
+        GameRendering.Current.Draw("12pxHighlightEdge", new Vector2((63 - 5 - labelLength / 2 - 1) * CellWidth, 108 * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("12pxHighlightEdge", new Vector2((63 + labelLength / 2 + 1) * CellWidth, 108 * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        if (curIcon is not null) { Shared.Printcb(curIcon.Label, 63, 111, 15, 1); }
 
-        Shared.DrawCursor(p8, cursorX, cursorY);
+        Shared.DrawCursor(cursorX, cursorY);
     }
     public string SpriteImage => "";
     public string SpriteData => @"";

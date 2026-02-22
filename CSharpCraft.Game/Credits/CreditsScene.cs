@@ -1,5 +1,6 @@
 ﻿using CSharpCraft.Credits.Credits;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -10,7 +11,6 @@ public class CreditsScene : IScene, IDisposable
     public string SceneName => @"credits";
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
     List<CreditsItem> credits = [];
 
     private (int hor, int ver) menuSelected;
@@ -112,15 +112,15 @@ public class CreditsScene : IScene, IDisposable
     {
         KeyboardState state = Keyboard.GetState();
 
-        if (p8.Btnp(0)) { menuSelected.hor -= 1; }
-        if (p8.Btnp(1)) { menuSelected.hor += 1; }
-        if (p8.Btnp(2)) { menuSelected.ver -= 1; menuSelected.hor = 0; }
-        if (p8.Btnp(3)) { menuSelected.ver += 1; menuSelected.hor = 0; }
+        if (Btnp(0)) { menuSelected.hor -= 1; }
+        if (Btnp(1)) { menuSelected.hor += 1; }
+        if (Btnp(2)) { menuSelected.ver -= 1; menuSelected.hor = 0; }
+        if (Btnp(3)) { menuSelected.ver += 1; menuSelected.hor = 0; }
 
         menuSelected.ver = GeneralFunctions.Loop(menuSelected.ver, credits.Count);
         menuSelected.hor = GeneralFunctions.Loop(menuSelected.hor, credits[menuSelected.ver].Links.Count + 1);
 
-        if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5))
+        if ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || Btnp(4) || Btnp(5))
         {
             if (menuSelected.hor == 0)
             {
@@ -137,9 +137,9 @@ public class CreditsScene : IScene, IDisposable
 
     public void Draw()
     {
-        p8.Cls(1);
+        Cls(1);
 
-        GameRendering.Current.Draw("Credits", new Vector2(27 * p8.Cell.Width, 8 * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("Credits", new Vector2(27 * CellWidth, 8 * CellHeight), Color.White, CellWidth, CellHeight);
 
         int icon_gap = 4;
         int item_gap = 4;
@@ -159,26 +159,26 @@ public class CreditsScene : IScene, IDisposable
 
                 if (menuSelected.hor == 0)
                 {
-                    p8.Print(">", 0, ystart + (menuSelected.ver * 9) + yoff, 7);
+                    Print(">", 0, ystart + (menuSelected.ver * 9) + yoff, 7);
                 }
                 else
                 {
-                    Vector2 position2 = new((xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap) * p8.Cell.Width, (ystart - 5 + menuSelected.ver * 9 + yoff) * p8.Cell.Height);
-                    GameRendering.Current.Draw("ArrowV", position2, p8.Colors[7], p8.Cell.Width, p8.Cell.Height);
-                    p8.Print(credits[menuSelected.ver].Links[menuSelected.hor - 1].link.Replace("https://", ""),
+                    Vector2 position2 = new((xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap) * CellWidth, (ystart - 5 + menuSelected.ver * 9 + yoff) * CellHeight);
+                    GameRendering.Current.Draw("ArrowV", position2, Colors[7], CellWidth, CellHeight);
+                    Print(credits[menuSelected.ver].Links[menuSelected.hor - 1].link.Replace("https://", ""),
                         xstart + 6 + credits[menuSelected.ver].Name.Length * 4 + 8 * credits[menuSelected.ver].Links.Count,
                         ystart + menuSelected.ver * 9 + yoff,
                         6);
                 }
             }
 
-            p8.Print(item.Name, xstart, ypos + yoff + ystart, 7);
+            Print(item.Name, xstart, ypos + yoff + ystart, 7);
 
             int xpos = 0;
             foreach ((string type , string link) icon in item.Links)
             {
-                Vector2 position = new((xstart + item.Name.Length * 4 + xpos + icon_gap - 1) * p8.Cell.Width, (ypos + yoff + ystart - 1) * p8.Cell.Height);
-                GameRendering.Current.Draw(icon.type, position, Color.White, p8.Cell.Width / 2f, p8.Cell.Height / 2f);
+                Vector2 position = new((xstart + item.Name.Length * 4 + xpos + icon_gap - 1) * CellWidth, (ypos + yoff + ystart - 1) * CellHeight);
+                GameRendering.Current.Draw(icon.type, position, Color.White, CellWidth / 2f, CellHeight / 2f);
                 xpos += 8;
             }
 
@@ -189,7 +189,7 @@ public class CreditsScene : IScene, IDisposable
                 int linecount = 6;
                 foreach (string line in item.Description)
                 {
-                    p8.Print(line,
+                    Print(line,
                         xstart + description_indent,
                         ypos + yoff + linecount + ystart - 1,
                         6);

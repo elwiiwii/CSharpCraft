@@ -97,14 +97,9 @@ public class ServiceFactory : IServiceFactory
             getSfxVolume);
     }
 
-    public SceneStateManager CreateSceneStateManager(IScene initialScene)
+    public PauseMenuState CreatePauseMenuState(GameOrchestrator orchestrator)
     {
-        return new SceneStateManager(initialScene);
-    }
-
-    public PauseMenuState CreatePauseMenuState(Pico8Functions pico8Functions)
-    {
-        return new PauseMenuState(pico8Functions);
+        return new PauseMenuState(orchestrator);
     }
 
     public IInputStateManager CreateInputStateManager()

@@ -32,7 +32,8 @@ public interface ISceneManager
     List<IScene> GetRegisteredScenes();
 
     /// <summary>
-    /// Process any pending scene changes
+    /// Process any pending scene changes. Returns the factory if one was scheduled, null otherwise.
+    /// Clears the scheduled scene after retrieval.
     /// </summary>
-    void ProcessPendingTransitions();
+    Func<IScene>? GetAndClearScheduledScene();
 }

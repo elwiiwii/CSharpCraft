@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Color = Microsoft.Xna.Framework.Color;
 
@@ -10,7 +11,6 @@ public class GeneralOptionsTitle : IScene, IDisposable
     public string SceneName { get => "options"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
 
     GeneralOptions drawScene = new(-1);
 
@@ -22,18 +22,18 @@ public class GeneralOptionsTitle : IScene, IDisposable
 
     public void Update()
     {
-        if (p8.Btnp(0)) { p8.ScheduleScene(() => new ControlsOptions()); return; }
-        if (p8.Btnp(2)) { p8.ScheduleScene(() => new BackOptions2()); return; }
-        if (p8.Btnp(3)) { p8.ScheduleScene(() => new GeneralOptions()); return; }
+        if (Btnp(0)) { ScheduleScene(() => new ControlsOptions()); return; }
+        if (Btnp(2)) { ScheduleScene(() => new BackOptions2()); return; }
+        if (Btnp(3)) { ScheduleScene(() => new GeneralOptions()); return; }
     }
 
     public void Draw()
     {
-        p8.Cls();
+        Cls();
 
         drawScene.Draw();
 
-        GameRendering.Current.Draw("OptionsBackground3", new Vector2(0, 0), Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("OptionsBackground3", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
 
     }
     public string SpriteImage => "";

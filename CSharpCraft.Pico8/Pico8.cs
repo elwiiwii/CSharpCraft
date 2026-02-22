@@ -44,6 +44,45 @@ namespace CSharpCraft.Pico8
             _random.Value = new Random();
         }
 
+        /// <summary>
+        /// Reset the static API (for test teardown).
+        /// </summary>
+        public static void Reset()
+        {
+            _orchestrator.Value = null;
+            _random.Value = null;
+        }
+
+        /// <summary>
+        /// Whether the static API has been initialized.
+        /// </summary>
+        public static bool IsInitialized => _orchestrator.Value != null;
+
+        /// <summary>
+        /// Access to the input bindings configuration.
+        /// </summary>
+        public static IInputBindingProvider InputBindings => Orch.InputBindings;
+
+        /// <summary>
+        /// Access to audio/graphics settings.
+        /// </summary>
+        public static IAudioGraphicsSettings Settings => Orch.Settings;
+
+        /// <summary>
+        /// Current scenes list.
+        /// </summary>
+        public static List<IScene> Scenes => Orch.Scenes;
+
+        /// <summary>
+        /// The current cart/scene.
+        /// </summary>
+        public static IScene CurrentCart => Orch.CurrentCart;
+
+        /// <summary>
+        /// Current resolution.
+        /// </summary>
+        public static (int w, int h) Resolution => (Orch.Graphics.Resolution.w, Orch.Graphics.Resolution.h);
+
         #region INPUT API
 
         /// <summary>
@@ -84,6 +123,12 @@ namespace CSharpCraft.Pico8
         /// Draw a rectangle outline (PICO-8 rect)
         /// </summary>
         public static void Rect(double x1, double y1, double x2, double y2, double color)
+            => Orch.Graphics.Rect(x1, y1, x2, y2, color);
+
+        /// <summary>
+        /// Draw a rectangle outline with an XNA Color
+        /// </summary>
+        public static void Rect(double x1, double y1, double x2, double y2, Color color)
             => Orch.Graphics.Rect(x1, y1, x2, y2, color);
 
         /// <summary>
@@ -157,6 +202,11 @@ namespace CSharpCraft.Pico8
         #region DISPLAY CONFIG API
 
         /// <summary>
+        /// Get the current cell/tile size as a tuple (Width, Height)
+        /// </summary>
+        public static (int Width, int Height) Cell => Orch.Cell;
+
+        /// <summary>
         /// Get the current cell/tile width (physical pixels per PICO-8 pixel)
         /// </summary>
         public static int CellWidth => Orch.Graphics.Cell.Width;
@@ -165,6 +215,11 @@ namespace CSharpCraft.Pico8
         /// Get the current cell/tile height (physical pixels per PICO-8 pixel)
         /// </summary>
         public static int CellHeight => Orch.Graphics.Cell.Height;
+
+        /// <summary>
+        /// Get the palette colors list
+        /// </summary>
+        public static List<Microsoft.Xna.Framework.Color> Colors => Orch.Colors;
 
         /// <summary>
         /// Get the current virtual resolution width
@@ -222,6 +277,12 @@ namespace CSharpCraft.Pico8
         /// Set palette color remapping (PICO-8 pal)
         /// </summary>
         public static void Pal(int c0, int c1)
+            => Orch.Graphics.Pal(c0, c1);
+
+        /// <summary>
+        /// Set palette color remapping with Color values
+        /// </summary>
+        public static void Pal(Color c0, Color c1)
             => Orch.Graphics.Pal(c0, c1);
 
         /// <summary>
@@ -532,6 +593,52 @@ namespace CSharpCraft.Pico8
 
         // Validation is handled by the Orch property accessor.
         // AsyncLocal provides execution-context isolation for thread safety.
+
+        #endregion
+
+        #region GAME LOOP API
+
+        /// <summary>
+        /// Load a new cart/scene.
+        /// </summary>
+        public static void LoadCart(IScene cart)
+            => Orch.LoadCart(cart);
+
+        /// <summary>
+        /// Reload the current cart.
+        /// </summary>
+        public static void ReloadCart()
+            => Orch.ReloadCart();
+
+        /// <summary>
+        /// Dispose audio resources.
+        /// </summary>
+        public static void SoundDispose()
+            => Orch.SoundDispose();
+
+        /// <summary>
+        /// Update the game loop (called once per frame).
+        /// </summary>
+        public static void Update()
+            => Orch.Update();
+
+        /// <summary>
+        /// Draw the current frame (called once per frame).
+        /// </summary>
+        public static void Draw()
+            => Orch.Draw();
+
+        /// <summary>
+        /// Update the viewport after window resize or fullscreen toggle.
+        /// </summary>
+        public static void UpdateViewport()
+            => Orch.UpdateViewport();
+
+        /// <summary>
+        /// Dispose all resources.
+        /// </summary>
+        public static void Dispose()
+            => Orch.Dispose();
 
         #endregion
     }

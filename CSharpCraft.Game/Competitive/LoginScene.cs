@@ -1,5 +1,6 @@
 ﻿using System.Net.Mail;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -15,7 +16,6 @@ public class LoginScene : IScene
     public string SceneName { get => "login"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
     private IScene prevScene;
     private float cursorX;
     private float cursorY;
@@ -66,18 +66,18 @@ public class LoginScene : IScene
 
         var op1 = new SelectorOption { Name = "login" };
         var op2 = new SelectorOption { Name = "register" };
-        loginRegisterSelector = new Selector(p8, (29, 29), [op1, op2]);
+        loginRegisterSelector = new Selector((29, 29), [op1, op2]);
         
-        emailBox = new TextBox(p8, (29, 41), (69, 69), "email:");
-        passwordBox = new TextBox(p8, (29, 53), (69, 69), "password:");
-        twoFactorBox = new TextBox(p8, (29, 65), (69, 69), "2fa code:");
-        verifyButton = new Button(p8, (46, 53), "verify", false);
-        submitCodeButton = new Button(p8, (79, 53), "->", false);
-        registerButton = new Button(p8, (42, 77), "register", false);
+        emailBox = new TextBox((29, 41), (69, 69), "email:");
+        passwordBox = new TextBox((29, 53), (69, 69), "password:");
+        twoFactorBox = new TextBox((29, 65), (69, 69), "2fa code:");
+        verifyButton = new Button((46, 53), "verify", false);
+        submitCodeButton = new Button((79, 53), "->", false);
+        registerButton = new Button((42, 77), "register", false);
 
-        codeBox = new TextBox(p8, (29, 53), (43, 43), "");
-        usernameBox = new TextBox(p8, (29, 53), (69, 69), "username:");
-        loginButton = new Button(p8, (48, 65), "login", false);
+        codeBox = new TextBox((29, 53), (43, 43), "");
+        usernameBox = new TextBox((29, 53), (69, 69), "username:");
+        loginButton = new Button((48, 65), "login", false);
 
         loginFlow.AddRange([emailBox, passwordBox, twoFactorBox]);
         registerFlow.AddRange([emailBox, codeBox, usernameBox, passwordBox]);
@@ -317,7 +317,7 @@ public class LoginScene : IScene
                 }
                 else
                 {
-                    p8.ScheduleScene(() => prevScene);
+                    ScheduleScene(() => prevScene);
                     statusMessage = response.Message;
                 }
             }
@@ -675,9 +675,9 @@ public class LoginScene : IScene
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+        Vector2 size = new(CellWidth, CellHeight);
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
         loginRegisterSelector.Draw();
         
@@ -717,11 +717,11 @@ public class LoginScene : IScene
             var lines = SplitStatusMessage(statusMessage);
             for (int i = 0; i < lines.Count; i++)
             {
-                Shared.Printc(p8, lines[i], 64, 120 - ((lines.Count - 1 - i) * 7), 15);
+                Shared.Printc(lines[i], 64, 120 - ((lines.Count - 1 - i) * 7), 15);
             }
         }
 
-        Shared.DrawCursor(p8, cursorX, cursorY);
+        Shared.DrawCursor(cursorX, cursorY);
     }
 
     public string SpriteImage => "";

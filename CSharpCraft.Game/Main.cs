@@ -1,4 +1,4 @@
-﻿using CSharpCraft.OptionsMenu;
+using CSharpCraft.OptionsMenu;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
 using CSharpCraft.Credits;
@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using static CSharpCraft.Pico8.Pico8;
 
 namespace CSharpCraft;
 
@@ -27,7 +28,7 @@ class FNAGame : Game
     private SpriteBatch batch;
     private readonly List<IScene> scenes = [];
     private readonly GraphicsDeviceManager graphics;
-    private Pico8Functions p8;
+    private GameOrchestrator orchestrator = null!;
 
     private readonly OptionsFile optionsFile;
 
@@ -67,7 +68,6 @@ class FNAGame : Game
         this.IsFixedTimeStep = true;
         this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
         graphics.SynchronizeWithVerticalRetrace = true;
-        //IsMouseVisible = true;
 
         prevState = Keyboard.GetState();
     }
@@ -77,15 +77,11 @@ class FNAGame : Game
     {
         base.Initialize();
 
-        //optionsFile = OptionsFile.Initialize();
-
-        p8.UpdateViewport();
+        UpdateViewport();
         
         scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
         scenes.Add(new PcraftSpeedrun());
-        //scenes.Add(new DeluxeSingleplayer());
-        //scenes.Add(new MainRace());
         scenes.Add(new PcraftFilter());
         scenes.Add(new LoadSeed());
         scenes.Add(new Visualiser());
@@ -99,17 +95,9 @@ class FNAGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        //double fps = 1.0 / gameTime.ElapsedGameTime.TotalSeconds;
-        //elapsedSeconds += gameTime.ElapsedGameTime.TotalSeconds;
-        //if (elapsedSeconds >= 1.0)
-        //{
-        //    Console.WriteLine($"FPS: {fps}");
-        //    elapsedSeconds = 0.0;
-        //}
+        this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / CurrentCart.Fps));
 
-        this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / p8._cart.Fps));
-
-        p8.Update();
+        CSharpCraft.Pico8.Pico8.Update();
 
         KeyboardState state = Keyboard.GetState();
 
@@ -129,20 +117,20 @@ class FNAGame : Game
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
         {
-            p8.ScheduleScene(() => new TitleScreen(false));
+            ScheduleScene(() => new TitleScreen(false));
             popup = ("quit (ctrl-q)", 1.5);
         }
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
         {
-            p8.ScheduleScene(() => p8._cart);
+            ScheduleScene(() => CurrentCart);
         }
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
         {
             optionsFile.Gen_Sound_On = !optionsFile.Gen_Sound_On;
             OptionsFile.JsonWrite(optionsFile);
-            p8.Mute();
+            Mute();
             popup = ($"sound {(optionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
         }
 
@@ -152,9 +140,9 @@ class FNAGame : Game
             OptionsFile.JsonWrite(optionsFile);
             GameRendering.Current.ApplyDisplaySettings(
                 optionsFile.Gen_Fullscreen,
-                optionsFile.Gen_Window_Width / 128 * p8.Resolution.w,
-                optionsFile.Gen_Window_Height / 128 * p8.Resolution.h);
-            p8.UpdateViewport();
+                optionsFile.Gen_Window_Width / 128 * Resolution.w,
+                optionsFile.Gen_Window_Height / 128 * Resolution.h);
+            UpdateViewport();
             popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
         }
 
@@ -166,8 +154,8 @@ class FNAGame : Game
 
     private void Popup(string s, int x1, int y1, int x2, int y2)
     {
-        p8.Rectfill(x1, y1, x2, y2, 8);
-        p8.Print(s, 1, y1 + 1, 15);
+        Rectfill(x1, y1, x2, y2, 8);
+        Print(s, 1, y1 + 1, 15);
     }
 
 
@@ -175,19 +163,10 @@ class FNAGame : Game
     {
         batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
 
-        p8.Draw();
+        CSharpCraft.Pico8.Pico8.Draw();
 
         int clampFrame = Math.Abs((int)Math.Floor(popup.frame)) > 7 ? 7 : Math.Abs((int)Math.Floor(popup.frame));
-        if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, p8.Resolution.h - clampFrame, p8.Resolution.w - 1, p8.Resolution.h - clampFrame + 7); }
-
-        // Draw the grid
-        /*for (int i = 0; i <= 128; i++)
-        {
-            // Draw vertical lines
-            batch.DrawLine(pixel, new Vector2(i * p8.Cell.Width, 0), new Vector2(i * p8.Cell.Width, viewportHeight), Color.White, 1);
-            // Draw horizontal lines
-            batch.DrawLine(pixel, new Vector2(0, i * p8.Cell.Height), new Vector2(viewportWidth, i * p8.Cell.Height), Color.White, 1);
-        }*/
+        if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, Resolution.h - clampFrame, Resolution.w - 1, Resolution.h - clampFrame + 7); }
 
         batch.End();
 
@@ -236,10 +215,36 @@ class FNAGame : Game
         }
 
         OptionsFile.Current = optionsFile;
-        p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile, optionsFile, new ServiceFactory());
+
+        // Create sub-systems
+        var inputManager = new InputStateManager();
+        var graphicsAPI = new GraphicsAPI(batch, pixel, GameOrchestrator.DefaultColors, FixMath.F32.Zero, FixMath.F32.Zero, (1, 1));
+        var audioAPI = new AudioAPI(null, null, soundEffectDictionary, () => new(), () => 0, () => optionsFile.Gen_Sound_On, () => optionsFile.Gen_Sfx_Vol);
+        var sceneManager = new SceneManager();
+        var paletteManager = new PaletteManager(GameOrchestrator.DefaultColors);
+
+        orchestrator = new GameOrchestrator(
+            new TitleScreen(true),
+            scenes,
+            textureDictionary,
+            soundEffectDictionary,
+            musicDictionary,
+            pixel,
+            batch,
+            graphics,
+            GraphicsDevice,
+            Window,
+            optionsFile,
+            optionsFile,
+            inputManager,
+            graphicsAPI,
+            audioAPI,
+            sceneManager,
+            paletteManager);
+
+        orchestrator.Initialize();
+
         GameRendering.Current = new FnaTextureRenderer(batch, textureDictionary, Window, graphics);
-        AccountHandler.p8 = p8;
-        RoomHandler.p8 = p8;
     }
 
 
@@ -247,7 +252,6 @@ class FNAGame : Game
     {
         try
         {
-            // Shutdown AccountHandler first
             AccountHandler.Shutdown();
             RoomHandler.Shutdown();
         }
@@ -258,7 +262,7 @@ class FNAGame : Game
 
         batch.Dispose();
         pixel.Dispose();
-        p8.Dispose();
+        CSharpCraft.Pico8.Pico8.Dispose();
 
         foreach (Texture2D texture in textureDictionary.Values)
         {
@@ -280,7 +284,6 @@ class FNAGame : Game
     {
         try
         {
-            // Ensure AccountHandler is shut down when the game exits
             AccountHandler.Shutdown();
             RoomHandler.Shutdown();
         }
@@ -294,7 +297,7 @@ class FNAGame : Game
 
     private void Window_ClientSizeChanged(object sender, EventArgs e)
     {
-        p8.UpdateViewport();
+        UpdateViewport();
     }
 
 }

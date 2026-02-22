@@ -1,3 +1,5 @@
+using Color = Microsoft.Xna.Framework.Color;
+
 namespace CSharpCraft.Pico8;
 
 /// <summary>
@@ -10,6 +12,11 @@ public interface IPaletteManager
     /// Set palette remapping: color index c0 → color index c1
     /// </summary>
     void SetPalette(int c0, int c1);
+
+    /// <summary>
+    /// Set palette remapping from one Color to another Color
+    /// </summary>
+    void SetPalette(Color c0, Color c1);
 
     /// <summary>
     /// Reset all palette remappings to defaults

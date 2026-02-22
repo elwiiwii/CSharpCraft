@@ -1,5 +1,6 @@
 ﻿using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -11,7 +12,6 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
     public string SceneName { get => "TitleScreen"; }
     public double Fps { get => 30.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
     private readonly string version = "1.1.3";
 
     private int menuSelected;
@@ -44,14 +44,14 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
             Environment.Exit(0);
         }
 
-        if (p8.Btnp(2)) { menuSelected -= 1; }
-        if (p8.Btnp(3)) { menuSelected += 1; }
+        if (Btnp(2)) { menuSelected -= 1; }
+        if (Btnp(3)) { menuSelected += 1; }
 
-        menuSelected = GeneralFunctions.Loop(menuSelected, p8.Scenes);
+        menuSelected = GeneralFunctions.Loop(menuSelected, Scenes);
 
-        if (frame >= 39 && ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || p8.Btnp(4) || p8.Btnp(5)))
+        if (frame >= 39 && ((state.IsKeyDown(Keys.Enter) && !prevState.IsKeyDown(Keys.Enter)) || Btnp(4) || Btnp(5)))
         {
-            p8.ScheduleScene(() => p8.Scenes[menuSelected]);
+            ScheduleScene(() => Scenes[menuSelected]);
         }
 
         prevState = state;
@@ -62,27 +62,27 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        Vector2 position = new(1 * p8.Cell.Width, 1 * p8.Cell.Height);
+        Vector2 position = new(1 * CellWidth, 1 * CellHeight);
 
-        GameRendering.Current.Draw("CSharpCraftLogo", position, Color.White, p8.Cell.Width, p8.Cell.Height);
+        GameRendering.Current.Draw("CSharpCraftLogo", position, Color.White, CellWidth, CellHeight);
 
-        if (frame >= 5) { p8.Print($"c# craft {version}", 0, 18, 6); }
-        if (frame >= 6) { p8.Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
+        if (frame >= 5) { Print($"c# craft {version}", 0, 18, 6); }
+        if (frame >= 6) { Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
-        if (frame >= 7) { GameRendering.Current.Draw("MusicNote", new(3 * p8.Cell.Width, 36 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
-        if (frame >= 11) { GameRendering.Current.Draw("MusicNote", new(11 * p8.Cell.Width, 38 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
-        if (frame >= 15) { GameRendering.Current.Draw("MusicNote", new(19 * p8.Cell.Width, 36 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
-        if (frame >= 19) { GameRendering.Current.Draw("MusicNote", new(27 * p8.Cell.Width, 34 * p8.Cell.Height), p8.Colors[13], p8.Cell.Width, p8.Cell.Height); }
+        if (frame >= 7) { GameRendering.Current.Draw("MusicNote", new Vector2(3 * CellWidth, 36 * CellHeight), Colors[13], CellWidth, CellHeight); }
+        if (frame >= 11) { GameRendering.Current.Draw("MusicNote", new Vector2(11 * CellWidth, 38 * CellHeight), Colors[13], CellWidth, CellHeight); }
+        if (frame >= 15) { GameRendering.Current.Draw("MusicNote", new Vector2(19 * CellWidth, 36 * CellHeight), Colors[13], CellWidth, CellHeight); }
+        if (frame >= 19) { GameRendering.Current.Draw("MusicNote", new Vector2(27 * CellWidth, 34 * CellHeight), Colors[13], CellWidth, CellHeight); }
 
-        if (frame >= 29) { p8.Print("choose a game mode", 0, 50, 6); }
+        if (frame >= 29) { Print("choose a game mode", 0, 50, 6); }
 
         if (frame >= 39)
         {
-            p8.Print(">", 0, 62 + (menuSelected * 6), 7);
+            Print(">", 0, 62 + (menuSelected * 6), 7);
             int i = 0;
-            foreach (IScene scene in p8.Scenes)
+            foreach (IScene scene in Scenes)
             {
-                p8.Print(scene.SceneName, 8, 62 + i, 7);
+                Print(scene.SceneName, 8, 62 + i, 7);
 
                 i += 6;
             }

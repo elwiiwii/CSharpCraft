@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -10,7 +11,6 @@ public class ReplaysScene(IScene prevScene) : IScene
     public string SceneName { get => "ranked"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
     private Icon back;
     private Icon replays;
     private Icon statistics;
@@ -37,7 +37,7 @@ public class ReplaysScene(IScene prevScene) : IScene
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.ScheduleScene(() => new LoginScene(this));
+                ScheduleScene(() => new LoginScene(this));
                 return;
             }
 
@@ -58,7 +58,7 @@ public class ReplaysScene(IScene prevScene) : IScene
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
-            p8.ScheduleScene(() => new LoginScene(this));
+            ScheduleScene(() => new LoginScene(this));
         }
         finally
         {
@@ -73,9 +73,9 @@ public class ReplaysScene(IScene prevScene) : IScene
         MouseState state = Mouse.GetState();
         (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(state.X, state.Y);
 
-        curIcon = Shared.UpdateIcon(p8, icons, cursorX, cursorY);
+        curIcon = Shared.UpdateIcon(icons, cursorX, cursorY);
 
-        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.ScheduleScene(() => curIcon.Scene); }
+        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { ScheduleScene(() => curIcon.Scene); }
         prevState = state;
     }
 
@@ -83,15 +83,15 @@ public class ReplaysScene(IScene prevScene) : IScene
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
-        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
+        if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
-        Shared.DrawIcons(p8, icons, cursorX, cursorY);
+        Shared.DrawIcons(icons, cursorX, cursorY);
 
-        Shared.DrawCursor(p8, cursorX, cursorY);
+        Shared.DrawCursor(cursorX, cursorY);
     }
     public string SpriteImage => "";
     public string SpriteData => @"";

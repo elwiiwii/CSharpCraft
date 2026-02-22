@@ -2,6 +2,7 @@
 using CSharpCraft.Competitive;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -12,7 +13,6 @@ namespace CSharpCraft.Competitive;
 
 public class LobbyScene(Role joinRole) : PcraftBase
 {
-    private Pico8Functions p8 = null!;
     private List<Item> actionsItems = new();
     private List<Item> rulesItems = new();
     private string roomName;
@@ -44,7 +44,7 @@ public class LobbyScene(Role joinRole) : PcraftBase
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.ScheduleScene(() => new LoginScene(new CompetitiveScene()));
+                ScheduleScene(() => new LoginScene(new CompetitiveScene()));
                 return;
             }
 
@@ -53,16 +53,16 @@ public class LobbyScene(Role joinRole) : PcraftBase
             if (!connected)
             {
                 Console.WriteLine("Failed to connect to room");
-                p8.ScheduleScene(() => new LoginScene(new CompetitiveScene()));
+                ScheduleScene(() => new LoginScene(new CompetitiveScene()));
                 return;
             }
 
             roomName = "test room";
             roomPassword = "????";
 
-            playerList = new(p8, roomName, roomPassword, 5);
-            actionsSettings = new(p8, (5, 83), "actions", actionsItems);
-            rulesSettings = new(p8, (64, 83), "rules", rulesItems);
+            playerList = new(roomName, roomPassword, 5);
+            actionsSettings = new((5, 83), "actions", actionsItems);
+            rulesSettings = new((64, 83), "rules", rulesItems);
 
             prevKeyboardState = Keyboard.GetState();
             prevMouseState = Mouse.GetState();
@@ -79,7 +79,7 @@ public class LobbyScene(Role joinRole) : PcraftBase
             {
                 Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
             }
-            p8.ScheduleScene(() => new LoginScene(this));
+            ScheduleScene(() => new LoginScene(this));
         }
         finally
         {
@@ -93,7 +93,7 @@ public class LobbyScene(Role joinRole) : PcraftBase
 
         if (RoomHandler._myself is null)
         {
-            p8.ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
+            ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
             return;
         }
 
@@ -128,30 +128,30 @@ public class LobbyScene(Role joinRole) : PcraftBase
         actionsSettings.Update(mouseState, prevMouseState);
         rulesSettings.Update(mouseState, prevMouseState);
 
-        ///if (p8.Btnp(0)) { actionsMenu.Active = true; rulesMenu.Active = false; }
-        ///if (p8.Btnp(1)) { rulesMenu.Active = true; actionsMenu.Active = false; }
+        ///if (Btnp(0)) { actionsMenu.Active = true; rulesMenu.Active = false; }
+        ///if (Btnp(1)) { rulesMenu.Active = true; actionsMenu.Active = false; }
         ///
         ///if (actionsMenu.Active)
         ///{
-        ///    if (p8.Btnp(2)) { actionsMenu.Sel -= 1; }
-        ///    if (p8.Btnp(3)) { actionsMenu.Sel += 1; }
+        ///    if (Btnp(2)) { actionsMenu.Sel -= 1; }
+        ///    if (Btnp(3)) { actionsMenu.Sel += 1; }
         ///    actionsMenu.Sel = actionsMenu.Sel < 0 ? 0 : actionsMenu.Sel >= actionsMenu.Items.Count ? actionsMenu.Items.Count - 1 : actionsMenu.Sel;
         ///
-        ///    if (p8.Btnp(5) && actionsMenu.Items[actionsMenu.Sel].Active) { await actionsMenu.Items[actionsMenu.Sel].Method(); }
+        ///    if (Btnp(5) && actionsMenu.Items[actionsMenu.Sel].Active) { await actionsMenu.Items[actionsMenu.Sel].Method(); }
         ///}
         ///else if (rulesMenu.Active)
         ///{
-        ///    if (p8.Btnp(2)) { rulesMenu.Sel -= 1; }
-        ///    if (p8.Btnp(3)) { rulesMenu.Sel += 1; }
+        ///    if (Btnp(2)) { rulesMenu.Sel -= 1; }
+        ///    if (Btnp(3)) { rulesMenu.Sel += 1; }
         ///    rulesMenu.Sel = rulesMenu.Sel < 0 ? 0 : rulesMenu.Sel >= rulesMenu.Items.Count ? rulesMenu.Items.Count - 1 : rulesMenu.Sel;
         ///
-        ///    if (p8.Btnp(5) && rulesMenu.Items[rulesMenu.Sel].Active) { await rulesMenu.Items[rulesMenu.Sel].Method(); }
+        ///    if (Btnp(5) && rulesMenu.Items[rulesMenu.Sel].Active) { await rulesMenu.Items[rulesMenu.Sel].Method(); }
         ///}
 
 
-        if (p8.Btnp(4)) { p8.ScheduleScene(() => new PickBanScene()); }
+        if (Btnp(4)) { ScheduleScene(() => new PickBanScene()); }
 
-        //if (p8.Btnp(5) && RoomHandler.myself.Role == "Player")
+        //if (Btnp(5) && RoomHandler.myself.Role == "Player")
         //{
         //    await PlayerReady();
         //}
@@ -164,19 +164,19 @@ public class LobbyScene(Role joinRole) : PcraftBase
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
-        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
+        if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        p8.Camera(clx - 64, cly - 64);
+        Camera(clx - 64, cly - 64);
         DrawBack();
-        p8.Camera();
+        Camera();
 
         playerList.Draw();
         actionsSettings.Draw();
         rulesSettings.Draw();
 
-        Shared.DrawCursor(p8, cursorX, cursorY);
+        Shared.DrawCursor(cursorX, cursorY);
     }
 
     public override void Dispose()

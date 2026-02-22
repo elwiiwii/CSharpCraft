@@ -2,17 +2,17 @@ namespace CSharpCraft.Pico8;
 
 /// <summary>
 /// Builds the pause menu structure and handles menu item callbacks.
-/// Extracted from LoadCart to reduce nesting and improve maintainability.
+/// Uses GameOrchestrator for game state and static Pico8 API for input.
 /// </summary>
 public class PauseMenuBuilder
 {
-    private readonly Pico8Functions _pico8;
+    private readonly GameOrchestrator _orchestrator;
     private readonly List<MenuItem> _mainMenuItems;
     private readonly List<MenuItem> _curMenuItems;
 
-    public PauseMenuBuilder(Pico8Functions pico8, List<MenuItem> mainItems, List<MenuItem> curItems)
+    public PauseMenuBuilder(GameOrchestrator orchestrator, List<MenuItem> mainItems, List<MenuItem> curItems)
     {
-        _pico8 = pico8;
+        _orchestrator = orchestrator;
         _mainMenuItems = mainItems;
         _curMenuItems = curItems;
     }
@@ -36,64 +36,71 @@ public class PauseMenuBuilder
         }
     }
 
+    private static void AddMenuItem(int pos, Func<string> getName, Action function, List<MenuItem> list)
+    {
+        while (list.Count <= pos)
+            list.Add(new MenuItem(() => "", () => { }));
+        list[pos] = new MenuItem(getName, function);
+    }
+
     private void BuildContinueMenuItem()
     {
         void ContinueAction()
         {
-            if (_pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(4) || Pico8.Btnp(5))
             {
-                // Unpause will be handled by pause menu
+                // Unpause will be handled by pause menu toggle
             }
         }
 
-        _pico8.Menuitem(0, () => "continue", ContinueAction, _mainMenuItems);
+        AddMenuItem(0, () => "continue", ContinueAction, _mainMenuItems);
     }
 
     private void BuildOptionsMenuItem()
     {
         void OptionsAction()
         {
-            if (_pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(4) || Pico8.Btnp(5))
             {
                 ShowOptionsSubmenu();
             }
         }
 
-        _pico8.Menuitem(1, () => "options", OptionsAction, _mainMenuItems);
+        AddMenuItem(1, () => "options", OptionsAction, _mainMenuItems);
     }
 
     private void BuildResetMenuItem()
     {
         void ResetAction()
         {
-            if (_pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(4) || Pico8.Btnp(5))
             {
-                _pico8.ReloadCart();
+                _orchestrator.ReloadCart();
             }
         }
 
-        _pico8.Menuitem(2, () => "reset cart", ResetAction, _mainMenuItems);
+        AddMenuItem(2, () => "reset cart", ResetAction, _mainMenuItems);
     }
 
     private void BuildExitMenuItem()
     {
         void ExitAction()
         {
-            if (_pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(4) || Pico8.Btnp(5))
             {
-                if (_pico8.TitleSceneInstance is IScene titleScreen)
+                var scenes = _orchestrator.Scenes;
+                if (scenes.Count > 0 && scenes[0] is IScene titleScreen)
                 {
-                    _pico8.LoadCart(titleScreen);
+                    _orchestrator.LoadCart(titleScreen);
                 }
             }
         }
 
-        _pico8.Menuitem(3, () => "exit", ExitAction, _mainMenuItems);
+        AddMenuItem(3, () => "exit", ExitAction, _mainMenuItems);
     }
 
     private void ShowOptionsSubmenu()
     {
-        // Save current menu to return to it
         var previousMenu = new List<MenuItem>(_mainMenuItems);
 
         _mainMenuItems.Clear();
@@ -104,7 +111,6 @@ public class PauseMenuBuilder
 
         _curMenuItems.Clear();
 
-        // Options submenu items
         BuildSoundToggleMenuItem();
         BuildMusicVolumeMenuItem();
         BuildSfxVolumeMenuItem();
@@ -118,76 +124,68 @@ public class PauseMenuBuilder
     {
         void SoundAction()
         {
-            if (_pico8.Btnp(0) || _pico8.Btnp(1) || _pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(0) || Pico8.Btnp(1) || Pico8.Btnp(4) || Pico8.Btnp(5))
             {
-                _pico8.Settings.SoundEnabled = !_pico8.Settings.SoundEnabled;
-                if (!_pico8.Settings.SoundEnabled)
+                _orchestrator.Settings.SoundEnabled = !_orchestrator.Settings.SoundEnabled;
+                if (!_orchestrator.Settings.SoundEnabled)
                 {
-                    _pico8.Mute();
+                    Pico8.Mute();
                 }
             }
         }
 
-        _pico8.Menuitem(0, () => $"sound:{(_pico8.Settings.SoundEnabled ? "on" : "off")}", SoundAction, _curMenuItems);
+        AddMenuItem(0, () => $"sound:{(_orchestrator.Settings.SoundEnabled ? "on" : "off")}", SoundAction, _curMenuItems);
     }
 
     private void BuildMusicVolumeMenuItem()
     {
         void MusicVolAction()
         {
-            if (_pico8.Btnp(0))
-            {
-                _pico8.Settings.MusicVolume = Math.Max(_pico8.Settings.MusicVolume - 10, 0);
-            }
-            if (_pico8.Btnp(1))
-            {
-                _pico8.Settings.MusicVolume = Math.Min(_pico8.Settings.MusicVolume + 10, 100);
-            }
+            if (Pico8.Btnp(0))
+                _orchestrator.Settings.MusicVolume = Math.Max(_orchestrator.Settings.MusicVolume - 10, 0);
+            if (Pico8.Btnp(1))
+                _orchestrator.Settings.MusicVolume = Math.Min(_orchestrator.Settings.MusicVolume + 10, 100);
         }
 
-        _pico8.Menuitem(1, () => $"music vol:{_pico8.Settings.MusicVolume}%", MusicVolAction, _curMenuItems);
+        AddMenuItem(1, () => $"music vol:{_orchestrator.Settings.MusicVolume}%", MusicVolAction, _curMenuItems);
     }
 
     private void BuildSfxVolumeMenuItem()
     {
         void SfxVolAction()
         {
-            if (_pico8.Btnp(0))
-            {
-                _pico8.Settings.SfxVolume = Math.Max(_pico8.Settings.SfxVolume - 10, 0);
-            }
-            if (_pico8.Btnp(1))
-            {
-                _pico8.Settings.SfxVolume = Math.Min(_pico8.Settings.SfxVolume + 10, 100);
-            }
+            if (Pico8.Btnp(0))
+                _orchestrator.Settings.SfxVolume = Math.Max(_orchestrator.Settings.SfxVolume - 10, 0);
+            if (Pico8.Btnp(1))
+                _orchestrator.Settings.SfxVolume = Math.Min(_orchestrator.Settings.SfxVolume + 10, 100);
         }
 
-        _pico8.Menuitem(2, () => $"sfx vol:{_pico8.Settings.SfxVolume}%", SfxVolAction, _curMenuItems);
+        AddMenuItem(2, () => $"sfx vol:{_orchestrator.Settings.SfxVolume}%", SfxVolAction, _curMenuItems);
     }
 
     private void BuildFullscreenToggleMenuItem()
     {
         void FullscreenAction()
         {
-            if (_pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(4) || Pico8.Btnp(5))
             {
-                _pico8.Settings.IsFullscreen = !_pico8.Settings.IsFullscreen;
-                _pico8.Graphics.IsFullScreen = _pico8.Settings.IsFullscreen;
-                _pico8.Graphics.PreferredBackBufferWidth = _pico8.Settings.WindowWidth / 128 * _pico8.Resolution.w;
-                _pico8.Graphics.PreferredBackBufferHeight = _pico8.Settings.WindowHeight / 128 * _pico8.Resolution.h;
-                _pico8.Graphics.ApplyChanges();
-                _pico8.UpdateViewport();
+                _orchestrator.Settings.IsFullscreen = !_orchestrator.Settings.IsFullscreen;
+                _orchestrator.GraphicsManager.IsFullScreen = _orchestrator.Settings.IsFullscreen;
+                _orchestrator.GraphicsManager.PreferredBackBufferWidth = _orchestrator.Settings.WindowWidth / 128 * _orchestrator.Resolution.w;
+                _orchestrator.GraphicsManager.PreferredBackBufferHeight = _orchestrator.Settings.WindowHeight / 128 * _orchestrator.Resolution.h;
+                _orchestrator.GraphicsManager.ApplyChanges();
+                _orchestrator.UpdateViewport();
             }
         }
 
-        _pico8.Menuitem(3, () => $"fullscreen:{(_pico8.Settings.IsFullscreen ? "on" : "off")}", FullscreenAction, _curMenuItems);
+        AddMenuItem(3, () => $"fullscreen:{(_orchestrator.Settings.IsFullscreen ? "on" : "off")}", FullscreenAction, _curMenuItems);
     }
 
     private void BuildBackMenuItem(List<MenuItem> previousMenu)
     {
         void BackAction()
         {
-            if (_pico8.Btnp(4) || _pico8.Btnp(5))
+            if (Pico8.Btnp(4) || Pico8.Btnp(5))
             {
                 _curMenuItems.Clear();
                 foreach (var item in previousMenu)
@@ -197,57 +195,47 @@ public class PauseMenuBuilder
             }
         }
 
-        _pico8.Menuitem(4, () => "back", BackAction, _curMenuItems);
+        AddMenuItem(4, () => "back", BackAction, _curMenuItems);
     }
 
     private void BuildSfxPackMenuItem()
     {
-        // Only show if multiple sfx packs available
-        if (_pico8.SfxCount <= 1)
+        if (_orchestrator.SfxCount <= 1)
             return;
 
         void SfxPackAction()
         {
-            if (_pico8.Btnp(0))
-            {
-                _pico8.DecrementSfxPack();
-            }
-            if (_pico8.Btnp(1))
-            {
-                _pico8.IncrementSfxPack();
-            }
+            if (Pico8.Btnp(0))
+                _orchestrator.DecrementSfxPack();
+            if (Pico8.Btnp(1))
+                _orchestrator.IncrementSfxPack();
         }
 
-        _pico8.Menuitem(5, () => $"sfx:{_pico8.GetCurrentSfxPackName()}", SfxPackAction, _curMenuItems);
+        AddMenuItem(5, () => $"sfx:{_orchestrator.GetCurrentSfxPackName()}", SfxPackAction, _curMenuItems);
     }
 
     private void BuildSoundtrackMenuItem()
     {
-        // Only show if multiple soundtracks available
-        if (_pico8.MusicCount <= 1)
+        if (_orchestrator.MusicCount <= 1)
             return;
 
         void SoundtrackAction()
         {
-            if (_pico8.Btnp(0))
-            {
-                _pico8.DecrementSoundtrack();
-            }
-            if (_pico8.Btnp(1))
-            {
-                _pico8.IncrementSoundtrack();
-            }
+            if (Pico8.Btnp(0))
+                _orchestrator.DecrementSoundtrack();
+            if (Pico8.Btnp(1))
+                _orchestrator.IncrementSoundtrack();
 
-            if (_pico8.Btnp(0) || _pico8.Btnp(1))
+            if (Pico8.Btnp(0) || Pico8.Btnp(1))
             {
-                _pico8.SoundDispose();
-                if (_pico8.LastMusicCall is not null)
+                _orchestrator.SoundDispose();
+                if (_orchestrator.LastMusicCall is not null)
                 {
-                    _pico8.Music((int)_pico8.LastMusicCall);
+                    Pico8.Music((int)_orchestrator.LastMusicCall);
                 }
             }
         }
 
-        _pico8.Menuitem(6, () => $"music:{_pico8.GetCurrentSoundtrackName()}", SoundtrackAction, _curMenuItems);
+        AddMenuItem(6, () => $"music:{_orchestrator.GetCurrentSoundtrackName()}", SoundtrackAction, _curMenuItems);
     }
 }

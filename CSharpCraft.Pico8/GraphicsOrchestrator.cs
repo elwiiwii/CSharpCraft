@@ -90,6 +90,14 @@ namespace CSharpCraft.Pico8
         }
 
         /// <summary>
+        /// Draw a rectangle outline with an XNA Color
+        /// </summary>
+        public void Rect(double x1, double y1, double x2, double y2, Color c)
+        {
+            _graphicsAPI.Rect(x1, y1, x2, y2, c);
+        }
+
+        /// <summary>
         /// Draw a filled rectangle (delegates to IGraphicsAPI)
         /// </summary>
         public void Rectfill(double x1, double y1, double x2, double y2, double c)
@@ -137,6 +145,14 @@ namespace CSharpCraft.Pico8
         /// Set palette color remapping (PICO-8 pal)
         /// </summary>
         public void Pal(int c0, int c1)
+        {
+            _paletteManager?.SetPalette(c0, c1);
+        }
+
+        /// <summary>
+        /// Set palette color remapping with Color values
+        /// </summary>
+        public void Pal(Color c0, Color c1)
         {
             _paletteManager?.SetPalette(c0, c1);
         }

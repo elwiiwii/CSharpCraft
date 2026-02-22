@@ -3,6 +3,7 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
@@ -37,11 +38,9 @@ public class Selector
     public (int x, int y) StartPos { get; internal init; }
     public int Sel { get; set; } = 0;
     public SelectorOption[] Options { get; internal init; } = [];
-    private Pico8Functions? p8;
 
-    public Selector(Pico8Functions _p8, (int x, int y) startpos, SelectorOption[] options)
+    public Selector((int x, int y) startpos, SelectorOption[] options)
     {
-        p8 = _p8;
         StartPos = startpos;
         Options = options;
         Update(0, 0);
@@ -51,7 +50,7 @@ public class Selector
     {
         for (int i = 0; i < Options.Length; i++)
         {
-            if (x > Options[i].Area.x1 * p8.Cell.Width && x < Options[i].Area.x2 * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+            if (x > Options[i].Area.x1 * CellWidth && x < Options[i].Area.x2 * CellWidth && y > StartPos.y * CellHeight && y < (StartPos.y + 9) * CellHeight)
             {
                 Sel = i;
             }
@@ -72,29 +71,28 @@ public class Selector
         {
             int x = (i == 0 || i == Sel) ? 5 : -4;
             int w = i == Sel ? Options[i].Name.Length * 4 + 1 : Options[i].Name.Length * 4 + 5;
-            GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}Center", new((Options[i].Area.x1 + x) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * w, p8.Cell.Height);
-            p8.Print(Options[i].Name, Options[i].Area.x1 + ((i == 0 || i == Sel) ? 6 : 1), StartPos.y + 2, i == Sel ? 15 : 29);
+            GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}Center", new Vector2((Options[i].Area.x1 + x) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * w, CellHeight);
+            Print(Options[i].Name, Options[i].Area.x1 + ((i == 0 || i == Sel) ? 6 : 1), StartPos.y + 2, i == Sel ? 15 : 29);
         }
         for (int i = 0; i < Options.Length; i++)
         {
             int x = (i == 0 || i == Sel) ? 5 : -4;
-            if (Sel >= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i <= 0 ? "" : "Overlap")}Edge", new((Options[i].Area.x1 + x - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height); }
-            if (Sel <= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i >= Options.Length - 1 ? "" : "Overlap")}Edge", new((Options[i].Area.x2 - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true); }
+            if (Sel >= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i <= 0 ? "" : "Overlap")}Edge", new Vector2((Options[i].Area.x1 + x - 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight); }
+            if (Sel <= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i >= Options.Length - 1 ? "" : "Overlap")}Edge", new Vector2((Options[i].Area.x2 - 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true); }
         }
     }
 }
 
-public class Button(Pico8Functions _p8, (int x, int y) startPos, string label, bool isActive)
+public class Button((int x, int y) startPos, string label, bool isActive)
 {
     public (int x, int y) StartPos { get; set; } = startPos;
     public string Label { get; set; } = label;
     public bool IsActive { get; set; } = isActive;
     public bool IsHovered { get; internal set; } = false;
-    private Pico8Functions? p8 = _p8;
 
     public void Update(float x, float y)
     {
-        if (IsActive && x > StartPos.x * p8.Cell.Width && x < (StartPos.x + (Label.Length * 4) + 11) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+        if (IsActive && x > StartPos.x * CellWidth && x < (StartPos.x + (Label.Length * 4) + 11) * CellWidth && y > StartPos.y * CellHeight && y < (StartPos.y + 9) * CellHeight)
         {
             IsHovered = true;
         }
@@ -106,10 +104,10 @@ public class Button(Pico8Functions _p8, (int x, int y) startPos, string label, b
 
     public void Draw()
     {
-        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Center", new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height);
-        p8.Print(Label, StartPos.x + 6, StartPos.y + 2, IsHovered ? 15 : 29);
-        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new((StartPos.x + (Label.Length * 4) + 6) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Center", new Vector2((StartPos.x + 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * (Label.Length * 4 + 1), CellHeight);
+        Print(Label, StartPos.x + 6, StartPos.y + 2, IsHovered ? 15 : 29);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2((StartPos.x + (Label.Length * 4) + 6) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
     }
 }
 
@@ -123,11 +121,9 @@ public class TextBox
     private int frameCount;
     private Func<char, bool>? inputValidator;
     private int maxLength;
-    private Pico8Functions? p8;
 
-    public TextBox(Pico8Functions _p8, (int x, int y) startPos, (int min, int max) size, string label, Func<char, bool>? validator = null, int maxLength = int.MaxValue, bool isActive = false)
+    public TextBox((int x, int y) startPos, (int min, int max) size, string label, Func<char, bool>? validator = null, int maxLength = int.MaxValue, bool isActive = false)
     {
-        p8 = _p8;
         StartPos = startPos;
         Size = size;
         Label = label;
@@ -140,7 +136,7 @@ public class TextBox
 
     public void ActiveUpdate(float x, float y)
     {
-        if (x > StartPos.x * p8.Cell.Width && x < Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max), StartPos.x + Size.min) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+        if (x > StartPos.x * CellWidth && x < Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max), StartPos.x + Size.min) * CellWidth && y > StartPos.y * CellHeight && y < (StartPos.y + 9) * CellHeight)
         {
             IsActive = true;
             frameCount = 0;
@@ -202,24 +198,23 @@ public class TextBox
         frameCount++;
         string indicator = " ";
         if (IsActive && frameCount / 30 % 2 == 0) { indicator = "|"; }
-        GameRendering.Current.Draw($"10pxBackgroundCenter", new((StartPos.x + 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * Math.Max(Math.Min((Label + Text).Length + 1, Size.max - 10), Size.min - 10), p8.Cell.Height);
-        GameRendering.Current.Draw($"10pxBackgroundEdge", new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-        GameRendering.Current.Draw($"10pxBackgroundEdge", new(Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
+        GameRendering.Current.Draw($"10pxBackgroundCenter", new Vector2((StartPos.x + 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * Math.Max(Math.Min((Label + Text).Length + 1, Size.max - 10), Size.min - 10), CellHeight);
+        GameRendering.Current.Draw($"10pxBackgroundEdge", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw($"10pxBackgroundEdge", new Vector2(Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
         string s = Label + Text + indicator;
         int startIndex = !IsActive ? 0 : Math.Max(0, s.Length - ((Size.max - 12) / 4));
         int length = s.Length > ((Size.max - 11) / 4) ? ((Size.max - 11) / 4) : s.Length;
         if (startIndex + length > s.Length) { length = s.Length - startIndex; }
-        p8.Print(s.Substring(startIndex, length), StartPos.x + 6, StartPos.y + 2, 29);
+        Print(s.Substring(startIndex, length), StartPos.x + 6, StartPos.y + 2, 29);
     }
 }
 
-public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword, int startY)
+public class PlayerList(string roomName, string roomPassword, int startY)
 {
     public int StartY { get; init; } = startY;
     public string RoomName { get; init; } = roomName;
     public string RoomPassword { get; init; } = roomPassword;
     public int Sel { get; private set; }
-    private Pico8Functions p8 = _p8;
     private int lBound;
     private int rBound;
 
@@ -238,7 +233,7 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         lBound = 63 - menuWidth * 2 - 6;
         rBound = 63 + menuWidth * 2 + 6;
 
-        if (x > lBound * p8.Cell.Width && x < rBound * p8.Cell.Width && y > StartY * p8.Cell.Height && y < (StartY + 74) * p8.Cell.Height)
+        if (x > lBound * CellWidth && x < rBound * CellWidth && y > StartY * CellHeight && y < (StartY + 74) * CellHeight)
         {
             if (mouseState.ScrollWheelValue > prevMouseState.ScrollWheelValue)
             {
@@ -260,28 +255,28 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         //    if (player.Name.Length + 10 > menuWidth) { menuWidth = Math.Min(player.Name.Length, 16) + 10; }
         //}
         //int x = 63 - menuWidth * 2 - 9;
-        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((lBound - 3) * p8.Cell.Width, StartY * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((rBound - 61) * p8.Cell.Width, StartY * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
-        p8.Rectfill(63 - RoomName.Length * 2 - 1, StartY + 1, 63 + RoomName.Length * 2 + 1, StartY + 7, 13);
-        Shared.Printc(p8, RoomName, 64, StartY + 2, 7);
-        Shared.Printc(p8, $"password-{RoomPassword}", 64, StartY + 12, 7);
+        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((lBound - 3) * CellWidth, StartY * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((rBound - 61) * CellWidth, StartY * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        Rectfill(63 - RoomName.Length * 2 - 1, StartY + 1, 63 + RoomName.Length * 2 + 1, StartY + 7, 13);
+        Shared.Printc(RoomName, 64, StartY + 2, 7);
+        Shared.Printc($"password-{RoomPassword}", 64, StartY + 12, 7);
 
         int i = 0;
         foreach (RoomUser player in RoomHandler._playerDictionary.Values)
         {
             if (i >= Sel && i < Sel + 7)
             {
-                GameRendering.Current.Draw($"{player.Role}Icon", new Vector2((lBound + 5) * p8.Cell.Width, (StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7) * p8.Cell.Height), Color.White, p8.Cell.Width / 2f, p8.Cell.Height / 2f);
-                p8.Print(player.Name, lBound + 16, StartY + 21 + (i - Sel) * 7, 7);
+                GameRendering.Current.Draw($"{player.Role}Icon", new Vector2((lBound + 5) * CellWidth, (StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7) * CellHeight), Color.White, CellWidth / 2f, CellHeight / 2f);
+                Print(player.Name, lBound + 16, StartY + 21 + (i - Sel) * 7, 7);
                 if (player.Ready)
                 {
-                    GameRendering.Current.Draw("Tick", new Vector2((lBound + 17 + player.Name.Length * 4) * p8.Cell.Width, (StartY + 21 + (i - Sel) * 7) * p8.Cell.Height), p8.Colors[6], p8.Cell.Width, p8.Cell.Height);
+                    GameRendering.Current.Draw("Tick", new Vector2((lBound + 17 + player.Name.Length * 4) * CellWidth, (StartY + 21 + (i - Sel) * 7) * CellHeight), Colors[6], CellWidth, CellHeight);
                 }
                 if (player.Host)
                 {
-                    p8.Print("[", rBound - 29, StartY + 21 + (i - Sel) * 7, 5);
-                    p8.Print("host", rBound - 26, StartY + 21 + (i - Sel) * 7, 5);
-                    p8.Print("]", rBound - 11, StartY + 21 + (i - Sel) * 7, 5);
+                    Print("[", rBound - 29, StartY + 21 + (i - Sel) * 7, 5);
+                    Print("host", rBound - 26, StartY + 21 + (i - Sel) * 7, 5);
+                    Print("]", rBound - 11, StartY + 21 + (i - Sel) * 7, 5);
                 }
                 i++;
             }
@@ -289,10 +284,10 @@ public class PlayerList(Pico8Functions _p8, string roomName, string roomPassword
         i = Math.Max(7, RoomHandler._playerDictionary.Count - 7);
         int scrollBarX = rBound - 6;
         int scrollBarY = StartY + 19;
-        p8.Rectfill(scrollBarX, scrollBarY, scrollBarX + 2, scrollBarY + 51, 13);
-        p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 51, 1);
+        Rectfill(scrollBarX, scrollBarY, scrollBarX + 2, scrollBarY + 51, 13);
+        Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 51, 1);
         double range = 48.0 / Math.Max(7, RoomHandler._playerDictionary.Count);
-        p8.Rectfill(scrollBarX + 1, StartY + 20 + Sel * range, scrollBarX + 1, StartY + 20 + (Sel + 7) * range, 6);
+        Rectfill(scrollBarX + 1, StartY + 20 + Sel * range, scrollBarX + 1, StartY + 20 + (Sel + 7) * range, 6);
     }
 }
 
@@ -311,15 +306,13 @@ public class RoomSettings
     public List<Item> Items { get; init; }
     private int scrollIndex;
     private int? sel;
-    private Pico8Functions p8;
     private int rBound;
 
-    public RoomSettings(Pico8Functions _p8, (int x, int y) startPos, string title, List<Item> items)
+    public RoomSettings((int x, int y) startPos, string title, List<Item> items)
     {
         StartPos = startPos;
         Title = title;
         Items = items;
-        p8 = _p8;
     }
 
     public void Update(MouseState mouseState, MouseState prevMouseState)
@@ -336,7 +329,7 @@ public class RoomSettings
         }
         rBound = StartPos.x + 3 + (menuWidth - 8) * 4 + 40;
 
-        if (x > StartPos.x * p8.Cell.Width && x < rBound * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 40) * p8.Cell.Height)
+        if (x > StartPos.x * CellWidth && x < rBound * CellWidth && y > StartPos.y * CellHeight && y < (StartPos.y + 40) * CellHeight)
         {
             if (mouseState.ScrollWheelValue > prevMouseState.ScrollWheelValue)
             {
@@ -349,9 +342,9 @@ public class RoomSettings
         }
 
         sel = null;
-        if (x > (StartPos.x + 2) * p8.Cell.Width && x < (rBound - 6) * p8.Cell.Width && y > (StartPos.y + 9) * p8.Cell.Height && y < (StartPos.y + 37) * p8.Cell.Height)
+        if (x > (StartPos.x + 2) * CellWidth && x < (rBound - 6) * CellWidth && y > (StartPos.y + 9) * CellHeight && y < (StartPos.y + 37) * CellHeight)
         {
-            sel = (int)Math.Floor((y / p8.Cell.Height - StartPos.y - 9) / 7);
+            sel = (int)Math.Floor((y / CellHeight - StartPos.y - 9) / 7);
             var item = Items[(int)sel + scrollIndex];
             if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released && item.Active && item.OnLeftClick is not null)
             {
@@ -366,12 +359,12 @@ public class RoomSettings
 
     public void Draw()
     {
-        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2((rBound - 40) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
+        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2((rBound - 40) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
 
         int centerX = StartPos.x + (rBound - StartPos.x) / 2;
-        p8.Rectfill(centerX - Title.Length * 2 - 1, StartPos.y + 2, centerX + Title.Length * 2 - 1, StartPos.y + 7, 13);
-        Shared.Printc(p8, Title, centerX, StartPos.y + 2, 7);
+        Rectfill(centerX - Title.Length * 2 - 1, StartPos.y + 2, centerX + Title.Length * 2 - 1, StartPos.y + 7, 13);
+        Shared.Printc(Title, centerX, StartPos.y + 2, 7);
 
         int i = 0;
         foreach (var item in Items)
@@ -380,24 +373,24 @@ public class RoomSettings
             {
                 if (sel is not null && sel == i - scrollIndex)
                 {
-                    p8.Rectfill(StartPos.x + 2, StartPos.y + 9 + (i - scrollIndex) * 7, rBound - 7, StartPos.y + 9 + (i - scrollIndex) * 7 + 6, 17);
+                    Rectfill(StartPos.x + 2, StartPos.y + 9 + (i - scrollIndex) * 7, rBound - 7, StartPos.y + 9 + (i - scrollIndex) * 7 + 6, 17);
                 }
-                p8.Print(item.Name, StartPos.x + 4, StartPos.y + 10 + (i - scrollIndex) * 7, item.Active ? 7 : 0);
+                Print(item.Name, StartPos.x + 4, StartPos.y + 10 + (i - scrollIndex) * 7, item.Active ? 7 : 0);
             }
             i++;
         }
         i = Math.Max(4, Items.Count - 4);
         int scrollBarX = rBound - 6;
         int scrollBarY = StartPos.y + 3;
-        p8.Rectfill(scrollBarX, scrollBarY, scrollBarX + 2, scrollBarY + 33, 13);
-        p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY), 1);
-        p8.Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 33, 1);
+        Rectfill(scrollBarX, scrollBarY, scrollBarX + 2, scrollBarY + 33, 13);
+        Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY), 1);
+        Pset(F32.FromInt(scrollBarX) + 2, F32.FromInt(scrollBarY) + 33, 1);
         double range = 29.0 / Math.Max(4, Items.Count);
-        p8.Rectfill(scrollBarX + 1, StartPos.y + 5 + scrollIndex * range, scrollBarX + 1, StartPos.y + 5 + (scrollIndex + 4) * range, 6);
+        Rectfill(scrollBarX + 1, StartPos.y + 5 + scrollIndex * range, scrollBarX + 1, StartPos.y + 5 + (scrollIndex + 4) * range, 6);
     }
 }
 
-public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurface, int type, bool unbansOn, bool isBanned = false, bool isAvailable = true)
+public class SeedTypeUI((int x, int y) startPos, bool isSurface, int type, bool unbansOn, bool isBanned = false, bool isAvailable = true)
 {
     public (int x, int y) StartPos { get; init; } = startPos;
     public bool IsSurface { get; set; } = isSurface;
@@ -405,7 +398,6 @@ public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurf
     public bool UnbansOn { get; set; } = unbansOn;
     public bool IsBanned { get; set; } = isBanned;
     public bool IsAvailable { get; set; } = isAvailable;
-    private Pico8Functions p8 = _p8;
     private bool isHovered = false;
 
     public void Update(MouseState mouseState, MouseState prevMouseState)
@@ -415,7 +407,7 @@ public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurf
         float y = cursor.Y;
 
         isHovered = false;
-        if (x > StartPos.x * p8.Cell.Width && x < (StartPos.x + 22) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 22) * p8.Cell.Height)
+        if (x > StartPos.x * CellWidth && x < (StartPos.x + 22) * CellWidth && y > StartPos.y * CellHeight && y < (StartPos.y + 22) * CellHeight)
         {
             isHovered = true;
             if (mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
@@ -433,27 +425,26 @@ public class SeedTypeUI(Pico8Functions _p8, (int x, int y) startPos, bool isSurf
     {
         if (Type > 0 && Type <= 5)
         {
-            GameRendering.Current.Draw($"{(IsSurface ? "Surface" : "Cave")}{Type}Test", new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-            GameRendering.Current.Draw("SeedSelector", new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), p8.Colors[isHovered && IsAvailable ? 14 : 2], p8.Cell.Width, p8.Cell.Height);
+            GameRendering.Current.Draw($"{(IsSurface ? "Surface" : "Cave")}{Type}Test", new Vector2((StartPos.x + 2) * CellWidth, (StartPos.y + 2) * CellHeight), Color.White, CellWidth, CellHeight);
+            GameRendering.Current.Draw("SeedSelector", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Colors[isHovered && IsAvailable ? 14 : 2], CellWidth, CellHeight);
             if (IsBanned)
-                GameRendering.Current.Draw("SeedCross", new Vector2((StartPos.x + 2) * p8.Cell.Width, (StartPos.y + 2) * p8.Cell.Height), p8.Colors[isHovered && IsAvailable ? 14 : 2], p8.Cell.Width, p8.Cell.Height);
+                GameRendering.Current.Draw("SeedCross", new Vector2((StartPos.x + 2) * CellWidth, (StartPos.y + 2) * CellHeight), Colors[isHovered && IsAvailable ? 14 : 2], CellWidth, CellHeight);
             if (!IsAvailable || (!UnbansOn && IsBanned))
-                GameRendering.Current.Draw("SeedGreyOut", new Vector2(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
+                GameRendering.Current.Draw("SeedGreyOut", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
         }
     }
 }
 
-public class SeedPickButton(Pico8Functions _p8, (int x, int y) startPos, string label, bool isActive = true)
+public class SeedPickButton((int x, int y) startPos, string label, bool isActive = true)
 {
     public (int x, int y) StartPos { get; set; } = startPos;
     public string Label { get; set; } = label;
     public bool IsActive { get; set; } = isActive;
     public bool IsHovered { get; internal set; } = false;
-    private Pico8Functions? p8 = _p8;
 
     public void Update(float x, float y)
     {
-        if (IsActive && x > StartPos.x * p8.Cell.Width && x < (StartPos.x + (Label.Length * 4) + 5) * p8.Cell.Width && y > StartPos.y * p8.Cell.Height && y < (StartPos.y + 9) * p8.Cell.Height)
+        if (IsActive && x > StartPos.x * CellWidth && x < (StartPos.x + (Label.Length * 4) + 5) * CellWidth && y > StartPos.y * CellHeight && y < (StartPos.y + 9) * CellHeight)
         {
             IsHovered = true;
         }
@@ -465,9 +456,9 @@ public class SeedPickButton(Pico8Functions _p8, (int x, int y) startPos, string 
 
     public void Draw()
     {
-        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Center", new((StartPos.x + 2) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width * (Label.Length * 4 + 1), p8.Cell.Height);
-        p8.Print(Label, StartPos.x + 3, StartPos.y + 2, IsHovered ? 15 : 22);
-        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new(StartPos.x * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height);
-        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new((StartPos.x + (Label.Length * 4) + 3) * p8.Cell.Width, StartPos.y * p8.Cell.Height), Color.White, p8.Cell.Width, p8.Cell.Height, flipX: true);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Center", new Vector2((StartPos.x + 2) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * (Label.Length * 4 + 1), CellHeight);
+        Print(Label, StartPos.x + 3, StartPos.y + 2, IsHovered ? 15 : 22);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2((StartPos.x + (Label.Length * 4) + 3) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
     }
 }

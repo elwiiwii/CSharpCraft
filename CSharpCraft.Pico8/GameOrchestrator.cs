@@ -1,48 +1,193 @@
 using System;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
+using FixMath;
 
 namespace CSharpCraft.Pico8
 {
     /// <summary>
-    /// GameOrchestrator - Central game coordinator and orchestrator
-    /// 
-    /// Responsibility: Pure game loop orchestration and state management
-    /// - Scene management (load, transition, update)
-    /// - Game state tracking (paused, running, etc.)
-    /// - Pause menu coordination
-    /// - Holds all manager references (Graphics, Audio, Input)
-    /// 
-    /// SRP 5/5: This class has ONE reason to change: game orchestration logic
-    /// 
-    /// Note: The static Pico8 class delegates to this for all operations.
-    /// This separation ensures API facade (Pico8) vs orchestration (this) are distinct.
+    /// GameOrchestrator - Central game coordinator and orchestrator.
+    /// Replaces Pico8Functions as the single source of truth for the game loop.
+    /// The static Pico8 class delegates to this for all operations.
     /// </summary>
-    public class GameOrchestrator
+    public class GameOrchestrator : IDisposable
     {
+        // Sub-orchestrators
         private readonly IInputStateManager _inputManager;
         private readonly GraphicsOrchestrator _graphicsOrch;
         private readonly AudioOrchestrator _audioOrch;
         private readonly ISceneManager _sceneManager;
-        private readonly IMapManager? _mapManager;
-        private readonly IGameState? _gameState;
 
-        private IScene? _currentScene;
+        // Managers
+        private IMapManager? _mapManager;
+        private IGameState? _gameState;
+        private AudioChannels? _audioChannels;
+        private MusicManager? _musicManager;
+        private PaletteManager? _paletteManager;
+        private SpriteCache? _spriteCache;
+        private TrackManager? _trackManager;
+        private PauseMenuState? _pauseMenuState;
+
+        // State
+        private IScene _currentCart;
+        private readonly List<IScene> _scenes;
+        private readonly IInputBindingProvider _inputBindings;
+        private readonly IAudioGraphicsSettings _settings;
+        private readonly SpriteBatch _batch;
+        private readonly Texture2D _pixel;
+        private readonly GraphicsDeviceManager _graphics;
+        private readonly GraphicsDevice _graphicsDevice;
+        private readonly GameWindow _window;
+        private readonly Dictionary<string, Texture2D> _textureDictionary;
+        private readonly Dictionary<string, SoundEffect> _soundEffectDictionary;
+        private readonly Dictionary<string, SoundEffect> _musicDictionary;
+        private readonly List<Color> _colors;
+        private readonly CosDict _cosDict = new();
+        private readonly SinDict _sinDict = new();
+        private Random _random = new();
+
+        // Mutable game data
+        private Color[] _sprites = [];
+        private int[] _flags = [];
+        private int[] _map = [];
+        private Dictionary<string, List<SongInst>> _music = [];
+        private Dictionary<string, Dictionary<int, string>> _sfx = [];
+
+        private (int Width, int Height) _cell;
+        private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
+        private (int w, int h) _resolution = (128, 128);
         private bool _initialized;
-        private bool _isPaused;
 
-        // Public properties for access to sub-orchestrators (used by Pico8 static class)
+        // Public properties
         public IInputStateManager InputManager => _inputManager;
         public GraphicsOrchestrator Graphics => _graphicsOrch;
         public AudioOrchestrator Audio => _audioOrch;
         public ISceneManager SceneManager => _sceneManager;
         public IMapManager? MapManager => _mapManager;
         public IGameState? GameState => _gameState;
-        public IScene? CurrentScene => _currentScene;
-        public bool IsPaused => _isPaused;
+        public IScene CurrentCart => _currentCart;
+        public bool IsPaused => _pauseMenuState?.IsPaused ?? false;
 
         /// <summary>
-        /// Initialize GameOrchestrator with required managers and game state.
-        /// IGraphicsAPI and IAudioAPI are wrapped in sub-orchestrators for
-        /// state tracking and coordination.
+        /// The currently loaded scene (alias for CurrentCart, used in tests).
+        /// </summary>
+        public IScene CurrentScene => _currentCart;
+
+        /// <summary>
+        /// Pause the game.
+        /// </summary>
+        public void Pause()
+        {
+            if (_pauseMenuState is not null && !_pauseMenuState.IsPaused)
+                _pauseMenuState.TogglePause();
+        }
+
+        /// <summary>
+        /// Resume the game from pause.
+        /// </summary>
+        public void Resume()
+        {
+            if (_pauseMenuState is not null && _pauseMenuState.IsPaused)
+                _pauseMenuState.TogglePause();
+        }
+        public IInputBindingProvider InputBindings => _inputBindings;
+        public IAudioGraphicsSettings Settings => _settings;
+        public List<IScene> Scenes => _scenes;
+        public List<Color> Colors => _colors;
+        public Dictionary<string, Texture2D> TextureDictionary => _textureDictionary;
+        public SpriteBatch Batch => _batch;
+        public Texture2D Pixel => _pixel;
+        public GraphicsDevice GraphicsDevice => _graphicsDevice;
+        public GraphicsDeviceManager GraphicsManager => _graphics;
+        public GameWindow Window => _window;
+        public (int Width, int Height) Cell => _cell;
+        public (F32 x, F32 y) CameraOffset { get => _cameraOffset; set => _cameraOffset = value; }
+        public (int w, int h) Resolution => _resolution;
+        public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
+        public SpriteCache? SpriteCache => _spriteCache;
+        public Color[] Sprites => _sprites;
+
+        // Track/Music accessors for PauseMenuBuilder
+        internal int SfxCount => _trackManager?.SfxCount ?? 0;
+        internal int MusicCount => _trackManager?.MusicCount ?? 0;
+        internal int? LastMusicCall => _musicManager?.LastMusicCall;
+        internal string GetCurrentSfxPackName() => _trackManager?.GetCurrentSfxPackName() ?? "sfx";
+        internal string GetCurrentSoundtrackName() => _trackManager?.GetCurrentSoundtrackName() ?? "music";
+        internal void DecrementSfxPack() => _trackManager?.DecrementSfxPack();
+        internal void IncrementSfxPack() => _trackManager?.IncrementSfxPack();
+        internal void DecrementSoundtrack() => _trackManager?.DecrementSoundtrack();
+        internal void IncrementSoundtrack() => _trackManager?.IncrementSoundtrack();
+
+        /// <summary>
+        /// Standard PICO-8 color palette.
+        /// </summary>
+        public static List<Color> DefaultColors =>
+        [
+            Pico8Utils.HexToColor("000000"), Pico8Utils.HexToColor("1D2B53"),
+            Pico8Utils.HexToColor("7E2553"), Pico8Utils.HexToColor("008751"),
+            Pico8Utils.HexToColor("AB5236"), Pico8Utils.HexToColor("5F574F"),
+            Pico8Utils.HexToColor("C2C3C7"), Pico8Utils.HexToColor("FFF1E8"),
+            Pico8Utils.HexToColor("FF004D"), Pico8Utils.HexToColor("FFA300"),
+            Pico8Utils.HexToColor("FFEC27"), Pico8Utils.HexToColor("00E436"),
+            Pico8Utils.HexToColor("29ADFF"), Pico8Utils.HexToColor("83769C"),
+            Pico8Utils.HexToColor("FF77A8"), Pico8Utils.HexToColor("FFCCAA"),
+            Pico8Utils.HexToColor("291814"), Pico8Utils.HexToColor("111D35"),
+            Pico8Utils.HexToColor("422136"), Pico8Utils.HexToColor("125359"),
+            Pico8Utils.HexToColor("742F29"), Pico8Utils.HexToColor("49333B"),
+            Pico8Utils.HexToColor("A28879"), Pico8Utils.HexToColor("F3EF7D"),
+            Pico8Utils.HexToColor("BE1250"), Pico8Utils.HexToColor("FF6C24"),
+            Pico8Utils.HexToColor("A8E72E"), Pico8Utils.HexToColor("00B543"),
+            Pico8Utils.HexToColor("065AB5"), Pico8Utils.HexToColor("754665"),
+            Pico8Utils.HexToColor("FF6E59"), Pico8Utils.HexToColor("FF9D81"),
+        ];
+
+        public GameOrchestrator(
+            IScene cart,
+            List<IScene> scenes,
+            Dictionary<string, Texture2D> textureDictionary,
+            Dictionary<string, SoundEffect> soundEffectDictionary,
+            Dictionary<string, SoundEffect> musicDictionary,
+            Texture2D pixel,
+            SpriteBatch batch,
+            GraphicsDeviceManager graphics,
+            GraphicsDevice graphicsDevice,
+            GameWindow window,
+            IAudioGraphicsSettings settings,
+            IInputBindingProvider inputBindings,
+            IInputStateManager inputManager,
+            IGraphicsAPI graphicsAPI,
+            IAudioAPI audioAPI,
+            ISceneManager sceneManager,
+            IPaletteManager? paletteManager = null,
+            IMapManager? mapManager = null,
+            IGameState? gameState = null)
+        {
+            _currentCart = cart ?? throw new ArgumentNullException(nameof(cart));
+            _scenes = scenes ?? throw new ArgumentNullException(nameof(scenes));
+            _textureDictionary = textureDictionary;
+            _soundEffectDictionary = soundEffectDictionary;
+            _musicDictionary = musicDictionary;
+            _pixel = pixel;
+            _batch = batch;
+            _graphics = graphics;
+            _graphicsDevice = graphicsDevice;
+            _window = window;
+            _settings = settings;
+            _inputBindings = inputBindings;
+
+            _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
+            _graphicsOrch = new GraphicsOrchestrator(graphicsAPI, paletteManager);
+            _audioOrch = new AudioOrchestrator(audioAPI);
+            _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
+            _mapManager = mapManager;
+            _gameState = gameState;
+            _colors = DefaultColors;
+            _pauseMenuState = new PauseMenuState(this);
+        }
+
+        /// <summary>
+        /// Simplified constructor for testing.
         /// </summary>
         public GameOrchestrator(
             IInputStateManager inputManager,
@@ -61,97 +206,237 @@ namespace CSharpCraft.Pico8
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
             _gameState = gameState;
-            _isPaused = false;
-            _currentScene = null;
+
+            // Test defaults
+            _currentCart = null!;
+            _scenes = [];
+            _textureDictionary = [];
+            _soundEffectDictionary = [];
+            _musicDictionary = [];
+            _pixel = null!;
+            _batch = null!;
+            _graphics = null!;
+            _graphicsDevice = null!;
+            _window = null!;
+            _settings = null!;
+            _inputBindings = null!;
+            _colors = DefaultColors;
+            _pauseMenuState = new PauseMenuState(this);
         }
 
-        /// <summary>
-        /// Initialize the game orchestrator
-        /// Must be called before any game operations (Update, Draw, LoadScene)
-        /// </summary>
         public void Initialize()
         {
             Pico8.Initialize(this);
             _initialized = true;
+            if (_currentCart != null)
+            {
+                LoadCart(_currentCart);
+            }
         }
 
-        /// <summary>
-        /// Load a new scene and transition to it
-        /// </summary>
-        public void LoadScene(IScene scene)
+        public void LoadCart(IScene cart)
         {
-            if (scene == null)
-                throw new ArgumentNullException(nameof(scene));
+            if (cart == null) throw new ArgumentNullException(nameof(cart));
 
-            _currentScene = scene;
-            _currentScene.Init();
+            _currentCart?.Dispose();
+            _sprites = [];
+            _flags = [];
+            _map = [];
+            _music = cart.Music;
+            _sfx = cart.Sfx;
+            _currentCart = cart;
+
+            _inputManager.Reset();
+            SoundDispose();
+            UpdateViewport();
+
+            _pauseMenuState?.Reset();
+            _pauseMenuState?.InitializeMenuStructure();
+
+            _sceneManager.TransitionToScene(cart);
+
+            Reload();
+            _currentCart.Init();
         }
 
         /// <summary>
-        /// Pause the game (pause menu open, scene update halted)
+        /// Load a scene (alias for LoadCart).
         /// </summary>
-        public void Pause()
+        public void LoadScene(IScene scene) => LoadCart(scene);
+
+        public void ReloadCart() => LoadCart(_currentCart);
+
+        public void ScheduleScene(Func<IScene> sceneFactory)
         {
-            _isPaused = true;
+            _sceneManager.ScheduleScene(sceneFactory);
         }
 
-        /// <summary>
-        /// Resume from pause (scene update resumes)
-        /// </summary>
-        public void Resume()
+        private void Reload()
         {
-            _isPaused = false;
+            DisposeManagers();
+
+            if (!string.IsNullOrEmpty(_currentCart.SpriteData))
+                _sprites = Pico8Utils.DataToColorArray(_colors, _currentCart.SpriteData, 1);
+            if (!string.IsNullOrEmpty(_currentCart.SpriteImage))
+                _sprites = Pico8Utils.ImageToColorArray(_textureDictionary, _currentCart.SpriteImage);
+            _flags = Pico8Utils.DataToArray(_currentCart.FlagData, 2);
+            if (_currentCart.MapDimensions.x * _currentCart.MapDimensions.y != _currentCart.MapData.Length / 2)
+                throw new Exception($"Map dimensions do not match map data length.");
+            _map = Pico8Utils.MapDataToArray(_currentCart.MapData);
+
+            _trackManager = new TrackManager(
+                () => _music,
+                () => _sfx,
+                _settings);
         }
 
-        /// <summary>
-        /// Update game state and current scene
-        /// Called once per frame
-        /// </summary>
         public void Update()
         {
             if (!_initialized)
-                throw new InvalidOperationException(
-                    "GameOrchestrator must be initialized before Update() is called. Call Initialize() first.");
+                throw new InvalidOperationException("GameOrchestrator must be initialized before Update().");
 
-            // If paused, don't update scene
-            if (_isPaused)
-                return;
+            _cell = (_graphicsDevice.Viewport.Width / _currentCart.Resolution.w,
+                     _graphicsDevice.Viewport.Height / _currentCart.Resolution.h);
 
-            // Update current scene
-            _currentScene?.Update();
+            if (!(_currentCart.SceneName == "TitleScreen") && _inputManager.Btnp(6))
+            {
+                _pauseMenuState?.TogglePause();
+            }
+            _inputManager.UpdatePauseButton();
+
+            if (_pauseMenuState?.IsPaused ?? false)
+            {
+                _inputManager.SetPauseMode(true);
+                _inputManager.UpdateLockout();
+
+                _pauseMenuState?.HandleMenuInput(
+                    _inputManager.Btnp(2),
+                    _inputManager.Btnp(3),
+                    _inputManager.Btnp(0) || _inputManager.Btnp(1) ||
+                    _inputManager.Btnp(4) || _inputManager.Btnp(5));
+
+                PlaySound(false);
+            }
+            else
+            {
+                _inputManager.SetPauseMode(false);
+                _inputManager.UpdateLockout();
+
+                PlaySound(true);
+                _currentCart.Update();
+
+                var scheduledScene = _sceneManager.GetAndClearScheduledScene();
+                if (scheduledScene is not null)
+                {
+                    LoadCart(scheduledScene());
+                }
+            }
+
+            _inputManager.Update();
+            _musicManager?.Update();
         }
 
-        /// <summary>
-        /// Draw current scene and overlay UI elements (like pause menu)
-        /// Called once per frame
-        /// </summary>
+        private void PlaySound(bool play)
+        {
+            if (play) { _musicManager?.Resume(); _audioChannels?.ResumeAll(); }
+            else { _musicManager?.Pause(); _audioChannels?.PauseAll(); }
+        }
+
         public void Draw()
         {
             if (!_initialized)
-                throw new InvalidOperationException(
-                    "GameOrchestrator must be initialized before Draw() is called. Call Initialize() first.");
+                throw new InvalidOperationException("GameOrchestrator must be initialized before Draw().");
 
-            // Clear screen
-            _graphicsOrch.Cls(0);
+            _graphicsOrch.Pal();
+            _graphicsOrch.Palt();
+            _currentCart.Draw();
 
-            // Draw current scene
-            _currentScene?.Draw();
-
-            // Draw pause menu overlay if paused
-            if (_isPaused)
+            if (_pauseMenuState?.IsPaused ?? false)
             {
                 DrawPauseMenu();
             }
         }
 
-        /// <summary>
-        /// Helper method to draw pause menu UI overlay
-        /// Implementation will be finalized in Phase 3
-        /// </summary>
         private void DrawPauseMenu()
         {
-            // TODO: Phase 3 - Implement pause menu UI rendering
-            // This should draw a semi-transparent overlay with pause menu options
+            var curMenuItems = _pauseMenuState!.CurrentMenuItems;
+            var menuSelected = _pauseMenuState.SelectedIndex;
+
+            Vector2 size = new(_cell.Width, _cell.Height);
+
+            int i = (int)Math.Floor(64 - (curMenuItems.Count / 2.0) * 8);
+
+            int xborder = 23;
+            _graphicsOrch.Rectfill(0 + xborder, i - 7, 127 - xborder, i + curMenuItems.Count * 8 + 2, 0);
+            _graphicsOrch.Rectfill(0 + xborder + 1, i - 7 + 1, 127 - xborder - 1, i + curMenuItems.Count * 8 + 2 - 1, 7);
+            _graphicsOrch.Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + curMenuItems.Count * 8 + 2 - 2, 0);
+
+            _batch.Draw(_textureDictionary["PauseArrow"],
+                new Vector2((xborder + 4) * _cell.Width, (i - 1 + menuSelected * 8) * _cell.Height),
+                null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+
+            for (int j = 0; j < curMenuItems.Count; j++)
+            {
+                int indent = menuSelected == j ? 1 : 0;
+                _graphicsOrch.Print(curMenuItems[j].GetName(), xborder + indent + 12, i, 7);
+                i += 8;
+            }
+        }
+
+        public void UpdateViewport()
+        {
+            if (_window == null || _graphics == null || _graphicsDevice == null || _currentCart == null)
+                return;
+
+            double windowWidth = _window.ClientBounds.Width;
+            double windowHeight = _window.ClientBounds.Height;
+
+            if (!_graphics.IsFullScreen)
+            {
+                windowWidth /= _resolution.w;
+                windowHeight /= _resolution.h;
+                windowWidth *= _currentCart.Resolution.w;
+                windowHeight *= _currentCart.Resolution.h;
+
+                _graphics.PreferredBackBufferWidth = (int)windowWidth;
+                _graphics.PreferredBackBufferHeight = (int)windowHeight;
+                _graphics.ApplyChanges();
+            }
+            _resolution = _currentCart.Resolution;
+
+            int scale = Math.Min((int)windowWidth / _currentCart.Resolution.w, (int)windowHeight / _currentCart.Resolution.h);
+            int width = _currentCart.Resolution.w * scale;
+            int height = _currentCart.Resolution.h * scale;
+
+            double centerX = windowWidth / 2.0;
+            double centerY = windowHeight / 2.0;
+
+            int left = (int)Math.Round(centerX - width / 2.0);
+            int top = (int)Math.Round(centerY - height / 2.0);
+
+            _graphicsDevice.Viewport = new Viewport(left, top, width, height);
+        }
+
+        public void SoundDispose()
+        {
+            _musicManager?.StopAll();
+            _audioChannels?.StopAll();
+        }
+
+        private void DisposeManagers()
+        {
+            _musicManager?.StopAll();
+            _audioChannels?.StopAll();
+            _spriteCache?.Dispose();
+        }
+
+        public void Dispose()
+        {
+            DisposeManagers();
+            _paletteManager = null;
+            _musicManager = null;
+            _audioChannels = null;
+            _spriteCache = null;
         }
     }
 }

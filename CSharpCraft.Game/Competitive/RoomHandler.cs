@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -16,7 +17,6 @@ public static class RoomHandler
     private static AsyncServerStreamingCall<RoomStreamResponse>? _roomStream;
     public static readonly ConcurrentDictionary<int, RoomUser> _playerDictionary = new();
     public static RoomUser? _myself;
-    public static Pico8Functions? p8;
 
     public static MatchState? _curMatch;
 
@@ -186,10 +186,10 @@ public static class RoomHandler
             switch (_myself.Role)
             {
                 case Role.Player:
-                    p8.ScheduleScene(() => new PickBanScene());
+                    ScheduleScene(() => new PickBanScene());
                     break;
                 case Role.Spectator:
-                    p8.ScheduleScene(() => new PickBanScene()); //should be spectator version when i make the spectator scene
+                    ScheduleScene(() => new PickBanScene()); //should be spectator version when i make the spectator scene
                     break;
                 default:
                     break;
@@ -200,10 +200,10 @@ public static class RoomHandler
             switch (_myself.Role)
             {
                 case Role.Player:
-                    p8.ScheduleScene(() => new GenSeedCompetitive());
+                    ScheduleScene(() => new GenSeedCompetitive());
                     break;
                 case Role.Spectator:
-                    p8.ScheduleScene(() => new GenSeedCompetitive());
+                    ScheduleScene(() => new GenSeedCompetitive());
                     break;
                 default:
                     break;
@@ -218,11 +218,11 @@ public static class RoomHandler
         switch (_myself.Role)
         {
             case Role.Player:
-                p8.ScheduleScene(() => new PcraftCompetitive());
+                ScheduleScene(() => new PcraftCompetitive());
                 break;
             case Role.Spectator:
                 //should be spectator version when i make the spectator scene
-                p8.ScheduleScene(() => new PcraftCompetitive());
+                ScheduleScene(() => new PcraftCompetitive());
                 break;
             default:
                 break;
@@ -314,10 +314,7 @@ public static class RoomHandler
             _playerDictionary.Clear();
 
             // Schedule the scene change for the next frame to avoid texture disposal issues
-            if (p8 is not null)
-            {
-                p8.ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
-            }
+            ScheduleScene(() => new PrivateScene(new CompetitiveScene()));
         }
     }
 

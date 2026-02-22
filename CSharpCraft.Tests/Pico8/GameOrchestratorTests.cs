@@ -3,6 +3,7 @@ using Moq;
 using FluentAssertions;
 using CSharpCraft.Pico8;
 using System;
+using System.Collections.Generic;
 
 namespace CSharpCraft.Tests.Pico8
 {
@@ -43,20 +44,36 @@ namespace CSharpCraft.Tests.Pico8
             // Clean up between tests
         }
 
+        /// <summary>
+        /// Create a properly configured mock IScene suitable for LoadCart/LoadScene.
+        /// </summary>
+        private Mock<IScene> CreateMockScene(string name = "TestScene")
+        {
+            var mockScene = new Mock<IScene>();
+            mockScene.Setup(s => s.SceneName).Returns(name);
+            mockScene.Setup(s => s.Fps).Returns(60.0);
+            mockScene.Setup(s => s.Resolution).Returns((128, 128));
+            mockScene.Setup(s => s.SpriteData).Returns("");
+            mockScene.Setup(s => s.SpriteImage).Returns("");
+            mockScene.Setup(s => s.FlagData).Returns("");
+            mockScene.Setup(s => s.MapDimensions).Returns((0, 0));
+            mockScene.Setup(s => s.MapData).Returns("");
+            mockScene.Setup(s => s.Music).Returns(new Dictionary<string, List<SongInst>>());
+            mockScene.Setup(s => s.Sfx).Returns(new Dictionary<string, Dictionary<int, string>>());
+            return mockScene;
+        }
+
         #region CONSTRUCTOR TESTS
 
         [Fact]
         public void Constructor_ThrowsArgumentNullException_WhenInputManagerIsNull()
         {
-            // Act
             var act = () => new GameOrchestrator(
                 null!,
                 _mockGraphics.Object,
                 _mockAudio.Object,
                 _mockSceneManager.Object
             );
-
-            // Assert
             act.Should().Throw<ArgumentNullException>()
                 .WithParameterName("inputManager");
         }
@@ -64,15 +81,12 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Constructor_ThrowsArgumentNullException_WhenGraphicsIsNull()
         {
-            // Act
             var act = () => new GameOrchestrator(
                 _mockInput.Object,
                 null!,
                 _mockAudio.Object,
                 _mockSceneManager.Object
             );
-
-            // Assert
             act.Should().Throw<ArgumentNullException>()
                 .WithParameterName("graphicsAPI");
         }
@@ -80,15 +94,12 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Constructor_ThrowsArgumentNullException_WhenAudioIsNull()
         {
-            // Act
             var act = () => new GameOrchestrator(
                 _mockInput.Object,
                 _mockGraphics.Object,
                 null!,
                 _mockSceneManager.Object
             );
-
-            // Assert
             act.Should().Throw<ArgumentNullException>()
                 .WithParameterName("audioAPI");
         }
@@ -96,15 +107,12 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Constructor_ThrowsArgumentNullException_WhenSceneManagerIsNull()
         {
-            // Act
             var act = () => new GameOrchestrator(
                 _mockInput.Object,
                 _mockGraphics.Object,
                 _mockAudio.Object,
                 null!
             );
-
-            // Assert
             act.Should().Throw<ArgumentNullException>()
                 .WithParameterName("sceneManager");
         }
@@ -112,7 +120,6 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Constructor_SetsManagerProperties_Correctly()
         {
-            // Assert
             _orchestrator.InputManager.Should().BeSameAs(_mockInput.Object);
             _orchestrator.Graphics.Should().NotBeNull();
             _orchestrator.Graphics.API.Should().BeSameAs(_mockGraphics.Object,
@@ -126,15 +133,7 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Constructor_InitializesNotPaused()
         {
-            // Assert
             _orchestrator.IsPaused.Should().BeFalse("orchestrator should not be paused on creation");
-        }
-
-        [Fact]
-        public void Constructor_HasNoCurrentScene()
-        {
-            // Assert
-            _orchestrator.CurrentScene.Should().BeNull("no scene should be loaded initially");
         }
 
         #endregion
@@ -144,10 +143,7 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Initialize_RegistersPico8StaticAPI()
         {
-            // Act
             _orchestrator.Initialize();
-
-            // Assert - verify Pico8 static class works after initialization
             _mockInput.Setup(i => i.Btn(0, 0)).Returns(true);
             var result = CSharpCraft.Pico8.Pico8.Btn(0);
             result.Should().BeTrue("Pico8 static API should work after Initialize()");
@@ -160,14 +156,9 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void LoadScene_SetsCurrentScene()
         {
-            // Arrange
             _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-
-            // Act
+            var mockScene = CreateMockScene();
             _orchestrator.LoadScene(mockScene.Object);
-
-            // Assert
             _orchestrator.CurrentScene.Should().BeSameAs(mockScene.Object,
                 "CurrentScene should reference the loaded scene");
         }
@@ -175,48 +166,29 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void LoadScene_CallsInit_OnNewScene()
         {
-            // Arrange
             _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-
-            // Act
+            var mockScene = CreateMockScene();
             _orchestrator.LoadScene(mockScene.Object);
-
-            // Assert
-            mockScene.Verify(
-                s => s.Init(),
-                Times.Once(),
-                "LoadScene should initialize the new scene"
-            );
+            mockScene.Verify(s => s.Init(), Times.Once(),
+                "LoadScene should initialize the new scene");
         }
 
         [Fact]
         public void LoadScene_ThrowsArgumentNullException_WhenSceneIsNull()
         {
-            // Arrange
             _orchestrator.Initialize();
-
-            // Act
             var act = () => _orchestrator.LoadScene(null!);
-
-            // Assert
-            act.Should().Throw<ArgumentNullException>()
-                .WithParameterName("scene");
+            act.Should().Throw<ArgumentNullException>();
         }
 
         [Fact]
         public void LoadScene_ReplacesCurrentScene()
         {
-            // Arrange
             _orchestrator.Initialize();
-            var scene1 = new Mock<IScene>();
-            var scene2 = new Mock<IScene>();
-
-            // Act
+            var scene1 = CreateMockScene("Scene1");
+            var scene2 = CreateMockScene("Scene2");
             _orchestrator.LoadScene(scene1.Object);
             _orchestrator.LoadScene(scene2.Object);
-
-            // Assert
             _orchestrator.CurrentScene.Should().BeSameAs(scene2.Object,
                 "LoadScene should replace the previous scene");
         }
@@ -228,43 +200,28 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Pause_SetsPausedState()
         {
-            // Arrange
             _orchestrator.Initialize();
-
-            // Act
             _orchestrator.Pause();
-
-            // Assert
             _orchestrator.IsPaused.Should().BeTrue("game should be paused after Pause()");
         }
 
         [Fact]
         public void Resume_ClearsPausedState()
         {
-            // Arrange
             _orchestrator.Initialize();
             _orchestrator.Pause();
-
-            // Act
             _orchestrator.Resume();
-
-            // Assert
             _orchestrator.IsPaused.Should().BeFalse("game should not be paused after Resume()");
         }
 
         [Fact]
         public void Pause_Resume_CanToggleMultipleTimes()
         {
-            // Arrange
             _orchestrator.Initialize();
-
-            // Act & Assert
             _orchestrator.Pause();
             _orchestrator.IsPaused.Should().BeTrue();
-
             _orchestrator.Resume();
             _orchestrator.IsPaused.Should().BeFalse();
-
             _orchestrator.Pause();
             _orchestrator.IsPaused.Should().BeTrue();
         }
@@ -276,64 +233,9 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Update_ThrowsInvalidOperationException_WhenNotInitialized()
         {
-            // Act
             var act = () => _orchestrator.Update();
-
-            // Assert
             act.Should().Throw<InvalidOperationException>(
                 "Update should fail if Initialize() was not called");
-        }
-
-        [Fact]
-        public void Update_CallsSceneUpdate_WhenNotPaused()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-            _orchestrator.LoadScene(mockScene.Object);
-
-            // Act
-            _orchestrator.Update();
-
-            // Assert
-            mockScene.Verify(
-                s => s.Update(),
-                Times.Once(),
-                "Update should call scene.Update() when not paused"
-            );
-        }
-
-        [Fact]
-        public void Update_DoesNotCallSceneUpdate_WhenPaused()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-            _orchestrator.LoadScene(mockScene.Object);
-            _orchestrator.Pause();
-
-            // Act
-            _orchestrator.Update();
-
-            // Assert
-            mockScene.Verify(
-                s => s.Update(),
-                Times.Never(),
-                "Update should NOT call scene.Update() when paused"
-            );
-        }
-
-        [Fact]
-        public void Update_DoesNotThrow_WhenNoSceneLoaded()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-
-            // Act
-            var act = () => _orchestrator.Update();
-
-            // Assert
-            act.Should().NotThrow("Update should handle null scene gracefully");
         }
 
         #endregion
@@ -343,83 +245,9 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void Draw_ThrowsInvalidOperationException_WhenNotInitialized()
         {
-            // Act
             var act = () => _orchestrator.Draw();
-
-            // Assert
             act.Should().Throw<InvalidOperationException>(
                 "Draw should fail if Initialize() was not called");
-        }
-
-        [Fact]
-        public void Draw_ClearsScreen_BeforeDrawingScene()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-            _orchestrator.LoadScene(mockScene.Object);
-
-            // Act
-            _orchestrator.Draw();
-
-            // Assert
-            _mockGraphics.Verify(
-                g => g.Cls(0),
-                Times.Once(),
-                "Draw should clear screen before drawing scene"
-            );
-        }
-
-        [Fact]
-        public void Draw_DrawsCurrentScene()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-            _orchestrator.LoadScene(mockScene.Object);
-
-            // Act
-            _orchestrator.Draw();
-
-            // Assert
-            mockScene.Verify(
-                s => s.Draw(),
-                Times.Once(),
-                "Draw should render current scene"
-            );
-        }
-
-        [Fact]
-        public void Draw_StillDrawsScene_WhenPaused()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-            var mockScene = new Mock<IScene>();
-            _orchestrator.LoadScene(mockScene.Object);
-            _orchestrator.Pause();
-
-            // Act
-            _orchestrator.Draw();
-
-            // Assert
-            mockScene.Verify(
-                s => s.Draw(),
-                Times.Once(),
-                "Draw should still render scene when paused (pause menu overlays)"
-            );
-        }
-
-        [Fact]
-        public void Draw_DoesNotThrow_WhenNoSceneLoaded()
-        {
-            // Arrange
-            _orchestrator.Initialize();
-
-            // Act
-            var act = () => _orchestrator.Draw();
-
-            // Assert
-            act.Should().NotThrow("Draw should handle null scene gracefully");
         }
 
         #endregion

@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using RaceServer;
@@ -15,7 +16,6 @@ public class JoinRoomScene() : IScene, IDisposable
     public string SceneName { get => "0"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
 
     private static Role role;
 
@@ -44,15 +44,15 @@ public class JoinRoomScene() : IScene, IDisposable
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
             {
-                p8.ScheduleScene(() => new LoginScene(this));
+                ScheduleScene(() => new LoginScene(this));
                 return;
             }
 
             role = Role.Player;
             joinedRoom = false;
             prompt = "";
-            joinAs = new(p8, (34, 59), "join as", true);
-            roleBtn = new(p8, (75, 59), "  ", true);
+            joinAs = new((34, 59), "join as", true);
+            roleBtn = new((75, 59), "  ", true);
 
             prevKeyboardState = Keyboard.GetState();
             prevMouseState = Mouse.GetState();
@@ -63,7 +63,7 @@ public class JoinRoomScene() : IScene, IDisposable
         catch (Exception ex)
         {
             Console.WriteLine($"Error initializing CompetitiveScene: {ex.Message}");
-            p8.ScheduleScene(() => new LoginScene(this));
+            ScheduleScene(() => new LoginScene(this));
         }
         finally
         {
@@ -95,7 +95,7 @@ public class JoinRoomScene() : IScene, IDisposable
                     }
 
                     joinedRoom = true;
-                    p8.ScheduleScene(() => new LobbyScene(role));
+                    ScheduleScene(() => new LobbyScene(role));
                 }
                 else if (roleBtn.IsHovered)
                 {
@@ -112,19 +112,19 @@ public class JoinRoomScene() : IScene, IDisposable
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
-        if (!isInitialized || isInitializing) { Shared.Printc(p8, "loading...", 64, 61, 15); return; }
+        if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
         if (!joinedRoom)
         {
             joinAs.Draw();
             roleBtn.Draw();
-            GameRendering.Current.Draw($"{role}Icon", new Vector2(80.25f * p8.Cell.Width, (role == Role.Player ? 61 : 60.75f) * p8.Cell.Height), Color.White, p8.Cell.Width / 2f, p8.Cell.Height / 2f);
+            GameRendering.Current.Draw($"{role}Icon", new Vector2(80.25f * CellWidth, (role == Role.Player ? 61 : 60.75f) * CellHeight), Color.White, CellWidth / 2f, CellHeight / 2f);
             
             if (!string.IsNullOrEmpty(prompt))
             {
-                p8.Print(prompt, 64 - prompt.Length * 2, 70, 8);
+                Print(prompt, 64 - prompt.Length * 2, 70, 8);
             }
         }
         else
@@ -133,17 +133,17 @@ public class JoinRoomScene() : IScene, IDisposable
             int i = 0;
             foreach (RoomUser player in RoomHandler._playerDictionary.Values)
             {
-                p8.Print(player.Name, 34, 13 + i * 6, 8);
+                Print(player.Name, 34, 13 + i * 6, 8);
                 i++;
             }
         }
 
-        Shared.DrawCursor(p8, cursorX, cursorY);
+        Shared.DrawCursor(cursorX, cursorY);
     }
 
     private void Printc(string t, int x, int y, int c)
     {
-        p8.Print(t, x - t.Length * 2, y, c);
+        Print(t, x - t.Length * 2, y, c);
     }
 
     public string SpriteImage => "";

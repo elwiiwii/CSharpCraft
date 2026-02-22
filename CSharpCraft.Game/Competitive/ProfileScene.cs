@@ -1,5 +1,6 @@
 ﻿using AccountService;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -11,7 +12,6 @@ public class ProfileScene(IScene prevScene, string username) : IScene
     public string SceneName { get => "profile"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8 = null!;
     private Icon back;
 
     private Icon? curIcon;
@@ -36,9 +36,9 @@ public class ProfileScene(IScene prevScene, string username) : IScene
         MouseState state = Mouse.GetState();
         (cursorX, cursorY) = GameRendering.Current.GetCursorPosition(state.X, state.Y);
 
-        curIcon = Shared.UpdateIcon(p8, [back], cursorX, cursorY);
+        curIcon = Shared.UpdateIcon([back], cursorX, cursorY);
 
-        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { p8.ScheduleScene(() => curIcon.Scene); }
+        if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton == ButtonState.Released && curIcon is not null && curIcon.Scene is not null) { ScheduleScene(() => curIcon.Scene); }
         prevState = state;
     }
 
@@ -46,37 +46,37 @@ public class ProfileScene(IScene prevScene, string username) : IScene
     {
         GameRendering.Current.ClearDevice(Color.Black);
 
-        p8.Rectfill(0, 0, 127, 127, 17);
+        Rectfill(0, 0, 127, 127, 17);
 
         if (user is not null && user.Success)
         {
-            p8.Rectfill(3, 3, 34, 34, Pico8Utils.HexToColor(user.BackgroundColor));
+            Rectfill(3, 3, 34, 34, Pico8Utils.HexToColor(user.BackgroundColor));
             for (int i = 0; i < user.HexCodes.Count; i++)
             {
-                p8.Pal(p8.Colors[i + 1], Pico8Utils.HexToColor(user.HexCodes[i]));
+                Pal(Colors[i + 1], Pico8Utils.HexToColor(user.HexCodes[i]));
             }
             int lastRowIndex = user.ProfilePicture % (GameRendering.Current.GetTextureWidth("PfpIcons") / 32);
-            p8.Spr(user.ProfilePicture * 16 - lastRowIndex * 12, 3, 3, 4, 4);
-            p8.Pal();
-            p8.Rect(3, 3, 34, 34, Pico8Utils.HexToColor(user.OutlineColor));
+            Spr(user.ProfilePicture * 16 - lastRowIndex * 12, 3, 3, 4, 4);
+            Pal();
+            Rect(3, 3, 34, 34, Pico8Utils.HexToColor(user.OutlineColor));
 
-            p8.PrintBig(user.Username, 41, 6, Pico8Utils.HexToColor(user.ShadowColor));
-            p8.PrintBig(user.Username, 40, 5, Pico8Utils.HexToColor(user.NameColor));
+            PrintBig(user.Username, 41, 6, Pico8Utils.HexToColor(user.ShadowColor));
+            PrintBig(user.Username, 40, 5, Pico8Utils.HexToColor(user.NameColor));
 
 
         }
         else if (user is not null && !user.Success)
         {
-            Shared.Printc(p8, "user not found", 64, 62, 15);
+            Shared.Printc("user not found", 64, 62, 15);
         }
         else
         {
-            Shared.Printc(p8, "loading...", 64, 62, 15);
+            Shared.Printc("loading...", 64, 62, 15);
         }
 
-        Shared.DrawIcons(p8, [back], cursorX, cursorY);
+        Shared.DrawIcons([back], cursorX, cursorY);
 
-        Shared.DrawCursor(p8, cursorX, cursorY);
+        Shared.DrawCursor(cursorX, cursorY);
     }
     public string SpriteImage => "PfpIcons";
     public string SpriteData => @"";

@@ -75,16 +75,9 @@ public interface IServiceFactory
         Func<int> getSfxVolume);
 
     /// <summary>
-    /// Creates a scene state manager for tracking scene transitions.
-    /// Phase 7: Scene Management Extraction
-    /// </summary>
-    SceneStateManager CreateSceneStateManager(IScene initialScene);
-
-    /// <summary>
     /// Creates a pause menu state manager for pause menu rendering and input.
-    /// Phase 7: Menu Management Extraction
     /// </summary>
-    PauseMenuState CreatePauseMenuState(Pico8Functions pico8Functions);
+    PauseMenuState CreatePauseMenuState(GameOrchestrator orchestrator);
 
     /// <summary>
     /// Creates an input state manager for button handling and input queries.
