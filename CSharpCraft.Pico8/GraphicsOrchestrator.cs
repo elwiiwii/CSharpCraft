@@ -1,5 +1,6 @@
 using System;
 using FixMath;
+using Microsoft.Xna.Framework;
 
 namespace CSharpCraft.Pico8
 {
@@ -9,6 +10,7 @@ namespace CSharpCraft.Pico8
     /// Responsibility: Coordinate graphics operations and track graphics state
     /// - Delegates drawing primitives to IGraphicsAPI
     /// - Tracks camera offset state
+    /// - Manages display configuration (Cell size, Resolution)
     /// - Manages graphics-specific coordination (camera, palette)
     /// 
     /// SRP 5/5: This class has ONE reason to change: graphics coordination logic
@@ -21,6 +23,8 @@ namespace CSharpCraft.Pico8
         private readonly IGraphicsAPI _graphicsAPI;
         private readonly IPaletteManager? _paletteManager;
         private (F32 x, F32 y) _cameraOffset;
+        private (int Width, int Height) _cell;
+        private (int w, int h) _resolution;
 
         /// <summary>
         /// Exposes the underlying IGraphicsAPI for testing and advanced access
@@ -38,6 +42,16 @@ namespace CSharpCraft.Pico8
         public (F32 x, F32 y) CameraOffset => _cameraOffset;
 
         /// <summary>
+        /// Current cell/tile size (physical pixels per PICO-8 pixel)
+        /// </summary>
+        public (int Width, int Height) Cell => _cell;
+
+        /// <summary>
+        /// Current virtual resolution (PICO-8 canvas size)
+        /// </summary>
+        public (int w, int h) Resolution => _resolution;
+
+        /// <summary>
         /// Initialize GraphicsOrchestrator with required IGraphicsAPI and optional palette
         /// </summary>
         public GraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null)
@@ -45,6 +59,8 @@ namespace CSharpCraft.Pico8
             _graphicsAPI = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
             _paletteManager = paletteManager;
             _cameraOffset = (F32.Zero, F32.Zero);
+            _cell = (1, 1);
+            _resolution = (128, 128);
         }
 
         #region DRAWING PRIMITIVES
@@ -151,6 +167,28 @@ namespace CSharpCraft.Pico8
         public void ResetCamera()
         {
             _cameraOffset = (F32.Zero, F32.Zero);
+        }
+
+        #endregion
+
+        #region DISPLAY CONFIG
+
+        /// <summary>
+        /// Set display configuration (virtual resolution and cell size).
+        /// Called when a scene is loaded or display settings change.
+        /// </summary>
+        public void SetDisplayConfig((int w, int h) resolution, (int Width, int Height) cell)
+        {
+            _resolution = resolution;
+            _cell = cell;
+        }
+
+        /// <summary>
+        /// Get palette color by PICO-8 index (delegates to IGraphicsAPI)
+        /// </summary>
+        public Color GetColor(int index)
+        {
+            return _graphicsAPI.GetColor(index);
         }
 
         #endregion

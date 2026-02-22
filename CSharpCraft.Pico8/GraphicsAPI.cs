@@ -163,4 +163,9 @@ public class GraphicsAPI : IGraphicsAPI
     {
         // TODO: Phase 5 - Implement cart data reload
     }
+
+    public Color GetColor(int index)
+    {
+        return colors[index];
+    }
 }

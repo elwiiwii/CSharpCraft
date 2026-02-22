@@ -141,6 +141,36 @@ namespace CSharpCraft.Pico8
 
         #endregion
 
+        #region DISPLAY CONFIG API
+
+        /// <summary>
+        /// Get the current cell/tile width (physical pixels per PICO-8 pixel)
+        /// </summary>
+        public static int CellWidth => Orch.Graphics.Cell.Width;
+
+        /// <summary>
+        /// Get the current cell/tile height (physical pixels per PICO-8 pixel)
+        /// </summary>
+        public static int CellHeight => Orch.Graphics.Cell.Height;
+
+        /// <summary>
+        /// Get the current virtual resolution width
+        /// </summary>
+        public static int ResolutionWidth => Orch.Graphics.Resolution.w;
+
+        /// <summary>
+        /// Get the current virtual resolution height
+        /// </summary>
+        public static int ResolutionHeight => Orch.Graphics.Resolution.h;
+
+        /// <summary>
+        /// Get a palette color by PICO-8 index (0-15)
+        /// </summary>
+        public static Microsoft.Xna.Framework.Color GetColor(int index)
+            => Orch.Graphics.GetColor(index);
+
+        #endregion
+
         #region CAMERA API
 
         /// <summary>

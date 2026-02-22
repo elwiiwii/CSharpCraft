@@ -224,5 +224,88 @@ namespace CSharpCraft.Tests.Pico8
         }
 
         #endregion
+
+        #region DISPLAY CONFIG TESTS
+
+        [Fact]
+        public void Cell_DefaultsTo_1x1()
+        {
+            // Assert
+            _orchestrator.Cell.Width.Should().Be(1,
+                "default cell width should be 1");
+            _orchestrator.Cell.Height.Should().Be(1,
+                "default cell height should be 1");
+        }
+
+        [Fact]
+        public void Resolution_DefaultsTo_128x128()
+        {
+            // Assert
+            _orchestrator.Resolution.w.Should().Be(128,
+                "default resolution width should be 128");
+            _orchestrator.Resolution.h.Should().Be(128,
+                "default resolution height should be 128");
+        }
+
+        [Fact]
+        public void SetDisplayConfig_UpdatesCellAndResolution()
+        {
+            // Act
+            _orchestrator.SetDisplayConfig((256, 256), (4, 4));
+
+            // Assert
+            _orchestrator.Cell.Width.Should().Be(4);
+            _orchestrator.Cell.Height.Should().Be(4);
+            _orchestrator.Resolution.w.Should().Be(256);
+            _orchestrator.Resolution.h.Should().Be(256);
+        }
+
+        [Fact]
+        public void SetDisplayConfig_OverwritesPreviousConfig()
+        {
+            // Arrange
+            _orchestrator.SetDisplayConfig((128, 128), (2, 2));
+
+            // Act
+            _orchestrator.SetDisplayConfig((64, 64), (8, 8));
+
+            // Assert
+            _orchestrator.Cell.Width.Should().Be(8);
+            _orchestrator.Cell.Height.Should().Be(8);
+            _orchestrator.Resolution.w.Should().Be(64);
+            _orchestrator.Resolution.h.Should().Be(64);
+        }
+
+        [Fact]
+        public void GetColor_DelegatesToGraphicsAPI()
+        {
+            // Arrange
+            var expectedColor = new Microsoft.Xna.Framework.Color(255, 0, 0);
+            _mockGraphics.Setup(g => g.GetColor(8)).Returns(expectedColor);
+
+            // Act
+            var result = _orchestrator.GetColor(8);
+
+            // Assert
+            result.Should().Be(expectedColor,
+                "GetColor should delegate to IGraphicsAPI.GetColor");
+            _mockGraphics.Verify(g => g.GetColor(8), Times.Once());
+        }
+
+        [Fact]
+        public void GetColor_WithDifferentIndex_DelegatesToGraphicsAPI()
+        {
+            // Arrange
+            var white = new Microsoft.Xna.Framework.Color(255, 255, 255);
+            _mockGraphics.Setup(g => g.GetColor(7)).Returns(white);
+
+            // Act
+            var result = _orchestrator.GetColor(7);
+
+            // Assert
+            result.Should().Be(white);
+        }
+
+        #endregion
     }
 }

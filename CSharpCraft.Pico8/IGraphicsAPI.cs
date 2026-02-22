@@ -98,4 +98,10 @@ public interface IGraphicsAPI
     /// https://pico-8.fandom.com/wiki/Reload
     /// </summary>
     void Reload(int dest = 0, int source = 0, int len = 0, string filename = "");
+
+    /// <summary>
+    /// Get a palette color by PICO-8 index (0-15).
+    /// Returns the platform-native Color representation.
+    /// </summary>
+    Color GetColor(int index);
 }
