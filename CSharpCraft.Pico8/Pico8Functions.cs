@@ -74,6 +74,10 @@ public class Pico8Functions : IDisposable
     private TrackManager? _trackManager;
     private MapManager? _mapManager;
 
+    // Phase 9: State container and output facade (SRP improvement)
+    private IGameState? _gameState;
+    private IOutputFacade? _outputFacade;
+
     // Legacy palette access for compatibility
     public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
 
@@ -84,15 +88,12 @@ public class Pico8Functions : IDisposable
     private Dictionary<string, Dictionary<int, string>> _sfx;
 
     public IScene _cart;
-    private readonly P8Btns buttons;
-    private bool isPaused;
-    private List<MenuItem> mainMenuItems;
-    private List<MenuItem> curMenuItems;
-    private int menuSelected;
+    private IInputStateManager? _inputStateManager;
+    private SceneStateManager? _sceneStateManager;
+    private PauseMenuState? _pauseMenuState;
     private readonly CosDict cosDict = new();
     private readonly SinDict sinDict = new();
     Random random = new();
-    private Func<IScene>? scheduledSceneChange;
 
     public Pico8Functions(
         IScene cart, 
@@ -106,8 +107,12 @@ public class Pico8Functions : IDisposable
         GraphicsDeviceManager graphics, 
         GraphicsDevice graphicsDevice, 
         GameWindow window, 
-        object? optionsData)
+        object? optionsData,
+        IServiceFactory? serviceFactory = null)
     {
+        // Use default factory if none provided
+        serviceFactory ??= new ServiceFactory();
+
         // Initialize basic properties
         Batch = batch;
         Graphics = graphics;
@@ -123,46 +128,39 @@ public class Pico8Functions : IDisposable
         InputBindings = new InputBindings();
         Settings = new ReflectionAudioGraphicsSettings(optionsData);
 
-        buttons = new();
-        buttons.Reset(this);
-
-        isPaused = false;
-        menuSelected = 0;
-
         _sprites = [];
         _flags = [];
         _map = [];
         _music = [];
         _sfx = [];
-        mainMenuItems = [];
-        curMenuItems = [];
         _cart = cart;
 
-        // Initialize manager instances
-        _audioChannels = new AudioChannels();
-        _spriteCache = new SpriteCache();
-        _paletteManager = new PaletteManager(Colors);
-        _musicManager = new MusicManager(
+        // Initialize manager instances using factory (DIP - Phase 6+7+8)
+        _inputStateManager = serviceFactory.CreateInputStateManager();
+        _audioChannels = serviceFactory.CreateAudioChannels();
+        _spriteCache = serviceFactory.CreateSpriteCache();
+        _paletteManager = serviceFactory.CreatePaletteManager(Colors);
+        _musicManager = serviceFactory.CreateMusicManager(
             () => _music,
             () => musicDictionary,
             () => Settings,
             SoundDispose);
-        _trackManager = new TrackManager(
+        _trackManager = (TrackManager)serviceFactory.CreateTrackManager(
             () => _music,
             () => _sfx,
             Settings);
-        _mapManager = new MapManager(
+        _mapManager = (MapManager)serviceFactory.CreateMapManager(
             _map,
             _flags,
             _cart.MapDimensions);
-        _graphicsAPI = new GraphicsAPI(
+        _graphicsAPI = serviceFactory.CreateGraphicsAPI(
             batch,
             pixel,
             Colors,
             CameraOffset.x,
             CameraOffset.y,
             Cell);
-        _audioAPI = new AudioAPI(
+        _audioAPI = serviceFactory.CreateAudioAPI(
             _audioChannels,
             _musicManager,
             soundEffectDictionary,
@@ -170,6 +168,22 @@ public class Pico8Functions : IDisposable
             () => Settings.CurrentSfxPack,
             () => Settings.SoundEnabled,
             () => Settings.SfxVolume);
+
+        // Phase 9: Create state container and output facade (SRP improvement)
+        _gameState = serviceFactory.CreateGameState(
+            cart,
+            _map,
+            _flags,
+            _sprites,
+            _music,
+            _sfx);
+        _outputFacade = serviceFactory.CreateOutputFacade(
+            _graphicsAPI,
+            _audioAPI);
+
+        // Initialize state managers for scene and pause menu (Phase 7 - using factory)
+        _sceneStateManager = serviceFactory.CreateSceneStateManager(cart);
+        _pauseMenuState = serviceFactory.CreatePauseMenuState(this);
 
         LoadCart(cart);
     }
@@ -257,7 +271,7 @@ public class Pico8Functions : IDisposable
 
     public void ScheduleScene(Func<IScene> sceneFactory)
     {
-        scheduledSceneChange = sceneFactory;
+        _sceneStateManager?.ScheduleScene(sceneFactory);
     }
 
     public void LoadCart(IScene cart)
@@ -268,24 +282,18 @@ public class Pico8Functions : IDisposable
         _map = [];
         _music = cart.Music;
         _sfx = cart.Sfx;
-        mainMenuItems = [];
-        curMenuItems = [];
 
         _cart = cart;
-        buttons.Reset(this);
+        _inputStateManager?.Reset(this);
         SoundDispose();
         UpdateViewport();
 
-        // Build pause menu structure using dedicated builder
-        var menuBuilder = new PauseMenuBuilder(this, mainMenuItems, curMenuItems);
-        menuBuilder.Build();
+        // Initialize pause menu state for new scene (Phase 7 - extracted)
+        _pauseMenuState?.Reset();
+        _pauseMenuState?.InitializeMenuStructure();
 
-        // Reinitialize current menu to show main menu
-        curMenuItems.Clear();
-        foreach (var item in mainMenuItems)
-        {
-            curMenuItems.Add(item.Clone());
-        }
+        // Update scene manager state (Phase 7 - extracted)
+        _sceneStateManager?.SetCurrentScene(cart);
 
         Reload();
         Init();
@@ -294,7 +302,7 @@ public class Pico8Functions : IDisposable
 
     public void Init()
     {
-        isPaused = false;
+        _pauseMenuState?.Reset();
         // TODO: Pass proper service instances - Phase 2 will extract these into separate classes
         _cart.Init(null, null, null, null, null);
     }
@@ -305,39 +313,41 @@ public class Pico8Functions : IDisposable
         Cell = (GraphicsDevice.Viewport.Width / _cart.Resolution.w, GraphicsDevice.Viewport.Height / _cart.Resolution.h);
         if (!(_cart.SceneName == "TitleScreen") && Btnp(6))
         {
-            isPaused = !isPaused;
-            menuSelected = 0;
+            _pauseMenuState?.TogglePause();
         }
-        buttons.UpPause(this);
+        _inputStateManager?.UpdatePauseButton(this);
 
-        if (isPaused)
+        if (_pauseMenuState?.IsPaused ?? false)
         {
-            buttons.UpLockout(this, isPaused);
+            _inputStateManager?.SetPauseMode(true);
+            _inputStateManager?.UpdateLockout(this);
 
-            if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)) { curMenuItems[menuSelected].Function(); }
-
-            if (Btnp(2)) { menuSelected -= 1; }
-            if (Btnp(3)) { menuSelected += 1; }
-            menuSelected = Pico8MathUtils.Loop(menuSelected, curMenuItems);
+            // Handle menu input (Phase 7 - extracted)
+            _pauseMenuState?.HandleMenuInput(
+                Btnp(2), // up
+                Btnp(3), // down
+                Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5)); // select
 
             PlaySound(false);
         }
         else
         {
-            buttons.UpLockout(this, isPaused);
+            _inputStateManager?.SetPauseMode(false);
+            _inputStateManager?.UpdateLockout(this);
 
             PlaySound(true);
 
             _cart.Update();
 
-            if (scheduledSceneChange is not null)
+            // Handle scheduled scene changes (Phase 7 - extracted)
+            var scheduledScene = _sceneStateManager?.GetAndClearScheduledScene();
+            if (scheduledScene is not null)
             {
-                LoadCart(scheduledSceneChange());
-                scheduledSceneChange = null;
+                LoadCart(scheduledScene());
             }
         }
 
-        buttons.Update(this);
+        _inputStateManager?.Update(this);
 
         // Delegate music state updates to MusicManager (extracted 40+ lines)
         _musicManager?.Update();
@@ -363,8 +373,11 @@ public class Pico8Functions : IDisposable
         Palt();
         _cart.Draw();
 
-        if (isPaused)
+        if (_pauseMenuState?.IsPaused ?? false)
         {
+            var curMenuItems = _pauseMenuState.CurrentMenuItems;
+            var menuSelected = _pauseMenuState.SelectedIndex;
+
             Vector2 size = new(Cell.Width, Cell.Height);
 
             int i = (int)Math.Floor(64 - (curMenuItems.Count / 2.0) * 8);
@@ -396,17 +409,17 @@ public class Pico8Functions : IDisposable
 
     public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
     {
-        // Simplified: return false (no input polling in phase 0)
-        // Will be properly implemented in phase 2 with graphics engine
-        return false;
+        // Delegate to input state manager
+        // Current stub implementation returns false - will be properly implemented later
+        return _inputStateManager?.Btn(i, p) ?? false;
     }
 
 
     public bool Btnp(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btnp
     {
-        // Simplified: return false (no input polling in phase 0)
-        // Will be properly implemented in phase 2 with graphics engine
-        return false;
+        // Delegate to input state manager
+        // Current stub implementation returns false - will be properly implemented later
+        return _inputStateManager?.Btnp(i, p) ?? false;
     }
 
 
@@ -430,19 +443,19 @@ public class Pico8Functions : IDisposable
 
     public void Circ(F32 x, F32 y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
     {
-        _graphicsAPI?.Circ(x, y, r, c);
+        _outputFacade?.DrawCircle(x.Double, y.Double, r, c);
     }
 
 
     public void Circfill(F32 x, F32 y, double r, int c) // https://pico-8.fandom.com/wiki/Circfill
     {
-        _graphicsAPI?.Circfill(x, y, r, c);
+        _outputFacade?.FillCircle(x.Double, y.Double, r, c);
     }
 
 
     public void Cls(int col = 0) // https://pico-8.fandom.com/wiki/Cls
     {
-        _graphicsAPI?.Cls(col);
+        _outputFacade?.ClearScreen(col);
     }
 
 
@@ -521,7 +534,7 @@ public class Pico8Functions : IDisposable
 
     public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null) // https://pico-8.fandom.com/wiki/Menuitem
     {
-        list ??= curMenuItems;
+        list ??= _pauseMenuState?.CurrentMenuItems ?? [];
         list.Insert(pos, new MenuItem(getName, function));
     }
 
@@ -547,13 +560,13 @@ public class Pico8Functions : IDisposable
 
     public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
     {
-        _audioAPI?.Music(n, fadems);
+        _outputFacade?.PlayMusic(n, (int)fadems);
     }
 
 
     public void Mute()
     {
-        _audioAPI?.Mute();
+        _outputFacade?.MuteAudio();
     }
 
 
@@ -668,30 +681,30 @@ public class Pico8Functions : IDisposable
 
     public void Pset(F32 x, F32 y, double c) // https://pico-8.fandom.com/wiki/Pset
     {
-        _graphicsAPI?.Pset(x, y, c);
+        _outputFacade?.SetPixel(x.Double, y.Double, (int)c);
     }
 
 
     public void Rect(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rect
     {
-        _graphicsAPI?.Rect(x1, y1, x2, y2, c);
+        _outputFacade?.DrawRect(x1, y1, x2, y2, (int)c);
     }
 
 
     public void Rect(double x1, double y1, double x2, double y2, Color c) // https://pico-8.fandom.com/wiki/Rect
     {
-        _graphicsAPI?.Rect(x1, y1, x2, y2, c);
+        _outputFacade?.DrawRect(x1, y1, x2, y2, (int)c.PackedValue);
     }
 
 
     public void Rectfill(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rectfill
     {
-        _graphicsAPI?.Rectfill(x1, y1, x2, y2, c);
+        _outputFacade?.FillRect(x1, y1, x2, y2, (int)c);
     }
 
     public void Rectfill(double x1, double y1, double x2, double y2, Color c) // https://pico-8.fandom.com/wiki/Rectfill
     {
-        _graphicsAPI?.Rectfill(x1, y1, x2, y2, c);
+        _outputFacade?.FillRect(x1, y1, x2, y2, (int)c.PackedValue);
     }
 
 
@@ -717,7 +730,7 @@ public class Pico8Functions : IDisposable
 
     public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
     {
-        _audioAPI?.Sfx(n, channel, offset, length);
+        _outputFacade?.PlaySound((int)n, (int)channel, (int)offset, (int)length);
     }
 
 

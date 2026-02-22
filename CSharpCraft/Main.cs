@@ -244,7 +244,7 @@ class FNAGame : Game
             }
         }
 
-        p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile);
+        p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile, new ServiceFactory());
         AccountHandler.p8 = p8;
         RoomHandler.p8 = p8;
     }
