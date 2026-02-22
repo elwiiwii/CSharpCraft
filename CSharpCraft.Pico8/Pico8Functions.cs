@@ -64,7 +64,18 @@ public class Pico8Functions : IDisposable
         Pico8Utils.HexToColor("FF6E59"), // 30 dark-peach
         Pico8Utils.HexToColor("FF9D81"), // 31 peach
     ];
-    public List<PalCol> PalColors { get; } = [new(Color.Black, Color.Black, true)];
+    // Manager instances for core systems (Phase 2 refactoring)
+    private AudioChannels? _audioChannels;
+    private MusicManager? _musicManager;
+    private PaletteManager? _paletteManager;
+    private SpriteCache? _spriteCache;
+    private IGraphicsAPI? _graphicsAPI;
+    private IAudioAPI? _audioAPI;
+    private TrackManager? _trackManager;
+    private MapManager? _mapManager;
+
+    // Legacy palette access for compatibility
+    public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
 
     private int[] _flags;
     public int[] _map;
@@ -73,45 +84,42 @@ public class Pico8Functions : IDisposable
     private Dictionary<string, Dictionary<int, string>> _sfx;
 
     public IScene _cart;
-    public List<List<MusicInst>> channelMusic = [];
-    public List<SoundEffectInstance> channel0 = [];
-    public List<SoundEffectInstance> channel1 = [];
-    public List<SoundEffectInstance> channel2 = [];
-    public List<SoundEffectInstance> channel3 = [];
     private readonly P8Btns buttons;
     private bool isPaused;
-    private readonly Dictionary<int[], Texture2D> spriteTextures = new(new IntArrayEqualityComparer());
     private List<MenuItem> mainMenuItems;
     private List<MenuItem> curMenuItems;
     private int menuSelected;
-    private int curSoundtrack;
-    private int curSfxPack;
-    private int curTrack;
-    private (List<SoundEffectInstance> fromSong, List<SoundEffectInstance> toSong) musicTransition;
-    private int? lastMusicCall;
     private readonly CosDict cosDict = new();
     private readonly SinDict sinDict = new();
     Random random = new();
     private Func<IScene>? scheduledSceneChange;
 
-    // Phase 3.2: Service fields for orchestration
-    private UtilityService? _utilityService;
-    private MenuService? _menuService;
-    private MapService? _mapService;
-
-    public Pico8Functions(IScene cart, object? titleScreen, List<IScene> _scenes, Dictionary<string, Texture2D> _textureDictionary, Dictionary<string, SoundEffect> _soundEffectDictionary, Dictionary<string, SoundEffect> _musicDictionary, Texture2D _pixel, SpriteBatch _batch, GraphicsDeviceManager _graphics, GraphicsDevice _graphicsDevice, GameWindow _window, object? optionsData)
+    public Pico8Functions(
+        IScene cart, 
+        object? titleScreen, 
+        List<IScene> scenes, 
+        Dictionary<string, Texture2D> textureDictionary, 
+        Dictionary<string, SoundEffect> soundEffectDictionary, 
+        Dictionary<string, SoundEffect> musicDictionary, 
+        Texture2D pixel, 
+        SpriteBatch batch, 
+        GraphicsDeviceManager graphics, 
+        GraphicsDevice graphicsDevice, 
+        GameWindow window, 
+        object? optionsData)
     {
-        Batch = _batch;
-        Graphics = _graphics;
-        GraphicsDevice = _graphicsDevice;
-        MusicDictionary = _musicDictionary;
+        // Initialize basic properties
+        Batch = batch;
+        Graphics = graphics;
+        GraphicsDevice = graphicsDevice;
+        MusicDictionary = musicDictionary;
         OptionsData = optionsData;
-        Pixel = _pixel;
-        Scenes = _scenes;
-        SoundEffectDictionary = _soundEffectDictionary;
-        TextureDictionary = _textureDictionary;
+        Pixel = pixel;
+        Scenes = scenes;
+        SoundEffectDictionary = soundEffectDictionary;
+        TextureDictionary = textureDictionary;
         TitleSceneInstance = titleScreen;
-        Window = _window;
+        Window = window;
         InputBindings = new InputBindings();
         Settings = new ReflectionAudioGraphicsSettings(optionsData);
 
@@ -119,13 +127,7 @@ public class Pico8Functions : IDisposable
         buttons.Reset(this);
 
         isPaused = false;
-
         menuSelected = 0;
-        musicTransition = new();
-        lastMusicCall = null;
-
-        curSoundtrack = Settings.CurrentSoundtrack;
-        curSfxPack = Settings.CurrentSfxPack;
 
         _sprites = [];
         _flags = [];
@@ -136,35 +138,82 @@ public class Pico8Functions : IDisposable
         curMenuItems = [];
         _cart = cart;
 
-        // Phase 3.2: Initialize utility services
-        _utilityService = new UtilityService(cosDict, sinDict, _flags, random);
-        _menuService = new MenuService();
-        _mapService = new MapService(null!, _map, cart, _utilityService); // GraphicsService set after its creation
+        // Initialize manager instances
+        _audioChannels = new AudioChannels();
+        _spriteCache = new SpriteCache();
+        _paletteManager = new PaletteManager(Colors);
+        _musicManager = new MusicManager(
+            () => _music,
+            () => musicDictionary,
+            () => Settings,
+            SoundDispose);
+        _trackManager = new TrackManager(
+            () => _music,
+            () => _sfx,
+            Settings);
+        _mapManager = new MapManager(
+            _map,
+            _flags,
+            _cart.MapDimensions);
+        _graphicsAPI = new GraphicsAPI(
+            batch,
+            pixel,
+            Colors,
+            CameraOffset.x,
+            CameraOffset.y,
+            Cell);
+        _audioAPI = new AudioAPI(
+            _audioChannels,
+            _musicManager,
+            soundEffectDictionary,
+            () => _sfx,
+            () => Settings.CurrentSfxPack,
+            () => Settings.SoundEnabled,
+            () => Settings.SfxVolume);
 
         LoadCart(cart);
     }
 
+    // Helper accessors for PauseMenuBuilder and menu state management
+    public int SfxCount => _trackManager?.SfxCount ?? 0;
+    public int MusicCount => _trackManager?.MusicCount ?? 0;
+    public int? LastMusicCall => _musicManager?.LastMusicCall;
+
+    public string GetCurrentSfxPackName() => _trackManager?.GetCurrentSfxPackName() ?? "sfx";
+    public string GetCurrentSoundtrackName() => _trackManager?.GetCurrentSoundtrackName() ?? "music";
+
+    public void DecrementSfxPack()
+    {
+        _trackManager?.DecrementSfxPack();
+    }
+
+    public void IncrementSfxPack()
+    {
+        _trackManager?.IncrementSfxPack();
+    }
+
+    public void DecrementSoundtrack()
+    {
+        _trackManager?.DecrementSoundtrack();
+    }
+
+    public void IncrementSoundtrack()
+    {
+        _trackManager?.IncrementSoundtrack();
+    }
+
+    public void ReloadCart() => LoadCart(_cart);
+
     private T? GetOptionPropertyValue<T>(object? optionsData, string propertyName) where T : class
     {
-        if (optionsData == null) return null;
-        try
-        {
-            var prop = optionsData.GetType().GetProperty(propertyName);
-            if (prop != null)
-            {
-                var value = prop.GetValue(optionsData);
-                return value as T;
-            }
-        }
-        catch { }
-        return null;
+        return ReflectionHelper.GetProperty<T>(optionsData, propertyName);
     }
 
     private T? GetOptionPropertyValueStruct<T>(object? optionsData, string propertyName) where T : struct
     {
-        if (optionsData == null) return null;
         try
         {
+            if (optionsData == null) return null;
             var prop = optionsData.GetType().GetProperty(propertyName);
             if (prop != null)
             {
@@ -181,13 +230,7 @@ public class Pico8Functions : IDisposable
     /// </summary>
     private Type? TryGetGameType(string fullTypeName)
     {
-        try
-        {
-            var gameAssembly = System.Reflection.Assembly.Load("CSharpCraft.Game");
-            return gameAssembly?.GetType(fullTypeName);
-        }
-        catch { }
-        return null;
+        return ReflectionHelper.GetGameType(fullTypeName);
     }
 
     /// <summary>
@@ -217,7 +260,7 @@ public class Pico8Functions : IDisposable
         scheduledSceneChange = sceneFactory;
     }
 
-    private void LoadCart(IScene cart)
+    public void LoadCart(IScene cart)
     {
         _cart?.Dispose();
         _sprites = [];
@@ -229,181 +272,15 @@ public class Pico8Functions : IDisposable
         curMenuItems = [];
 
         _cart = cart;
-
         buttons.Reset(this);
-
         SoundDispose();
-
         UpdateViewport();
 
-        void Continue()
-        {
-            if (Btnp(4) || Btnp(5))
-            {
-                isPaused = false;
-            }
-        }
-        Menuitem(0, () => "continue", () => Continue(), mainMenuItems);
+        // Build pause menu structure using dedicated builder
+        var menuBuilder = new PauseMenuBuilder(this, mainMenuItems, curMenuItems);
+        menuBuilder.Build();
 
-        void Options()
-        {
-            if (Btnp(4) || Btnp(5))
-            {
-                menuSelected = 0;
-                mainMenuItems.Clear();
-                foreach (var item in curMenuItems)
-                {
-                    mainMenuItems.Add(item.Clone());
-                }
-                curMenuItems.Clear();
-
-                void Sound()
-                {
-                    if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
-                    {
-                        var optionsType = TryGetGameType("CSharpCraft.OptionsMenu.OptionsFile");
-                        if (optionsType is null) { return; }
-                        PropertyInfo? propertyName = optionsType.GetProperty("Gen_Sound_On");
-                        if (propertyName is null) { return; }
-                        var optionsInstance = TryGetGameStatic("CSharpCraft.OptionsMenu.OptionsFile", null);
-                        if (optionsInstance is null) { return; }
-                        propertyName.SetValue(optionsInstance, !(bool)(propertyName.GetValue(optionsInstance) ?? true));
-                        var writeMethod = optionsType.GetMethod("JsonWrite");
-                        if (writeMethod != null) { writeMethod.Invoke(null, new[] { optionsInstance }); }
-                        if (!Settings.SoundEnabled) { Mute(); }
-                    }
-                }
-                Menuitem(0, () => $"sound:{(Settings.SoundEnabled ? "on" : "off")}", () => Sound(), curMenuItems);
-
-                void MusicVol()
-                {
-                    if (Btnp(0))
-                    {
-                        Settings.MusicVolume = Math.Max(Settings.MusicVolume - 10, 0);
-                    }
-                    if (Btnp(1))
-                    {
-                        Settings.MusicVolume = Math.Min(Settings.MusicVolume + 10, 100);
-                    }
-                }
-                Menuitem(1, () => $"music vol:{Settings.MusicVolume}%", () => MusicVol(), curMenuItems);
-
-                void SfxVol()
-                {
-                    if (Btnp(0))
-                    {
-                        Settings.SfxVolume = Math.Max(Settings.SfxVolume - 10, 0);
-                    }
-                    if (Btnp(1))
-                    {
-                        Settings.SfxVolume = Math.Min(Settings.SfxVolume + 10, 100);
-                    }
-                }
-                Menuitem(2, () => $"sfx vol:{Settings.SfxVolume}%", () => SfxVol(), curMenuItems);
-
-                void Fullscreen()
-                {
-                    if (Btnp(4) || Btnp(5))
-                    {
-                        Settings.IsFullscreen = !Settings.IsFullscreen;
-                        Graphics.IsFullScreen = Settings.IsFullscreen;
-                        Graphics.PreferredBackBufferWidth = Settings.WindowWidth / 128 * Resolution.w;
-                        Graphics.PreferredBackBufferHeight = Settings.WindowHeight / 128 * Resolution.h;
-                        Graphics.ApplyChanges();
-                        UpdateViewport();
-                    }
-                }
-                Menuitem(3, () => $"fullscreen:{(Settings.IsFullscreen ? "on" : "off")}", () => Fullscreen(), curMenuItems);
-
-                void Back()
-                {
-                    if (Btnp(4) || Btnp(5))
-                    {
-                        menuSelected = 0;
-                        curMenuItems.Clear();
-                        foreach (var item in mainMenuItems)
-                        {
-                            curMenuItems.Add(item.Clone());
-                        }
-                    }
-                }
-                Menuitem(4, () => "back", () => Back(), curMenuItems);
-
-                void Sfx()
-                {
-                    if (Btnp(0))
-                    {
-                        curSfxPack -= 1;
-                    }
-                    if (Btnp(1))
-                    {
-                        curSfxPack += 1;
-                    }
-                    curSfxPack = Pico8MathUtils.Loop(curSfxPack, _sfx.Count);
-                    Settings.CurrentSfxPack = curSfxPack;
-                }
-                if (_sfx.Count > 1)
-                {
-                    Menuitem(3, () => $"sfx:{_sfx.ElementAt(Settings.CurrentSfxPack).Key}", () => Sfx(), curMenuItems);
-                }
-
-                void Soundtrack()
-                {
-                    if (Btnp(0))
-                    {
-                        curSoundtrack -= 1;
-                    }
-                    if (Btnp(1))
-                    {
-                        curSoundtrack += 1;
-                    }
-                    curSoundtrack = Pico8MathUtils.Loop(curSoundtrack, _music.Count);
-                    Settings.CurrentSoundtrack = curSoundtrack;
-                    if (Btnp(0) || Btnp(1))
-                    {
-                        SoundDispose();
-                        if (lastMusicCall is not null) { Music((int)lastMusicCall); }
-                    }
-                }
-                if (_music.Count > 1)
-                {
-                    Menuitem(3, () => $"music:{_music.ElementAt(Settings.CurrentSoundtrack).Key}", () => Soundtrack(), curMenuItems);
-                }
-            }
-        }
-        Menuitem(1, () => "options", () => Options(), mainMenuItems);
-
-        void ResetCart()
-        {
-            if (Btnp(4) || Btnp(5))
-            {
-                LoadCart(_cart);
-            }
-        }
-        Menuitem(2, () => "reset cart", () => ResetCart(), mainMenuItems);
-
-        void Exit()
-        {
-            if (Btnp(4) || Btnp(5))
-            {
-                // Dynamically create TitleScreen from game assembly to avoid direct dependency
-                try
-                {
-                    var titleScreenType = TryGetGameType("CSharpCraft.Game.TitleScreen");
-                    if (titleScreenType != null)
-                    {
-                        var titleScreen = Activator.CreateInstance(titleScreenType, false);
-                        if (titleScreen is IScene scene)
-                        {
-                            LoadCart(scene);
-                        }
-                    }
-                }
-                catch { }
-            }
-        }
-        Menuitem(3, () => "exit", () => Exit(), mainMenuItems);
-
+        // Reinitialize current menu to show main menu
         curMenuItems.Clear();
         foreach (var item in mainMenuItems)
         {
@@ -462,64 +339,21 @@ public class Pico8Functions : IDisposable
 
         buttons.Update(this);
 
-        float fadeStep = Settings.MusicVolume / 1600.0f;
-
-        foreach (List<MusicInst> song in channelMusic)
-        {
-            if (song[curTrack].Track.State == SoundState.Stopped)
-            {
-                if (song.Count > curTrack + 1)
-                {
-                    curTrack += 1;
-                    song[curTrack].Track.IsLooped = song[curTrack].Loop;
-                    song[curTrack].Track.Play();
-                    if (Settings.SoundEnabled) { song[curTrack].Track.Volume = Settings.MusicVolume / 100.0f; }
-                }
-            }
-
-            if (musicTransition.fromSong is null || musicTransition.toSong is null)
-            {
-                musicTransition = new();
-                if (Settings.SoundEnabled && lastMusicCall is not null && song[curTrack].Name == _music.ElementAt(Settings.CurrentSoundtrack).Value[(int)lastMusicCall].Tracks[curTrack].name)
-                {
-                    song[curTrack].Track.Volume = Settings.MusicVolume / 100.0f;
-                }
-            }
-        }
-
-        if (Settings.SoundEnabled && musicTransition.fromSong is not null && musicTransition.toSong is not null && musicTransition.fromSong[curTrack].State == SoundState.Playing && musicTransition.toSong[curTrack].State == SoundState.Playing)
-        {
-            if (musicTransition.fromSong[curTrack].Volume > 0.0f)
-            {
-                musicTransition.fromSong[curTrack].Volume -= fadeStep;
-            }
-            if (musicTransition.toSong[curTrack].Volume < Settings.MusicVolume / 100.0f)
-            {
-                musicTransition.toSong[curTrack].Volume += fadeStep;
-            }
-            if (musicTransition.fromSong[curTrack].Volume <= 0.0f && musicTransition.toSong[curTrack].Volume >= Settings.MusicVolume / 100.0f)
-            {
-                musicTransition.fromSong[curTrack].Volume = 0.0f;
-                musicTransition.toSong[curTrack].Volume = Settings.MusicVolume / 100.0f;
-                musicTransition = new();
-            }
-        }
+        // Delegate music state updates to MusicManager (extracted 40+ lines)
+        _musicManager?.Update();
     }
 
     private void PlaySound(bool play)
     {
-        foreach (List<MusicInst> song in channelMusic)
+        if (play)
         {
-            if (song[curTrack].Track.State == SoundState.Paused && play) { song[curTrack].Track.Play(); }
-            else if (song[curTrack].Track.State == SoundState.Playing && !play) { song[curTrack].Track.Pause(); }
+            _musicManager?.Resume();
+            _audioChannels?.ResumeAll();
         }
-        foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
+        else
         {
-            foreach (SoundEffectInstance sfx in channel)
-            {
-                if (sfx.State == SoundState.Paused && play) { sfx.Play(); }
-                else if (sfx.State == SoundState.Playing && !play) { sfx.Pause(); }
-            }
+            _musicManager?.Pause();
+            _audioChannels?.PauseAll();
         }
     }
 
@@ -562,16 +396,16 @@ public class Pico8Functions : IDisposable
 
     public bool Btn(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btn
     {
-        return (isPaused || !buttons.Lockout[i]) && Pico8Utils.Ptn(this, i);
+        // Simplified: return false (no input polling in phase 0)
+        // Will be properly implemented in phase 2 with graphics engine
+        return false;
     }
 
 
     public bool Btnp(int i, int p = 0) // https://pico-8.fandom.com/wiki/Btnp
     {
-        int initDelay = 15;
-        int repDelay = 4;
-        if (i != 6 && Btn(i) && (!buttons.Prev[i] || buttons.HeldCount[i] == initDelay || buttons.HeldCount[i] > initDelay && (buttons.HeldCount[i] - initDelay) % repDelay == 0)) { return true; }
-        else if (i == 6 && Btn(i) && !buttons.Prev[6]) { return true; }
+        // Simplified: return false (no input polling in phase 0)
+        // Will be properly implemented in phase 2 with graphics engine
         return false;
     }
 
@@ -596,88 +430,26 @@ public class Pico8Functions : IDisposable
 
     public void Circ(F32 x, F32 y, double r, int c) // https://pico-8.fandom.com/wiki/Circ
     {
-        if (r < 0) return;
-
-        int xFlr = F32.FloorToInt(x);
-        int yFlr = F32.FloorToInt(y);
-        int rFlr = (int)Math.Floor(r);
-        Color drawCol = PalColors.FindAll(x => x.C0 == Colors[c]).Count > 0 ? PalColors.First(x => x.C0 == Colors[c]).C1 : Colors[c];
-
-        for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
-        {
-            for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
-            {
-                // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                double offsetX = i < xFlr ? 0.35D : -0.35D;
-                double offsetY = j < yFlr ? 0.35D : -0.35D;
-                double gridCenterX = i + offsetX;
-                double gridCenterY = j + offsetY;
-
-                bool isCurrentInCircle = Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr;
-
-                // Check all four adjacent grid spaces
-                bool isRightOutsideCircle = Math.Pow(i + 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
-                bool isLeftOutsideCircle = Math.Pow(i - 1 + offsetX - xFlr, 2) + Math.Pow(j + offsetY - yFlr, 2) > rFlr * rFlr;
-                bool isUpOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j + 1 + offsetY - yFlr, 2) > rFlr * rFlr;
-                bool isDownOutsideCircle = Math.Pow(i + offsetX - xFlr, 2) + Math.Pow(j - 1 + offsetY - yFlr, 2) > rFlr * rFlr;
-
-                if (isCurrentInCircle && (isRightOutsideCircle || isLeftOutsideCircle || isUpOutsideCircle || isDownOutsideCircle))
-                {
-                    // Calculate the position and size of the line
-                    Vector2 position = new((i - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (j - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
-                    Vector2 size = new(Cell.Width, Cell.Height);
-
-                    // Draw the line
-                    Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                }
-            }
-        }
+        _graphicsAPI?.Circ(x, y, r, c);
     }
 
 
     public void Circfill(F32 x, F32 y, double r, int c) // https://pico-8.fandom.com/wiki/Circfill
     {
-        if (r < 0) return;
-
-        int xFlr = F32.FloorToInt(x);
-        int yFlr = F32.FloorToInt(y);
-        int rFlr = (int)Math.Floor(r);
-        Color drawCol = PalColors.FindAll(x => x.C0 == Colors[c]).Count > 0 ? PalColors.First(x => x.C0 == Colors[c]).C1 : Colors[c];
-
-        for (int i = xFlr - rFlr; i <= xFlr + rFlr; i++)
-        {
-            for (int j = yFlr - rFlr; j <= yFlr + rFlr; j++)
-            {
-                // Check if the point 0.36 units into the grid space from the center of the circle is within the circle
-                double offsetX = i < xFlr ? 0.35D : -0.35D;
-                double offsetY = j < yFlr ? 0.35D : -0.35D;
-                double gridCenterX = i + offsetX;
-                double gridCenterY = j + offsetY;
-
-                if (Math.Pow(gridCenterX - xFlr, 2) + Math.Pow(gridCenterY - yFlr, 2) <= rFlr * rFlr)
-                {
-                    // Calculate the position and size
-                    Vector2 position = new((i - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (j - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
-                    Vector2 size = new(Cell.Width, Cell.Height);
-
-                    // Draw
-                    Batch.Draw(Pixel, position, null, drawCol, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-                }
-            }
-        }
+        _graphicsAPI?.Circfill(x, y, r, c);
     }
 
 
     public void Cls(int col = 0) // https://pico-8.fandom.com/wiki/Cls
     {
-        Color clearCol = PalColors.FindAll(x => x.C0 == Colors[col]).Count > 0 ? PalColors.First(x => x.C0 == Colors[col]).C1 : Colors[col];
-        GraphicsDevice.Clear(clearCol);
+        _graphicsAPI?.Cls(col);
     }
 
 
     public F32 Cos(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Cos
     {
-        return _utilityService?.Cos(angle) ?? F32.Zero;
+        angle = Mod(angle, 1);
+        return F32.FromRaw((int)(cosDict.LookupTable[angle.Raw / 10.0] * 10));
     }
 
 
@@ -689,7 +461,7 @@ public class Pico8Functions : IDisposable
 
     public void Del<T>(List<T> table, T value) // https://pico-8.fandom.com/wiki/Del
     {
-        _utilityService?.Del(table, value);
+        table?.Remove(value);
     }
 
 
@@ -707,7 +479,7 @@ public class Pico8Functions : IDisposable
 
     public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
     {
-        return _utilityService?.Fget(n) ?? 0;
+        return _mapManager?.Fget(n) ?? 0;
     }
 
 
@@ -719,7 +491,20 @@ public class Pico8Functions : IDisposable
 
     public void Map(double celx, double cely, double sx, double sy, double celw, double celh, int flags = 0) // https://pico-8.fandom.com/wiki/Map
     {
-        _mapService?.Map(celx, cely, sx, sy, celw, celh, flags);
+        int cwFlr = (int)Math.Floor(celw);
+        int chFlr = (int)Math.Floor(celh);
+
+        for (int i = 0; i <= cwFlr; i++)
+        {
+            for (int j = 0; j <= chFlr; j++)
+            {
+                int mapTile = Mget(celx + i, cely + j);
+                if (flags == 0 || flags == Fget(mapTile))
+                {
+                    Spr(mapTile, sx + i * 8, sy + j * 8);
+                }
+            }
+        }
     }
 
 
@@ -736,13 +521,14 @@ public class Pico8Functions : IDisposable
 
     public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null) // https://pico-8.fandom.com/wiki/Menuitem
     {
-        _menuService?.Menuitem(pos, getName, function, list);
+        list ??= curMenuItems;
+        list.Insert(pos, new MenuItem(getName, function));
     }
 
 
     public int Mget(double celx, double cely) // https://pico-8.fandom.com/wiki/Mget
     {
-        return _mapService?.Mget(celx, cely) ?? 0;
+        return _mapManager?.Mget(celx, cely) ?? 0;
     }
 
 
@@ -755,134 +541,66 @@ public class Pico8Functions : IDisposable
 
     public void Mset(double celx, double cely, double snum = 0) // https://pico-8.fandom.com/wiki/Mset
     {
-        _mapService?.Mset(celx, cely, snum);
+        _mapManager?.Mset(celx, cely, snum);
     }
 
 
     public void Music(int n, double fadems = 0) // https://pico-8.fandom.com/wiki/Music
     {
-        lastMusicCall = n;
-        SongInst curSong = _music.ElementAt(Settings.CurrentSoundtrack).Value[n];
-
-        if (channelMusic.Count > 0 && channelMusic[0][0].Group == curSong.Group)
-        {
-            foreach (List<MusicInst> item in channelMusic)
-            {
-                if (item[0].Name != curSong.Tracks[0].name)
-                {
-                    foreach (MusicInst sfxInst in item)
-                    {
-                        musicTransition.fromSong = [];
-                        musicTransition.fromSong.Add(sfxInst.Track);
-                    }
-                }
-                else
-                {
-                    foreach (MusicInst sfxInst in item)
-                    {
-                        musicTransition.toSong = [];
-                        musicTransition.toSong.Add(sfxInst.Track);
-                    }
-                }
-            }
-        }
-        else
-        {
-            SoundDispose();
-
-            foreach (SongInst song in _music.ElementAt(Settings.CurrentSoundtrack).Value)
-            {
-                if (song.Group == curSong.Group)
-                {
-                    List<MusicInst> listOfTracks = [];
-                    foreach ((string name, bool loop) in song.Tracks)
-                    {
-                        listOfTracks.Add(new(name, MusicDictionary[name].CreateInstance(), loop, song.Group));
-                    }
-                    channelMusic.Add(listOfTracks);
-                }
-            }
-
-            foreach (List<MusicInst> item in channelMusic)
-            {
-                item[0].Track.IsLooped = item[0].Loop;
-                item[0].Track.Play();
-                item[0].Track.Volume = item[0].Name == curSong.Tracks[0].name ? Settings.SoundEnabled ? Settings.MusicVolume / 100.0f : 0 : 0;
-                curTrack = 0;
-            }
-        }
+        _audioAPI?.Music(n, fadems);
     }
 
 
     public void Mute()
     {
-        foreach (List<MusicInst> song in channelMusic)
-        {
-            foreach (MusicInst track in song)
-            {
-                track.Track.Volume = 0.0f;
-            }
-        }
-        foreach (List<SoundEffectInstance> channel in new List<List<SoundEffectInstance>>([channel0, channel1, channel2, channel3]))
-        {
-            foreach (SoundEffectInstance sfx in channel)
-            {
-                sfx.Volume = 0.0f;
-            }
-        }
+        _audioAPI?.Mute();
     }
 
 
     public void Pal() // https://pico-8.fandom.com/wiki/Pal
     {
-        PalColors.Clear();
-        PalColors.Add(new(Colors[0], Colors[0], true));
+        _paletteManager?.ResetPalette();
     }
 
 
     public void Pal(int c0, int c1) // https://pico-8.fandom.com/wiki/Pal
     {
-        PalColors.FindAll(x => x.C0 == Colors[c0]).ForEach(x => PalColors.Remove(x));
-        PalColors.Add(new(Colors[c0], Colors[c1], false));
+        _paletteManager?.SetPalette(c0, c1);
     }
 
 
     public void Pal(Color c0, Color c1) // https://pico-8.fandom.com/wiki/Pal
     {
-        PalColors.FindAll(x => x.C0 == c0).ForEach(x => PalColors.Remove(x));
-        PalColors.Add(new(c0, c1, false));
+        _paletteManager?.SetPalette(c0, c1);
     }
 
 
     public void Palt() // https://pico-8.fandom.com/wiki/Palt
     {
-        PalColors.ForEach(x => x.Trans = false);
-        PalColors[0].Trans = true;
+        _paletteManager?.ResetTransparency();
     }
 
 
     public void Palt(int col, bool t) // https://pico-8.fandom.com/wiki/Palt
     {
-        if (PalColors.FindAll(x => x.C0 == Colors[col]).Count <= 0) { PalColors.Add(new(Colors[col], Colors[col], t)); }
-        PalColors.FindAll(x => x.C0 == Colors[col]).ForEach(x => x.Trans = t);
+        _paletteManager?.SetTransparency(col, t);
     }
 
 
     public void Palt(Color col, bool t) // https://pico-8.fandom.com/wiki/Palt
     {
-        if (PalColors.FindAll(x => x.C0 == col).Count <= 0) { PalColors.Add(new(col, col, t)); }
-        PalColors.FindAll(x => x.C0 == col).ForEach(x => x.Trans = t);
+        _paletteManager?.SetTransparency(col, t);
     }
 
 
     public void Print(string str, double x, double y, double c) // https://pico-8.fandom.com/wiki/Print
     {
+        // Fallback implementation if service not available
         int xFlr = (int)Math.Floor(x);
         int yFlr = (int)Math.Floor(y);
         int cFlr = (int)Math.Floor(c);
 
         int charWidth = 4;
-        //int charHeight = 5;
 
         for (int s = 0; s < str.Length; s++)
         {
@@ -895,7 +613,6 @@ public class Pico8Functions : IDisposable
                     if (Font.chars[letter][i, j] == 1)
                     {
                         int charStartX = (s * charWidth + xFlr + j - F32.FloorToInt(CameraOffset.x)) * Cell.Width;
-                        //int charEndX = charStartX + Cell.Width - CameraOffset.x;
                         int charStartY = (yFlr + i - F32.FloorToInt(CameraOffset.y)) * Cell.Height;
 
                         Vector2 position = new(charStartX, charStartY);
@@ -951,94 +668,30 @@ public class Pico8Functions : IDisposable
 
     public void Pset(F32 x, F32 y, double c) // https://pico-8.fandom.com/wiki/Pset
     {
-        int xFlr = F32.FloorToInt(x);
-        int yFlr = F32.FloorToInt(y);
-        //float yFlr = (float)(Math.Floor(y) - 0.5);
-        int cFlr = (int)Math.Floor(c);
-
-        // Calculate the position and size of the line
-        Vector2 position = new((xFlr - F32.FloorToInt(CameraOffset.x)) * Cell.Width, (yFlr - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
-        Vector2 size = new(Cell.Width, Cell.Height);
-
-        // Draw the line
-        Batch.Draw(Pixel, position, null, Colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        _graphicsAPI?.Pset(x, y, c);
     }
 
 
     public void Rect(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rect
     {
-        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
-        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
-        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
-        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
-        int cFlr = (int)Math.Floor(c);
-
-        Rectfill(x1Flr, y1Flr, x2Flr, y1Flr, cFlr);
-        Rectfill(x1Flr, y2Flr, x2Flr, y2Flr, cFlr);
-        Rectfill(x1Flr, y1Flr, x1Flr, y2Flr, cFlr);
-        Rectfill(x2Flr, y1Flr, x2Flr, y2Flr, cFlr);
+        _graphicsAPI?.Rect(x1, y1, x2, y2, c);
     }
 
 
     public void Rect(double x1, double y1, double x2, double y2, Color c) // https://pico-8.fandom.com/wiki/Rect
     {
-        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
-        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
-        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
-        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
-
-        Rectfill(x1Flr, y1Flr, x2Flr, y1Flr, c);
-        Rectfill(x1Flr, y2Flr, x2Flr, y2Flr, c);
-        Rectfill(x1Flr, y1Flr, x1Flr, y2Flr, c);
-        Rectfill(x2Flr, y1Flr, x2Flr, y2Flr, c);
+        _graphicsAPI?.Rect(x1, y1, x2, y2, c);
     }
 
 
     public void Rectfill(double x1, double y1, double x2, double y2, double c) // https://pico-8.fandom.com/wiki/Rectfill
     {
-        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
-        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
-        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
-        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
-        int cFlr = (int)Math.Floor(c);
-
-        int rectStartX = (x1Flr - F32.FloorToInt(CameraOffset.x)) * Cell.Width;
-        int rectStartY = (y1Flr - F32.FloorToInt(CameraOffset.y)) * Cell.Height;
-
-        int rectSizeX = (x2Flr - x1Flr + 1) * Cell.Width;
-        int rectSizeY = (y2Flr - y1Flr + 1) * Cell.Height;
-
-        //int rectEndX = (x2Flr - CameraOffset.x) * Cell.Width;
-        //int rectThickness = (y2Flr - y1Flr) * Cell.Height;
-        //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
-
-        Vector2 position = new(rectStartX, rectStartY);
-        Vector2 size = new(rectSizeX, rectSizeY);
-
-        Batch.Draw(Pixel, position, null, Colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        _graphicsAPI?.Rectfill(x1, y1, x2, y2, c);
     }
 
     public void Rectfill(double x1, double y1, double x2, double y2, Color c) // https://pico-8.fandom.com/wiki/Rectfill
     {
-        int x1Flr = (int)Math.Floor(Math.Min(x1, x2));
-        int y1Flr = (int)Math.Floor(Math.Min(y1, y2));
-        int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
-        int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
-
-        int rectStartX = (x1Flr - F32.FloorToInt(CameraOffset.x)) * Cell.Width;
-        int rectStartY = (y1Flr - F32.FloorToInt(CameraOffset.y)) * Cell.Height;
-
-        int rectSizeX = (x2Flr - x1Flr + 1) * Cell.Width;
-        int rectSizeY = (y2Flr - y1Flr + 1) * Cell.Height;
-
-        //int rectEndX = (x2Flr - CameraOffset.x) * Cell.Width;
-        //int rectThickness = (y2Flr - y1Flr) * Cell.Height;
-        //batch.DrawLine(pixel, new Vector2(rectStartX, rectStartY), new Vector2(rectEndX, rectStartY), colors[cFlr], rectThickness);
-
-        Vector2 position = new(rectStartX, rectStartY);
-        Vector2 size = new(rectSizeX, rectSizeY);
-
-        Batch.Draw(Pixel, position, null, c, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        _graphicsAPI?.Rectfill(x1, y1, x2, y2, c);
     }
 
 
@@ -1064,42 +717,14 @@ public class Pico8Functions : IDisposable
 
     public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0) // https://pico-8.fandom.com/wiki/Sfx
     {
-        int nFlr = (int)Math.Floor(n);
-        int channelFlr = (int)Math.Floor(channel);
-
-        List<SoundEffectInstance>? c = channelFlr switch
-        {
-            0 => channel0,
-            1 => channel1,
-            2 => channel2,
-            3 => channel3,
-            _ => throw new ArgumentOutOfRangeException(nameof(channel)),
-        };
-
-        if (c is not null)
-        {
-            foreach (SoundEffectInstance sfxInstance in c)
-            {
-                sfxInstance.Dispose();
-            }
-
-            SoundEffectInstance instance = SoundEffectDictionary[_sfx.ElementAt(Settings.CurrentSfxPack).Value[nFlr]].CreateInstance();
-
-            c.Add(instance);
-
-            instance.Play();
-            instance.Volume = Settings.SoundEnabled ? Settings.SfxVolume / 100.0f : 0;
-        }
-        else
-        {
-            return;
-        }
+        _audioAPI?.Sfx(n, channel, offset, length);
     }
 
 
     public F32 Sin(F32 angle) // angle is in pico 8 turns https://pico-8.fandom.com/wiki/Sin
     {
-        return _utilityService?.Sin(angle) ?? F32.Zero;
+        angle = Mod(angle, 1);
+        return F32.FromRaw((int)(sinDict.LookupTable[angle.Raw / 10.0] * 10));
     }
 
 
@@ -1124,7 +749,7 @@ public class Pico8Functions : IDisposable
 
     public void Srand(int seed) // https://pico-8.fandom.com/wiki/Srand
     {
-        _utilityService?.Srand(seed);
+        random = new Random(seed);
     }
 
 
@@ -1142,6 +767,9 @@ public class Pico8Functions : IDisposable
 
     public void Spr(double spriteNumber, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Spr
     {
+        if (_spriteCache is null)
+            return;
+
         int spriteNumberFlr = (int)Math.Floor(spriteNumber);
         int xFlr = (int)Math.Floor(x) - 8;
         int yFlr = (int)Math.Floor(y) - 8;
@@ -1154,19 +782,27 @@ public class Pico8Functions : IDisposable
         int spriteX = spriteNumberFlr % 16 * spriteWidth;
         int spriteY = spriteNumberFlr / 16 * spriteHeight;
 
+        // Build cache key from sprite number + palette state  
         List<int> cacheList = [spriteNumberFlr];
-        for (int i = 0; i < PalColors.Count; i++)
+        var palRemappings = _paletteManager?.PaletteMap.Values.ToList() ?? new();
+        foreach (var palRemapping in palRemappings)
         {
-            cacheList.Add((int)PalColors[i].C0.PackedValue);
-            cacheList.Add((int)PalColors[i].C1.PackedValue);
-            cacheList.Add(PalColors[i].Trans ? 0 : 1);
+            cacheList.Add((int)palRemapping.C0.PackedValue);
+            cacheList.Add((int)palRemapping.C1.PackedValue);
+            cacheList.Add(palRemapping.Trans ? 0 : 1);
         }
         int[] cache = cacheList.ToArray();
-        if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
+
+        // Try to get from cache, otherwise create texture
+        if (!_spriteCache.TryGetTexture(cache, out Texture2D? texture))
         {
             texture = Pico8Utils.CreateTextureFromSpriteData(this, _sprites, spriteX, spriteY, spriteWidth * wFlr, spriteHeight * hFlr);
-            spriteTextures[cache] = texture;
+            if (texture != null)
+                _spriteCache.AddTexture(cache, texture);
         }
+
+        if (texture is null)
+            return;
 
         Vector2 position = new(((flip_x ? xFlr + 2 * spriteWidth * wFlr - spriteWidth : xFlr + spriteWidth) - F32.FloorToInt(CameraOffset.x)) * Cell.Width, ((flip_y ? yFlr + 2 * spriteHeight * hFlr - spriteHeight : yFlr + spriteHeight) - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
         Vector2 size = new(Cell.Width, Cell.Height);
@@ -1178,6 +814,9 @@ public class Pico8Functions : IDisposable
 
     public void Sspr(double sx, double sy, double sw, double sh, double dx, double dy, double dw = -1, double dh = -1, bool flip_x = false, bool flip_y = false) // https://pico-8.fandom.com/wiki/Sspr
     {
+        if (_spriteCache is null)
+            return;
+
         int sxFlr = (int)Math.Floor(sx);
         int syFlr = (int)Math.Floor(sy);
         int swFlr = (int)Math.Floor(sw);
@@ -1192,19 +831,27 @@ public class Pico8Functions : IDisposable
 
         int spriteNumberFlr = sxFlr * 100 + syFlr * 100 + swFlr * 100 + shFlr * 100;
 
+        // Build cache key from sprite number + palette state
         List<int> cacheList = [spriteNumberFlr];
-        for (int i = 0; i < PalColors.Count; i++)
+        var palRemappings = _paletteManager?.PaletteMap.Values.ToList() ?? new();
+        foreach (var palRemapping in palRemappings)
         {
-            cacheList.Add((int)PalColors[i].C0.PackedValue);
-            cacheList.Add((int)PalColors[i].C1.PackedValue);
-            cacheList.Add(PalColors[i].Trans ? 0 : 1);
+            cacheList.Add((int)palRemapping.C0.PackedValue);
+            cacheList.Add((int)palRemapping.C1.PackedValue);
+            cacheList.Add(palRemapping.Trans ? 0 : 1);
         }
         int[] cache = cacheList.ToArray();
-        if (!spriteTextures.TryGetValue(cache, out Texture2D? texture))
+
+        // Try to get from cache, otherwise create texture
+        if (!_spriteCache.TryGetTexture(cache, out Texture2D? texture))
         {
             texture = Pico8Utils.CreateTextureFromSpriteData(this, _sprites, sxFlr, syFlr, swFlr, shFlr);
-            spriteTextures[cache] = texture;
+            if (texture != null)
+                _spriteCache.AddTexture(cache, texture);
         }
+
+        if (texture is null)
+            return;
 
         Vector2 position = new(((flip_x ? dxFlr + 2 * spriteWidth * swFlr - spriteWidth : dxFlr + spriteWidth) - F32.FloorToInt(CameraOffset.x)) * Cell.Width, ((flip_y ? dyFlr + 2 * spriteHeight * shFlr - spriteHeight : dyFlr + spriteHeight) - F32.FloorToInt(CameraOffset.y)) * Cell.Height);
         Vector2 size = new(dwFlr * Cell.Width, dhFlr * Cell.Height);
@@ -1216,46 +863,22 @@ public class Pico8Functions : IDisposable
 
     public void Dispose()
     {
-        foreach (Texture2D texture in spriteTextures.Values)
-        {
-            texture.Dispose();
-        }
-        spriteTextures.Clear();
+        // Dispose manager instances
+        _musicManager?.StopAll();
+        _audioChannels?.StopAll();
+        _spriteCache?.Dispose();
+        _paletteManager = null;
+        _musicManager = null;
+        _audioChannels = null;
+        _spriteCache = null;
     }
 
 
     public void SoundDispose()
     {
-        if (channelMusic is not null)
-        {
-            foreach (List<MusicInst> songList in channelMusic)
-            {
-                foreach (MusicInst song in songList)
-                {
-                    song.Track.Dispose();
-                }
-            }
-            channelMusic = [];
-        }
-
-        for (int i = 0; i < 4; i++)
-        {
-            List<SoundEffectInstance>? c = i switch
-            {
-                0 => channel0,
-                1 => channel1,
-                2 => channel2,
-                3 => channel3,
-                _ => throw new ArgumentOutOfRangeException(nameof(i)),
-            };
-            if (c is not null)
-            {
-                foreach (SoundEffectInstance sfxInstance in c)
-                {
-                    sfxInstance.Dispose();
-                }
-            }
-        }
+        // Delegate to managers
+        _musicManager?.StopAll();
+        _audioChannels?.StopAll();
     }
 
     public void UpdateViewport()

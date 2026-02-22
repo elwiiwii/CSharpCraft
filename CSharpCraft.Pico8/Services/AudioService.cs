@@ -9,7 +9,7 @@ namespace CSharpCraft.Pico8.Services;
 /// Extracted from Pico8Functions to enable service-based architecture
 /// Phase 3: Service Extraction - Part 2
 /// </summary>
-public class AudioService : IDisposable
+public class AudioService : IAudioManager, IDisposable
 {
     private readonly Dictionary<string, SoundEffect> _musicDictionary;
     private readonly Dictionary<string, SoundEffect> _soundEffectDictionary;
@@ -183,12 +183,38 @@ public class AudioService : IDisposable
     /// <summary>
     /// Get current music track number
     /// </summary>
-    public int GetCurrentTrack() => _curTrack;
+    public int? GetCurrentTrack() => _curTrack >= 0 ? _curTrack : null;
 
     /// <summary>
     /// Get current soundtrack index
     /// </summary>
     public int GetCurrentSoundtrack() => _curSoundtrack;
+
+    /// <summary>
+    /// Implement IAudioManager.PlayMusic wrapper
+    /// </summary>
+    public void PlayMusic(int trackId, double fadeMs = 0) => Music(trackId, fadeMs);
+
+    /// <summary>
+    /// Implement IAudioManager.PlaySfx wrapper
+    /// </summary>
+    public void PlaySfx(int sfxId, int channel = -1, int offset = 0) => Sfx(sfxId, channel, offset);
+
+    /// <summary>
+    /// Set music library
+    /// </summary>
+    public void SetMusicLibrary(Dictionary<string, List<SongInst>> musicLibrary)
+    {
+        // Update internal music references if needed
+    }
+
+    /// <summary>
+    /// Set SFX library
+    /// </summary>
+    public void SetSfxLibrary(Dictionary<string, Dictionary<int, string>> sfxLibrary)
+    {
+        // Update internal SFX references if needed
+    }
 
     public void Dispose()
     {
