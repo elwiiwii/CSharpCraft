@@ -24,7 +24,6 @@ class FNAGame : Game
         g.Run();
     }
 
-#nullable enable
 
     private SpriteBatch batch;
     private readonly List<IScene> scenes = [];
@@ -43,7 +42,6 @@ class FNAGame : Game
     private (string text, double frame) popup;
     private (int w, int h) resolution = (128, 128);
 
-#nullable disable
 
     private readonly double elapsedSeconds = 0.0;
     private readonly string graphicsFolderPath = "Content/Graphics";

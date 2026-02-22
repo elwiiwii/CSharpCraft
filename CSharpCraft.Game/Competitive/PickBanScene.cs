@@ -12,7 +12,7 @@ public class PickBanScene : IScene, IDisposable
     public string SceneName { get => "1"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (192, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
 
     private KeyboardState prevKeyboardState;
     private MouseState prevMouseState;
@@ -43,14 +43,13 @@ public class PickBanScene : IScene, IDisposable
         public bool LowerWin { get; set; } = false;
     }
 
-    public async void Init(Pico8Functions pico8)
+    public async void Init()
     {
         if (isInitializing) return;
         isInitializing = true;
 
         try
         {
-            p8 = pico8;
 
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)

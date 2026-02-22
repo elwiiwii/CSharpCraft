@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 
 namespace CSharpCraft;
 
@@ -8,13 +9,10 @@ public class MapTest : IScene, IDisposable
     public string SceneName { get => "map test"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions? p8;
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
-
-        p8.Mset(127, 127, 0);
+        Mset(127, 127, 0);
     }
 
     public void Update()

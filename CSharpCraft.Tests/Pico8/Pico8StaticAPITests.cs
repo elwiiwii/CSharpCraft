@@ -341,7 +341,7 @@ namespace CSharpCraft.Tests.Pico8
             var result = CSharpCraft.Pico8.Pico8.Rnd(1);
 
             // Assert
-            result.Should()
+            result.Float.Should()
                 .BeGreaterThanOrEqualTo(0, "Rnd result should be >= 0")
                 .And.BeLessThan(1, "Rnd result should be < 1");
         }
@@ -353,7 +353,7 @@ namespace CSharpCraft.Tests.Pico8
             var result = CSharpCraft.Pico8.Pico8.Rnd(10);
 
             // Assert
-            result.Should()
+            result.Float.Should()
                 .BeGreaterThanOrEqualTo(0)
                 .And.BeLessThan(10, "Rnd(10) should return value in [0, 10)");
         }

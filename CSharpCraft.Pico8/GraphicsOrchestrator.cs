@@ -98,6 +98,14 @@ namespace CSharpCraft.Pico8
         }
 
         /// <summary>
+        /// Draw a filled rectangle with an XNA Color (delegates to IGraphicsAPI)
+        /// </summary>
+        public void Rectfill(double x1, double y1, double x2, double y2, Color c)
+        {
+            _graphicsAPI.Rectfill(x1, y1, x2, y2, c);
+        }
+
+        /// <summary>
         /// Clear screen to specified color (delegates to IGraphicsAPI)
         /// </summary>
         public void Cls(int col = 0)
@@ -204,6 +212,14 @@ namespace CSharpCraft.Pico8
         }
 
         /// <summary>
+        /// Draw large text with XNA Color (custom big font)
+        /// </summary>
+        public void PrintBig(string text, int x, int y, Color color)
+        {
+            _graphicsAPI.PrintBig(text, x, y, color);
+        }
+
+        /// <summary>
         /// Draw sprite (PICO-8 spr)
         /// </summary>
         public void Spr(double n, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
@@ -249,6 +265,14 @@ namespace CSharpCraft.Pico8
         public void Reload(int dest = 0, int source = 0, int len = 0, string filename = "")
         {
             _graphicsAPI.Reload(dest, source, len, filename);
+        }
+
+        /// <summary>
+        /// Draw a scaled pixel at position with color and size (debug visualization)
+        /// </summary>
+        public void DrawPixelScaled(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale, int effects, float layerDepth)
+        {
+            _graphicsAPI.DrawPixelScaled(position, color, rotation, origin, scale, effects, layerDepth);
         }
 
         #endregion

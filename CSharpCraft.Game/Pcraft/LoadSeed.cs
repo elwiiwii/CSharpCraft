@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework.Input;
 using NativeFileDialogs.Net;
@@ -57,7 +58,7 @@ public partial class LoadSeed : SpeedrunBase
                             Microsoft.Xna.Framework.Color col = new(pixel.R, pixel.G, pixel.B);
                             for (int i = 0; i < 16; i++)
                             {
-                                if (col == p8.Colors[i])
+                                if (col == GetColor(i))
                                 {
                                     loadedSeed[x + y * 128] = i;
                                     break;
@@ -112,12 +113,12 @@ public partial class LoadSeed : SpeedrunBase
         }
     }
 
-    public override void Init(Pico8Functions pico8)
+    public override void Init()
     {
         TextInputEXT.StartTextInput();
         TextInputEXT.TextInput += OnTextInput;
         menuX = 8;
-        base.Init(pico8);
+        base.Init();
     }
 
     private void OnTextInput(char c)
@@ -160,14 +161,14 @@ public partial class LoadSeed : SpeedrunBase
         {
             if (curMenu.Spr is not null)
             {
-                if (p8.Btnp(5) && !lb5)
+                if (Btnp(5) && !lb5)
                 {
                     if (curMenu == mainMenu)
                     {
                         OpenFileDialog();
                     }
                 }
-                else if (((p8.Btnp(4) && !lb4) || introActive) && loadedSeed is not null)
+                else if (((Btnp(4) && !lb4) || introActive) && loadedSeed is not null)
                 {
                     if (curMenu == mainMenu)
                     {
@@ -189,14 +190,14 @@ public partial class LoadSeed : SpeedrunBase
                             }
                             prevState = state;
                         }
-                        else if (p8.Btnp(4))
+                        else if (Btnp(4))
                         {
                             if (menuX == 8)
                             {
                                 introActive = false;
                                 ResetLevel();
                                 curMenu = null;
-                                p8.Music(1);
+                                Music(1);
                             }
                             else
                             {
@@ -229,19 +230,19 @@ public partial class LoadSeed : SpeedrunBase
                             }
                         }
 
-                        if (p8.Btnp(2)) { menuX = Math.Max(menuX - 1, 0); }
-                        else if (p8.Btnp(3)) { menuX = Math.Min(menuX + 1, 8); }
+                        if (Btnp(2)) { menuX = Math.Max(menuX - 1, 0); }
+                        else if (Btnp(3)) { menuX = Math.Min(menuX + 1, 8); }
                     }
                     else
                     {
                         ResetLevel();
                         curMenu = null;
-                        p8.Music(1);
+                        Music(1);
                     }
                 }
-                else if (p8.Btnp(2)) { yStart = 1; }
-                else if (p8.Btnp(3)) { yStart = -40; }
-                lb4 = p8.Btn(4);
+                else if (Btnp(2)) { yStart = 1; }
+                else if (Btnp(3)) { yStart = -40; }
+                lb4 = Btn(4);
                 return;
             }
 
@@ -282,8 +283,8 @@ public partial class LoadSeed : SpeedrunBase
             Entity othMenu = menuInvent;
             if (curMenu.Type == chest)
             {
-                if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
+                if (Btnp(0)) { toogleMenu -= 1; Sfx(18, 3); }
+                if (Btnp(1)) { toogleMenu += 1; Sfx(18, 3); }
                 toogleMenu = (toogleMenu % 2 + 2) % 2;
                 if (toogleMenu == 1)
                 {
@@ -294,18 +295,18 @@ public partial class LoadSeed : SpeedrunBase
 
             if (intMenu.List.Count > 0)
             {
-                if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
+                if (Btnp(2)) { intMenu.Sel -= 1; Sfx(18, 3); }
+                if (Btnp(3)) { intMenu.Sel += 1; Sfx(18, 3); }
 
                 intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
 
-                if (p8.Btnp(5) && !lb5)
+                if (Btnp(5) && !lb5)
                 {
                     if (curMenu.Type == chest)
                     {
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         Entity el = intMenu.List[intMenu.Sel];
-                        p8.Del(intMenu.List, el);
+                        Del(intMenu.List, el);
                         AddItemInList(othMenu.List, el, othMenu.Sel);
                         if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
                         if (intMenu == menuInvent && curItem == el)
@@ -321,42 +322,42 @@ public partial class LoadSeed : SpeedrunBase
                             if (CanCraft(rec))
                             {
                                 Craft(rec);
-                                p8.Sfx(16, 3);
+                                Sfx(16, 3);
                             }
                             else
                             {
-                                p8.Sfx(17, 3);
+                                Sfx(17, 3);
                             }
                         }
                     }
                     else
                     {
                         curItem = curMenu.List[curMenu.Sel];
-                        p8.Del(curMenu.List, curItem);
+                        Del(curMenu.List, curItem);
                         AddItemInList(curMenu.List, curItem, 0);
                         curMenu.Sel = 0;
                         curMenu = null;
                         block5 = true;
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         exitMenu = true;
                     }
                 }
             }
 
-            if (p8.Btnp(4) && !lb4)
+            if (Btnp(4) && !lb4)
             {
                 curMenu = null;
-                p8.Sfx(17, 3);
+                Sfx(17, 3);
                 exitMenu = true;
             }
-            lb4 = p8.Btn(4);
-            lb5 = p8.Btn(5);
+            lb4 = Btn(4);
+            lb5 = Btn(5);
             return;
         }
 
         for (int i = 0; i <= 5; i++)
         {
-            if (p8.Btnp(i))
+            if (Btnp(i))
             {
                 runtimer = 1;
             }
@@ -390,7 +391,7 @@ public partial class LoadSeed : SpeedrunBase
             FillEne(currentLevel);
             switchLevel = false;
             canSwitchLevel = false;
-            p8.Music(currentLevel == cave ? 2 : 1);
+            Music(currentLevel == cave ? 2 : 1);
         }
 
         if (curItem is not null)
@@ -401,7 +402,7 @@ public partial class LoadSeed : SpeedrunBase
         UpGround();
 
         Ground playHit = GetGr(plx, ply);
-        if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
+        if (playHit != lastGround && playHit == grwater) { Sfx(11, 3); }
         lastGround = playHit;
         int s = playHit == grwater || pstam <= 0 ? 1 : 2;
         if (playHit == grhole)
@@ -416,10 +417,10 @@ public partial class LoadSeed : SpeedrunBase
         F32 dx = F32.Zero;
         F32 dy = F32.Zero;
 
-        if (p8.Btn(0)) dx -= 1;
-        if (p8.Btn(1)) dx += 1;
-        if (p8.Btn(2)) dy -= 1;
-        if (p8.Btn(3)) dy += 1;
+        if (Btn(0)) dx -= 1;
+        if (Btn(1)) dx += 1;
+        if (Btn(2)) dy -= 1;
+        if (Btn(3)) dy += 1;
 
         F32 dl = GetInvLen(dx, dy);
 
@@ -446,8 +447,8 @@ public partial class LoadSeed : SpeedrunBase
 
         nearEnemies = [];
 
-        F32 ebx = p8.Cos(prot);
-        F32 eby = p8.Sin(prot);
+        F32 ebx = Cos(prot);
+        F32 eby = Sin(prot);
         UpEnemies(ebx, eby);
 
         (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
@@ -460,10 +461,10 @@ public partial class LoadSeed : SpeedrunBase
         llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
         lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
 
-        if (p8.Btn(5) && !block5 && canAct)
+        if (Btn(5) && !block5 && canAct)
         {
-            F32 bx = p8.Cos(prot);
-            F32 by = p8.Sin(prot);
+            F32 bx = Cos(prot);
+            F32 by = Sin(prot);
             F32 hitx = plx + bx * 8;
             F32 hity = ply + by * 8;
             Ground hit = GetGr(hitx, hity);
@@ -478,7 +479,7 @@ public partial class LoadSeed : SpeedrunBase
                 curItem.Y = F32.Floor(hity / 16) * 16 + 8;
                 curItem.Vx = F32.Zero;
                 curItem.Vy = F32.Zero;
-                p8.Add(entities, curItem);
+                Add(entities, curItem);
                 RemInList(invent, curItem);
                 canAct = false;
             }
@@ -570,15 +571,15 @@ public partial class LoadSeed : SpeedrunBase
         cly = F32.Max(cmy - m, cly);
         cly = F32.Min(cmy + m, cly);
 
-        if (p8.Btnp(4) && !lb4)
+        if (Btnp(4) && !lb4)
         {
             curMenu = menuInvent;
-            p8.Sfx(13, 3);
+            Sfx(13, 3);
         }
 
-        lb4 = p8.Btn(4);
-        lb5 = p8.Btn(5);
-        if (!p8.Btn(5))
+        lb4 = Btn(4);
+        lb5 = Btn(5);
+        if (!Btn(5))
         {
             block5 = false;
         }
@@ -587,12 +588,12 @@ public partial class LoadSeed : SpeedrunBase
 
         if (plife <= 0)
         {
-            p8.Reload();
-            p8.Memcpy(0x1000, 0x2000, 0x1000);
+            Reload();
+            Memcpy(0x1000, 0x2000, 0x1000);
             deathMenu = Cmenu(inventary, null, 128, "you died!", timer);
             curMenu = deathMenu;
             runtimer = 0;
-            p8.Music(4);
+            Music(4);
         }
     }
 
@@ -622,7 +623,7 @@ public partial class LoadSeed : SpeedrunBase
 
         if (spawnableTiles.Count > 0)
         {
-            int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, pSpawnRng));
+            int indx = F32.FloorToInt(Rnd(spawnableTiles.Count, pSpawnRng));
             (int x, int y) tile = spawnableTiles[indx];
 
             plx = F32.FromInt(tile.x * 16 + 8);
@@ -633,7 +634,7 @@ public partial class LoadSeed : SpeedrunBase
         {
             for (int j = 0; j < levelsy; j++)
             {
-                p8.Mset(i + levelx, j + levely, loadedSeed[i + levelx + (j + levely) * 128]);
+                Mset(i + levelx, j + levely, loadedSeed[i + levelx + (j + levely) * 128]);
                 if (loadedSeed[i + levelx + (j + levely) * 128] == 11)
                 {
                     holex = i + levelx;
@@ -652,18 +653,18 @@ public partial class LoadSeed : SpeedrunBase
     private int DrawStats(int xpos, int ypos, string title, int[] data, int[] sprites, int[][] pals, (int a, int b)[]? data2 = null)
     {
         int xstart = xpos;
-        p8.Print($"{title}", xpos, ypos, 7);
+        Print($"{title}", xpos, ypos, 7);
         xpos += title.Length * 4 + 3;
         for (int i = 0; i < data.Length; i++)
         {
             if (data[i] > 0)
             {
                 if (xpos > 127 - data[i].ToString().Length * 4 - (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) - 10) { xpos = xstart; ypos += 9; }
-                p8.Pal();
+                Pal();
                 SetPal(pals[i]);
-                p8.Spr(sprites[i], xpos, ypos - 2);
+                Spr(sprites[i], xpos, ypos - 2);
                 xpos += 9;
-                p8.Print($"{data[i]}{(data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}" : "")}", xpos, ypos, 7);
+                Print($"{data[i]}{(data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}" : "")}", xpos, ypos, 7);
                 xpos += data[i].ToString().Length * 4 + (data2 is not null ? $"/{data2[i].a}{(data2[i].b > 0 ? $",{data2[i].b}" : "")}".Length * 4 : 0) + 3;
             }
         }
@@ -674,21 +675,21 @@ public partial class LoadSeed : SpeedrunBase
     {
         if (curMenu is not null && curMenu.Spr is not null)
         {
-            p8.Camera();
-            p8.Palt(0, false);
-            p8.Rectfill(0, 0, 128, 46, 12);
-            p8.Rectfill(0, 46, 128, 128, 1);
+            Camera();
+            Palt(0, false);
+            Rectfill(0, 0, 128, 46, 12);
+            Rectfill(0, 46, 128, 128, 1);
             if (!collectStats || (curMenu == mainMenu || curMenu == introMenu))
             {
-                p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+                Spr((int)curMenu.Spr, 32, 14, 8, 8);
             }
             if (curMenu == introMenu)
             {
                 int y = 3;
                 string s1 = "rng seed ";
                 string s2 = $"{rngSeed}";
-                p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 2, y, 64 + (s1 + s2).Length * 2, y + 8, menuX == 0 ? 7 : 6);
-                p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 1, y + 1, 64 + (s1 + s2).Length * 2 - 1, y + 7, 12);
+                Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 2, y, 64 + (s1 + s2).Length * 2, y + 8, menuX == 0 ? 7 : 6);
+                Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 1, y + 1, 64 + (s1 + s2).Length * 2 - 1, y + 7, 12);
                 Printc(s1 + s2, 64, y + 2, menuX == 0 ? 7 : 6);
 
                 Printc($"collect stats: {collectStats.ToString().ToLower()}", 64, 67, menuX == 1 ? 7 : 6);
@@ -711,8 +712,8 @@ public partial class LoadSeed : SpeedrunBase
                 int y = 3;
                 string s1 = "rng seed ";
                 string s2 = $"{rngSeed}";
-                p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 2, y, 64 + (s1 + s2).Length * 2, y + 8, menuX == 0 ? 7 : 6);
-                p8.Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 1, y + 1, 64 + (s1 + s2).Length * 2 - 1, y + 7, 12);
+                Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 2, y, 64 + (s1 + s2).Length * 2, y + 8, menuX == 0 ? 7 : 6);
+                Rectfill(64 - (s1 + s2).Length * 2 + s1.Length * 4 - 1, y + 1, 64 + (s1 + s2).Length * 2 - 1, y + 7, 12);
                 Printc(s1 + s2, 64, y + 2, menuX == 0 ? 7 : 6);
 
                 Printc($"collect stats: {collectStats.ToString().ToLower()}", 64, 67, menuX == 1 ? 7 : 6);
@@ -733,20 +734,20 @@ public partial class LoadSeed : SpeedrunBase
                 IEnumerable<string> chunks = s.Chunk(127/4).Select(c => new string(c));
                 foreach (string chunk in chunks)
                 {
-                    p8.Print(chunk, 1, ypos, 7);
+                    Print(chunk, 1, ypos, 7);
                     ypos += 6;
                 }
                 ypos ++;
                 //rng seed
-                p8.Print($"rng seed: {rngSeed}", 1, ypos, 7);
+                Print($"rng seed: {rngSeed}", 1, ypos, 7);
                 ypos += 7;
                 //standardisation toggles
-                p8.Print($"Pspawn={(stdPlayerSpawn ? "s" : "r")} Zspawn={(stdZombieSpawns ? "s" : "r")} Zmove={(stdZombieMovement ? "s" : "r")}", 1, ypos, 7);
+                Print($"Pspawn={(stdPlayerSpawn ? "s" : "r")} Zspawn={(stdZombieSpawns ? "s" : "r")} Zmove={(stdZombieMovement ? "s" : "r")}", 1, ypos, 7);
                 ypos += 7;
-                p8.Print($"drops={(stdDrops ? "s" : "r")} spread={(stdSpread ? "s" : "r")} dmg={(stdDamage ? "s" : "r")}", 1, ypos, 7);
+                Print($"drops={(stdDrops ? "s" : "r")} spread={(stdSpread ? "s" : "r")} dmg={(stdDamage ? "s" : "r")}", 1, ypos, 7);
                 ypos += 7;
                 //time
-                p8.Print($"{curMenu.Text} {curMenu.Text2}", 1, ypos, 7);
+                Print($"{curMenu.Text} {curMenu.Text2}", 1, ypos, 7);
                 ypos += 8;
                 //missed hits
                 ypos = DrawStats(1, ypos, "missed hits:", missedHits, [75, 102, 98, 102, 99, 101, 100, 89], [[], pwrPal[0], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], pwrPal[1], workbench.Pal]);
@@ -787,9 +788,9 @@ public partial class LoadSeed : SpeedrunBase
             return;
         }
 
-        p8.Cls();
+        Cls();
 
-        p8.Camera(clx - 64, cly - 64);
+        Camera(clx - 64, cly - 64);
 
         DrawBack();
 
@@ -797,7 +798,7 @@ public partial class LoadSeed : SpeedrunBase
 
         Denemies();
 
-        p8.Camera();
+        Camera();
         Dbar(4, 4, plife, llife, 8, 2);
         Dbar(4, 9, F32.Max(F32.Zero, pstam), lstam, 11, 3);
 
@@ -811,7 +812,7 @@ public partial class LoadSeed : SpeedrunBase
             if (curItem.Count is not null)
             {
                 string c = $"{curItem.Count}";
-                p8.Print(c, ix + 88 - 16, iy + 3, 7);
+                Print(c, ix + 88 - 16, iy + 3, 7);
             }
         }
 
@@ -819,7 +820,7 @@ public partial class LoadSeed : SpeedrunBase
         {
             return;
         }
-        p8.Camera();
+        Camera();
         if (curMenu.Type == chest)
         {
             if (toogleMenu == 0)
@@ -839,7 +840,7 @@ public partial class LoadSeed : SpeedrunBase
             {
                 Entity curgoal = curMenu.List[curMenu.Sel];
                 Panel("have", 71, 50, 52, 30);
-                p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
+                Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
                 RequireList(curgoal, 4, 79, 104, 50);
             }
             List(curMenu, 4, 16, 68, 64, 6);

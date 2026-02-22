@@ -11,7 +11,7 @@ public class RankedScene(IScene prevScene) : IScene
     public string SceneName { get => "ranked"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
     private Icon back;
     private Icon replays;
     private Icon statistics;
@@ -27,14 +27,13 @@ public class RankedScene(IScene prevScene) : IScene
     private MouseState prevState;
     private bool isInitializing;
 
-    public async void Init(Pico8Functions pico8)
+    public async void Init()
     {
         if (isInitializing) return;
         isInitializing = true;
 
         try
         {
-            p8 = pico8;
 
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)

@@ -48,4 +48,6 @@ public class MapManager : IMapManager
         if (n < 0 || n >= flagData.Length) return 0;
         return flagData[n];
     }
+
+    public int[] GetMapData() => mapData;
 }

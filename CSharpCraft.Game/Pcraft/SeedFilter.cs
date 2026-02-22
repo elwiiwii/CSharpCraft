@@ -398,7 +398,7 @@ public static class SeedFilter
             {
                 if (!tcs.Task.IsCompleted)
                 {
-                    tcs.TrySetResult((null, null, -1));
+                    tcs.TrySetResult((null!, null!, -1));
                 }
             }
         }, ct);

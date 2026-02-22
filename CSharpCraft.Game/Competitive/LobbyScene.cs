@@ -13,12 +13,11 @@ namespace CSharpCraft.Competitive;
 
 public class LobbyScene(Role joinRole) : PcraftBase
 {
-#nullable enable
+    private Pico8Functions p8 = null!;
     private List<Item> actionsItems = new();
     private List<Item> rulesItems = new();
     private string roomName;
     private string roomPassword;
-#nullable disable
 
     public override string SceneName { get => "1"; }
     public override double Fps { get => 60.0; }
@@ -35,14 +34,13 @@ public class LobbyScene(Role joinRole) : PcraftBase
     private RoomSettings actionsSettings;
     private RoomSettings rulesSettings;
 
-    public override async void Init(Pico8Functions pico8)
+    public override async void Init()
     {
         if (isInitializing) return;
         isInitializing = true;
 
         try
         {
-            p8 = pico8;
 
             await AccountHandler.ConnectToServer();
             if (!AccountHandler._isLoggedIn)
@@ -71,7 +69,7 @@ public class LobbyScene(Role joinRole) : PcraftBase
             prevMouseState = Mouse.GetState();
             cursorX = prevMouseState.X - ((p8.Window.ClientBounds.Width - p8.Batch.GraphicsDevice.Viewport.Width) / 2.0f);
             cursorY = prevMouseState.Y - ((p8.Window.ClientBounds.Height - p8.Batch.GraphicsDevice.Viewport.Height) / 2.0f);
-            base.Init(p8);
+            base.Init();
             ResetLevel();
 
             isInitialized = true;

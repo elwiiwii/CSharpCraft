@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using FixMath;
+using Microsoft.Xna.Framework;
 
 namespace CSharpCraft.Pico8
 {
@@ -92,10 +93,22 @@ namespace CSharpCraft.Pico8
             => Orch.Graphics.Rectfill(x1, y1, x2, y2, color);
 
         /// <summary>
+        /// Draw a filled rectangle with an XNA Color (PICO-8 rectfill)
+        /// </summary>
+        public static void Rectfill(double x1, double y1, double x2, double y2, Color color)
+            => Orch.Graphics.Rectfill(x1, y1, x2, y2, color);
+
+        /// <summary>
         /// Draw text at position (PICO-8 print)
         /// </summary>
         public static void Print(string text, double x, double y, double c)
             => Orch.Graphics.Print(text, x, y, c);
+
+        /// <summary>
+        /// Draw large text with XNA Color (custom big font)
+        /// </summary>
+        public static void PrintBig(string text, int x, int y, Color color)
+            => Orch.Graphics.PrintBig(text, x, y, color);
 
         /// <summary>
         /// Draw sprite (PICO-8 spr)
@@ -168,6 +181,16 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public static Microsoft.Xna.Framework.Color GetColor(int index)
             => Orch.Graphics.GetColor(index);
+
+        /// <summary>
+        /// Get the current camera X offset
+        /// </summary>
+        public static F32 CameraOffsetX => Orch.Graphics.CameraOffset.x;
+
+        /// <summary>
+        /// Get the current camera Y offset
+        /// </summary>
+        public static F32 CameraOffsetY => Orch.Graphics.CameraOffset.y;
 
         #endregion
 
@@ -245,6 +268,13 @@ namespace CSharpCraft.Pico8
         public static int Fget(int n)
             => Orch.MapManager!.Fget(n);
 
+        /// <summary>
+        /// Get reference to raw map data array.
+        /// Used for bulk access (e.g., saving/loading seeds).
+        /// </summary>
+        public static int[] GetMapData()
+            => Orch.MapManager!.GetMapData();
+
         #endregion
 
         #region AUDIO API
@@ -305,6 +335,14 @@ namespace CSharpCraft.Pico8
         }
 
         /// <summary>
+        /// Cosine function accepting F32 angle (legacy overload)
+        /// </summary>
+        public static F32 Cos(F32 angle)
+        {
+            return F32.FromDouble(MathF.Cos(angle.Float * MathF.PI * 2));
+        }
+
+        /// <summary>
         /// Sine function (angle in 0..1 range where 1 = full turn)
         /// Note: PICO-8 sin is inverted compared to standard math
         /// </summary>
@@ -314,10 +352,42 @@ namespace CSharpCraft.Pico8
         }
 
         /// <summary>
+        /// Sine function accepting F32 angle (legacy overload)
+        /// </summary>
+        public static F32 Sin(F32 angle)
+        {
+            return F32.FromDouble(-MathF.Sin(angle.Float * MathF.PI * 2));
+        }
+
+        /// <summary>
         /// Get random value from 0 to max (PICO-8 rnd)
         /// </summary>
-        public static float Rnd(float max = 1.0f)
-            => (float)Rand.NextDouble() * max;
+        public static F32 Rnd(float max = 1.0f)
+            => F32.FromDouble(Rand.NextDouble() * max);
+
+        /// <summary>
+        /// Get random F32 value from 0 to max (F32 overload)
+        /// </summary>
+        public static F32 Rnd(F32 max)
+            => F32.FromDouble(Rand.NextDouble() * max.Double);
+
+        /// <summary>
+        /// Get random F32 value from 0 to limit using specific Random instance (for deterministic seeded randomness)
+        /// </summary>
+        public static F32 Rnd(double limit, Random? r)
+        {
+            var rng = r ?? Rand;
+            return F32.FromDouble(rng.NextDouble() * limit);
+        }
+
+        /// <summary>
+        /// Get random F32 value from 0 to limit using specific Random (F32 overload)
+        /// </summary>
+        public static F32 Rnd(F32 limit, Random? r)
+        {
+            var rng = r ?? Rand;
+            return F32.FromDouble(rng.NextDouble() * limit.Double);
+        }
 
         /// <summary>
         /// Return the middle value of three numbers (PICO-8 mid)
@@ -439,6 +509,22 @@ namespace CSharpCraft.Pico8
         {
             // Stub: persistent data not yet implemented
         }
+
+        /// <summary>
+        /// Menu item stub (PICO-8 menuitem)
+        /// Used to add items to the pause menu.
+        /// </summary>
+        public static void Menuitem(int index, Func<string> getName, Action? callback = null)
+        {
+            // Stub: menu items not yet implemented
+        }
+
+        /// <summary>
+        /// Draw a scaled pixel (1x1 texture) at position with color and scale.
+        /// Used for debug overlays and visualizations.
+        /// </summary>
+        public static void DrawPixelScaled(Microsoft.Xna.Framework.Vector2 position, Microsoft.Xna.Framework.Color color, float rotation, Microsoft.Xna.Framework.Vector2 origin, Microsoft.Xna.Framework.Vector2 scale, int effects, float layerDepth)
+            => Orch.Graphics.DrawPixelScaled(position, color, rotation, origin, scale, effects, layerDepth);
 
         #endregion
 

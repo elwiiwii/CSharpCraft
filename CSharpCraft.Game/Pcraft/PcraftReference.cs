@@ -5,7 +5,6 @@ public class PcraftReference(Pico8Functions p8)
 {
     private readonly Pico8Functions p8 = p8;
 
-#nullable enable
 
     private List<Entity>? anvilRecipe;
 
@@ -73,7 +72,6 @@ public class PcraftReference(Pico8Functions p8)
 
     private List<Entity>? workbenchRecipe;
 
-#nullable disable
 
     //p.craft
     //by nusan

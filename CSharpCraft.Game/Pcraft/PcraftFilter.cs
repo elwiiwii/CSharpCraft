@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Force.DeepCloner;
 using Microsoft.Xna.Framework.Input;
@@ -94,8 +95,8 @@ public class PcraftFilter : PcraftBase, IDisposable
                     F32 c1 = n[i][j];
                     F32 c2 = n[i + step][j];
                     F32 c3 = n[i][j + step];
-                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
-                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
+                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (Rnd(1, random) - F32.Half) * cscal;
+                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (Rnd(1, random) - F32.Half) * cscal;
                 }
             }
 
@@ -107,7 +108,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                     F32 c2 = n[i + step][j];
                     F32 c3 = n[i][j + step];
                     F32 c4 = n[i + step][j + step];
-                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (p8.Rnd(1, random) - F32.Half) * cscal;
+                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (Rnd(1, random) - F32.Half) * cscal;
                 }
             }
 
@@ -193,7 +194,7 @@ public class PcraftFilter : PcraftBase, IDisposable
         {
             for (int j = 0; j < levelsy; j++)
             {
-                p8.Mset(i + levelx, j + levely, level[i][j].Double);
+                Mset(i + levelx, j + levely, level[i][j].Double);
             }
         }
 
@@ -204,11 +205,11 @@ public class PcraftFilter : PcraftBase, IDisposable
         {
             for (int j = -1; j <= 1; j++)
             {
-                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+                Mset(holex + i, holey + j, levelUnder ? 1 : 3);
             }
         }
 
-        p8.Mset(holex, holey, 11);
+        Mset(holex, holey, 11);
 
         clx = plx;
         cly = ply;
@@ -219,8 +220,8 @@ public class PcraftFilter : PcraftBase, IDisposable
 
     private async Task ResetLevelAsync(CancellationToken ct)
     {
-        p8.Reload();
-        p8.Memcpy(0x1000, 0x2000, 0x1000);
+        Reload();
+        Memcpy(0x1000, 0x2000, 0x1000);
 
         prot = F32.Zero;
         lrot = F32.Zero;
@@ -251,7 +252,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             Rndwat[i] = new F32[16];
             for (int j = 0; j <= 15; j++)
             {
-                Rndwat[i][j] = p8.Rnd(100);
+                Rndwat[i][j] = Rnd(100);
             }
         }
 
@@ -262,13 +263,13 @@ public class PcraftFilter : PcraftBase, IDisposable
         tmpworkbench.HasCol = true;
         tmpworkbench.List = workbenchRecipe;
 
-        p8.Add(invent, tmpworkbench);
-        p8.Add(invent, Inst(pickuptool));
+        Add(invent, tmpworkbench);
+        Add(invent, Inst(pickuptool));
     }
 
-    public override void Init(Pico8Functions pico8)
+    public override void Init()
     {
-        base.Init(pico8);
+        base.Init();
         camoffy = 0;
         menuY = 0;
         menuX = 0;
@@ -379,25 +380,25 @@ public class PcraftFilter : PcraftBase, IDisposable
 
                 if (menuY < buttonRows.Count)
                 {
-                    if (p8.Btnp(0)) { menuX = Math.Max(0, menuX - 1); }
-                    if (p8.Btnp(1)) { menuX = Math.Min(buttonRows[menuY].Count - 1, menuX + 1); }
-                    if (p8.Btnp(2)) { menuY = Math.Max(0, menuY - 1); menuX = 0; }
-                    if (p8.Btnp(3)) { menuY += 1; menuX = 0; }
+                    if (Btnp(0)) { menuX = Math.Max(0, menuX - 1); }
+                    if (Btnp(1)) { menuX = Math.Min(buttonRows[menuY].Count - 1, menuX + 1); }
+                    if (Btnp(2)) { menuY = Math.Max(0, menuY - 1); menuX = 0; }
+                    if (Btnp(3)) { menuY += 1; menuX = 0; }
                     if (menuY > buttonRows.Count - 1 && densityChecks.Count + densityComparisons.Count == 0) { menuY = buttonRows.Count - 1; }
                     if (menuY < buttonRows.Count)
                     {
                         if (menuX > buttonRows[menuY].Count - 1) { menuX = buttonRows[menuY].Count - 1; }
                         buttonRows[menuY][menuX].OutCol = 9;
-                        if (p8.Btnp(4)) { buttonRows[menuY][menuX].Function(); }
+                        if (Btnp(4)) { buttonRows[menuY][menuX].Function(); }
                     }
                 }
                 else if (menuY > buttonRows.Count - 1)
                 {
-                    if ((p8.Btnp(4) || p8.Btnp(5)) && menuY - buttonRows.Count < densityChecks.Count && menuX == 5) { densityChecks.RemoveAt(menuY - buttonRows.Count); return; }
-                    if ((p8.Btnp(4) || p8.Btnp(5)) && (menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count && (menuY - buttonRows.Count - densityChecks.Count) % 2 == 0 && menuX == 6) { densityComparisons.RemoveAt((menuY - buttonRows.Count - densityChecks.Count) / 2); return; }
-                    if ((p8.Btnp(4) || p8.Btnp(5)) && (menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count && (menuY - buttonRows.Count - densityChecks.Count) % 2 == 1 && menuX == 2) { densityComparisons.RemoveAt((menuY - buttonRows.Count - densityChecks.Count) / 2); return; }
+                    if ((Btnp(4) || Btnp(5)) && menuY - buttonRows.Count < densityChecks.Count && menuX == 5) { densityChecks.RemoveAt(menuY - buttonRows.Count); return; }
+                    if ((Btnp(4) || Btnp(5)) && (menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count && (menuY - buttonRows.Count - densityChecks.Count) % 2 == 0 && menuX == 6) { densityComparisons.RemoveAt((menuY - buttonRows.Count - densityChecks.Count) / 2); return; }
+                    if ((Btnp(4) || Btnp(5)) && (menuY - buttonRows.Count - densityChecks.Count) / 2 < densityComparisons.Count && (menuY - buttonRows.Count - densityChecks.Count) % 2 == 1 && menuX == 2) { densityComparisons.RemoveAt((menuY - buttonRows.Count - densityChecks.Count) / 2); return; }
                     
-                    if (p8.Btn(4) || p8.Btn(5))
+                    if (Btn(4) || Btn(5))
                     {
                         if (menuY - buttonRows.Count < densityChecks.Count)
                         {
@@ -410,12 +411,12 @@ public class PcraftFilter : PcraftBase, IDisposable
                     }
                     else
                     {
-                        if (p8.Btnp(0))
+                        if (Btnp(0))
                         {
                             menuX = Math.Max(menuX - 1, 0);
                             tileIndex = 0;
                         }
-                        if (p8.Btnp(1))
+                        if (Btnp(1))
                         {
                             if (menuY - buttonRows.Count < densityChecks.Count)
                             {
@@ -427,7 +428,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                             }
                             tileIndex = 0;
                         }
-                        if (p8.Btnp(2))
+                        if (Btnp(2))
                         {
                             if (((menuY - buttonRows.Count < densityChecks.Count && menuX == 2) ||
                                 menuY - buttonRows.Count >= densityChecks.Count && (menuX == 2 || menuX == 5)) && tileIndex > 0)
@@ -441,7 +442,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                                 menuX = 0;
                             }
                         }
-                        if (p8.Btnp(3))
+                        if (Btnp(3))
                         {
                             int group = (menuY - buttonRows.Count - densityChecks.Count) / 2;
                             if (menuY - buttonRows.Count < densityChecks.Count && menuX == 2 && tileIndex < densityChecks[menuY - buttonRows.Count].Tiles.Count)
@@ -472,20 +473,20 @@ public class PcraftFilter : PcraftBase, IDisposable
                 int yIndex = 0;
                 foreach (var row in buttonRows)
                 {
-                    if (yIndex == menuY && (p8.Btnp(2) || p8.Btnp(3))) { camoffy = 0; }
+                    if (yIndex == menuY && (Btnp(2) || Btnp(3))) { camoffy = 0; }
                     heightTotal += 10;
                     yIndex++;
                 }
                 foreach (var check in densityChecks)
                 {
-                    if (yIndex == menuY && (p8.Btnp(2) || p8.Btnp(3))) { camoffy = heightTotal; }
+                    if (yIndex == menuY && (Btnp(2) || Btnp(3))) { camoffy = heightTotal; }
                     heightTotal += 27;
                     heightTotal += check.Tiles.Count * 6;
                     yIndex++;
                 }
                 foreach (var check in densityComparisons)
                 {
-                    if ((yIndex == menuY || yIndex + 1 == menuY) && (p8.Btnp(2) || p8.Btnp(3))) { camoffy = heightTotal; }
+                    if ((yIndex == menuY || yIndex + 1 == menuY) && (Btnp(2) || Btnp(3))) { camoffy = heightTotal; }
                     heightTotal += 47;
                     heightTotal += Math.Max(check.Tiles1.Count, check.Tiles2.Count) * 6;
                     yIndex += 2;
@@ -498,13 +499,13 @@ public class PcraftFilter : PcraftBase, IDisposable
             {
                 if (ResetLevelTask.Status == TaskStatus.RanToCompletion)
                 {
-                    if (p8.Btnp(4) && !lb4)
+                    if (Btnp(4) && !lb4)
                     {
                         curMenu = null;
-                        p8.Music(1);
+                        Music(1);
 
                         prevMap = curMap.DeepClone();
-                        curMap = new() { Map = p8._map, Saved = false };
+                        curMap = new() { Map = GetMapData(), Saved = false };
 
                         void SaveSeed(SavedMap map)
                         {
@@ -514,7 +515,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                                 {
                                     for (int y = 0; y < 64; y++)
                                     {
-                                        var col = p8.Colors[map.Map[x + y * 128] % 16];
+                                        var col = GetColor(map.Map[x + y * 128] % 16);
                                         image[x, y] = new Rgba32(col.R, col.G, col.B, col.A);
                                     }
                                 }
@@ -532,22 +533,22 @@ public class PcraftFilter : PcraftBase, IDisposable
                             }
                             map.Saved = true;
                         }
-                        if (!curMap.Map.All(x => x == 0)) { p8.Menuitem(1, () => $"{(curMap.Saved == false ? "save cur seed" : "cur saved")}", () => SaveSeed(curMap)); }
-                        if (!prevMap.Map.All(x => x == 0)) { p8.Menuitem(2, () => $"{(prevMap.Saved == false ? "save prev seed" : "prev saved")}", () => SaveSeed(prevMap)); }
+                        if (!curMap.Map.All(x => x == 0)) { Menuitem(1, () => $"{(curMap.Saved == false ? "save cur seed" : "cur saved")}", () => SaveSeed(curMap)); }
+                        if (!prevMap.Map.All(x => x == 0)) { Menuitem(2, () => $"{(prevMap.Saved == false ? "save prev seed" : "prev saved")}", () => SaveSeed(prevMap)); }
                     }
-                    lb4 = p8.Btn(4);
+                    lb4 = Btn(4);
                 }
                 return;
             }
             else if (curMenu.Spr is not null)
             {
-                if (p8.Btnp(4) && !lb4)
+                if (Btnp(4) && !lb4)
                 {
                     ResetLevel();
                     curMenu = null;
-                    p8.Music(1);
+                    Music(1);
                 }
-                lb4 = p8.Btn(4);
+                lb4 = Btn(4);
                 return;
             }
 
@@ -555,8 +556,8 @@ public class PcraftFilter : PcraftBase, IDisposable
             Entity othMenu = menuInvent;
             if (curMenu.Type == chest)
             {
-                if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
+                if (Btnp(0)) { toogleMenu -= 1; Sfx(18, 3); }
+                if (Btnp(1)) { toogleMenu += 1; Sfx(18, 3); }
                 toogleMenu = (toogleMenu % 2 + 2) % 2;
                 if (toogleMenu == 1)
                 {
@@ -567,18 +568,18 @@ public class PcraftFilter : PcraftBase, IDisposable
 
             if (intMenu.List.Count > 0)
             {
-                if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
+                if (Btnp(2)) { intMenu.Sel -= 1; Sfx(18, 3); }
+                if (Btnp(3)) { intMenu.Sel += 1; Sfx(18, 3); }
 
                 intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
 
-                if (p8.Btnp(5) && !lb5)
+                if (Btnp(5) && !lb5)
                 {
                     if (curMenu.Type == chest)
                     {
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         Entity el = intMenu.List[intMenu.Sel];
-                        p8.Del(intMenu.List, el);
+                        Del(intMenu.List, el);
                         AddItemInList(othMenu.List, el, othMenu.Sel);
                         if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
                         if (intMenu == menuInvent && curItem == el)
@@ -594,34 +595,34 @@ public class PcraftFilter : PcraftBase, IDisposable
                             if (CanCraft(rec))
                             {
                                 Craft(rec);
-                                p8.Sfx(16, 3);
+                                Sfx(16, 3);
                             }
                             else
                             {
-                                p8.Sfx(17, 3);
+                                Sfx(17, 3);
                             }
                         }
                     }
                     else
                     {
                         curItem = curMenu.List[curMenu.Sel];
-                        p8.Del(curMenu.List, curItem);
+                        Del(curMenu.List, curItem);
                         AddItemInList(curMenu.List, curItem, 0);
                         curMenu.Sel = 0;
                         curMenu = null;
                         block5 = true;
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                     }
                 }
             }
 
-            if (p8.Btnp(4) && !lb4)
+            if (Btnp(4) && !lb4)
             {
                 curMenu = null;
-                p8.Sfx(17, 3);
+                Sfx(17, 3);
             }
-            lb4 = p8.Btn(4);
-            lb5 = p8.Btn(5);
+            lb4 = Btn(4);
+            lb5 = Btn(5);
             return;
         }
 
@@ -634,7 +635,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             FillEne(currentLevel);
             switchLevel = false;
             canSwitchLevel = false;
-            p8.Music(currentLevel == cave ? 2 : 1);
+            Music(currentLevel == cave ? 2 : 1);
         }
 
         if (curItem is not null)
@@ -645,7 +646,7 @@ public class PcraftFilter : PcraftBase, IDisposable
         UpGround();
 
         Ground playHit = GetGr(plx, ply);
-        if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
+        if (playHit != lastGround && playHit == grwater) { Sfx(11, 3); }
         lastGround = playHit;
         int s = playHit == grwater || pstam <= 0 ? 1 : 2;
         if (playHit == grhole)
@@ -660,10 +661,10 @@ public class PcraftFilter : PcraftBase, IDisposable
         F32 dx = F32.Zero;
         F32 dy = F32.Zero;
 
-        if (p8.Btn(0)) dx -= 1;
-        if (p8.Btn(1)) dx += 1;
-        if (p8.Btn(2)) dy -= 1;
-        if (p8.Btn(3)) dy += 1;
+        if (Btn(0)) dx -= 1;
+        if (Btn(1)) dx += 1;
+        if (Btn(2)) dy -= 1;
+        if (Btn(3)) dy += 1;
 
         F32 dl = GetInvLen(dx, dy);
 
@@ -690,8 +691,8 @@ public class PcraftFilter : PcraftBase, IDisposable
 
         nearEnemies = [];
 
-        F32 ebx = p8.Cos(prot);
-        F32 eby = p8.Sin(prot);
+        F32 ebx = Cos(prot);
+        F32 eby = Sin(prot);
         UpEnemies(ebx, eby);
 
         (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
@@ -704,10 +705,10 @@ public class PcraftFilter : PcraftBase, IDisposable
         llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
         lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
 
-        if (p8.Btn(5) && !block5 && canAct)
+        if (Btn(5) && !block5 && canAct)
         {
-            F32 bx = p8.Cos(prot);
-            F32 by = p8.Sin(prot);
+            F32 bx = Cos(prot);
+            F32 by = Sin(prot);
             F32 hitx = plx + bx * 8;
             F32 hity = ply + by * 8;
             Ground hit = GetGr(hitx, hity);
@@ -721,7 +722,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                 curItem.Y = F32.Floor(hity / 16) * 16 + 8;
                 curItem.Vx = F32.Zero;
                 curItem.Vy = F32.Zero;
-                p8.Add(entities, curItem);
+                Add(entities, curItem);
                 RemInList(invent, curItem);
                 canAct = false;
             }
@@ -774,15 +775,15 @@ public class PcraftFilter : PcraftBase, IDisposable
         cly = F32.Max(cmy - m, cly);
         cly = F32.Min(cmy + m, cly);
 
-        if (p8.Btnp(4) && !lb4)
+        if (Btnp(4) && !lb4)
         {
             curMenu = menuInvent;
-            p8.Sfx(13, 3);
+            Sfx(13, 3);
         }
 
-        lb4 = p8.Btn(4);
-        lb5 = p8.Btn(5);
-        if (!p8.Btn(5))
+        lb4 = Btn(4);
+        lb5 = Btn(5);
+        if (!Btn(5))
         {
             block5 = false;
         }
@@ -791,10 +792,10 @@ public class PcraftFilter : PcraftBase, IDisposable
 
         if (plife <= 0)
         {
-            p8.Reload();
-            p8.Memcpy(0x1000, 0x2000, 0x1000);
+            Reload();
+            Memcpy(0x1000, 0x2000, 0x1000);
             curMenu = deathMenu;
-            p8.Music(4);
+            Music(4);
         }
     }
 
@@ -804,19 +805,19 @@ public class PcraftFilter : PcraftBase, IDisposable
         {
             case 0:
                 var temp0 = densityChecks[menuY - buttonRows.Count].Radius;
-                if (p8.Btnp(0) || p8.Btn(3)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
-                else if (p8.Btnp(1) || p8.Btn(2)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
+                if (Btnp(0) || Btn(3)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
+                else if (Btnp(1) || Btn(2)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
                 densityChecks[menuY - buttonRows.Count].Radius = temp0;
                 break;
             case 1:
                 var temp1 = densityChecks[menuY - buttonRows.Count].Radius;
-                if (p8.Btnp(0) || p8.Btn(3)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
-                else if (p8.Btnp(1) || p8.Btn(2)) { temp1.Ub += temp1.Ub <= (densityChecks[menuY - buttonRows.Count].IsCave ? 16 : 32) ? 1 : 0; }
+                if (Btnp(0) || Btn(3)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
+                else if (Btnp(1) || Btn(2)) { temp1.Ub += temp1.Ub <= (densityChecks[menuY - buttonRows.Count].IsCave ? 16 : 32) ? 1 : 0; }
                 densityChecks[menuY - buttonRows.Count].Radius = temp1;
                 break;
             case 2:
                 var temp2 = densityChecks[menuY - buttonRows.Count].Tiles;
-                if (p8.Btnp(0) || p8.Btn(3))
+                if (Btnp(0) || Btn(3))
                 {
                     if (tileIndex >= temp2.Count)
                     {
@@ -834,7 +835,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                         densityChecks[menuY - buttonRows.Count].Tiles = temp2;
                     }
                 }
-                else if (p8.Btnp(1) || p8.Btn(2))
+                else if (Btnp(1) || Btn(2))
                 {
                     if (tileIndex >= temp2.Count)
                     {
@@ -855,15 +856,15 @@ public class PcraftFilter : PcraftBase, IDisposable
                 break;
             case 3:
                 var temp3 = densityChecks[menuY - buttonRows.Count].Density;
-                if (p8.Btnp(0) || p8.Btn(3)) { temp3.Lb -= temp3.Lb > 0 ? temp3.Lb <= 1 ? 0.1 : 1 : 0; }
-                else if (p8.Btnp(1) || p8.Btn(2)) { temp3.Lb += temp3.Lb < 100 ? temp3.Lb < 1 ? 0.1 : 1 : 0; }
+                if (Btnp(0) || Btn(3)) { temp3.Lb -= temp3.Lb > 0 ? temp3.Lb <= 1 ? 0.1 : 1 : 0; }
+                else if (Btnp(1) || Btn(2)) { temp3.Lb += temp3.Lb < 100 ? temp3.Lb < 1 ? 0.1 : 1 : 0; }
                 temp3.Lb = Math.Round(temp3.Lb, 1);
                 densityChecks[menuY - buttonRows.Count].Density = temp3;
                 break;
             case 4:
                 var temp4 = densityChecks[menuY - buttonRows.Count].Density;
-                if (p8.Btnp(0) || p8.Btn(3)) { temp4.Ub -= temp4.Ub > 0 ? temp4.Ub <= 1 ? 0.1 : 1 : 0; }
-                else if (p8.Btnp(1) || p8.Btn(2)) { temp4.Ub += temp4.Ub < 100 ? temp4.Ub < 1 ? 0.1 : 1 : 0; }
+                if (Btnp(0) || Btn(3)) { temp4.Ub -= temp4.Ub > 0 ? temp4.Ub <= 1 ? 0.1 : 1 : 0; }
+                else if (Btnp(1) || Btn(2)) { temp4.Ub += temp4.Ub < 100 ? temp4.Ub < 1 ? 0.1 : 1 : 0; }
                 temp4.Ub = Math.Round(temp4.Ub, 1);
                 densityChecks[menuY - buttonRows.Count].Density = temp4;
                 break;
@@ -881,15 +882,15 @@ public class PcraftFilter : PcraftBase, IDisposable
                 if ((menuY - buttonRows.Count - densityChecks.Count) % 2 == 0)
                 {
                     var temp0 = densityComparisons[group].Radius1;
-                    if (p8.Btnp(0) || p8.Btn(3)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(2)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
+                    if (Btnp(0) || Btn(3)) { temp0.Lb -= temp0.Lb > 1 ? 1 : 0; }
+                    else if (Btnp(1) || Btn(2)) { temp0.Lb += temp0.Lb < temp0.Ub - 1 ? 1 : 0; }
                     densityComparisons[group].Radius1 = temp0;
                 }
                 else
                 {
                     var temp0 = densityComparisons[group].Mag;
-                    if (p8.Btnp(0) || p8.Btn(3)) { temp0 -= temp0 > 0 ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(2)) { temp0 += temp0 < 100 ? 1 : 0; }
+                    if (Btnp(0) || Btn(3)) { temp0 -= temp0 > 0 ? 1 : 0; }
+                    else if (Btnp(1) || Btn(2)) { temp0 += temp0 < 100 ? 1 : 0; }
                     densityComparisons[group].Mag = temp0;
                 }
                 break;
@@ -897,18 +898,18 @@ public class PcraftFilter : PcraftBase, IDisposable
                 if ((menuY - buttonRows.Count - densityChecks.Count) % 2 == 0)
                 {
                     var temp1 = densityComparisons[group].Radius1;
-                    if (p8.Btnp(0) || p8.Btn(3)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
-                    else if (p8.Btnp(1) || p8.Btn(2)) { temp1.Ub += temp1.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
+                    if (Btnp(0) || Btn(3)) { temp1.Ub -= temp1.Ub > temp1.Lb + 1 ? 1 : 0; }
+                    else if (Btnp(1) || Btn(2)) { temp1.Ub += temp1.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
                     densityComparisons[group].Radius1 = temp1;
                 }
                 else
                 {
-                    if (p8.Btnp(0) || p8.Btn(3))
+                    if (Btnp(0) || Btn(3))
                     {
                         if (densityComparisons[group].Opr == "<") { densityComparisons[group].Opr = "="; }
                         else if (densityComparisons[group].Opr == "=") { densityComparisons[group].Opr = ">"; }
                     }
-                    else if (p8.Btnp(1) || p8.Btn(2))
+                    else if (Btnp(1) || Btn(2))
                     {
                         if (densityComparisons[group].Opr == ">") { densityComparisons[group].Opr = "="; }
                         else if (densityComparisons[group].Opr == "=") { densityComparisons[group].Opr = "<"; }
@@ -917,7 +918,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                 break;
             case 2:
                 var temp2 = densityComparisons[group].Tiles1;
-                if (p8.Btnp(0) || p8.Btn(3))
+                if (Btnp(0) || Btn(3))
                 {
                     if (tileIndex >= temp2.Count)
                     {
@@ -935,7 +936,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                         densityComparisons[group].Tiles1 = temp2;
                     }
                 }
-                else if (p8.Btnp(1) || p8.Btn(2))
+                else if (Btnp(1) || Btn(2))
                 {
                     if (tileIndex >= temp2.Count)
                     {
@@ -956,19 +957,19 @@ public class PcraftFilter : PcraftBase, IDisposable
                 break;
             case 3:
                 var temp3 = densityComparisons[group].Radius2;
-                if (p8.Btnp(0) || p8.Btn(3)) { temp3.Lb -= temp3.Lb > 1 ? 1 : 0; }
-                else if (p8.Btnp(1) || p8.Btn(2)) { temp3.Lb += temp3.Lb < temp3.Ub - 1 ? 1 : 0; }
+                if (Btnp(0) || Btn(3)) { temp3.Lb -= temp3.Lb > 1 ? 1 : 0; }
+                else if (Btnp(1) || Btn(2)) { temp3.Lb += temp3.Lb < temp3.Ub - 1 ? 1 : 0; }
                 densityComparisons[group].Radius2 = temp3;
                 break;
             case 4:
                 var temp4 = densityComparisons[group].Radius2;
-                if (p8.Btnp(0) || p8.Btn(3)) { temp4.Ub -= temp4.Ub > temp4.Lb ? 1 : 0; }
-                else if (p8.Btnp(1) || p8.Btn(2)) { temp4.Ub += temp4.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
+                if (Btnp(0) || Btn(3)) { temp4.Ub -= temp4.Ub > temp4.Lb ? 1 : 0; }
+                else if (Btnp(1) || Btn(2)) { temp4.Ub += temp4.Ub <= (densityComparisons[group].IsCave ? 16 : 32) ? 1 : 0; }
                 densityComparisons[group].Radius2 = temp4;
                 break;
             case 5:
                 var temp5 = densityComparisons[group].Tiles2;
-                if (p8.Btnp(0) || p8.Btn(3))
+                if (Btnp(0) || Btn(3))
                 {
                     if (tileIndex >= temp5.Count)
                     {
@@ -986,7 +987,7 @@ public class PcraftFilter : PcraftBase, IDisposable
                         densityComparisons[group].Tiles2 = temp5;
                     }
                 }
-                else if (p8.Btnp(1) || p8.Btn(2))
+                else if (Btnp(1) || Btn(2))
                 {
                     if (tileIndex >= temp5.Count)
                     {
@@ -1016,27 +1017,27 @@ public class PcraftFilter : PcraftBase, IDisposable
         int count = check.Tiles.Count * 6;
         bool selected = menuY == buttonRows.Count + index;
 
-        p8.Rectfill(x, y + 5, x + 92, y + 25 + count, 7);
-        p8.Rectfill(x + 1, y + 6, x + 85, y + 24 + count, 1);
+        Rectfill(x, y + 5, x + 92, y + 25 + count, 7);
+        Rectfill(x + 1, y + 6, x + 85, y + 24 + count, 1);
 
-        p8.Rectfill(x + 2, y + 1, x + 4 + (check.IsCave ? 16 : 28), y + 4, 7);
-        p8.Rectfill(x + 3, y, x + 3 + (check.IsCave ? 16 : 28), y, 7);
-        p8.Rectfill(x + 3, y + 1, x + 3 + (check.IsCave ? 16 : 28), y + 5, 1);
-        p8.Print(check.IsCave ? "CAVE" : "SURFACE", x + 4, y + 1, 7);
+        Rectfill(x + 2, y + 1, x + 4 + (check.IsCave ? 16 : 28), y + 4, 7);
+        Rectfill(x + 3, y, x + 3 + (check.IsCave ? 16 : 28), y, 7);
+        Rectfill(x + 3, y + 1, x + 3 + (check.IsCave ? 16 : 28), y + 5, 1);
+        Print(check.IsCave ? "CAVE" : "SURFACE", x + 4, y + 1, 7);
 
-        p8.Rectfill(x + 87, y + 6, x + 91, y + 24 + count, selected && menuX == 5 ? 8 : 2);
-        p8.Print("x", x + 88, y + 13 + count / 2, 7);
+        Rectfill(x + 87, y + 6, x + 91, y + 24 + count, selected && menuX == 5 ? 8 : 2);
+        Print("x", x + 88, y + 13 + count / 2, 7);
 
-        p8.Rectfill(x + 2, y + 7, x + 28, y + 15, 7);
-        p8.Rectfill(x + 3, y + 8, x + 27, y + 14, 13);
-        p8.Print("radius", x + 4, y + 9, 7);
+        Rectfill(x + 2, y + 7, x + 28, y + 15, 7);
+        Rectfill(x + 3, y + 8, x + 27, y + 14, 13);
+        Print("radius", x + 4, y + 9, 7);
         Printc($"{check.Radius.Lb} {(check.Radius.Ub < 10 ? " " : "  ")}", x + 16, y + 18, selected && menuX == 0 ? 9 : 7);
         Printc($"{(check.Radius.Lb < 10 ? " " : "  ")}-{(check.Radius.Ub < 10 ? " " : "  ")}", x + 16, y + 18, 7);
         Printc($"{(check.Radius.Lb < 10 ? " " : "  ")} {check.Radius.Ub}", x + 16, y + 18, selected && menuX == 1 ? 9 : 7);
 
-        p8.Rectfill(x + 30, y + 7, x + 52, y + 15, 7);
-        p8.Rectfill(x + 31, y + 8, x + 51, y + 14, 13);
-        p8.Print("tiles", x + 32, y + 9, 7);
+        Rectfill(x + 30, y + 7, x + 52, y + 15, 7);
+        Rectfill(x + 31, y + 8, x + 51, y + 14, 13);
+        Print("tiles", x + 32, y + 9, 7);
         int i = 0;
         foreach (var tile in check.Tiles)
         {
@@ -1045,9 +1046,9 @@ public class PcraftFilter : PcraftBase, IDisposable
         }
         Printc("add", x + 42, y + 18 + i * 6, selected && i == tileIndex && menuX == 2 ? 9 : 13);
 
-        p8.Rectfill(x + 54, y + 7, x + 84, y + 15, 7);
-        p8.Rectfill(x + 55, y + 8, x + 83, y + 14, 13);
-        p8.Print("density", x + 56, y + 9, 7);
+        Rectfill(x + 54, y + 7, x + 84, y + 15, 7);
+        Rectfill(x + 55, y + 8, x + 83, y + 14, 13);
+        Print("density", x + 56, y + 9, 7);
         Printc($"{check.Density.Lb} {new string(' ', check.Density.Ub.ToString().Length)}", x + 70, y + 18, selected && menuX == 3 ? 9 : 7);
         Printc($"{new string(' ', check.Density.Lb.ToString().Length)}-{new string(' ', check.Density.Ub.ToString().Length)}", x + 70, y + 18, 7);
         Printc($"{new string(' ', check.Density.Lb.ToString().Length)} {check.Density.Ub}", x + 70, y + 18, selected && menuX == 4 ? 9 : 7);
@@ -1060,36 +1061,36 @@ public class PcraftFilter : PcraftBase, IDisposable
         bool selected1 = menuY == buttonRows.Count + densityChecks.Count + index;
         bool selected2 = menuY == buttonRows.Count + densityChecks.Count + index + 1;
         
-        p8.Rectfill(x, y + 5, x + 114, y + 45 + count, 7);
-        p8.Rectfill(x + 1, y + 6, x + 53, y + 24 + count, 1);
-        p8.Rectfill(x + 55, y + 6, x + 107, y + 24 + count, 1);
-        p8.Rectfill(x + 1, y + 26 + count, x + 107, y + 44 + count, 1);
-        p8.Rectfill(x + 20, y + 26 + count, x + 88, y + 40 + count, 7);
-        p8.Rectfill(x + 21, y + 26 + count, x + 87, y + 39 + count, 1);
-        p8.Rectfill(x + 37, y + 40 + count, x + 71, y + 40 + count, 1);
-        p8.Rectfill(x + 34, y + 38 + count, x + 34, y + 42 + count, 7);
-        p8.Rectfill(x + 35, y + 39 + count, x + 35, y + 41 + count, 7);
-        p8.Rectfill(x + 74, y + 38 + count, x + 74, y + 42 + count, 7);
-        p8.Rectfill(x + 73, y + 39 + count, x + 73, y + 41 + count, 7);
+        Rectfill(x, y + 5, x + 114, y + 45 + count, 7);
+        Rectfill(x + 1, y + 6, x + 53, y + 24 + count, 1);
+        Rectfill(x + 55, y + 6, x + 107, y + 24 + count, 1);
+        Rectfill(x + 1, y + 26 + count, x + 107, y + 44 + count, 1);
+        Rectfill(x + 20, y + 26 + count, x + 88, y + 40 + count, 7);
+        Rectfill(x + 21, y + 26 + count, x + 87, y + 39 + count, 1);
+        Rectfill(x + 37, y + 40 + count, x + 71, y + 40 + count, 1);
+        Rectfill(x + 34, y + 38 + count, x + 34, y + 42 + count, 7);
+        Rectfill(x + 35, y + 39 + count, x + 35, y + 41 + count, 7);
+        Rectfill(x + 74, y + 38 + count, x + 74, y + 42 + count, 7);
+        Rectfill(x + 73, y + 39 + count, x + 73, y + 41 + count, 7);
 
-        p8.Rectfill(x + 2, y + 1, x + 4 + (check.IsCave ? 16 : 28), y + 4, 7);
-        p8.Rectfill(x + 3, y, x + 3 + (check.IsCave ? 16 : 28), y, 7);
-        p8.Rectfill(x + 3, y + 1, x + 3 + (check.IsCave ? 16 : 28), y + 5, 1);
-        p8.Print(check.IsCave ? "CAVE" : "SURFACE", x + 4, y + 1, 7);
+        Rectfill(x + 2, y + 1, x + 4 + (check.IsCave ? 16 : 28), y + 4, 7);
+        Rectfill(x + 3, y, x + 3 + (check.IsCave ? 16 : 28), y, 7);
+        Rectfill(x + 3, y + 1, x + 3 + (check.IsCave ? 16 : 28), y + 5, 1);
+        Print(check.IsCave ? "CAVE" : "SURFACE", x + 4, y + 1, 7);
 
-        p8.Rectfill(x + 109, y + 6, x + 113, y + 44 + count, (selected1 && menuX == 6 || selected2 && menuX == 2) ? 8 : 2);
-        p8.Print("x", x + 110, y + 23 + count / 2, 7);
+        Rectfill(x + 109, y + 6, x + 113, y + 44 + count, (selected1 && menuX == 6 || selected2 && menuX == 2) ? 8 : 2);
+        Print("x", x + 110, y + 23 + count / 2, 7);
 
-        p8.Rectfill(x + 2, y + 7, x + 28, y + 15, 7);
-        p8.Rectfill(x + 3, y + 8, x + 27, y + 14, 13);
-        p8.Print("radius", x + 4, y + 9, 7);
+        Rectfill(x + 2, y + 7, x + 28, y + 15, 7);
+        Rectfill(x + 3, y + 8, x + 27, y + 14, 13);
+        Print("radius", x + 4, y + 9, 7);
         Printc($"{check.Radius1.Lb} {(check.Radius1.Ub < 10 ? " " : "  ")}", x + 16, y + 18, selected1 && menuX == 0 ? 9 : 7);
         Printc($"{(check.Radius1.Lb < 10 ? " " : "  ")}-{(check.Radius1.Ub < 10 ? " " : "  ")}", x + 16, y + 18, 7);
         Printc($"{(check.Radius1.Lb < 10 ? " " : "  ")} {check.Radius1.Ub}", x + 16, y + 18, selected1 && menuX == 1 ? 9 : 7);
 
-        p8.Rectfill(x + 30, y + 7, x + 52, y + 15, 7);
-        p8.Rectfill(x + 31, y + 8, x + 51, y + 14, 13);
-        p8.Print("tiles", x + 32, y + 9, 7);
+        Rectfill(x + 30, y + 7, x + 52, y + 15, 7);
+        Rectfill(x + 31, y + 8, x + 51, y + 14, 13);
+        Print("tiles", x + 32, y + 9, 7);
         int i = 0;
         foreach (var tile in check.Tiles1)
         {
@@ -1098,16 +1099,16 @@ public class PcraftFilter : PcraftBase, IDisposable
         }
         Printc("add", x + 42, y + 18 + i * 6, selected1 && i == tileIndex && menuX == 2 ? 9 : 13);
 
-        p8.Rectfill(x + 56, y + 7, x + 82, y + 15, 7);
-        p8.Rectfill(x + 57, y + 8, x + 81, y + 14, 13);
-        p8.Print("radius", x + 58, y + 9, 7);
+        Rectfill(x + 56, y + 7, x + 82, y + 15, 7);
+        Rectfill(x + 57, y + 8, x + 81, y + 14, 13);
+        Print("radius", x + 58, y + 9, 7);
         Printc($"{check.Radius2.Lb} {(check.Radius2.Ub < 10 ? " " : "  ")}", x + 70, y + 18, selected1 && menuX == 3 ? 9 : 7);
         Printc($"{(check.Radius2.Lb < 10 ? " " : "  ")}-{(check.Radius2.Ub < 10 ? " " : "  ")}", x + 70, y + 18, 7);
         Printc($"{(check.Radius2.Lb < 10 ? " " : "  ")} {check.Radius2.Ub}", x + 70, y + 18, selected1 && menuX == 4 ? 9 : 7);
 
-        p8.Rectfill(x + 84, y + 7, x + 106, y + 15, 7);
-        p8.Rectfill(x + 85, y + 8, x + 105, y + 14, 13);
-        p8.Print("tiles", x + 86, y + 9, 7);
+        Rectfill(x + 84, y + 7, x + 106, y + 15, 7);
+        Rectfill(x + 85, y + 8, x + 105, y + 14, 13);
+        Print("tiles", x + 86, y + 9, 7);
         i = 0;
         foreach (var tile in check.Tiles2)
         {
@@ -1116,15 +1117,15 @@ public class PcraftFilter : PcraftBase, IDisposable
         }
         Printc("add", x + 96, y + 18 + i * 6, selected1 && i == tileIndex && menuX == 5 ? 9 : 13);
 
-        p8.Rectfill(x + 39, y + 27 + count, x + 53, y + 35 + count, 7);
-        p8.Rectfill(x + 40, y + 28 + count, x + 52, y + 34 + count, 13);
-        p8.Print("mag", x + 41, y + 29 + count, 7);
+        Rectfill(x + 39, y + 27 + count, x + 53, y + 35 + count, 7);
+        Rectfill(x + 40, y + 28 + count, x + 52, y + 34 + count, 13);
+        Print("mag", x + 41, y + 29 + count, 7);
         Printc($"{check.Mag}%", x + 47, y + 38 + count, selected2 && menuX == 0 ? 9 : 7);
 
-        p8.Rectfill(x + 55, y + 27 + count, x + 69, y + 35 + count, 7);
-        p8.Rectfill(x + 56, y + 28 + count, x + 68, y + 34 + count, 13);
-        p8.Print("opr", x + 57, y + 29 + count, 7);
-        p8.Print(check.Opr, x + 61, y + 38 + count, selected2 && menuX == 1 ? 9 : 7);
+        Rectfill(x + 55, y + 27 + count, x + 69, y + 35 + count, 7);
+        Rectfill(x + 56, y + 28 + count, x + 68, y + 34 + count, 13);
+        Print("opr", x + 57, y + 29 + count, 7);
+        Print(check.Opr, x + 61, y + 38 + count, selected2 && menuX == 1 ? 9 : 7);
     }
 
     public override void Draw()
@@ -1133,16 +1134,16 @@ public class PcraftFilter : PcraftBase, IDisposable
         {
             if (curMenu == mainMenu)
             {
-                p8.Cls(12);
-                p8.Camera(F32.Zero, F32.FromInt(camoffy));
-                p8.Palt(0, false);
+                Cls(12);
+                Camera(F32.Zero, F32.FromInt(camoffy));
+                Palt(0, false);
                 foreach (var row in buttonRows)
                 {
                     foreach (var button in row)
                     {
-                        p8.Rectfill(button.Pos.X, button.Pos.Y, button.Pos.X + button.Text.Length * 4 + 2, button.Pos.Y + 8, button.OutCol);
-                        p8.Rectfill(button.Pos.X + 1, button.Pos.Y + 1, button.Pos.X + button.Text.Length * 4 + 1, button.Pos.Y + 7, button.MidCol);
-                        p8.Print(button.Text, button.Pos.X + 2, button.Pos.Y + 2, button.TextCol);
+                        Rectfill(button.Pos.X, button.Pos.Y, button.Pos.X + button.Text.Length * 4 + 2, button.Pos.Y + 8, button.OutCol);
+                        Rectfill(button.Pos.X + 1, button.Pos.Y + 1, button.Pos.X + button.Text.Length * 4 + 1, button.Pos.Y + 7, button.MidCol);
+                        Print(button.Text, button.Pos.X + 2, button.Pos.Y + 2, button.TextCol);
                     }
                 }
 
@@ -1160,16 +1161,16 @@ public class PcraftFilter : PcraftBase, IDisposable
                     y += 46 + Math.Max(densityComparisons[i].Tiles1.Count, densityComparisons[i].Tiles2.Count) * 6 + 1;
                 }
 
-                p8.Rectfill(124, camoffy, 127, camoffy + 128, 1);
-                p8.Rectfill(125, camoffy + ((double)camoffy / y) * 128 + 1, 126, camoffy + ((double)camoffy / y) * 128 + Math.Min(128, 128.0 / (y / 128.0)) - 2, 13);
+                Rectfill(124, camoffy, 127, camoffy + 128, 1);
+                Rectfill(125, camoffy + ((double)camoffy / y) * 128 + 1, 126, camoffy + ((double)camoffy / y) * 128 + Math.Min(128, 128.0 / (y / 128.0)) - 2, 13);
 
                 return;
             }
             else if (curMenu == introMenu)
             {
-                p8.Cls(1);
-                p8.Camera();
-                p8.Palt(0, false);
+                Cls(1);
+                Camera();
+                Palt(0, false);
 
                 int ypos = 2;
                 List<DensityCheck> caveChecks = [];
@@ -1193,37 +1194,37 @@ public class PcraftFilter : PcraftBase, IDisposable
                     if (!check.IsCave) { surfaceComps.Add(check); }
                 }
                 //
-                p8.Print($"cave gen failed - {Math.Max(caveChecks.Count > 0 ? caveChecks.Max(x => x.TryCount) : 0, caveComps.Count > 0 ? caveComps.Max(x => x.TryCount) : 0)}", 2, ypos, 7);
+                Print($"cave gen failed - {Math.Max(caveChecks.Count > 0 ? caveChecks.Max(x => x.TryCount) : 0, caveComps.Count > 0 ? caveComps.Max(x => x.TryCount) : 0)}", 2, ypos, 7);
                 ypos += 7;
                 int i = 0;
                 foreach (var check in caveChecks)
                 {
-                    p8.Print($"check {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
+                    Print($"check {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                     ypos += 7;
                     i++;
                 }
                 i = 0;
                 foreach (var check in caveComps)
                 {
-                    p8.Print($"comp {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
+                    Print($"comp {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                     ypos += 7;
                     i++;
                 }
                 ypos += 7;
                 //
-                p8.Print($"surface gen failed - {Math.Max(surfaceChecks.Count > 0 ? surfaceChecks.Max(x => x.TryCount) : 0, surfaceComps.Count > 0 ? surfaceComps.Max(x => x.TryCount) : 0)}", 2, ypos, 7);
+                Print($"surface gen failed - {Math.Max(surfaceChecks.Count > 0 ? surfaceChecks.Max(x => x.TryCount) : 0, surfaceComps.Count > 0 ? surfaceComps.Max(x => x.TryCount) : 0)}", 2, ypos, 7);
                 ypos += 7;
                 i = 0;
                 foreach (var check in surfaceChecks)
                 {
-                    p8.Print($"check {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
+                    Print($"check {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                     ypos += 7;
                     i++;
                 }
                 i = 0;
                 foreach (var check in surfaceComps)
                 {
-                    p8.Print($"comp {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
+                    Print($"comp {i} - {check.FailCount}/{check.TryCount} - {(check.FailCount > 0 ? Math.Round((double)check.FailCount / check.TryCount * 100, 2) : 0)}%", 2, ypos, 7);
                     ypos += 7;
                     i++;
                 }
@@ -1235,11 +1236,11 @@ public class PcraftFilter : PcraftBase, IDisposable
                 }
                 return;
             } 
-            p8.Camera();
-            p8.Palt(0, false);
-            p8.Rectfill(0, 0, 128, 46, 12);
-            p8.Rectfill(0, 46, 128, 128, 1);
-            p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+            Camera();
+            Palt(0, false);
+            Rectfill(0, 0, 128, 46, 12);
+            Rectfill(0, 46, 128, 128, 1);
+            Spr((int)curMenu.Spr, 32, 14, 8, 8);
             Printc(curMenu.Text, 64, 80, 6);
             Printc(curMenu.Text2, 64, 90, 6);
             Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
@@ -1247,9 +1248,9 @@ public class PcraftFilter : PcraftBase, IDisposable
             return;
         }
 
-        p8.Cls();
+        Cls();
 
-        p8.Camera(clx - 64, cly - 64);
+        Camera(clx - 64, cly - 64);
 
         DrawBack();
 
@@ -1257,7 +1258,7 @@ public class PcraftFilter : PcraftBase, IDisposable
 
         Denemies();
 
-        p8.Camera();
+        Camera();
         Dbar(4, 4, plife, llife, 8, 2);
         Dbar(4, 9, F32.Max(F32.Zero, pstam), lstam, 11, 3);
 
@@ -1269,7 +1270,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             if (curItem.Count is not null)
             {
                 string c = $"{curItem.Count}";
-                p8.Print(c, ix + 88 - 16, iy + 3, 7);
+                Print(c, ix + 88 - 16, iy + 3, 7);
             }
         }
 
@@ -1277,7 +1278,7 @@ public class PcraftFilter : PcraftBase, IDisposable
         {
             return;
         }
-        p8.Camera();
+        Camera();
         if (curMenu.Type == chest)
         {
             if (toogleMenu == 0)
@@ -1297,7 +1298,7 @@ public class PcraftFilter : PcraftBase, IDisposable
             {
                 Entity curgoal = curMenu.List[curMenu.Sel];
                 Panel("have", 71, 50, 52, 30);
-                p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
+                Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
                 RequireList(curgoal, 4, 79, 104, 50);
             }
             List(curMenu, 4, 16, 68, 64, 6);

@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,9 +12,9 @@ public class Visualiser : PcraftBase
 
     private (F32 x, F32 y) spawnCenter;
 
-    public override void Init(Pico8Functions pico8)
+    public override void Init()
     {
-        base.Init(pico8);
+        base.Init();
     }
 
     public void DrawZombieSpawnArea()
@@ -21,8 +22,8 @@ public class Visualiser : PcraftBase
         Vector2 playerWorld = new Vector2(spawnCenter.x.Float, spawnCenter.y.Float);
 
         const float spawnMargin = 50f;
-        float screenMarginX = spawnMargin * p8.Cell.Width;
-        float screenMarginY = spawnMargin * p8.Cell.Height;
+        float screenMarginX = spawnMargin * CellWidth;
+        float screenMarginY = spawnMargin * CellHeight;
 
         Vector2 playerScreen = WorldToScreen(playerWorld);
         Rectangle spawnArea = new Rectangle(
@@ -32,13 +33,13 @@ public class Visualiser : PcraftBase
             (int)(screenMarginY * 2)
         );
 
-        Color spawnColor = p8.Colors[14];
+        Color spawnColor = GetColor(14);
         DrawRectOutline(
             new Vector2(spawnArea.X, spawnArea.Y),
             spawnArea.Width,
             spawnArea.Height,
             spawnColor,
-            thickness: 0.4f * p8.Cell.Height
+            thickness: 0.4f * CellHeight
         );
     }
 
@@ -49,30 +50,28 @@ public class Visualiser : PcraftBase
         Vector2 targetCenterWorld = new Vector2(cmx.Float, cmy.Float);
         Vector2 targetCenterScreen = WorldToScreen(targetCenterWorld);
 
-        float screenWidth = boundarySize * p8.Cell.Width;
-        float screenHeight = boundarySize * p8.Cell.Height;
+        float screenWidth = boundarySize * CellWidth;
+        float screenHeight = boundarySize * CellHeight;
 
         DrawRectOutline(
             targetCenterScreen - new Vector2(screenWidth / 2, screenHeight / 2),
             screenWidth,
             screenHeight,
-            p8.Colors[7],
-            thickness: 0.4f * p8.Cell.Height
+            GetColor(7),
+            thickness: 0.4f * CellHeight
         );
 
         Vector2 currentCamWorld = new Vector2(clx.Float, cly.Float);
         Vector2 currentCamScreen = WorldToScreen(currentCamWorld);
 
-        float camMarkerSize = 1 * p8.Cell.Height;
-        p8.Batch.Draw(
-            p8.Pixel,
+        float camMarkerSize = 1 * CellHeight;
+        DrawPixelScaled(
             currentCamScreen - new Vector2(camMarkerSize / 2, camMarkerSize / 2),
-            null,
-            p8.Colors[8],
+            GetColor(8),
             0,
             Vector2.Zero,
             new Vector2(camMarkerSize, camMarkerSize),
-            SpriteEffects.None,
+            0,
             0
         );
     }
@@ -90,8 +89,8 @@ public class Visualiser : PcraftBase
     {
         Vector2 playerWorld = new Vector2(plx.Float, ply.Float);
 
-        F32 bx = p8.Cos(prot);
-        F32 by = p8.Sin(prot);
+        F32 bx = Cos(prot);
+        F32 by = Sin(prot);
         F32 hitx = plx + bx * 8;
         F32 hity = ply + by * 8;
 
@@ -108,22 +107,22 @@ public class Visualiser : PcraftBase
         Vector2 playerScreen = WorldToScreen(playerWorld);
 
         const float attackRadius = 10f;
-        float screenRadiusX = attackRadius * p8.Cell.Width;
-        float screenRadiusY = attackRadius * p8.Cell.Height;
+        float screenRadiusX = attackRadius * CellWidth;
+        float screenRadiusY = attackRadius * CellHeight;
 
         Color circleColor = nearEnemies is not null && nearEnemies.Count > 0 ?
-            p8.Colors[8] :
-            p8.Colors[7];
+            GetColor(8) :
+            GetColor(7);
 
         DrawCircleOutline(
             circleCenterScreen,
             screenRadiusX,
             screenRadiusY,
             circleColor,
-            thickness: 0.4f * p8.Cell.Height
+            thickness: 0.4f * CellHeight
         );
 
-        DrawLine(playerScreen, circleCenterScreen, p8.Colors[8], 0.4f * p8.Cell.Height);
+        DrawLine(playerScreen, circleCenterScreen, GetColor(8), 0.4f * CellHeight);
     }
 
     public void DrawZombieChaseRadius(Entity zombie)
@@ -137,15 +136,15 @@ public class Visualiser : PcraftBase
 
         float currentRadius = zombie.Step == enstep_Chase ? chaseRadius : baseRadius;
         Color radiusColor = zombie.Step == enstep_Chase ?
-            p8.Colors[8] :
-            p8.Colors[7];
+            GetColor(8) :
+            GetColor(7);
 
         DrawDynamicCircle(
             screenCenter,
-            currentRadius * p8.Cell.Width,
-            currentRadius * p8.Cell.Height,
+            currentRadius * CellWidth,
+            currentRadius * CellHeight,
             radiusColor,
-            thickness: 0.4f * p8.Cell.Height,
+            thickness: 0.4f * CellHeight,
             isChasing: zombie.Step == enstep_Chase
         );
     }
@@ -155,8 +154,8 @@ public class Visualiser : PcraftBase
                                  float thickness, bool isChasing)
     {
         DrawCircleOutline(center,
-            40f * p8.Cell.Width, 40f * p8.Cell.Height,
-            p8.Colors[7], thickness);
+            40f * CellWidth, 40f * CellHeight,
+            GetColor(7), thickness);
 
         if (isChasing)
         {
@@ -200,24 +199,24 @@ public class Visualiser : PcraftBase
         Vector2 zombieScreen = WorldToScreen(zombieWorld);
 
         Color circleColor = distp < attackRadius ?
-            p8.Colors[8] :
-            p8.Colors[7];
+            GetColor(8) :
+            GetColor(7);
 
-        float screenRadiusX = attackRadius * p8.Cell.Width;
-        float screenRadiusY = attackRadius * p8.Cell.Height;
+        float screenRadiusX = attackRadius * CellWidth;
+        float screenRadiusY = attackRadius * CellHeight;
         DrawCircleOutline(
             zombieScreen,
             screenRadiusX,
             screenRadiusY,
             circleColor,
-            thickness: 0.4f * p8.Cell.Height
+            thickness: 0.4f * CellHeight
         );
 
         float facingTurns = zombie.Lrot.Float;
         Vector2 direction = AngleToDir(facingTurns);
         Vector2 endWorld = zombieWorld + direction * attackRadius;
         Vector2 endScreen = WorldToScreen(endWorld);
-        DrawLine(zombieScreen, endScreen, p8.Colors[12], 0.4f * p8.Cell.Height);
+        DrawLine(zombieScreen, endScreen, GetColor(12), 0.4f * CellHeight);
 
         Vector2 toPlayerDir = playerWorld - zombieWorld;
         float distance = toPlayerDir.Length();
@@ -228,7 +227,7 @@ public class Visualiser : PcraftBase
             Vector2 clampedEndWorld = zombieWorld + toPlayerDir * Math.Min(distance, attackRadius);
             Vector2 clampedEndScreen = WorldToScreen(clampedEndWorld);
 
-            DrawLine(zombieScreen, clampedEndScreen, p8.Colors[9], 0.4f * p8.Cell.Height);
+            DrawLine(zombieScreen, clampedEndScreen, GetColor(9), 0.4f * CellHeight);
         }
     }
 
@@ -244,8 +243,8 @@ public class Visualiser : PcraftBase
     private Vector2 WorldToScreen(Vector2 worldPos)
     {
         return new Vector2(
-            (worldPos.X - p8.CameraOffset.x.Float) * p8.Cell.Width,
-            (worldPos.Y - p8.CameraOffset.y.Float) * p8.Cell.Height
+            (worldPos.X - CameraOffsetX.Float) * CellWidth,
+            (worldPos.Y - CameraOffsetY.Float) * CellHeight
         );
     }
 
@@ -254,15 +253,13 @@ public class Visualiser : PcraftBase
         Vector2 edge = end - start;
         float angle = (float)Math.Atan2(edge.Y, edge.X);
 
-        p8.Batch.Draw(
-            p8.Pixel,
+        DrawPixelScaled(
             start,
-            null,
             color,
             angle,
             new Vector2(0, 0.5f),
             new Vector2(edge.Length(), thickness),
-            SpriteEffects.None,
+            0,
             0
         );
     }
@@ -277,7 +274,7 @@ public class Visualiser : PcraftBase
             for (F32 j = F32.Zero; j < levelsy; j++)
             {
                 Ground c = GetDirectGr(i, j);
-                F32 r = p8.Rnd(100);
+                F32 r = Rnd(100);
                 F32 ex = i * 16 + 8;
                 F32 ey = j * 16 + 8;
                 F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
@@ -293,7 +290,7 @@ public class Visualiser : PcraftBase
                     newe.Step = 0;
                     newe.Ox = F32.Zero;
                     newe.Oy = F32.Zero;
-                    p8.Add(l.Ene, newe);
+                    Add(l.Ene, newe);
                 }
             }
         }
@@ -307,18 +304,18 @@ public class Visualiser : PcraftBase
         {
             if (e.Type == player)
             {
-                p8.Pal();
+                Pal();
                 Dplayer(plx, ply, prot, panim, banim, true);
             }
             else
             {
                 if (IsIn(e, 72))
                 {
-                    p8.Pal();
-                    p8.Pal(15, 3);
-                    p8.Pal(4, 1);
-                    p8.Pal(2, 8);
-                    p8.Pal(1, 1);
+                    Pal();
+                    Pal(15, 3);
+                    Pal(4, 1);
+                    Pal(2, 8);
+                    Pal(1, 1);
 
                     Dplayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, false);
 
@@ -349,8 +346,8 @@ public class Visualiser : PcraftBase
 
                 Vector2 worldPos = new Vector2(gi.Float, gj.Float);
                 Vector2 screenPos = WorldToScreen(worldPos);
-                float screenWidth = 16 * p8.Cell.Width;
-                float screenHeight = 16 * p8.Cell.Height;
+                float screenWidth = 16 * CellWidth;
+                float screenHeight = 16 * CellHeight;
 
                 if (gr == grrock || gr == grtree || gr == griron || gr == grgold || gr == grgem || gr == grhole)
                 {
@@ -358,8 +355,8 @@ public class Visualiser : PcraftBase
                     screenPos,
                     screenWidth,
                     screenHeight,
-                    p8.Colors[7],
-                    thickness: 0.3f * p8.Cell.Height
+                    GetColor(7),
+                    thickness: 0.3f * CellHeight
                     );
                 }
             }
@@ -370,17 +367,17 @@ public class Visualiser : PcraftBase
         {
             if (e.Type == player)
             {
-                Vector2 position = new((plx - p8.CameraOffset.x - F32.Half).Float * p8.Cell.Width, (ply - p8.CameraOffset.y - F32.Half).Float * p8.Cell.Height);
-                Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+                Vector2 position = new((plx - CameraOffsetX - F32.Half).Float * CellWidth, (ply - CameraOffsetY - F32.Half).Float * CellHeight);
+                Vector2 size = new(CellWidth, CellHeight);
 
-                p8.Batch.Draw(p8.Pixel, position, null, p8.Colors[11], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                DrawPixelScaled(position, GetColor(11), 0, Vector2.Zero, size, 0, 0);
             }
             else if (IsIn(e, 72))
             {
-                Vector2 position = new((e.X - p8.CameraOffset.x - F32.Half).Float * p8.Cell.Width, (e.Y - p8.CameraOffset.y - F32.Half).Float * p8.Cell.Height);
-                Vector2 size = new(p8.Cell.Width, p8.Cell.Height);
+                Vector2 position = new((e.X - CameraOffsetX - F32.Half).Float * CellWidth, (e.Y - CameraOffsetY - F32.Half).Float * CellHeight);
+                Vector2 size = new(CellWidth, CellHeight);
 
-                p8.Batch.Draw(p8.Pixel, position, null, p8.Colors[11], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+                DrawPixelScaled(position, GetColor(11), 0, Vector2.Zero, size, 0, 0);
             }
         }
     }

@@ -11,15 +11,14 @@ public class CreditsScene : IScene, IDisposable
     public string SceneName => @"credits";
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
     List<CreditsItem> credits = [];
 
     private (int hor, int ver) menuSelected;
     private KeyboardState prevState;
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
 
         menuSelected = (0, 0);
         prevState = Keyboard.GetState();

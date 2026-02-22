@@ -12,16 +12,15 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
     public string SceneName { get => "TitleScreen"; }
     public double Fps { get => 30.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
     private readonly string version = "1.1.3";
 
     private int menuSelected;
     private KeyboardState prevState;
     private int frame;
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
 
         menuSelected = 0;
         prevState = Keyboard.GetState();

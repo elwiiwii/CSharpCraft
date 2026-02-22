@@ -8,7 +8,6 @@ namespace CSharpCraft.Competitive;
 
 public class PickBanSceneOld() : IScene, IDisposable
 {
-#nullable enable
     private float animationTimer;
     private int gameCount;
     private int turn;
@@ -28,16 +27,14 @@ public class PickBanSceneOld() : IScene, IDisposable
     private List<SeedType> seedTypes = new();
     private List<SeedType> turns = new();
     private List<SeedType> gameSeeds = new();
-#nullable disable
 
     public string SceneName { get => "2"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
 
         animationTimer = 0;
         gameCount = 1;

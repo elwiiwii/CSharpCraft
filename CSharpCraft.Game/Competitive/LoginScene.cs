@@ -16,7 +16,7 @@ public class LoginScene : IScene
     public string SceneName { get => "login"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
     private IScene prevScene;
     private float cursorX;
     private float cursorY;
@@ -62,9 +62,8 @@ public class LoginScene : IScene
         registerFlow = [];
     }
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
 
         var op1 = new SelectorOption { Name = "login" };
         var op2 = new SelectorOption { Name = "register" };

@@ -2,6 +2,7 @@
 using System.Drawing;
 using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
@@ -12,14 +13,14 @@ public class PcraftCompetitive : SpeedrunBase
 {
     public override string SceneName => "comp_pcraft";
 
-    public override void Init(Pico8Functions pico8)
+    public override void Init()
     {
         worldSeed = RoomHandler._curMatch.GameReports[^1].WorldSeed;
         rngSeed = RoomHandler._curMatch.GameReports[^1].RngSeed;
-        base.Init(pico8);
+        base.Init();
         ResetLevel();
         curMenu = null;
-        p8.Music(1);
+        Music(1);
     }
 
     protected override void CreateMap()
@@ -57,7 +58,7 @@ public class PcraftCompetitive : SpeedrunBase
 
         if (spawnableTiles.Count > 0)
         {
-            int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, pSpawnRng));
+            int indx = F32.FloorToInt(Rnd(spawnableTiles.Count, pSpawnRng));
             (int x, int y) tile = spawnableTiles[indx];
 
             plx = F32.FromInt(tile.x * 16 + 8);
@@ -68,7 +69,7 @@ public class PcraftCompetitive : SpeedrunBase
         {
             for (int j = 0; j < levelsy; j++)
             {
-                p8.Mset(i + levelx, j + levely, level[i][j].Double);
+                Mset(i + levelx, j + levely, level[i][j].Double);
             }
         }
 
@@ -79,11 +80,11 @@ public class PcraftCompetitive : SpeedrunBase
         {
             for (int j = -1; j <= 1; j++)
             {
-                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+                Mset(holex + i, holey + j, levelUnder ? 1 : 3);
             }
         }
 
-        p8.Mset(holex, holey, 11);
+        Mset(holex, holey, 11);
 
         clx = plx;
         cly = ply;
@@ -110,13 +111,13 @@ public class PcraftCompetitive : SpeedrunBase
         {
             if (curMenu.Spr is not null)
             {
-                if (p8.Btnp(4) && !lb4)
+                if (Btnp(4) && !lb4)
                 {
                     ResetLevel();
                     curMenu = null;
-                    p8.Music(1);
+                    Music(1);
                 }
-                lb4 = p8.Btn(4);
+                lb4 = Btn(4);
                 return;
             }
 
@@ -157,8 +158,8 @@ public class PcraftCompetitive : SpeedrunBase
             Entity othMenu = menuInvent;
             if (curMenu.Type == chest)
             {
-                if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
+                if (Btnp(0)) { toogleMenu -= 1; Sfx(18, 3); }
+                if (Btnp(1)) { toogleMenu += 1; Sfx(18, 3); }
                 toogleMenu = (toogleMenu % 2 + 2) % 2;
                 if (toogleMenu == 1)
                 {
@@ -169,18 +170,18 @@ public class PcraftCompetitive : SpeedrunBase
 
             if (intMenu.List.Count > 0)
             {
-                if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
+                if (Btnp(2)) { intMenu.Sel -= 1; Sfx(18, 3); }
+                if (Btnp(3)) { intMenu.Sel += 1; Sfx(18, 3); }
 
                 intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
 
-                if (p8.Btnp(5) && !lb5)
+                if (Btnp(5) && !lb5)
                 {
                     if (curMenu.Type == chest)
                     {
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         Entity el = intMenu.List[intMenu.Sel];
-                        p8.Del(intMenu.List, el);
+                        Del(intMenu.List, el);
                         AddItemInList(othMenu.List, el, othMenu.Sel);
                         if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
                         if (intMenu == menuInvent && curItem == el)
@@ -196,36 +197,36 @@ public class PcraftCompetitive : SpeedrunBase
                             if (CanCraft(rec))
                             {
                                 Craft(rec);
-                                p8.Sfx(16, 3);
+                                Sfx(16, 3);
                             }
                             else
                             {
-                                p8.Sfx(17, 3);
+                                Sfx(17, 3);
                             }
                         }
                     }
                     else
                     {
                         curItem = curMenu.List[curMenu.Sel];
-                        p8.Del(curMenu.List, curItem);
+                        Del(curMenu.List, curItem);
                         AddItemInList(curMenu.List, curItem, 0);
                         curMenu.Sel = 0;
                         curMenu = null;
                         block5 = true;
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         exitMenu = true;
                     }
                 }
             }
 
-            if (p8.Btnp(4) && !lb4)
+            if (Btnp(4) && !lb4)
             {
                 curMenu = null;
-                p8.Sfx(17, 3);
+                Sfx(17, 3);
                 exitMenu = true;
             }
-            lb4 = p8.Btn(4);
-            lb5 = p8.Btn(5);
+            lb4 = Btn(4);
+            lb5 = Btn(5);
             return;
         }
 
@@ -262,7 +263,7 @@ public class PcraftCompetitive : SpeedrunBase
             FillEne(currentLevel);
             switchLevel = false;
             canSwitchLevel = false;
-            p8.Music(currentLevel == cave ? 2 : 1);
+            Music(currentLevel == cave ? 2 : 1);
         }
 
         if (curItem is not null)
@@ -273,7 +274,7 @@ public class PcraftCompetitive : SpeedrunBase
         UpGround();
 
         Ground playHit = GetGr(plx, ply);
-        if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
+        if (playHit != lastGround && playHit == grwater) { Sfx(11, 3); }
         lastGround = playHit;
         int s = playHit == grwater || pstam <= 0 ? 1 : 2;
         if (playHit == grhole)
@@ -288,10 +289,10 @@ public class PcraftCompetitive : SpeedrunBase
         F32 dx = F32.Zero;
         F32 dy = F32.Zero;
 
-        if (p8.Btn(0)) dx -= 1;
-        if (p8.Btn(1)) dx += 1;
-        if (p8.Btn(2)) dy -= 1;
-        if (p8.Btn(3)) dy += 1;
+        if (Btn(0)) dx -= 1;
+        if (Btn(1)) dx += 1;
+        if (Btn(2)) dy -= 1;
+        if (Btn(3)) dy += 1;
 
         F32 dl = GetInvLen(dx, dy);
 
@@ -318,8 +319,8 @@ public class PcraftCompetitive : SpeedrunBase
 
         nearEnemies = [];
 
-        F32 ebx = p8.Cos(prot);
-        F32 eby = p8.Sin(prot);
+        F32 ebx = Cos(prot);
+        F32 eby = Sin(prot);
         UpEnemies(ebx, eby);
 
         (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
@@ -332,10 +333,10 @@ public class PcraftCompetitive : SpeedrunBase
         llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
         lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
 
-        if (p8.Btn(5) && !block5 && canAct)
+        if (Btn(5) && !block5 && canAct)
         {
-            F32 bx = p8.Cos(prot);
-            F32 by = p8.Sin(prot);
+            F32 bx = Cos(prot);
+            F32 by = Sin(prot);
             F32 hitx = plx + bx * 8;
             F32 hity = ply + by * 8;
             Ground hit = GetGr(hitx, hity);
@@ -350,7 +351,7 @@ public class PcraftCompetitive : SpeedrunBase
                 curItem.Y = F32.Floor(hity / 16) * 16 + 8;
                 curItem.Vx = F32.Zero;
                 curItem.Vy = F32.Zero;
-                p8.Add(entities, curItem);
+                Add(entities, curItem);
                 RemInList(invent, curItem);
                 canAct = false;
             }
@@ -442,15 +443,15 @@ public class PcraftCompetitive : SpeedrunBase
         cly = F32.Max(cmy - m, cly);
         cly = F32.Min(cmy + m, cly);
 
-        if (p8.Btnp(4) && !lb4)
+        if (Btnp(4) && !lb4)
         {
             curMenu = menuInvent;
-            p8.Sfx(13, 3);
+            Sfx(13, 3);
         }
 
-        lb4 = p8.Btn(4);
-        lb5 = p8.Btn(5);
-        if (!p8.Btn(5))
+        lb4 = Btn(4);
+        lb5 = Btn(5);
+        if (!Btn(5))
         {
             block5 = false;
         }
@@ -459,12 +460,12 @@ public class PcraftCompetitive : SpeedrunBase
 
         if (plife <= 0)
         {
-            p8.Reload();
-            p8.Memcpy(0x1000, 0x2000, 0x1000);
+            Reload();
+            Memcpy(0x1000, 0x2000, 0x1000);
             deathMenu = Cmenu(inventary, null, 128, "you died!", timer);
             curMenu = deathMenu;
             runtimer = 0;
-            p8.Music(4);
+            Music(4);
         }
     }
 
@@ -472,11 +473,11 @@ public class PcraftCompetitive : SpeedrunBase
     {
         if (curMenu is not null && curMenu.Spr is not null)
         {
-            p8.Camera();
-            p8.Palt(0, false);
-            p8.Rectfill(0, 0, 128, 46, 12);
-            p8.Rectfill(0, 46, 128, 128, 1);
-            p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+            Camera();
+            Palt(0, false);
+            Rectfill(0, 0, 128, 46, 12);
+            Rectfill(0, 46, 128, 128, 1);
+            Spr((int)curMenu.Spr, 32, 14, 8, 8);
             Printc(curMenu.Text, 64, 80, 6);
             Printc(curMenu.Text2, 64, 90, 6);
             Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
@@ -484,9 +485,9 @@ public class PcraftCompetitive : SpeedrunBase
             return;
         }
 
-        p8.Cls();
+        Cls();
 
-        p8.Camera(clx - 64, cly - 64);
+        Camera(clx - 64, cly - 64);
 
         DrawBack();
 
@@ -494,7 +495,7 @@ public class PcraftCompetitive : SpeedrunBase
 
         Denemies();
 
-        p8.Camera();
+        Camera();
         Dbar(4, 4, plife, llife, 8, 2);
         Dbar(4, 9, F32.Max(F32.Zero, pstam), lstam, 11, 3);
 
@@ -508,22 +509,22 @@ public class PcraftCompetitive : SpeedrunBase
             if (curItem.Count is not null)
             {
                 string c = $"{curItem.Count}";
-                p8.Print(c, ix + 88 - 16, iy + 3, 7);
+                Print(c, ix + 88 - 16, iy + 3, 7);
             }
         }
 
         if (time < 10)
         {
             Color c = Color.FromNonPremultiplied(0, 0, 0, Math.Max(0, 255 - F32.FloorToInt(time * 35)));
-            p8.Rectfill(0, 0, 128, 128, c);
-            Shared.PrintcBig(p8, $"{10 - F32.FloorToInt(time)}", 64, 58, Color.White);
+            Rectfill(0, 0, 128, 128, c);
+            Shared.PrintcBig($"{10 - F32.FloorToInt(time)}", 64, 58, Color.White);
         }
 
         if (curMenu is null)
         {
             return;
         }
-        p8.Camera();
+        Camera();
         if (curMenu.Type == chest)
         {
             if (toogleMenu == 0)
@@ -543,7 +544,7 @@ public class PcraftCompetitive : SpeedrunBase
             {
                 Entity curgoal = curMenu.List[curMenu.Sel];
                 Panel("have", 71, 50, 52, 30);
-                p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
+                Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
                 RequireList(curgoal, 4, 79, 104, 50);
             }
             List(curMenu, 4, 16, 68, 64, 6);

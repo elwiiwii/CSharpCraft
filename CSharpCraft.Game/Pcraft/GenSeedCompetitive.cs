@@ -1,6 +1,7 @@
 ﻿using System;
 using CSharpCraft.Competitive;
 using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
@@ -21,9 +22,9 @@ public class GenSeedCompetitive : SpeedrunBase
     private int surfaceIndex;
     private int caveIndex;
 
-    public override void Init(Pico8Functions pico8)
+    public override void Init()
     {
-        base.Init(pico8);
+        base.Init();
         if (RoomHandler._myself.Generator)
         {
             worldSeed = RoomHandler._curMatch.GameReports[^1].WorldSeed;
@@ -109,7 +110,7 @@ public class GenSeedCompetitive : SpeedrunBase
 
                 if (spawnableTiles.Count > 0)
                 {
-                    int indx = F32.FloorToInt(p8.Rnd(spawnableTiles.Count, pSpawnRng));
+                    int indx = F32.FloorToInt(Rnd(spawnableTiles.Count, pSpawnRng));
                     (int x, int y) tile = spawnableTiles[indx];
 
                     plx = F32.FromInt(tile.x * 16 + 8);
@@ -128,7 +129,7 @@ public class GenSeedCompetitive : SpeedrunBase
         {
             for (int j = 0; j < levelsy; j++)
             {
-                p8.Mset(i + levelx, j + levely, level[i][j].Double);
+                Mset(i + levelx, j + levely, level[i][j].Double);
             }
         }
 
@@ -139,11 +140,11 @@ public class GenSeedCompetitive : SpeedrunBase
         {
             for (int j = -1; j <= 1; j++)
             {
-                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+                Mset(holex + i, holey + j, levelUnder ? 1 : 3);
             }
         }
 
-        p8.Mset(holex, holey, 11);
+        Mset(holex, holey, 11);
 
         clx = plx;
         cly = ply;
@@ -159,8 +160,8 @@ public class GenSeedCompetitive : SpeedrunBase
 
     public override void Draw()
     {
-        p8.Cls(17);
-        Shared.Printc(p8, $"generating = {RoomHandler._myself.Generator}", 64, 61, 15);
+        Cls(17);
+        Shared.Printc($"generating = {RoomHandler._myself.Generator}", 64, 61, 15);
     }
 
     public override void Dispose()

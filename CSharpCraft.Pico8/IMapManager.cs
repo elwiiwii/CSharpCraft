@@ -23,4 +23,10 @@ public interface IMapManager
     /// Returns 0 if the sprite is out of bounds.
     /// </summary>
     int Fget(int n);
+
+    /// <summary>
+    /// Gets a reference to the raw map data array.
+    /// Used for direct bulk access (e.g., saving/loading seeds).
+    /// </summary>
+    int[] GetMapData();
 }

@@ -8,11 +8,9 @@ public class MapConversion : IScene, IDisposable
     public string SceneName { get => "map conversion"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions? p8;
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
         int[] mapInt = Pico8Utils.DataToArray(Pico8Utils.MapFlip(MapData), 2);
         string s = "";
         for (int i = 0; i < mapInt.Length; i++)

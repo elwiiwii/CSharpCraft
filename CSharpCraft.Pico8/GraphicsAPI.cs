@@ -134,6 +134,11 @@ public class GraphicsAPI : IGraphicsAPI
         // TODO: Phase 5 - Implement text rendering using PICO-8 font
     }
 
+    public void PrintBig(string text, int x, int y, Color color)
+    {
+        // TODO: Phase 5 - Implement big text rendering using BigFont texture
+    }
+
     public void Spr(double n, double x, double y, double w = 1.0, double h = 1.0, bool flip_x = false, bool flip_y = false)
     {
         // TODO: Phase 5 - Implement sprite drawing from sprite sheet
@@ -167,5 +172,10 @@ public class GraphicsAPI : IGraphicsAPI
     public Color GetColor(int index)
     {
         return colors[index];
+    }
+
+    public void DrawPixelScaled(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale, int effects, float layerDepth)
+    {
+        // TODO: Phase 5 - Implement pixel-scaled drawing (needs SpriteBatch + pixel texture)
     }
 }

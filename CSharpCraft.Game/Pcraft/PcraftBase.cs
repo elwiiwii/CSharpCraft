@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 
 namespace CSharpCraft.Pcraft;
@@ -8,9 +9,6 @@ public abstract class PcraftBase : IScene, IDisposable
     public abstract string SceneName { get; }
     public virtual double Fps { get => 30.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-
-#nullable enable
-    protected Pico8Functions? p8;
 
     protected List<Entity>? anvilRecipe;
 
@@ -78,7 +76,6 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected List<Entity>? workbenchRecipe;
 
-#nullable disable
 
     //p.craft
     //by nusan
@@ -202,7 +199,7 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected virtual Entity Rentity(Material it, F32 xx, F32 yy)
     {
-        return Entity(it, xx, yy, p8.Rnd(3) - F32.FromDouble(1.5), p8.Rnd(3) - F32.FromDouble(1.5));
+        return Entity(it, xx, yy, Rnd(3) - F32.FromDouble(1.5), Rnd(3) - F32.FromDouble(1.5));
     }
 
     protected virtual Entity SetText(string t, int c, F32 time, Entity e)
@@ -252,7 +249,7 @@ public abstract class PcraftBase : IScene, IDisposable
     {
         for (int i = 0; i < l.Length; i++)
         {
-            p8.Pal(i + 1, l[i]);
+            Pal(i + 1, l[i]);
         }
     }
 
@@ -313,12 +310,12 @@ public abstract class PcraftBase : IScene, IDisposable
             it.Count -= elem.Count;
             if (it.Count <= 0)
             {
-                p8.Del(list, it);
+                Del(list, it);
             }
         }
         else
         {
-            p8.Del(list, it);
+            Del(list, it);
         }
     }
 
@@ -343,7 +340,7 @@ public abstract class PcraftBase : IScene, IDisposable
         }
         else
         {
-            p8.Add(l, e);
+            Add(l, e);
         }
     }
 
@@ -376,7 +373,7 @@ public abstract class PcraftBase : IScene, IDisposable
             for (F32 j = F32.Zero; j < levelsy; j++)
             {
                 Ground c = GetDirectGr(i, j);
-                F32 r = p8.Rnd(100);
+                F32 r = Rnd(100);
                 F32 ex = i * 16 + 8;
                 F32 ey = j * 16 + 8;
                 F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
@@ -392,7 +389,7 @@ public abstract class PcraftBase : IScene, IDisposable
                     newe.Step = 0;
                     newe.Ox = F32.Zero;
                     newe.Oy = F32.Zero;
-                    p8.Add(l.Ene, newe);
+                    Add(l.Ene, newe);
                 }
             }
         }
@@ -427,8 +424,8 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected virtual void ResetLevel()
     {
-        p8.Reload();
-        p8.Memcpy(0x1000, 0x2000, 0x1000);
+        Reload();
+        Memcpy(0x1000, 0x2000, 0x1000);
 
         prot = F32.Zero;
         lrot = F32.Zero;
@@ -459,7 +456,7 @@ public abstract class PcraftBase : IScene, IDisposable
             Rndwat[i] = new F32[16];
             for (int j = 0; j <= 15; j++)
             {
-                Rndwat[i][j] = p8.Rnd(100);
+                Rndwat[i][j] = Rnd(100);
             }
         }
 
@@ -470,15 +467,13 @@ public abstract class PcraftBase : IScene, IDisposable
         tmpworkbench.HasCol = true;
         tmpworkbench.List = workbenchRecipe;
 
-        p8.Add(invent, tmpworkbench);
-        p8.Add(invent, Inst(pickuptool));
+        Add(invent, tmpworkbench);
+        Add(invent, Inst(pickuptool));
     }
 
-    public virtual void Init(Pico8Functions pico8)
+    public virtual void Init()
     {
-        p8 = pico8;
-
-        p8.Music(0, 10000);
+        Music(0, 10000);
 
         furnaceRecipe = [];
         workbenchRecipe = [];
@@ -487,16 +482,16 @@ public abstract class PcraftBase : IScene, IDisposable
         factoryRecipe = [];
         chemRecipe = [];
 
-        p8.Add(factoryRecipe, Recipe(Instc(sail, 1), [Instc(fabric, 3), Instc(glue, 1)]));
-        p8.Add(factoryRecipe, Recipe(Instc(boat), [Instc(wood, 30), Instc(ironbar, 8), Instc(glue, 5), Instc(sail, 4)]));
+        Add(factoryRecipe, Recipe(Instc(sail, 1), [Instc(fabric, 3), Instc(glue, 1)]));
+        Add(factoryRecipe, Recipe(Instc(boat), [Instc(wood, 30), Instc(ironbar, 8), Instc(glue, 5), Instc(sail, 4)]));
 
-        p8.Add(chemRecipe, Recipe(Instc(glue, 1), [Instc(glass, 1), Instc(ichor, 3)]));
-        p8.Add(chemRecipe, Recipe(Instc(potion, 1), [Instc(glass, 1), Instc(ichor, 1)]));
+        Add(chemRecipe, Recipe(Instc(glue, 1), [Instc(glass, 1), Instc(ichor, 3)]));
+        Add(chemRecipe, Recipe(Instc(potion, 1), [Instc(glass, 1), Instc(ichor, 1)]));
 
-        p8.Add(furnaceRecipe, Recipe(Instc(ironbar, 1), [Instc(iron, 3)]));
-        p8.Add(furnaceRecipe, Recipe(Instc(goldbar, 1), [Instc(gold, 3)]));
-        p8.Add(furnaceRecipe, Recipe(Instc(glass, 1), [Instc(sand, 3)]));
-        p8.Add(furnaceRecipe, Recipe(Instc(bread, 1), [Instc(wheat, 5)]));
+        Add(furnaceRecipe, Recipe(Instc(ironbar, 1), [Instc(iron, 3)]));
+        Add(furnaceRecipe, Recipe(Instc(goldbar, 1), [Instc(gold, 3)]));
+        Add(furnaceRecipe, Recipe(Instc(glass, 1), [Instc(sand, 3)]));
+        Add(furnaceRecipe, Recipe(Instc(bread, 1), [Instc(wheat, 5)]));
 
         Material[] tooltypes = [haxe, pick, sword, shovel, scythe];
         int[] quant = [5, 5, 7, 7, 7];
@@ -508,18 +503,18 @@ public abstract class PcraftBase : IScene, IDisposable
         {
             for (int i = 0; i < tooltypes.Length; i++)
             {
-                p8.Add(crafter[j], Recipe(SetPower(pows[j], Instc(tooltypes[i])), [Instc(materials[j], quant[i] * mult[j])]));
+                Add(crafter[j], Recipe(SetPower(pows[j], Instc(tooltypes[i])), [Instc(materials[j], quant[i] * mult[j])]));
             }
         }
 
-        p8.Add(workbenchRecipe, Recipe(Instc(workbench, null, workbenchRecipe), [Instc(wood, 15)]));
-        p8.Add(workbenchRecipe, Recipe(Instc(stonebench, null, stonebenchRecipe), [Instc(stone, 15)]));
-        p8.Add(workbenchRecipe, Recipe(Instc(factory, null, factoryRecipe), [Instc(wood, 15), Instc(stone, 15)]));
-        p8.Add(workbenchRecipe, Recipe(Instc(chem, null, chemRecipe), [Instc(wood, 10), Instc(glass, 3), Instc(gem, 10)]));
-        p8.Add(workbenchRecipe, Recipe(Instc(chest), [Instc(wood, 15), Instc(stone, 10)]));
+        Add(workbenchRecipe, Recipe(Instc(workbench, null, workbenchRecipe), [Instc(wood, 15)]));
+        Add(workbenchRecipe, Recipe(Instc(stonebench, null, stonebenchRecipe), [Instc(stone, 15)]));
+        Add(workbenchRecipe, Recipe(Instc(factory, null, factoryRecipe), [Instc(wood, 15), Instc(stone, 15)]));
+        Add(workbenchRecipe, Recipe(Instc(chem, null, chemRecipe), [Instc(wood, 10), Instc(glass, 3), Instc(gem, 10)]));
+        Add(workbenchRecipe, Recipe(Instc(chest), [Instc(wood, 15), Instc(stone, 10)]));
 
-        p8.Add(stonebenchRecipe, Recipe(Instc(anvil, null, anvilRecipe), [Instc(iron, 25), Instc(wood, 10), Instc(stone, 25)]));
-        p8.Add(stonebenchRecipe, Recipe(Instc(furnace, null, furnaceRecipe), [Instc(wood, 10), Instc(stone, 15)]));
+        Add(stonebenchRecipe, Recipe(Instc(anvil, null, anvilRecipe), [Instc(iron, 25), Instc(wood, 10), Instc(stone, 25)]));
+        Add(stonebenchRecipe, Recipe(Instc(furnace, null, furnaceRecipe), [Instc(wood, 10), Instc(stone, 15)]));
 
         curMenu = mainMenu;
     }
@@ -550,14 +545,14 @@ public abstract class PcraftBase : IScene, IDisposable
     protected virtual Ground GetDirectGr(F32 i, F32 j)
     {
         if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return grounds[0]; }
-        return grounds[p8.Mget(i.Double + levelx, j.Double)];
+        return grounds[Mget(i.Double + levelx, j.Double)];
     }
 
     protected virtual void SetGr(F32 x, F32 y, Ground v)
     {
         (int i, int j) = GetMcoord(x, y);
         if (i < 0 || j < 0 || i >= levelsx || j >= levelsy) { return; }
-        p8.Mset(i + levelx, j, v.Id);
+        Mset(i + levelx, j, v.Id);
     }
 
     protected virtual F32 DirGetData(F32 i, F32 j, F32 @default)
@@ -652,11 +647,11 @@ public abstract class PcraftBase : IScene, IDisposable
     {
         for (int i = 0; i < count; i++)
         {
-            Entity gi = Rentity(mat, F32.Floor(hitx / 16) * 16 + p8.Rnd(14) + 1, F32.Floor(hity / 16) * 16 + p8.Rnd(14) + 1);
+            Entity gi = Rentity(mat, F32.Floor(hitx / 16) * 16 + Rnd(14) + 1, F32.Floor(hity / 16) * 16 + Rnd(14) + 1);
             gi.GiveItem = mat;
             gi.HasCol = true;
-            gi.Timer = 110 + p8.Rnd(20);
-            p8.Add(entities, gi);
+            gi.Timer = 110 + Rnd(20);
+            Add(entities, gi);
         }
     }
 
@@ -674,7 +669,7 @@ public abstract class PcraftBase : IScene, IDisposable
                     F32 d = DirGetData(i, j, F32.Zero);
                     if (time > d)
                     {
-                        p8.Mset(i.Double + levelx, j.Double, grsand.Id);
+                        Mset(i.Double + levelx, j.Double, grsand.Id);
                     }
                 }
             }
@@ -695,7 +690,7 @@ public abstract class PcraftBase : IScene, IDisposable
             }
         }
 
-        return Pico8Functions.Mod(Pico8Functions.Mod(F32.Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
+        return Mod(Mod(F32.Lerp(rot, grot, F32.FromDouble(0.4)), 1) + 1, 1);
     }
 
     protected virtual (F32 dx, F32 dy, bool canAct) UpEntity(F32 dx, F32 dy, bool canAct)
@@ -715,7 +710,7 @@ public abstract class PcraftBase : IScene, IDisposable
 
             if (e.Timer is not null && e.Timer < 1)
             {
-                p8.Del(entities, e);
+                Del(entities, e);
                 continue;
             }
 
@@ -728,9 +723,9 @@ public abstract class PcraftBase : IScene, IDisposable
                 {
                     Entity newIt = Instc(e.GiveItem, 1);
                     AddItemInList(invent, newIt, -1);
-                    p8.Del(entities, e);
-                    p8.Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
-                    p8.Sfx(18, 3);
+                    Del(entities, e);
+                    Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
+                    Sfx(18, 3);
                 }
                 continue;
             }
@@ -739,7 +734,7 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, F32.Zero, e);
             }
-            if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
+            if (dist < 12 && Btn(5) && !block5 && !lb5)
             {
                 if (curItem is not null && curItem.Type == pickuptool)
                 {
@@ -747,7 +742,7 @@ public abstract class PcraftBase : IScene, IDisposable
                     {
                         AddItemInList(invent, e, -1);
                         curItem = e;
-                        p8.Del(entities, e);
+                        Del(entities, e);
                     }
                     canAct = false;
                     continue;
@@ -757,7 +752,7 @@ public abstract class PcraftBase : IScene, IDisposable
                 {
                     toogleMenu = 0;
                     curMenu = Cmenu(e.Type, e.List);
-                    p8.Sfx(13, 3);
+                    Sfx(13, 3);
                 }
                 canAct = false;
             }
@@ -786,7 +781,7 @@ public abstract class PcraftBase : IScene, IDisposable
             F32 disten = GetLen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
             if (disten < 10)
             {
-                p8.Add(nearEnemies, e);
+                Add(nearEnemies, e);
             }
             if (distp < 8)
             {
@@ -799,20 +794,20 @@ public abstract class PcraftBase : IScene, IDisposable
                 if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
                 {
                     e.Step = enstep_Walk;
-                    e.Dx = p8.Rnd(2) - 1;
-                    e.Dy = p8.Rnd(2) - 1;
-                    e.Dtim = 30 + p8.Rnd(60);
+                    e.Dx = Rnd(2) - 1;
+                    e.Dy = Rnd(2) - 1;
+                    e.Dtim = 30 + Rnd(60);
                 }
                 else if (e.Step == enstep_Walk)
                 {
                     e.Step = enstep_Wait;
                     e.Dx = F32.Zero;
                     e.Dy = F32.Zero;
-                    e.Dtim = 30 + p8.Rnd(60);
+                    e.Dtim = 30 + Rnd(60);
                 }
                 else // chase
                 {
-                    e.Dtim = 10 + p8.Rnd(60);
+                    e.Dtim = 10 + Rnd(60);
                 }
             }
             else
@@ -830,13 +825,13 @@ public abstract class PcraftBase : IScene, IDisposable
                         e.Dx = F32.Zero;
                         e.Dy = F32.Zero;
                         e.Banim -= 1;
-                        e.Banim = Pico8Functions.Mod(e.Banim, 8);
+                        e.Banim = Mod(e.Banim, 8);
                         int pow = 10;
                         if (e.Banim == 4)
                         {
                             plife -= pow;
-                            p8.Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
-                            p8.Sfx(14 + p8.Rnd(2).Double, 3);
+                            Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
+                            Sfx(14 + Rnd(2).Double, 3);
                         }
                         plife = F32.Max(F32.Zero, plife);
                     }
@@ -844,7 +839,7 @@ public abstract class PcraftBase : IScene, IDisposable
                     if (distp > 70)
                     {
                         e.Step = enstep_Patrol;
-                        e.Dtim = 30 + p8.Rnd(60);
+                        e.Dtim = 30 + Rnd(60);
                     }
                 }
                 else
@@ -852,7 +847,7 @@ public abstract class PcraftBase : IScene, IDisposable
                     if (distp < 40)
                     {
                         e.Step = enstep_Chase;
-                        e.Dtim = 10 + p8.Rnd(60);
+                        e.Dtim = 10 + Rnd(60);
                     }
                 }
                 e.Dtim -= 1;
@@ -890,14 +885,14 @@ public abstract class PcraftBase : IScene, IDisposable
     {
         if (nearEnemies.Count > 0)
         {
-            p8.Sfx(19, 3);
+            Sfx(19, 3);
             F32 pow = F32.One;
             if (curItem is not null && curItem.Type == sword)
             {
-                pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                pow = 1 + (int)curItem.Power + Rnd((int)curItem.Power * (int)curItem.Power);
                 stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                 pow = F32.Floor(pow);
-                p8.Sfx(14 + p8.Rnd(2).Double, 3);
+                Sfx(14 + Rnd(2).Double, 3);
             }
             foreach (Entity e in nearEnemies)
             {
@@ -907,16 +902,16 @@ public abstract class PcraftBase : IScene, IDisposable
                 e.Oy += F32.Max(-push, F32.Min(push, e.Y - ply));
                 if (e.Life <= 0)
                 {
-                    p8.Del(enemies, e);
-                    AddItem(ichor, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
-                    AddItem(fabric, F32.FloorToInt(p8.Rnd(3)), e.X, e.Y);
+                    Del(enemies, e);
+                    AddItem(ichor, F32.FloorToInt(Rnd(3)), e.X, e.Y);
+                    AddItem(fabric, F32.FloorToInt(Rnd(3)), e.X, e.Y);
                 }
-                p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
+                Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
             }
         }
         else if (hit.Mat is not null)
         {
-            p8.Sfx(15, 3);
+            Sfx(15, 3);
             F32 pow = F32.One;
             if (curItem is not null)
             {
@@ -924,16 +919,16 @@ public abstract class PcraftBase : IScene, IDisposable
                 {
                     if (curItem.Type == haxe)
                     {
-                        pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                        pow = 1 + (int)curItem.Power + Rnd((int)curItem.Power * (int)curItem.Power);
                         stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                        p8.Sfx(12, 3);
+                        Sfx(12, 3);
                     }
                 }
                 else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
                 {
-                    pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power);
+                    pow = 1 + (int)curItem.Power * 2 + Rnd((int)curItem.Power * (int)curItem.Power);
                     stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                    p8.Sfx(12, 3);
+                    Sfx(12, 3);
                 }
             }
             pow = F32.Floor(pow);
@@ -943,8 +938,8 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 SetGr(hitx, hity, hit.Tile);
                 Cleardata(hitx, hity);
-                AddItem(hit.Mat, F32.FloorToInt(p8.Rnd(3) + 2), hitx, hity);
-                if (hit == grtree && p8.Rnd(1) > F32.FromDouble(0.7))
+                AddItem(hit.Mat, F32.FloorToInt(Rnd(3) + 2), hitx, hity);
+                if (hit == grtree && Rnd(1) > F32.FromDouble(0.7))
                 {
                     AddItem(apple, 1, hitx, hity);
                 }
@@ -953,11 +948,11 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 SetData(hitx, hity, d - pow);
             }
-            p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
+            Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
         }
         else
         {
-            p8.Sfx(19, 3);
+            Sfx(19, 3);
             if (curItem is null)
             {
                 return;
@@ -970,13 +965,13 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 plife = F32.Min(F32.FromInt(100), plife + (int)curItem.Type.GiveLife);
                 RemInList(invent, Instc(curItem.Type, 1));
-                p8.Sfx(21, 3);
+                Sfx(21, 3);
             }
             switch (hit, curItem.Type)
             {
                 case (Ground, Material) gm when gm == (grgrass, scythe):
                     SetGr(hitx, hity, grsand);
-                    if (p8.Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
+                    if (Rnd(1) > F32.FromDouble(0.4)) { AddItem(seed, 1, hitx, hity); }
                     break;
                 case (Ground, Material) gm when gm == (grsand, shovel):
                     if (curItem.Power > 3)
@@ -987,8 +982,8 @@ public abstract class PcraftBase : IScene, IDisposable
                     else
                     {
                         SetGr(hitx, hity, grfarm);
-                        SetData(hitx, hity, time + 15 + p8.Rnd(5));
-                        AddItem(sand, F32.FloorToInt(p8.Rnd(2)), hitx, hity);
+                        SetData(hitx, hity, time + 15 + Rnd(5));
+                        AddItem(sand, F32.FloorToInt(Rnd(2)), hitx, hity);
                     }
                     break;
                 case (Ground, Material) gm when gm == (grwater, sand):
@@ -996,20 +991,20 @@ public abstract class PcraftBase : IScene, IDisposable
                     RemInList(invent, Instc(sand, 1));
                     break;
                 case (Ground, Material) gm when gm == (grwater, boat):
-                    p8.Reload();
-                    p8.Memcpy(0x1000, 0x2000, 0x1000);
+                    Reload();
+                    Memcpy(0x1000, 0x2000, 0x1000);
                     curMenu = winMenu;
-                    p8.Music(3);
+                    Music(3);
                     break;
                 case (Ground, Material) gm when gm == (grfarm, seed):
                     SetGr(hitx, hity, grwheat);
-                    SetData(hitx, hity, time + 15 + p8.Rnd(5));
+                    SetData(hitx, hity, time + 15 + Rnd(5));
                     RemInList(invent, Instc(seed, 1));
                     break;
                 case (Ground, Material) gm when gm == (grwheat, scythe):
                     SetGr(hitx, hity, grsand);
                     F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0) - time)));
-                    AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double)), hitx, hity);
+                    AddItem(wheat, F32.FloorToInt(d / 2 + Rnd(d / 2)), hitx, hity);
                     AddItem(seed, 1, hitx, hity);
                     break;
                 default:
@@ -1024,7 +1019,7 @@ public abstract class PcraftBase : IScene, IDisposable
         {
             if (curMenu.Spr is not null)
             {
-                if (p8.Btnp(4) && !lb4)
+                if (Btnp(4) && !lb4)
                 {
                     if (curMenu == mainMenu)
                     {
@@ -1034,10 +1029,10 @@ public abstract class PcraftBase : IScene, IDisposable
                     {
                         ResetLevel();
                         curMenu = null;
-                        p8.Music(1);
+                        Music(1);
                     }
                 }
-                lb4 = p8.Btn(4);
+                lb4 = Btn(4);
                 return;
             }
 
@@ -1045,8 +1040,8 @@ public abstract class PcraftBase : IScene, IDisposable
             Entity othMenu = menuInvent;
             if (curMenu.Type == chest)
             {
-                if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
+                if (Btnp(0)) { toogleMenu -= 1; Sfx(18, 3); }
+                if (Btnp(1)) { toogleMenu += 1; Sfx(18, 3); }
                 toogleMenu = (toogleMenu % 2 + 2) % 2;
                 if (toogleMenu == 1)
                 {
@@ -1057,18 +1052,18 @@ public abstract class PcraftBase : IScene, IDisposable
 
             if (intMenu.List.Count > 0)
             {
-                if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
+                if (Btnp(2)) { intMenu.Sel -= 1; Sfx(18, 3); }
+                if (Btnp(3)) { intMenu.Sel += 1; Sfx(18, 3); }
 
                 intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
 
-                if (p8.Btnp(5) && !lb5)
+                if (Btnp(5) && !lb5)
                 {
                     if (curMenu.Type == chest)
                     {
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         Entity el = intMenu.List[intMenu.Sel];
-                        p8.Del(intMenu.List, el);
+                        Del(intMenu.List, el);
                         AddItemInList(othMenu.List, el, othMenu.Sel);
                         if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
                         if (intMenu == menuInvent && curItem == el)
@@ -1084,34 +1079,34 @@ public abstract class PcraftBase : IScene, IDisposable
                             if (CanCraft(rec))
                             {
                                 Craft(rec);
-                                p8.Sfx(16, 3);
+                                Sfx(16, 3);
                             }
                             else
                             {
-                                p8.Sfx(17, 3);
+                                Sfx(17, 3);
                             }
                         }
                     }
                     else
                     {
                         curItem = curMenu.List[curMenu.Sel];
-                        p8.Del(curMenu.List, curItem);
+                        Del(curMenu.List, curItem);
                         AddItemInList(curMenu.List, curItem, 0);
                         curMenu.Sel = 0;
                         curMenu = null;
                         block5 = true;
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                     }
                 }
             }
 
-            if (p8.Btnp(4) && !lb4)
+            if (Btnp(4) && !lb4)
             {
                 curMenu = null;
-                p8.Sfx(17, 3);
+                Sfx(17, 3);
             }
-            lb4 = p8.Btn(4);
-            lb5 = p8.Btn(5);
+            lb4 = Btn(4);
+            lb5 = Btn(5);
             return;
         }
 
@@ -1124,7 +1119,7 @@ public abstract class PcraftBase : IScene, IDisposable
             FillEne(currentLevel);
             switchLevel = false;
             canSwitchLevel = false;
-            p8.Music(currentLevel == cave ? 2 : 1);
+            Music(currentLevel == cave ? 2 : 1);
         }
 
         if (curItem is not null)
@@ -1135,7 +1130,7 @@ public abstract class PcraftBase : IScene, IDisposable
         UpGround();
 
         Ground playHit = GetGr(plx, ply);
-        if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
+        if (playHit != lastGround && playHit == grwater) { Sfx(11, 3); }
         lastGround = playHit;
         int s = playHit == grwater || pstam <= 0 ? 1 : 2;
         if (playHit == grhole)
@@ -1150,10 +1145,10 @@ public abstract class PcraftBase : IScene, IDisposable
         F32 dx = F32.Zero;
         F32 dy = F32.Zero;
 
-        if (p8.Btn(0)) dx -= 1;
-        if (p8.Btn(1)) dx += 1;
-        if (p8.Btn(2)) dy -= 1;
-        if (p8.Btn(3)) dy += 1;
+        if (Btn(0)) dx -= 1;
+        if (Btn(1)) dx += 1;
+        if (Btn(2)) dy -= 1;
+        if (Btn(3)) dy += 1;
 
         F32 dl = GetInvLen(dx, dy);
 
@@ -1180,8 +1175,8 @@ public abstract class PcraftBase : IScene, IDisposable
 
         nearEnemies = [];
 
-        F32 ebx = p8.Cos(prot);
-        F32 eby = p8.Sin(prot);
+        F32 ebx = Cos(prot);
+        F32 eby = Sin(prot);
         UpEnemies(ebx, eby);
 
         (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
@@ -1194,10 +1189,10 @@ public abstract class PcraftBase : IScene, IDisposable
         llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
         lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
 
-        if (p8.Btn(5) && !block5 && canAct)
+        if (Btn(5) && !block5 && canAct)
         {
-            F32 bx = p8.Cos(prot);
-            F32 by = p8.Sin(prot);
+            F32 bx = Cos(prot);
+            F32 by = Sin(prot);
             F32 hitx = plx + bx * 8;
             F32 hity = ply + by * 8;
             Ground hit = GetGr(hitx, hity);
@@ -1211,7 +1206,7 @@ public abstract class PcraftBase : IScene, IDisposable
                 curItem.Y = F32.Floor(hity / 16) * 16 + 8;
                 curItem.Vx = F32.Zero;
                 curItem.Vy = F32.Zero;
-                p8.Add(entities, curItem);
+                Add(entities, curItem);
                 RemInList(invent, curItem);
                 canAct = false;
             }
@@ -1264,15 +1259,15 @@ public abstract class PcraftBase : IScene, IDisposable
         cly = F32.Max(cmy - m, cly);
         cly = F32.Min(cmy + m, cly);
 
-        if (p8.Btnp(4) && !lb4)
+        if (Btnp(4) && !lb4)
         {
             curMenu = menuInvent;
-            p8.Sfx(13, 3);
+            Sfx(13, 3);
         }
 
-        lb4 = p8.Btn(4);
-        lb5 = p8.Btn(5);
-        if (!p8.Btn(5))
+        lb4 = Btn(4);
+        lb5 = Btn(5);
+        if (!Btn(5))
         {
             block5 = false;
         }
@@ -1281,10 +1276,10 @@ public abstract class PcraftBase : IScene, IDisposable
 
         if (plife <= 0)
         {
-            p8.Reload();
-            p8.Memcpy(0x1000, 0x2000, 0x1000);
+            Reload();
+            Memcpy(0x1000, 0x2000, 0x1000);
             curMenu = deathMenu;
-            p8.Music(4);
+            Music(4);
         }
     }
 
@@ -1308,40 +1303,40 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected virtual void Dplayer(F32 x, F32 y, F32 rot, F32 anim, F32 subanim, bool isplayer)
     {
-        F32 cr = p8.Cos(rot);
-        F32 sr = p8.Sin(rot);
+        F32 cr = Cos(rot);
+        F32 sr = Sin(rot);
         F32 cv = -sr;
         F32 sv = cr;
 
         x = F32.Floor(x);
         y = F32.Floor(y - 4);
 
-        F32 lan = p8.Sin(anim * 2) * F32.FromDouble(1.5);
+        F32 lan = Sin(anim * 2) * F32.FromDouble(1.5);
 
         Ground bel = GetGr(x, y);
         if (bel == grwater)
         {
             y += 4;
-            p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 6);
-            p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
+            Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 6);
+            Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 6);
 
             F32 anc = 3 + time * 3 % 1 * 3;
-            p8.Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc.Double, 6);
-            p8.Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc.Double, 6);
+            Circ(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, anc.Double, 6);
+            Circ(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, anc.Double, 6);
         }
         else
         {
-            p8.Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
-            p8.Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
+            Circfill(x + cv * 2 - cr * lan, y + 3 + sv * 2 - sr * lan, 3, 1);
+            Circfill(x - cv * 2 + cr * lan, y + 3 - sv * 2 + sr * lan, 3, 1);
         }
 
-        F32 blade = Pico8Functions.Mod(rot + F32.FromDouble(0.25), 1);
+        F32 blade = Mod(rot + F32.FromDouble(0.25), 1);
         if (subanim > 0)
         {
             blade = blade - F32.FromDouble(0.3) + subanim * F32.FromDouble(0.04);
         }
-        F32 bcr = p8.Cos(blade);
-        F32 bsr = p8.Sin(blade);
+        F32 bcr = Cos(blade);
+        F32 bsr = Sin(blade);
 
         (int mx, int my) = Mirror(blade);
 
@@ -1349,7 +1344,7 @@ public abstract class PcraftBase : IScene, IDisposable
 
         if (isplayer && curItem is not null)
         {
-            p8.Pal();
+            Pal();
             weap = curItem.Type.Spr;
             if (curItem.Power is not null)
             {
@@ -1361,23 +1356,23 @@ public abstract class PcraftBase : IScene, IDisposable
             }
         }
 
-        p8.Spr(weap, (x + bcr * 4 - cr * lan - mx * 8 + 1).Double, (y + bsr * 4 - sr * lan + my * 8 - 7).Double, 1, 1, mx == 1, my == 1);
+        Spr(weap, (x + bcr * 4 - cr * lan - mx * 8 + 1).Double, (y + bsr * 4 - sr * lan + my * 8 - 7).Double, 1, 1, mx == 1, my == 1);
 
-        if (isplayer) { p8.Pal(); }
+        if (isplayer) { Pal(); }
 
         if (bel != grwater)
         {
-            p8.Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
-            p8.Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
+            Circfill(x + cv * 3 + cr * lan, y + sv * 3 + sr * lan, 3, 2);
+            Circfill(x - cv * 3 - cr * lan, y - sv * 3 - sr * lan, 3, 2);
 
-            (int my2, int mx2) = Mirror(Pico8Functions.Mod(rot + F32.FromDouble(0.75), 1));
-            p8.Spr(75, (x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1).Double, (y + sv * 4 + sr * lan + my2 * 8 - 7).Double, 1, 1, mx2 == 0, my2 == 1);
+            (int my2, int mx2) = Mirror(Mod(rot + F32.FromDouble(0.75), 1));
+            Spr(75, (x + cv * 4 + cr * lan - 8 + mx2 * 8 + 1).Double, (y + sv * 4 + sr * lan + my2 * 8 - 7).Double, 1, 1, mx2 == 0, my2 == 1);
         }
 
-        p8.Circfill(x + cr, y + sr - 2, 4, 2);
-        p8.Circfill(x + cr, y + sr, 4, 2);
-        p8.Circfill(x + cr * F32.FromDouble(1.5), y + sr * F32.FromDouble(1.5) - 2, 2.5, 15);
-        p8.Circfill(x - cr, y - sr - 3, 3, 4);
+        Circfill(x + cr, y + sr - 2, 4, 2);
+        Circfill(x + cr, y + sr, 4, 2);
+        Circfill(x + cr * F32.FromDouble(1.5), y + sr * F32.FromDouble(1.5) - 2, 2.5, 15);
+        Circfill(x - cr, y - sr - 3, 3, 4);
     }
 
     protected virtual F32[][] Noise(int sx, int sy, F32 startscale, F32 scalemod, int featstep)
@@ -1408,8 +1403,8 @@ public abstract class PcraftBase : IScene, IDisposable
                     F32 c1 = n[i][j];
                     F32 c2 = n[i + step][j];
                     F32 c3 = n[i][j + step];
-                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (p8.Rnd(1) - F32.Half) * cscal;
-                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (p8.Rnd(1) - F32.Half) * cscal;
+                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (Rnd(1) - F32.Half) * cscal;
+                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (Rnd(1) - F32.Half) * cscal;
                 }
             }
 
@@ -1421,7 +1416,7 @@ public abstract class PcraftBase : IScene, IDisposable
                     F32 c2 = n[i + step][j];
                     F32 c3 = n[i][j + step];
                     F32 c4 = n[i + step][j + step];
-                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (p8.Rnd(1) - F32.Half) * cscal;
+                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (Rnd(1) - F32.Half) * cscal;
                 }
             }
 
@@ -1501,8 +1496,8 @@ public abstract class PcraftBase : IScene, IDisposable
 
                 for (int i = 0; i <= 500; i++)
                 {
-                    int depx = F32.FloorToInt(levelsx / 8 + p8.Rnd(levelsx * 6 / 8));
-                    int depy = F32.FloorToInt(levelsy / 8 + p8.Rnd(levelsy * 6 / 8));
+                    int depx = F32.FloorToInt(levelsx / 8 + Rnd(levelsx * 6 / 8));
+                    int depy = F32.FloorToInt(levelsy / 8 + Rnd(levelsy * 6 / 8));
                     F32 c = level[depx][depy];
 
                     if (c == 1 || c == 2)
@@ -1524,7 +1519,7 @@ public abstract class PcraftBase : IScene, IDisposable
         {
             for (int j = 0; j < levelsy; j++)
             {
-                p8.Mset(i + levelx, j + levely, level[i][j].Double);
+                Mset(i + levelx, j + levely, level[i][j].Double);
             }
         }
 
@@ -1535,11 +1530,11 @@ public abstract class PcraftBase : IScene, IDisposable
         {
             for (int j = -1; j <= 1; j++)
             {
-                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+                Mset(holex + i, holey + j, levelUnder ? 1 : 3);
             }
         }
 
-        p8.Mset(holex, holey, 11);
+        Mset(holex, holey, 11);
 
         clx = plx;
         cly = ply;
@@ -1562,7 +1557,7 @@ public abstract class PcraftBase : IScene, IDisposable
     protected virtual void WatAnim(F32 i, F32 j)
     {
         F32 a = (time * F32.FromDouble(0.6) + WatVal(i, j) / 100) % 1 * 19;
-        if (a > 16) { p8.Spr(13 + a.Double - 16, i.Double * 16, j.Double * 16); }
+        if (a > 16) { Spr(13 + a.Double - 16, i.Double * 16, j.Double * 16); }
     }
 
     protected virtual F32 RndCenter(F32 i, F32 j)
@@ -1582,10 +1577,10 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected virtual void Spr4(F32 i, F32 j, F32 gi, F32 gj, int a, int b, int c, int d, int off, Func<F32, F32, int> f)
     {
-        p8.Spr(f(i, j + off) + a, gi.Double, (gj + 2 * off).Double);
-        p8.Spr(f(i + F32.Half, j + off) + b, gi.Double + 8, (gj + 2 * off).Double);
-        p8.Spr(f(i, j + F32.Half + off) + c, gi.Double, (gj + 8 + 2 * off).Double);
-        p8.Spr(f(i + F32.Half, j + F32.Half + off) + d, gi.Double + 8, (gj + 8 + 2 * off).Double);
+        Spr(f(i, j + off) + a, gi.Double, (gj + 2 * off).Double);
+        Spr(f(i + F32.Half, j + off) + b, gi.Double + 8, (gj + 2 * off).Double);
+        Spr(f(i, j + F32.Half + off) + c, gi.Double, (gj + 8 + 2 * off).Double);
+        Spr(f(i + F32.Half, j + F32.Half + off) + d, gi.Double + 8, (gj + 8 + 2 * off).Double);
     }
 
     protected virtual void DrawBack()
@@ -1606,10 +1601,10 @@ public abstract class PcraftBase : IScene, IDisposable
                 {
                     int sv = 0;
                     if (gr == grfarm || gr == grwheat) { sv = 3; }
-                    p8.Mset(gi, gj, RndSand(i, j) + sv);
-                    p8.Mset(gi + 1, gj, RndSand(i + F32.Half, j) + sv);
-                    p8.Mset(gi, gj + 1, RndSand(i, j + F32.Half) + sv);
-                    p8.Mset(gi + 1, gj + 1, RndSand(i + F32.Half, j + F32.Half) + sv);
+                    Mset(gi, gj, RndSand(i, j) + sv);
+                    Mset(gi + 1, gj, RndSand(i + F32.Half, j) + sv);
+                    Mset(gi, gj + 1, RndSand(i, j + F32.Half) + sv);
+                    Mset(gi + 1, gj + 1, RndSand(i + F32.Half, j + F32.Half) + sv);
                 }
                 else
                 {
@@ -1620,22 +1615,22 @@ public abstract class PcraftBase : IScene, IDisposable
 
                     int b = gr == grrock ? 21 : gr == grwater ? 26 : 16;
 
-                    p8.Mset(gi, gj, b + (l ? u ? Comp(i - 1, j - 1, gr) ? 17 + RndCenter(i, j).Double : 20 : 1 : u ? 16 : 0));
-                    p8.Mset(gi + 1, gj, b + (r ? u ? Comp(i + 1, j - 1, gr) ? 17 + RndCenter(i + F32.Half, j).Double : 19 : 1 : u ? 18 : 2));
-                    p8.Mset(gi, gj + 1, b + (l ? d ? Comp(i - 1, j + 1, gr) ? 17 + RndCenter(i, j + F32.Half).Double : 4 : 33 : d ? 16 : 32));
-                    p8.Mset(gi + 1, gj + 1, b + (r ? d ? Comp(i + 1, j + 1, gr) ? 17 + RndCenter(i + F32.Half, j + F32.Half).Double : 3 : 33 : d ? 18 : 34));
+                    Mset(gi, gj, b + (l ? u ? Comp(i - 1, j - 1, gr) ? 17 + RndCenter(i, j).Double : 20 : 1 : u ? 16 : 0));
+                    Mset(gi + 1, gj, b + (r ? u ? Comp(i + 1, j - 1, gr) ? 17 + RndCenter(i + F32.Half, j).Double : 19 : 1 : u ? 18 : 2));
+                    Mset(gi, gj + 1, b + (l ? d ? Comp(i - 1, j + 1, gr) ? 17 + RndCenter(i, j + F32.Half).Double : 4 : 33 : d ? 16 : 32));
+                    Mset(gi + 1, gj + 1, b + (r ? d ? Comp(i + 1, j + 1, gr) ? 17 + RndCenter(i + F32.Half, j + F32.Half).Double : 3 : 33 : d ? 18 : 34));
 
                 }
             }
         }
 
-        p8.Pal();
+        Pal();
         if (levelUnder)
         {
-            p8.Pal(15, 5);
-            p8.Pal(4, 1);
+            Pal(15, 5);
+            Pal(4, 1);
         }
-        p8.Map(64, 32, ci.Double * 16, cj.Double * 16, 18, 18);
+        Map(64, 32, ci.Double * 16, cj.Double * 16, 18, 18);
 
         for (F32 i = ci - 1; i <= ci + 8; i++)
         {
@@ -1650,7 +1645,7 @@ public abstract class PcraftBase : IScene, IDisposable
                 F32 gi = i * 16;
                 F32 gj = j * 16;
 
-                p8.Pal();
+                Pal();
 
                 if (gr == grwater)
                 {
@@ -1665,10 +1660,10 @@ public abstract class PcraftBase : IScene, IDisposable
                     F32 d = DirGetData(i, j, F32.Zero) - time;
                     for (int pp = 2; pp <= 4; pp++)
                     {
-                        p8.Pal(pp, 3);
-                        if (d > 10 - pp * 2) { p8.Palt(pp, true); }
+                        Pal(pp, 3);
+                        if (d > 10 - pp * 2) { Palt(pp, true); }
                     }
-                    if (d < 0) { p8.Pal(4, 9); }
+                    if (d < 0) { Pal(4, 9); }
                     Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, RndSand);
                 }
 
@@ -1681,15 +1676,15 @@ public abstract class PcraftBase : IScene, IDisposable
 
                 if (gr == grhole)
                 {
-                    p8.Pal();
+                    Pal();
                     if (!levelUnder)
                     {
-                        p8.Palt(0, false);
-                        p8.Spr(31, gi.Double, gj.Double, 1, 2);
-                        p8.Spr(31, gi.Double + 8, gj.Double, 1, 2, true);
+                        Palt(0, false);
+                        Spr(31, gi.Double, gj.Double, 1, 2);
+                        Spr(31, gi.Double + 8, gj.Double, 1, 2, true);
                     }
-                    p8.Palt();
-                    p8.Spr(77, gi.Double + 4, gj.Double, 1, 2);
+                    Palt();
+                    Spr(77, gi.Double + 4, gj.Double, 1, 2);
                 }
             }
         }
@@ -1697,37 +1692,37 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected virtual void Panel(string name, int x, int y, int sx, int sy)
     {
-        p8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
-        p8.Spr(66, x, y);
-        p8.Spr(67, x + sx - 8, y);
-        p8.Spr(82, x, y + sy - 8);
-        p8.Spr(83, x + sx - 8, y + sy - 8);
-        p8.Sspr(24, 32, 4, 8, x + 8, y, sx - 16, 8);
-        p8.Sspr(24, 40, 4, 8, x + 8, y + sy - 8, sx - 16, 8);
-        p8.Sspr(16, 36, 8, 4, x, y + 8, 8, sy - 16);
-        p8.Sspr(24, 36, 8, 4, x + sx - 8, y + 8, 8, sy - 16);
+        Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
+        Spr(66, x, y);
+        Spr(67, x + sx - 8, y);
+        Spr(82, x, y + sy - 8);
+        Spr(83, x + sx - 8, y + sy - 8);
+        Sspr(24, 32, 4, 8, x + 8, y, sx - 16, 8);
+        Sspr(24, 40, 4, 8, x + 8, y + sy - 8, sx - 16, 8);
+        Sspr(16, 36, 8, 4, x, y + 8, 8, sy - 16);
+        Sspr(24, 36, 8, 4, x + sx - 8, y + 8, 8, sy - 16);
 
         int hx = x + (sx - name.Length * 4) / 2;
-        p8.Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
-        p8.Print(name, hx + 1, y + 2, 7);
+        Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
+        Print(name, hx + 1, y + 2, 7);
     }
 
     protected virtual void ItemName(int x, int y, Entity it, int col)
     {
         Material ty = it.Type;
-        p8.Pal();
+        Pal();
         int px = x;
         if (it.Power is not null)
         {
             string pwn = pwrNames[(int)it.Power - 1];
-            p8.Print(pwn, x + 10, y, col);
+            Print(pwn, x + 10, y, col);
             px += pwn.Length * 4 + 4;
             SetPal(pwrPal[(int)it.Power - 1]);
         }
         if (ty.Pal is not null) { SetPal(ty.Pal); }
-        p8.Spr(ty.Spr, x, y - 2);
-        p8.Pal();
-        p8.Print(ty.Name, px + 10, y, col);
+        Spr(ty.Spr, x, y - 2);
+        Pal();
+        Print(ty.Name, px + 10, y, col);
     }
 
     protected virtual void List(Entity menu, int x, int y, int sx, int sy, int my)
@@ -1750,7 +1745,7 @@ public abstract class PcraftBase : IScene, IDisposable
         int fin = Math.Min(menu.Off + my, tlist);
 
         int sely = y + 3 + (sel + 1) * 8;
-        p8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
+        Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
 
         x += 5;
         y += 12;
@@ -1770,12 +1765,12 @@ public abstract class PcraftBase : IScene, IDisposable
             if (it.Count is not null)
             {
                 string c = $"{it.Count}";
-                p8.Print(c, x + sx - c.Length * 4 - 10, py, col);
+                Print(c, x + sx - c.Length * 4 - 10, py, col);
             }
         }
 
-        p8.Spr(68, x - 8, sely);
-        p8.Spr(68, x + sx - 10, sely, 1, 1, true);
+        Spr(68, x - 8, sely);
+        Spr(68, x + sx - 10, sely, 1, 1, true);
     }
 
     protected virtual void RequireList(Entity recip, int x, int y, int sx, int sy)
@@ -1800,34 +1795,34 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 int h = HowMany(invent, it);
                 string c = $"{h}/{it.Count}";
-                p8.Print(c, x + sx - c.Length * 4 - 10, py, h < it.Count ? 8 : 7);
+                Print(c, x + sx - c.Length * 4 - 10, py, h < it.Count ? 8 : 7);
             }
         }
     }
 
     protected virtual void Printb(string t, double x, double y, int c)
     {
-        p8.Print(t, x + 1, y, 1);
-        p8.Print(t, x - 1, y, 1);
-        p8.Print(t, x, y + 1, 1);
-        p8.Print(t, x, y - 1, 1);
-        p8.Print(t, x, y, c);
+        Print(t, x + 1, y, 1);
+        Print(t, x - 1, y, 1);
+        Print(t, x, y + 1, 1);
+        Print(t, x, y - 1, 1);
+        Print(t, x, y, c);
     }
 
     protected virtual void Printc(string t, int x, int y, int c)
     {
-        p8.Print(t, x - t.Length * 2, y, c);
+        Print(t, x - t.Length * 2, y, c);
     }
 
     protected virtual void Dent()
     {
         foreach (Entity e in entities)
         {
-            p8.Pal();
+            Pal();
             if (e.Type.Pal is not null) { SetPal(e.Type.Pal); }
             if (e.Type.BigSpr is not null)
             {
-                p8.Spr((int)e.Type.BigSpr, e.X.Double - 8, e.Y.Double - 8, 2, 2);
+                Spr((int)e.Type.BigSpr, e.X.Double - 8, e.Y.Double - 8, 2, 2);
                 continue;
             }
 
@@ -1841,10 +1836,10 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 for (int i = 0; i <= 15; i++)
                 {
-                    p8.Palt(i, true);
+                    Palt(i, true);
                 }
             }
-            p8.Spr(e.Type.Spr, e.X.Double - 4, e.Y.Double - 4);
+            Spr(e.Type.Spr, e.X.Double - 4, e.Y.Double - 4);
         }
     }
 
@@ -1871,18 +1866,18 @@ public abstract class PcraftBase : IScene, IDisposable
         {
             if (e.Type == player)
             {
-                p8.Pal();
+                Pal();
                 Dplayer(plx, ply, prot, panim, banim, true);
             }
             else
             {
                 if (IsIn(e, 72))
                 {
-                    p8.Pal();
-                    p8.Pal(15, 3);
-                    p8.Pal(4, 1);
-                    p8.Pal(2, 8);
-                    p8.Pal(1, 1);
+                    Pal();
+                    Pal(15, 3);
+                    Pal(4, 1);
+                    Pal(2, 8);
+                    Pal(1, 1);
 
                     Dplayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, false);
                 }
@@ -1892,24 +1887,24 @@ public abstract class PcraftBase : IScene, IDisposable
 
     protected virtual void Dbar(int px, int py, F32 v, F32 m, int c, int c2)
     {
-        p8.Pal();
+        Pal();
         F32 pe = px + v * F32.FromDouble(0.3);
         F32 pe2 = px + m * F32.FromDouble(0.3);
-        p8.Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
-        p8.Rectfill(px, py, pe.Double, py + 3, c2);
-        p8.Rectfill(px, py, F32.Max(F32.FromInt(px), pe - 1).Double, py + 2, c);
-        if (m > v) { p8.Rectfill(pe.Double + 1, py, pe2.Double, py + 3, 10); }
+        Rectfill(px - 1, py - 1, px + 30, py + 4, 0);
+        Rectfill(px, py, pe.Double, py + 3, c2);
+        Rectfill(px, py, F32.Max(F32.FromInt(px), pe - 1).Double, py + 2, c);
+        if (m > v) { Rectfill(pe.Double + 1, py, pe2.Double, py + 3, 10); }
     }
 
     public virtual void Draw()
     {
         if (curMenu is not null && curMenu.Spr is not null)
         {
-            p8.Camera();
-            p8.Palt(0, false);
-            p8.Rectfill(0, 0, 128, 46, 12);
-            p8.Rectfill(0, 46, 128, 128, 1);
-            p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+            Camera();
+            Palt(0, false);
+            Rectfill(0, 0, 128, 46, 12);
+            Rectfill(0, 46, 128, 128, 1);
+            Spr((int)curMenu.Spr, 32, 14, 8, 8);
             Printc(curMenu.Text, 64, 80, 6);
             Printc(curMenu.Text2, 64, 90, 6);
             Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
@@ -1917,9 +1912,9 @@ public abstract class PcraftBase : IScene, IDisposable
             return;
         }
 
-        p8.Cls();
+        Cls();
 
-        p8.Camera(clx - 64, cly - 64);
+        Camera(clx - 64, cly - 64);
 
         DrawBack();
 
@@ -1927,7 +1922,7 @@ public abstract class PcraftBase : IScene, IDisposable
 
         Denemies();
 
-        p8.Camera();
+        Camera();
         Dbar(4, 4, plife, llife, 8, 2);
         Dbar(4, 9, F32.Max(F32.Zero, pstam), lstam, 11, 3);
 
@@ -1939,7 +1934,7 @@ public abstract class PcraftBase : IScene, IDisposable
             if (curItem.Count is not null)
             {
                 string c = $"{curItem.Count}";
-                p8.Print(c, ix + 88 - 16, iy + 3, 7);
+                Print(c, ix + 88 - 16, iy + 3, 7);
             }
         }
 
@@ -1947,7 +1942,7 @@ public abstract class PcraftBase : IScene, IDisposable
         {
             return;
         }
-        p8.Camera();
+        Camera();
         if (curMenu.Type == chest)
         {
             if (toogleMenu == 0)
@@ -1967,7 +1962,7 @@ public abstract class PcraftBase : IScene, IDisposable
             {
                 Entity curgoal = curMenu.List[curMenu.Sel];
                 Panel("have", 71, 50, 52, 30);
-                p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
+                Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
                 RequireList(curgoal, 4, 79, 104, 50);
             }
             List(curMenu, 4, 16, 68, 64, 6);

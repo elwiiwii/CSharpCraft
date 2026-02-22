@@ -1,4 +1,5 @@
 ﻿using CSharpCraft.Pico8;
+using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 
 namespace CSharpCraft.Pcraft;
@@ -144,7 +145,7 @@ public abstract class SpeedrunBase : PcraftBase
             for (F32 j = F32.Zero; j < levelsy; j++)
             {
                 Ground c = GetDirectGr(i, j);
-                F32 r = p8.Rnd(100, zSpawnRng);
+                F32 r = Rnd(100, zSpawnRng);
                 F32 ex = i * 16 + 8;
                 F32 ey = j * 16 + 8;
                 F32 dist = F32.Max(F32.Abs(ex - plx), F32.Abs(ey - ply));
@@ -163,7 +164,7 @@ public abstract class SpeedrunBase : PcraftBase
                     newe.Oy = F32.Zero;
                     newe.PosRnd = newRngSeed is not null ? new Random((int)newRngSeed) : null;
                     newe.TimRnd = newRngSeed is not null ? new Random((int)newRngSeed + 1) : null;
-                    p8.Add(l.Ene, newe);
+                    Add(l.Ene, newe);
                 }
             }
         }
@@ -254,8 +255,8 @@ public abstract class SpeedrunBase : PcraftBase
             ground.DroppedCount = (0, 0);
         }
 
-        p8.Reload();
-        p8.Memcpy(0x1000, 0x2000, 0x1000);
+        Reload();
+        Memcpy(0x1000, 0x2000, 0x1000);
 
         prot = F32.Zero;
         lrot = F32.Zero;
@@ -286,7 +287,7 @@ public abstract class SpeedrunBase : PcraftBase
             Rndwat[i] = new F32[16];
             for (int j = 0; j <= 15; j++)
             {
-                Rndwat[i][j] = p8.Rnd(100, WatRng);
+                Rndwat[i][j] = Rnd(100, WatRng);
             }
         }
 
@@ -297,13 +298,13 @@ public abstract class SpeedrunBase : PcraftBase
         tmpworkbench.HasCol = true;
         tmpworkbench.List = workbenchRecipe;
 
-        p8.Add(invent, tmpworkbench);
-        p8.Add(invent, Inst(pickuptool));
+        Add(invent, tmpworkbench);
+        Add(invent, Inst(pickuptool));
     }
 
-    public override void Init(Pico8Functions pico8)
+    public override void Init()
     {
-        base.Init(pico8);
+        base.Init();
     }
 
     protected new DataItem DirGetData(F32 i, F32 j, F32 @default)
@@ -350,11 +351,11 @@ public abstract class SpeedrunBase : PcraftBase
     {
         for (int i = 0; i < count; i++)
         {
-            Entity gi = Entity(mat, F32.Floor(hitx / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, F32.Floor(hity / 16) * 16 + p8.Rnd(14, spreadDict[mat]) + 1, p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5), p8.Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5));
+            Entity gi = Entity(mat, F32.Floor(hitx / 16) * 16 + Rnd(14, spreadDict[mat]) + 1, F32.Floor(hity / 16) * 16 + Rnd(14, spreadDict[mat]) + 1, Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5), Rnd(3, spreadDict[mat]) - F32.FromDouble(1.5));
             gi.GiveItem = mat;
             gi.HasCol = true;
-            gi.Timer = 110 + p8.Rnd(20, spreadDict[mat]);
-            p8.Add(entities, gi);
+            gi.Timer = 110 + Rnd(20, spreadDict[mat]);
+            Add(entities, gi);
         }
     }
 
@@ -372,7 +373,7 @@ public abstract class SpeedrunBase : PcraftBase
                     DataItem d = DirGetData(i, j, F32.Zero);
                     if (time > d.Val)
                     {
-                        p8.Mset(i.Double + levelx, j.Double, grsand.Id);
+                        Mset(i.Double + levelx, j.Double, grsand.Id);
                     }
                 }
             }
@@ -396,7 +397,7 @@ public abstract class SpeedrunBase : PcraftBase
 
             if (e.Timer is not null && e.Timer < 1)
             {
-                p8.Del(entities, e);
+                Del(entities, e);
                 continue;
             }
 
@@ -409,9 +410,9 @@ public abstract class SpeedrunBase : PcraftBase
                 {
                     Entity newIt = Instc(e.GiveItem, 1);
                     AddItemInList(invent, newIt, -1);
-                    p8.Del(entities, e);
-                    p8.Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
-                    p8.Sfx(18, 3);
+                    Del(entities, e);
+                    Add(entities, SetText(HowMany(invent, newIt).ToString(), 11, F32.FromInt(20), Entity(etext, e.X, e.Y - 5, F32.Zero, F32.Neg1)));
+                    Sfx(18, 3);
                 }
                 continue;
             }
@@ -420,7 +421,7 @@ public abstract class SpeedrunBase : PcraftBase
             {
                 (dx, dy) = ReflectCol(plx, ply, dx, dy, EntColFree, F32.Zero, e);
             }
-            if (dist < 12 && p8.Btn(5) && !block5 && !lb5)
+            if (dist < 12 && Btn(5) && !block5 && !lb5)
             {
                 if (curItem is not null && curItem.Type == pickuptool)
                 {
@@ -429,7 +430,7 @@ public abstract class SpeedrunBase : PcraftBase
                         pickupAction = true;
                         AddItemInList(invent, e, -1);
                         curItem = e;
-                        p8.Del(entities, e);
+                        Del(entities, e);
                     }
                     canAct = false;
                     continue;
@@ -439,7 +440,7 @@ public abstract class SpeedrunBase : PcraftBase
                 {
                     toogleMenu = 0;
                     curMenu = Cmenu(e.Type, e.List);
-                    p8.Sfx(13, 3);
+                    Sfx(13, 3);
                 }
                 canAct = false;
             }
@@ -468,7 +469,7 @@ public abstract class SpeedrunBase : PcraftBase
             F32 disten = GetLen(e.X - plx - ebx * 8, e.Y - ply - eby * 8);
             if (disten < 10)
             {
-                p8.Add(nearEnemies, e);
+                Add(nearEnemies, e);
             }
             if (distp < 8)
             {
@@ -481,20 +482,20 @@ public abstract class SpeedrunBase : PcraftBase
                 if (e.Step == enstep_Wait || e.Step == enstep_Patrol)
                 {
                     e.Step = enstep_Walk;
-                    e.Dx = p8.Rnd(2, e.PosRnd) - 1;
-                    e.Dy = p8.Rnd(2, e.PosRnd) - 1;
-                    e.Dtim = 30 + p8.Rnd(60, e.TimRnd);
+                    e.Dx = Rnd(2, e.PosRnd) - 1;
+                    e.Dy = Rnd(2, e.PosRnd) - 1;
+                    e.Dtim = 30 + Rnd(60, e.TimRnd);
                 }
                 else if (e.Step == enstep_Walk)
                 {
                     e.Step = enstep_Wait;
                     e.Dx = F32.Zero;
                     e.Dy = F32.Zero;
-                    e.Dtim = 30 + p8.Rnd(60, e.TimRnd);
+                    e.Dtim = 30 + Rnd(60, e.TimRnd);
                 }
                 else // chase
                 {
-                    e.Dtim = 10 + p8.Rnd(60, e.TimRnd);
+                    e.Dtim = 10 + Rnd(60, e.TimRnd);
                 }
             }
             else
@@ -512,13 +513,13 @@ public abstract class SpeedrunBase : PcraftBase
                         e.Dx = F32.Zero;
                         e.Dy = F32.Zero;
                         e.Banim -= 1;
-                        e.Banim = Pico8Functions.Mod(e.Banim, 8);
+                        e.Banim = Mod(e.Banim, 8);
                         int pow = 10;
                         if (e.Banim == 4)
                         {
                             plife -= pow;
-                            p8.Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
-                            p8.Sfx(14 + p8.Rnd(2).Double, 3);
+                            Add(entities, SetText(pow.ToString(), 8, F32.FromInt(20), Entity(etext, plx, ply - 10, F32.Zero, F32.Neg1)));
+                            Sfx(14 + Rnd(2).Double, 3);
                         }
                         plife = F32.Max(F32.Zero, plife);
                     }
@@ -526,7 +527,7 @@ public abstract class SpeedrunBase : PcraftBase
                     if (distp > 70)
                     {
                         e.Step = enstep_Patrol;
-                        e.Dtim = 30 + p8.Rnd(60, e.TimRnd);
+                        e.Dtim = 30 + Rnd(60, e.TimRnd);
                     }
                 }
                 else
@@ -534,7 +535,7 @@ public abstract class SpeedrunBase : PcraftBase
                     if (distp < 40)
                     {
                         e.Step = enstep_Chase;
-                        e.Dtim = 10 + p8.Rnd(60, e.TimRnd);
+                        e.Dtim = 10 + Rnd(60, e.TimRnd);
                     }
                 }
                 e.Dtim -= 1;
@@ -737,14 +738,14 @@ public abstract class SpeedrunBase : PcraftBase
         placeAction = false;
         if (nearEnemies.Count > 0)
         {
-            p8.Sfx(19, 3);
+            Sfx(19, 3);
             F32 pow = F32.One;
             if (curItem is not null && curItem.Type == sword)
             {
-                pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power, zombieDamage);
+                pow = 1 + (int)curItem.Power + Rnd((int)curItem.Power * (int)curItem.Power, zombieDamage);
                 stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
                 pow = F32.Floor(pow);
-                p8.Sfx(14 + p8.Rnd(2).Double, 3);
+                Sfx(14 + Rnd(2).Double, 3);
             }
             foreach (Entity e in nearEnemies)
             {
@@ -755,20 +756,20 @@ public abstract class SpeedrunBase : PcraftBase
                 if (e.Life <= 0)
                 {
                     zombiesKilled++;
-                    p8.Del(enemies, e);
-                    int dropCount = F32.FloorToInt(p8.Rnd(3, dropsDict[ichor]));
+                    Del(enemies, e);
+                    int dropCount = F32.FloorToInt(Rnd(3, dropsDict[ichor]));
                     zombiesDroppedCount.ichor += dropCount;
                     AddItem(ichor, dropCount, e.X, e.Y);
-                    dropCount = F32.FloorToInt(p8.Rnd(3, dropsDict[fabric]));
+                    dropCount = F32.FloorToInt(Rnd(3, dropsDict[fabric]));
                     zombiesDroppedCount.fabric += dropCount;
                     AddItem(fabric, dropCount, e.X, e.Y);
                 }
-                p8.Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
+                Add(entities, SetText(pow.ToString(), 9, F32.FromInt(20), Entity(etext, e.X, e.Y - 10, F32.Zero, F32.Neg1)));
             }
         }
         else if (hit.Mat is not null)
         {
-            p8.Sfx(15, 3);
+            Sfx(15, 3);
             F32 pow = F32.One;
             if (curItem is not null)
             {
@@ -776,16 +777,16 @@ public abstract class SpeedrunBase : PcraftBase
                 {
                     if (curItem.Type == haxe)
                     {
-                        pow = 1 + (int)curItem.Power + p8.Rnd((int)curItem.Power * (int)curItem.Power, damageDict[hit][(int)curItem.Power - 1]);
+                        pow = 1 + (int)curItem.Power + Rnd((int)curItem.Power * (int)curItem.Power, damageDict[hit][(int)curItem.Power - 1]);
                         stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                        p8.Sfx(12, 3);
+                        Sfx(12, 3);
                     }
                 }
                 else if ((hit == grrock || hit.IsTree) && curItem.Type == pick)
                 {
-                    pow = 1 + (int)curItem.Power * 2 + p8.Rnd((int)curItem.Power * (int)curItem.Power, damageDict[hit][(int)curItem.Power - 1]);
+                    pow = 1 + (int)curItem.Power * 2 + Rnd((int)curItem.Power * (int)curItem.Power, damageDict[hit][(int)curItem.Power - 1]);
                     stamCost = Math.Max(0, 20 - (int)curItem.Power * 2);
-                    p8.Sfx(12, 3);
+                    Sfx(12, 3);
                 }
             }
             pow = F32.Floor(pow);
@@ -825,10 +826,10 @@ public abstract class SpeedrunBase : PcraftBase
                 hit.MinedCount++;
                 SetGr(hitx, hity, hit.Tile);
                 Cleardata(hitx, hity);
-                int dropCount = F32.FloorToInt(p8.Rnd(3, dropsDict[hit.Mat]) + 2);
+                int dropCount = F32.FloorToInt(Rnd(3, dropsDict[hit.Mat]) + 2);
                 hit.DroppedCount = (hit.DroppedCount.a + dropCount, hit.DroppedCount.b);
                 AddItem(hit.Mat, dropCount, hitx, hity);
-                if (hit == grtree && p8.Rnd(1, dropsDict[apple]) > F32.FromDouble(0.7))
+                if (hit == grtree && Rnd(1, dropsDict[apple]) > F32.FromDouble(0.7))
                 {
                     hit.DroppedCount = (hit.DroppedCount.a, hit.DroppedCount.b + 1);
                     AddItem(apple, 1, hitx, hity);
@@ -839,11 +840,11 @@ public abstract class SpeedrunBase : PcraftBase
                 d.Val -= pow;
                 SetDataItem(hitx, hity, d);
             }
-            p8.Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
+            Add(entities, SetText(pow.ToString(), 10, F32.FromInt(20), Entity(etext, hitx, hity, F32.Zero, F32.Neg1)));
         }
         else
         {
-            p8.Sfx(19, 3);
+            Sfx(19, 3);
             if (curItem is null)
             {
                 return;
@@ -856,14 +857,14 @@ public abstract class SpeedrunBase : PcraftBase
             {
                 plife = F32.Min(F32.FromInt(100), plife + (int)curItem.Type.GiveLife);
                 RemInList(invent, Instc(curItem.Type, 1));
-                p8.Sfx(21, 3);
+                Sfx(21, 3);
             }
             switch (hit, curItem.Type)
             {
                 case (Ground, Material) gm when gm == (grgrass, scythe):
                     hit.MinedCount++;
                     SetGr(hitx, hity, grsand);
-                    if (p8.Rnd(1, dropsDict[seed]) > F32.FromDouble(0.4)) { hit.DroppedCount = (hit.DroppedCount.a + 1, hit.DroppedCount.b); AddItem(seed, 1, hitx, hity); }
+                    if (Rnd(1, dropsDict[seed]) > F32.FromDouble(0.4)) { hit.DroppedCount = (hit.DroppedCount.a + 1, hit.DroppedCount.b); AddItem(seed, 1, hitx, hity); }
                     break;
                 case (Ground, Material) gm when gm == (grsand, shovel):
                     hit.MinedCount++;
@@ -876,8 +877,8 @@ public abstract class SpeedrunBase : PcraftBase
                     else
                     {
                         SetGr(hitx, hity, grfarm);
-                        SetDataItem(hitx, hity, new DataItem { Val = time + 15 + p8.Rnd(5, sandTimer) });
-                        int sDropCount = F32.FloorToInt(p8.Rnd(2, dropsDict[sand]));
+                        SetDataItem(hitx, hity, new DataItem { Val = time + 15 + Rnd(5, sandTimer) });
+                        int sDropCount = F32.FloorToInt(Rnd(2, dropsDict[sand]));
                         hit.DroppedCount = (hit.DroppedCount.a + sDropCount, hit.DroppedCount.b);
                         AddItem(sand, sDropCount, hitx, hity);
                     }
@@ -887,25 +888,25 @@ public abstract class SpeedrunBase : PcraftBase
                     RemInList(invent, Instc(sand, 1));
                     break;
                 case (Ground, Material) gm when gm == (grwater, boat):
-                    p8.Reload();
-                    p8.Memcpy(0x1000, 0x2000, 0x1000);
+                    Reload();
+                    Memcpy(0x1000, 0x2000, 0x1000);
                     winMenu = Cmenu(inventary, null, 136, "you escaped!", timer);
                     curMenu = winMenu;
                     runtimer = 0;
-                    p8.Music(3);
+                    Music(3);
                     break;
                 case (Ground, Material) gm when gm == (grfarm, seed):
                     SetGr(hitx, hity, grwheat);
-                    SetDataItem(hitx, hity, new DataItem { Val = time + 15 + p8.Rnd(5, wheatTimer) });
+                    SetDataItem(hitx, hity, new DataItem { Val = time + 15 + Rnd(5, wheatTimer) });
                     RemInList(invent, Instc(seed, 1));
                     break;
                 case (Ground, Material) gm when gm == (grwheat, scythe):
                     hit.MinedCount++;
                     SetGr(hitx, hity, grsand);
                     F32 d = F32.Max(F32.Zero, F32.Min(F32.FromInt(4), 4 - (GetData(hitx, hity, 0).Val - time)));
-                    int dropCount = F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double, dropsDict[wheat]));
+                    int dropCount = F32.FloorToInt(d / 2 + Rnd(d / 2, dropsDict[wheat]));
                     hit.DroppedCount = (hit.DroppedCount.a + dropCount, hit.DroppedCount.b);
-                    AddItem(wheat, F32.FloorToInt(d / 2 + p8.Rnd((d / 2).Double, dropsDict[wheat])), hitx, hity);
+                    AddItem(wheat, F32.FloorToInt(d / 2 + Rnd(d / 2, dropsDict[wheat])), hitx, hity);
                     hit.DroppedCount = (hit.DroppedCount.a, hit.DroppedCount.b + 1);
                     AddItem(seed, 1, hitx, hity);
                     break;
@@ -927,7 +928,7 @@ public abstract class SpeedrunBase : PcraftBase
         {
             if (curMenu.Spr is not null)
             {
-                if (p8.Btnp(4) && !lb4)
+                if (Btnp(4) && !lb4)
                 {
                     if (curMenu == mainMenu)
                     {
@@ -937,10 +938,10 @@ public abstract class SpeedrunBase : PcraftBase
                     {
                         ResetLevel();
                         curMenu = null;
-                        p8.Music(1);
+                        Music(1);
                     }
                 }
-                lb4 = p8.Btn(4);
+                lb4 = Btn(4);
                 return;
             }
 
@@ -981,8 +982,8 @@ public abstract class SpeedrunBase : PcraftBase
             Entity othMenu = menuInvent;
             if (curMenu.Type == chest)
             {
-                if (p8.Btnp(0)) { toogleMenu -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(1)) { toogleMenu += 1; p8.Sfx(18, 3); }
+                if (Btnp(0)) { toogleMenu -= 1; Sfx(18, 3); }
+                if (Btnp(1)) { toogleMenu += 1; Sfx(18, 3); }
                 toogleMenu = (toogleMenu % 2 + 2) % 2;
                 if (toogleMenu == 1)
                 {
@@ -993,18 +994,18 @@ public abstract class SpeedrunBase : PcraftBase
 
             if (intMenu.List.Count > 0)
             {
-                if (p8.Btnp(2)) { intMenu.Sel -= 1; p8.Sfx(18, 3); }
-                if (p8.Btnp(3)) { intMenu.Sel += 1; p8.Sfx(18, 3); }
+                if (Btnp(2)) { intMenu.Sel -= 1; Sfx(18, 3); }
+                if (Btnp(3)) { intMenu.Sel += 1; Sfx(18, 3); }
 
                 intMenu.Sel = Loop(intMenu.Sel, intMenu.List);
 
-                if (p8.Btnp(5) && !lb5)
+                if (Btnp(5) && !lb5)
                 {
                     if (curMenu.Type == chest)
                     {
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         Entity el = intMenu.List[intMenu.Sel];
-                        p8.Del(intMenu.List, el);
+                        Del(intMenu.List, el);
                         AddItemInList(othMenu.List, el, othMenu.Sel);
                         if (intMenu.List.Count > 0 && intMenu.Sel > intMenu.List.Count - 1) { intMenu.Sel -= 1; }
                         if (intMenu == menuInvent && curItem == el)
@@ -1020,42 +1021,42 @@ public abstract class SpeedrunBase : PcraftBase
                             if (CanCraft(rec))
                             {
                                 Craft(rec);
-                                p8.Sfx(16, 3);
+                                Sfx(16, 3);
                             }
                             else
                             {
-                                p8.Sfx(17, 3);
+                                Sfx(17, 3);
                             }
                         }
                     }
                     else
                     {
                         curItem = curMenu.List[curMenu.Sel];
-                        p8.Del(curMenu.List, curItem);
+                        Del(curMenu.List, curItem);
                         AddItemInList(curMenu.List, curItem, 0);
                         curMenu.Sel = 0;
                         curMenu = null;
                         block5 = true;
-                        p8.Sfx(16, 3);
+                        Sfx(16, 3);
                         exitMenu = true;
                     }
                 }
             }
 
-            if (p8.Btnp(4) && !lb4)
+            if (Btnp(4) && !lb4)
             {
                 curMenu = null;
-                p8.Sfx(17, 3);
+                Sfx(17, 3);
                 exitMenu = true;
             }
-            lb4 = p8.Btn(4);
-            lb5 = p8.Btn(5);
+            lb4 = Btn(4);
+            lb5 = Btn(5);
             return;
         }
 
         for (int i = 0; i <= 5; i++)
         {
-            if (p8.Btnp(i))
+            if (Btnp(i))
             {
                 runtimer = 1;
             }
@@ -1089,7 +1090,7 @@ public abstract class SpeedrunBase : PcraftBase
             FillEne(currentLevel);
             switchLevel = false;
             canSwitchLevel = false;
-            p8.Music(currentLevel == cave ? 2 : 1);
+            Music(currentLevel == cave ? 2 : 1);
         }
 
         if (curItem is not null)
@@ -1100,7 +1101,7 @@ public abstract class SpeedrunBase : PcraftBase
         UpGround();
 
         Ground playHit = GetGr(plx, ply);
-        if (playHit != lastGround && playHit == grwater) { p8.Sfx(11, 3); }
+        if (playHit != lastGround && playHit == grwater) { Sfx(11, 3); }
         lastGround = playHit;
         int s = playHit == grwater || pstam <= 0 ? 1 : 2;
         if (playHit == grhole)
@@ -1115,10 +1116,10 @@ public abstract class SpeedrunBase : PcraftBase
         F32 dx = F32.Zero;
         F32 dy = F32.Zero;
 
-        if (p8.Btn(0)) dx -= 1;
-        if (p8.Btn(1)) dx += 1;
-        if (p8.Btn(2)) dy -= 1;
-        if (p8.Btn(3)) dy += 1;
+        if (Btn(0)) dx -= 1;
+        if (Btn(1)) dx += 1;
+        if (Btn(2)) dy -= 1;
+        if (Btn(3)) dy += 1;
 
         F32 dl = GetInvLen(dx, dy);
 
@@ -1145,8 +1146,8 @@ public abstract class SpeedrunBase : PcraftBase
 
         nearEnemies = [];
 
-        F32 ebx = p8.Cos(prot);
-        F32 eby = p8.Sin(prot);
+        F32 ebx = Cos(prot);
+        F32 eby = Sin(prot);
         UpEnemies(ebx, eby);
 
         (dx, dy) = ReflectCol(plx, ply, dx, dy, IsFree, F32.Zero);
@@ -1159,10 +1160,10 @@ public abstract class SpeedrunBase : PcraftBase
         llife += F32.Max(F32.Neg1, F32.Min(F32.One, plife - llife));
         lstam += F32.Max(F32.Neg1, F32.Min(F32.One, pstam - lstam));
 
-        if (p8.Btn(5) && !block5 && canAct)
+        if (Btn(5) && !block5 && canAct)
         {
-            F32 bx = p8.Cos(prot);
-            F32 by = p8.Sin(prot);
+            F32 bx = Cos(prot);
+            F32 by = Sin(prot);
             F32 hitx = plx + bx * 8;
             F32 hity = ply + by * 8;
             Ground hit = GetGr(hitx, hity);
@@ -1177,7 +1178,7 @@ public abstract class SpeedrunBase : PcraftBase
                 curItem.Y = F32.Floor(hity / 16) * 16 + 8;
                 curItem.Vx = F32.Zero;
                 curItem.Vy = F32.Zero;
-                p8.Add(entities, curItem);
+                Add(entities, curItem);
                 RemInList(invent, curItem);
                 canAct = false;
             }
@@ -1269,15 +1270,15 @@ public abstract class SpeedrunBase : PcraftBase
         cly = F32.Max(cmy - m, cly);
         cly = F32.Min(cmy + m, cly);
 
-        if (p8.Btnp(4) && !lb4)
+        if (Btnp(4) && !lb4)
         {
             curMenu = menuInvent;
-            p8.Sfx(13, 3);
+            Sfx(13, 3);
         }
 
-        lb4 = p8.Btn(4);
-        lb5 = p8.Btn(5);
-        if (!p8.Btn(5))
+        lb4 = Btn(4);
+        lb5 = Btn(5);
+        if (!Btn(5))
         {
             block5 = false;
         }
@@ -1286,12 +1287,12 @@ public abstract class SpeedrunBase : PcraftBase
 
         if (plife <= 0)
         {
-            p8.Reload();
-            p8.Memcpy(0x1000, 0x2000, 0x1000);
+            Reload();
+            Memcpy(0x1000, 0x2000, 0x1000);
             deathMenu = Cmenu(inventary, null, 128, "you died!", timer);
             curMenu = deathMenu;
             runtimer = 0;
-            p8.Music(4);
+            Music(4);
         }
     }
 
@@ -1323,8 +1324,8 @@ public abstract class SpeedrunBase : PcraftBase
                     F32 c1 = n[i][j];
                     F32 c2 = n[i + step][j];
                     F32 c3 = n[i][j + step];
-                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
-                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (p8.Rnd(1, random) - F32.Half) * cscal;
+                    n[i + step / 2][j] = (c1 + c2) * F32.Half + (Rnd(1, random) - F32.Half) * cscal;
+                    n[i][j + step / 2] = (c1 + c3) * F32.Half + (Rnd(1, random) - F32.Half) * cscal;
                 }
             }
 
@@ -1336,7 +1337,7 @@ public abstract class SpeedrunBase : PcraftBase
                     F32 c2 = n[i + step][j];
                     F32 c3 = n[i][j + step];
                     F32 c4 = n[i + step][j + step];
-                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (p8.Rnd(1, random) - F32.Half) * cscal;
+                    n[i + step / 2][j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (Rnd(1, random) - F32.Half) * cscal;
                 }
             }
 
@@ -1417,8 +1418,8 @@ public abstract class SpeedrunBase : PcraftBase
 
                 for (int i = 0; i <= 500; i++)
                 {
-                    int depx = F32.FloorToInt(levelsx / 8 + p8.Rnd(levelsx * 6 / 8, pSpawnRng));
-                    int depy = F32.FloorToInt(levelsy / 8 + p8.Rnd(levelsy * 6 / 8, pSpawnRng));
+                    int depx = F32.FloorToInt(levelsx / 8 + Rnd(levelsx * 6 / 8, pSpawnRng));
+                    int depy = F32.FloorToInt(levelsy / 8 + Rnd(levelsy * 6 / 8, pSpawnRng));
                     F32 c = level[depx][depy];
 
                     if (c == 1 || c == 2)
@@ -1440,7 +1441,7 @@ public abstract class SpeedrunBase : PcraftBase
         {
             for (int j = 0; j < levelsy; j++)
             {
-                p8.Mset(i + levelx, j + levely, level[i][j].Double);
+                Mset(i + levelx, j + levely, level[i][j].Double);
             }
         }
 
@@ -1451,11 +1452,11 @@ public abstract class SpeedrunBase : PcraftBase
         {
             for (int j = -1; j <= 1; j++)
             {
-                p8.Mset(holex + i, holey + j, levelUnder ? 1 : 3);
+                Mset(holex + i, holey + j, levelUnder ? 1 : 3);
             }
         }
 
-        p8.Mset(holex, holey, 11);
+        Mset(holex, holey, 11);
 
         clx = plx;
         cly = ply;
@@ -1482,10 +1483,10 @@ public abstract class SpeedrunBase : PcraftBase
                 {
                     int sv = 0;
                     if (gr == grfarm || gr == grwheat) { sv = 3; }
-                    p8.Mset(gi, gj, RndSand(i, j) + sv);
-                    p8.Mset(gi + 1, gj, RndSand(i + F32.Half, j) + sv);
-                    p8.Mset(gi, gj + 1, RndSand(i, j + F32.Half) + sv);
-                    p8.Mset(gi + 1, gj + 1, RndSand(i + F32.Half, j + F32.Half) + sv);
+                    Mset(gi, gj, RndSand(i, j) + sv);
+                    Mset(gi + 1, gj, RndSand(i + F32.Half, j) + sv);
+                    Mset(gi, gj + 1, RndSand(i, j + F32.Half) + sv);
+                    Mset(gi + 1, gj + 1, RndSand(i + F32.Half, j + F32.Half) + sv);
                 }
                 else
                 {
@@ -1496,22 +1497,22 @@ public abstract class SpeedrunBase : PcraftBase
 
                     int b = gr == grrock ? 21 : gr == grwater ? 26 : 16;
 
-                    p8.Mset(gi, gj, b + (l ? u ? Comp(i - 1, j - 1, gr) ? 17 + RndCenter(i, j).Double : 20 : 1 : u ? 16 : 0));
-                    p8.Mset(gi + 1, gj, b + (r ? u ? Comp(i + 1, j - 1, gr) ? 17 + RndCenter(i + F32.Half, j).Double : 19 : 1 : u ? 18 : 2));
-                    p8.Mset(gi, gj + 1, b + (l ? d ? Comp(i - 1, j + 1, gr) ? 17 + RndCenter(i, j + F32.Half).Double : 4 : 33 : d ? 16 : 32));
-                    p8.Mset(gi + 1, gj + 1, b + (r ? d ? Comp(i + 1, j + 1, gr) ? 17 + RndCenter(i + F32.Half, j + F32.Half).Double : 3 : 33 : d ? 18 : 34));
+                    Mset(gi, gj, b + (l ? u ? Comp(i - 1, j - 1, gr) ? 17 + RndCenter(i, j).Double : 20 : 1 : u ? 16 : 0));
+                    Mset(gi + 1, gj, b + (r ? u ? Comp(i + 1, j - 1, gr) ? 17 + RndCenter(i + F32.Half, j).Double : 19 : 1 : u ? 18 : 2));
+                    Mset(gi, gj + 1, b + (l ? d ? Comp(i - 1, j + 1, gr) ? 17 + RndCenter(i, j + F32.Half).Double : 4 : 33 : d ? 16 : 32));
+                    Mset(gi + 1, gj + 1, b + (r ? d ? Comp(i + 1, j + 1, gr) ? 17 + RndCenter(i + F32.Half, j + F32.Half).Double : 3 : 33 : d ? 18 : 34));
 
                 }
             }
         }
 
-        p8.Pal();
+        Pal();
         if (levelUnder)
         {
-            p8.Pal(15, 5);
-            p8.Pal(4, 1);
+            Pal(15, 5);
+            Pal(4, 1);
         }
-        p8.Map(64, 32, ci.Double * 16, cj.Double * 16, 18, 18);
+        Map(64, 32, ci.Double * 16, cj.Double * 16, 18, 18);
 
         for (F32 i = ci - 1; i <= ci + 8; i++)
         {
@@ -1526,7 +1527,7 @@ public abstract class SpeedrunBase : PcraftBase
                 F32 gi = i * 16;
                 F32 gj = j * 16;
 
-                p8.Pal();
+                Pal();
 
                 if (gr == grwater)
                 {
@@ -1541,10 +1542,10 @@ public abstract class SpeedrunBase : PcraftBase
                     F32 d = DirGetData(i, j, F32.Zero).Val - time;
                     for (int pp = 2; pp <= 4; pp++)
                     {
-                        p8.Pal(pp, 3);
-                        if (d > 10 - pp * 2) { p8.Palt(pp, true); }
+                        Pal(pp, 3);
+                        if (d > 10 - pp * 2) { Palt(pp, true); }
                     }
-                    if (d < 0) { p8.Pal(4, 9); }
+                    if (d < 0) { Pal(4, 9); }
                     Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, RndSand);
                 }
 
@@ -1557,15 +1558,15 @@ public abstract class SpeedrunBase : PcraftBase
 
                 if (gr == grhole)
                 {
-                    p8.Pal();
+                    Pal();
                     if (!levelUnder)
                     {
-                        p8.Palt(0, false);
-                        p8.Spr(31, gi.Double, gj.Double, 1, 2);
-                        p8.Spr(31, gi.Double + 8, gj.Double, 1, 2, true);
+                        Palt(0, false);
+                        Spr(31, gi.Double, gj.Double, 1, 2);
+                        Spr(31, gi.Double + 8, gj.Double, 1, 2, true);
                     }
-                    p8.Palt();
-                    p8.Spr(77, gi.Double + 4, gj.Double, 1, 2);
+                    Palt();
+                    Spr(77, gi.Double + 4, gj.Double, 1, 2);
                 }
             }
         }
@@ -1575,11 +1576,11 @@ public abstract class SpeedrunBase : PcraftBase
     {
         if (curMenu is not null && curMenu.Spr is not null)
         {
-            p8.Camera();
-            p8.Palt(0, false);
-            p8.Rectfill(0, 0, 128, 46, 12);
-            p8.Rectfill(0, 46, 128, 128, 1);
-            p8.Spr((int)curMenu.Spr, 32, 14, 8, 8);
+            Camera();
+            Palt(0, false);
+            Rectfill(0, 0, 128, 46, 12);
+            Rectfill(0, 46, 128, 128, 1);
+            Spr((int)curMenu.Spr, 32, 14, 8, 8);
             Printc(curMenu.Text, 64, 80, 6);
             Printc(curMenu.Text2, 64, 90, 6);
             Printc("press button 1", 64, 112, F32.FloorToInt(6 + time % 2));
@@ -1587,9 +1588,9 @@ public abstract class SpeedrunBase : PcraftBase
             return;
         }
 
-        p8.Cls();
+        Cls();
 
-        p8.Camera(clx - 64, cly - 64);
+        Camera(clx - 64, cly - 64);
 
         DrawBack();
 
@@ -1597,7 +1598,7 @@ public abstract class SpeedrunBase : PcraftBase
 
         Denemies();
 
-        p8.Camera();
+        Camera();
         Dbar(4, 4, plife, llife, 8, 2);
         Dbar(4, 9, F32.Max(F32.Zero, pstam), lstam, 11, 3);
 
@@ -1611,7 +1612,7 @@ public abstract class SpeedrunBase : PcraftBase
             if (curItem.Count is not null)
             {
                 string c = $"{curItem.Count}";
-                p8.Print(c, ix + 88 - 16, iy + 3, 7);
+                Print(c, ix + 88 - 16, iy + 3, 7);
             }
         }
 
@@ -1619,7 +1620,7 @@ public abstract class SpeedrunBase : PcraftBase
         {
             return;
         }
-        p8.Camera();
+        Camera();
         if (curMenu.Type == chest)
         {
             if (toogleMenu == 0)
@@ -1639,7 +1640,7 @@ public abstract class SpeedrunBase : PcraftBase
             {
                 Entity curgoal = curMenu.List[curMenu.Sel];
                 Panel("have", 71, 50, 52, 30);
-                p8.Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
+                Print($"{HowMany(invent, curgoal)}", 91, 65, 7);
                 RequireList(curgoal, 4, 79, 104, 50);
             }
             List(curMenu, 4, 16, 68, 64, 6);

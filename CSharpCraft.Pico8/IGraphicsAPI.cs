@@ -64,6 +64,12 @@ public interface IGraphicsAPI
     void Print(string text, double x, double y, double c);
 
     /// <summary>
+    /// Draw large text at position (x, y) with an XNA Color.
+    /// Uses a custom big font texture rather than the PICO-8 built-in font.
+    /// </summary>
+    void PrintBig(string text, int x, int y, Color color);
+
+    /// <summary>
     /// Draw sprite n at (x, y) with optional size and flip.
     /// https://pico-8.fandom.com/wiki/Spr
     /// </summary>
@@ -104,4 +110,10 @@ public interface IGraphicsAPI
     /// Returns the platform-native Color representation.
     /// </summary>
     Color GetColor(int index);
+
+    /// <summary>
+    /// Draw a scaled pixel (1x1 texture) at a position with color and scale.
+    /// Used for debug overlays and visualizations.
+    /// </summary>
+    void DrawPixelScaled(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale, int effects, float layerDepth);
 }

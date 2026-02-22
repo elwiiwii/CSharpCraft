@@ -11,13 +11,12 @@ public class BackOptions2 : IScene, IDisposable
     public string SceneName { get => "options"; }
     public double Fps { get => 60.0; }
     public (int w, int h) Resolution { get => (128, 128); }
-    private Pico8Functions p8;
+    private Pico8Functions p8 = null!;
 
     GeneralOptions drawScene = new(-1);
 
-    public void Init(Pico8Functions pico8)
+    public void Init()
     {
-        p8 = pico8;
 
         drawScene.Init(p8);
     }
