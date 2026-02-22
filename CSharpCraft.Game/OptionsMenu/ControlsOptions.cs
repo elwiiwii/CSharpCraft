@@ -18,7 +18,7 @@ public class ControlsOptions : IScene, IDisposable
     public void Init()
     {
 
-        drawScene.Init(p8);
+        drawScene.Init();
     }
 
     public void Update()

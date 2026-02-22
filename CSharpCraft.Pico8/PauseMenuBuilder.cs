@@ -81,8 +81,7 @@ public class PauseMenuBuilder
         {
             if (_pico8.Btnp(4) || _pico8.Btnp(5))
             {
-                var titleScreen = ReflectionHelper.GetTitleScreen();
-                if (titleScreen != null)
+                if (_pico8.TitleSceneInstance is IScene titleScreen)
                 {
                     _pico8.LoadCart(titleScreen);
                 }
@@ -121,12 +120,10 @@ public class PauseMenuBuilder
         {
             if (_pico8.Btnp(0) || _pico8.Btnp(1) || _pico8.Btnp(4) || _pico8.Btnp(5))
             {
-                if (ReflectionHelper.ToggleSoundSetting())
+                _pico8.Settings.SoundEnabled = !_pico8.Settings.SoundEnabled;
+                if (!_pico8.Settings.SoundEnabled)
                 {
-                    if (!_pico8.Settings.SoundEnabled)
-                    {
-                        _pico8.Mute();
-                    }
+                    _pico8.Mute();
                 }
             }
         }

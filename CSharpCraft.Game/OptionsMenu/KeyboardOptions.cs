@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu;
@@ -21,12 +20,28 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
     private bool waitingForInput;
     private bool lockout;
 
+    private record BindingDescriptor(
+        string Name,
+        Func<OptionsFile, InputBinding> Get,
+        Action<OptionsFile, InputBinding> Set);
+
+    private static readonly List<BindingDescriptor> Bindings =
+    [
+        new("left",  f => f.Kbm_Left,  (f, v) => f.Kbm_Left = v),
+        new("right", f => f.Kbm_Right, (f, v) => f.Kbm_Right = v),
+        new("up",    f => f.Kbm_Up,    (f, v) => f.Kbm_Up = v),
+        new("down",  f => f.Kbm_Down,  (f, v) => f.Kbm_Down = v),
+        new("use",   f => f.Kbm_Use,   (f, v) => f.Kbm_Use = v),
+        new("menu",  f => f.Kbm_Menu,  (f, v) => f.Kbm_Menu = v),
+        new("pause", f => f.Kbm_Pause, (f, v) => f.Kbm_Pause = v),
+    ];
+
     public void Init()
     {
 
         menuSelected = (0, startIndex);
         menuW = 2;
-        menuH = 7;
+        menuH = Bindings.Count;
         waitingForInput = false;
         lockout = true;
     }
@@ -60,38 +75,20 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
             {
                 if (pressedButtons.Count == 1 || (keys.Length == 1 && !(keys[0] == Keys.Delete)))
                 {
-                    PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
-                    PropertyInfo currentProperty = properties[menuSelected.ver];
-                    PropertyInfo? propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
-                    Binding binding = (Binding)propertyName.GetValue(p8.OptionsFile);
-                    if (menuSelected.hor == 0 && propertyName is not null)
-                    {
-                        Binding newBinding;
-                        if (keys.Length == 1)
-                        {
-                            newBinding = new Binding(KeysToString.keysToString[keys[0]], binding.Bind2);
-                        }
-                        else
-                        {
-                            newBinding = new Binding(pressedButtons[0], binding.Bind2);
-                        }
-                        propertyName.SetValue(p8.OptionsFile, newBinding);
-                        OptionsFile.JsonWrite(p8.OptionsFile);
-                    }
-                    else if (propertyName is not null)
-                    {
-                        Binding newBinding;
-                        if (keys.Length == 1)
-                        {
-                            newBinding = new Binding(binding.Bind1, KeysToString.keysToString[keys[0]]);
-                        }
-                        else
-                        {
-                            newBinding = new Binding(binding.Bind1, pressedButtons[0]);
-                        }
-                        propertyName.SetValue(p8.OptionsFile, newBinding);
-                        OptionsFile.JsonWrite(p8.OptionsFile);
-                    }
+                    var optionsFile = OptionsFile.Current;
+                    var desc = Bindings[menuSelected.ver];
+                    var binding = desc.Get(optionsFile);
+
+                    string newKey = keys.Length == 1
+                        ? KeysToString.keysToString[keys[0]]
+                        : pressedButtons[0];
+
+                    InputBinding newBinding = menuSelected.hor == 0
+                        ? new InputBinding(newKey, binding.Bind2)
+                        : new InputBinding(binding.Bind1, newKey);
+
+                    desc.Set(optionsFile, newBinding);
+                    OptionsFile.JsonWrite(optionsFile);
                 }
                 waitingForInput = false;
                 lockout = true;
@@ -142,18 +139,15 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
             p8.Print("keyboard", 19, 33, 7);
             p8.Print("controller", 19 + 54, 33, 7);
 
-            PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
+            var optionsFile = OptionsFile.Current;
             int j = 0;
-            foreach (PropertyInfo property in properties)
+            foreach (var desc in Bindings)
             {
-                if (property.Name.StartsWith("Kbm_"))
-                {
-                    p8.Print(property.Name.Substring(4).ToLower(), 8, 55 + j, 7);
-                    Binding val = (Binding)property.GetValue(p8.OptionsFile);
-                    p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
-                    p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
-                    j += 6;
-                }
+                p8.Print(desc.Name, 8, 55 + j, 7);
+                var val = desc.Get(optionsFile);
+                p8.Print(KeyNames.keyNames[val.Bind1], 51, 55 + j, 6);
+                p8.Print(KeyNames.keyNames[val.Bind2], 87, 55 + j, 6);
+                j += 6;
             }
 
         }

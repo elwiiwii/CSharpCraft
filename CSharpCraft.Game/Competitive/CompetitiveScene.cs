@@ -47,7 +47,7 @@ public class CompetitiveScene : IScene
                 return;
             }
 
-            back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = p8.TitleScreen };
+            back = new() { StartPos = (120, 3), EndPos = (125, 10), Label = "back", ShadowTexture = "BackShadow", IconTexture = "BackIcon", Scene = p8.TitleSceneInstance as IScene };
             ranked = new() { StartPos = (30, 32), EndPos = (61, 63), Label = "ranked", ShadowTexture = "ModeShadow", IconTexture = "RankedIcon", Scene = new RankedScene(this) };
             speedrun = new() { StartPos = (66, 32), EndPos = (97, 63), Label = "speedrun", ShadowTexture = "ModeShadow", IconTexture = "SpeedrunIcon", Scene = new SpeedrunScene(this) };
             unranked = new() { StartPos = (30, 68), EndPos = (61, 99), Label = "unranked", ShadowTexture = "ModeShadow", IconTexture = "UnrankedIcon", Scene = new UnrankedScene(this) };

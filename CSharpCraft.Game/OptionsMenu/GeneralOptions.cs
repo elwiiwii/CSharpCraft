@@ -1,7 +1,6 @@
 ﻿using CSharpCraft.Pico8;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu;
@@ -16,6 +15,77 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
     private int menuSelected;
 
+    private record SettingDescriptor(
+        string DisplayName,
+        Func<OptionsFile, string> GetDisplay,
+        Action<OptionsFile, Pico8Functions, int>? OnChange);
+
+    private static readonly List<SettingDescriptor> Settings =
+    [
+        new("sound_on",
+            f => f.Gen_Sound_On.ToString().ToLower(),
+            (f, p8, dir) => { f.Gen_Sound_On = !f.Gen_Sound_On; OptionsFile.JsonWrite(f); p8.Mute(); }),
+
+        new("music_vol",
+            f => f.Gen_Music_Vol.ToString(),
+            (f, p8, dir) =>
+            {
+                f.Gen_Music_Vol = dir < 0
+                    ? Math.Max(0, f.Gen_Music_Vol - 10)
+                    : Math.Min(100, f.Gen_Music_Vol + 10);
+                OptionsFile.JsonWrite(f);
+            }),
+
+        new("sfx_vol",
+            f => f.Gen_Sfx_Vol.ToString(),
+            (f, p8, dir) =>
+            {
+                f.Gen_Sfx_Vol = dir < 0
+                    ? Math.Max(0, f.Gen_Sfx_Vol - 10)
+                    : Math.Min(100, f.Gen_Sfx_Vol + 10);
+                OptionsFile.JsonWrite(f);
+            }),
+
+        new("fullscreen",
+            f => f.Gen_Fullscreen.ToString().ToLower(),
+            (f, p8, dir) =>
+            {
+                f.Gen_Fullscreen = !f.Gen_Fullscreen;
+                OptionsFile.JsonWrite(f);
+                p8.Graphics.IsFullScreen = f.Gen_Fullscreen;
+                p8.Graphics.PreferredBackBufferWidth = f.Gen_Window_Width / 128 * p8.Resolution.w;
+                p8.Graphics.PreferredBackBufferHeight = f.Gen_Window_Height / 128 * p8.Resolution.h;
+                p8.Graphics.ApplyChanges();
+                p8.UpdateViewport();
+            }),
+
+        new("window_width",
+            f => f.Gen_Window_Width.ToString(),
+            (f, p8, dir) =>
+            {
+                f.Gen_Window_Width = dir < 0
+                    ? Math.Max(128, f.Gen_Window_Width - 128)
+                    : Math.Min(16384, f.Gen_Window_Width + 128);
+                OptionsFile.JsonWrite(f);
+                p8.Graphics.PreferredBackBufferWidth = f.Gen_Window_Width;
+                p8.Graphics.PreferredBackBufferHeight = f.Gen_Window_Height;
+                p8.Graphics.ApplyChanges();
+            }),
+
+        new("window_height",
+            f => f.Gen_Window_Height.ToString(),
+            (f, p8, dir) =>
+            {
+                f.Gen_Window_Height = dir < 0
+                    ? Math.Max(128, f.Gen_Window_Height - 128)
+                    : Math.Min(16384, f.Gen_Window_Height + 128);
+                OptionsFile.JsonWrite(f);
+                p8.Graphics.PreferredBackBufferWidth = f.Gen_Window_Width;
+                p8.Graphics.PreferredBackBufferHeight = f.Gen_Window_Height;
+                p8.Graphics.ApplyChanges();
+            }),
+    ];
+
     public void Init()
     {
 
@@ -26,73 +96,23 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
     {
         if (menuSelected < 0) { menuSelected = 0; }
 
-        PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
-        List<PropertyInfo> propertyList = [];
-        foreach (PropertyInfo prop in properties)
+        var setting = Settings[menuSelected];
+        var optionsFile = OptionsFile.Current;
+
+        if (p8.Btnp(0) && setting.OnChange != null)
         {
-            if (prop.Name.StartsWith("Gen_")) { propertyList.Add(prop); }
+            setting.OnChange(optionsFile, p8, -1);
         }
-        PropertyInfo curProperty = propertyList[menuSelected];
-
-        if (p8.Btnp(0) || p8.Btnp(1))
+        if (p8.Btnp(1) && setting.OnChange != null)
         {
-            
-            if (curProperty.Name == "Gen_Sound_On")
-            {
-                curProperty.SetValue(p8.OptionsFile, !(bool)curProperty.GetValue(p8.OptionsFile));
-                OptionsFile.JsonWrite(p8.OptionsFile);
-                p8.Mute();
-            }
-            else if (curProperty.Name == "Gen_Fullscreen")
-            {
-                curProperty.SetValue(p8.OptionsFile, !(bool)curProperty.GetValue(p8.OptionsFile));
-                OptionsFile.JsonWrite(p8.OptionsFile);
-                p8.Graphics.IsFullScreen = p8.OptionsFile.Gen_Fullscreen;
-                p8.Graphics.PreferredBackBufferWidth = p8.OptionsFile.Gen_Window_Width / 128 * p8.Resolution.w;
-                p8.Graphics.PreferredBackBufferHeight = p8.OptionsFile.Gen_Window_Height / 128 * p8.Resolution.h;
-                p8.Graphics.ApplyChanges();
-                p8.UpdateViewport();
-            }
-
-            if (p8.Btnp(0))
-            {
-                if (curProperty.Name.EndsWith("_Vol"))
-                {
-                    curProperty.SetValue(p8.OptionsFile, Math.Max(0, (int)curProperty.GetValue(p8.OptionsFile) - 10));
-                    OptionsFile.JsonWrite(p8.OptionsFile);
-                }
-                else if (curProperty.Name.StartsWith("Gen_Window_"))
-                {
-                    curProperty.SetValue(p8.OptionsFile, Math.Max(128, (int)curProperty.GetValue(p8.OptionsFile) - 128));
-                    OptionsFile.JsonWrite(p8.OptionsFile);
-                    p8.Graphics.PreferredBackBufferWidth = p8.OptionsFile.Gen_Window_Width;
-                    p8.Graphics.PreferredBackBufferHeight = p8.OptionsFile.Gen_Window_Height;
-                    p8.Graphics.ApplyChanges();
-                }
-            }
-            if (p8.Btnp(1))
-            {
-                if (curProperty.Name.EndsWith("_Vol"))
-                {
-                    curProperty.SetValue(p8.OptionsFile, Math.Min(100, (int)curProperty.GetValue(p8.OptionsFile) + 10));
-                    OptionsFile.JsonWrite(p8.OptionsFile);
-                }
-                else if (curProperty.Name.StartsWith("Gen_Window_"))
-                {
-                    curProperty.SetValue(p8.OptionsFile, Math.Min(16384, (int)curProperty.GetValue(p8.OptionsFile) + 128));
-                    OptionsFile.JsonWrite(p8.OptionsFile);
-                    p8.Graphics.PreferredBackBufferWidth = p8.OptionsFile.Gen_Window_Width;
-                    p8.Graphics.PreferredBackBufferHeight = p8.OptionsFile.Gen_Window_Height;
-                    p8.Graphics.ApplyChanges();
-                }
-            }
+            setting.OnChange(optionsFile, p8, 1);
         }
 
         if (p8.Btnp(2)) { menuSelected -= 1; }
         if (p8.Btnp(3)) { menuSelected += 1; }
 
         if (menuSelected < 0) { p8.ScheduleScene(() => new GeneralOptionsTitle()); return; }
-        menuSelected = GeneralFunctions.Loop(menuSelected, propertyList.Count);
+        menuSelected = GeneralFunctions.Loop(menuSelected, Settings.Count);
     }
 
     public void Draw()
@@ -103,7 +123,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
         
         p8.Batch.Draw(p8.TextureDictionary["OptionsBackground5"], new Vector2(0, 0), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-        PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
+        var optionsFile = OptionsFile.Current;
         int x = 15;
         int y = 43;
         int step = 8;
@@ -116,13 +136,10 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
 
         p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * p8.Cell.Width, (y - 5) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
-        foreach (PropertyInfo property in properties)
+        foreach (var setting in Settings)
         {
-            if (property.Name.StartsWith("Gen_"))
-            {
-                p8.Print($"{property.Name.Substring(4).ToLower()} : {property.GetValue(p8.OptionsFile).ToString().ToLower()}", x + 2, y, 6);
-                y += step;
-            }
+            p8.Print($"{setting.DisplayName} : {setting.GetDisplay(optionsFile)}", x + 2, y, 6);
+            y += step;
         }
 
         p8.Batch.Draw(p8.TextureDictionary["Checker"], new Vector2(x * p8.Cell.Width, (y + 1) * p8.Cell.Height), null, Color.White, 0, Vector2.Zero, size, SpriteEffects.FlipVertically, 0);

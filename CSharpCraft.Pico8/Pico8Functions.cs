@@ -3,7 +3,6 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using FixMath;
-using System.Reflection;
 using CSharpCraft.Pico8.Services;
 
 namespace CSharpCraft.Pico8;
@@ -16,7 +15,6 @@ public class Pico8Functions : IDisposable
     public GraphicsDeviceManager Graphics { get; }
     public GraphicsDevice GraphicsDevice { get; }
     public Dictionary<string, SoundEffect> MusicDictionary { get; }
-    public object? OptionsData { get; set; }
     public Texture2D Pixel { get; }
     public (int w, int h) Resolution { get; private set; } = (128, 128);
     public List<IScene> Scenes { get; }
@@ -107,7 +105,8 @@ public class Pico8Functions : IDisposable
         GraphicsDeviceManager graphics, 
         GraphicsDevice graphicsDevice, 
         GameWindow window, 
-        object? optionsData,
+        IAudioGraphicsSettings settings,
+        IInputBindingProvider inputBindings,
         IServiceFactory? serviceFactory = null)
     {
         // Use default factory if none provided
@@ -118,15 +117,14 @@ public class Pico8Functions : IDisposable
         Graphics = graphics;
         GraphicsDevice = graphicsDevice;
         MusicDictionary = musicDictionary;
-        OptionsData = optionsData;
         Pixel = pixel;
         Scenes = scenes;
         SoundEffectDictionary = soundEffectDictionary;
         TextureDictionary = textureDictionary;
         TitleSceneInstance = titleScreen;
         Window = window;
-        InputBindings = new InputBindings();
-        Settings = new ReflectionAudioGraphicsSettings(optionsData);
+        InputBindings = inputBindings;
+        Settings = settings;
 
         _sprites = [];
         _flags = [];
@@ -217,57 +215,6 @@ public class Pico8Functions : IDisposable
     }
 
     public void ReloadCart() => LoadCart(_cart);
-
-    private T? GetOptionPropertyValue<T>(object? optionsData, string propertyName) where T : class
-    {
-        return ReflectionHelper.GetProperty<T>(optionsData, propertyName);
-    }
-
-    private T? GetOptionPropertyValueStruct<T>(object? optionsData, string propertyName) where T : struct
-    {
-        try
-        {
-            if (optionsData == null) return null;
-            var prop = optionsData.GetType().GetProperty(propertyName);
-            if (prop != null)
-            {
-                var value = prop.GetValue(optionsData);
-                if (value is T tValue) return tValue;
-            }
-        }
-        catch { }
-        return null;
-    }
-
-    /// <summary>
-    /// Dynamically get a type from game assemblies without direct reference.
-    /// </summary>
-    private Type? TryGetGameType(string fullTypeName)
-    {
-        return ReflectionHelper.GetGameType(fullTypeName);
-    }
-
-    /// <summary>
-    /// Dynamically get a static property or field from game types.
-    /// </summary>
-    private object? TryGetGameStatic(string fullTypeName, string? memberName)
-    {
-        try
-        {
-            var type = TryGetGameType(fullTypeName);
-            if (type == null) return null;
-            
-            if (memberName == null) return Activator.CreateInstance(type);
-            
-            var prop = type.GetProperty(memberName, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-            if (prop != null) return prop.GetValue(null);
-            
-            var field = type.GetField(memberName, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-            if (field != null) return field.GetValue(null);
-        }
-        catch { }
-        return null;
-    }
 
     public void ScheduleScene(Func<IScene> sceneFactory)
     {

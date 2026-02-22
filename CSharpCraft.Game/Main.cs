@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Reflection;
 
 namespace CSharpCraft;
 
@@ -110,10 +109,6 @@ class FNAGame : Game
 
         this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / p8._cart.Fps));
 
-        bool er;
-        (p8.OptionsFile, er) = OptionsFile.Initialize();
-        if (er) { popup = ("settings file corrupted", 1.5); }
-
         p8.Update();
 
         KeyboardState state = Keyboard.GetState();
@@ -145,24 +140,22 @@ class FNAGame : Game
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
         {
-            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Sound_On");
-            propertyName.SetValue(p8.OptionsFile, !p8.OptionsFile.Gen_Sound_On);
-            OptionsFile.JsonWrite(p8.OptionsFile);
+            optionsFile.Gen_Sound_On = !optionsFile.Gen_Sound_On;
+            OptionsFile.JsonWrite(optionsFile);
             p8.Mute();
-            popup = ($"sound {(p8.OptionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
+            popup = ($"sound {(optionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
         }
 
         if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F))
         {
-            PropertyInfo propertyName = typeof(OptionsFile).GetProperty("Gen_Fullscreen");
-            propertyName.SetValue(p8.OptionsFile, !p8.OptionsFile.Gen_Fullscreen);
-            OptionsFile.JsonWrite(p8.OptionsFile);
-            graphics.IsFullScreen = p8.OptionsFile.Gen_Fullscreen;
-            graphics.PreferredBackBufferWidth = p8.OptionsFile.Gen_Window_Width / 128 * p8.Resolution.w;
-            graphics.PreferredBackBufferHeight = p8.OptionsFile.Gen_Window_Height / 128 * p8.Resolution.h;
+            optionsFile.Gen_Fullscreen = !optionsFile.Gen_Fullscreen;
+            OptionsFile.JsonWrite(optionsFile);
+            graphics.IsFullScreen = optionsFile.Gen_Fullscreen;
+            graphics.PreferredBackBufferWidth = optionsFile.Gen_Window_Width / 128 * p8.Resolution.w;
+            graphics.PreferredBackBufferHeight = optionsFile.Gen_Window_Height / 128 * p8.Resolution.h;
             graphics.ApplyChanges();
             p8.UpdateViewport();
-            popup = ($"fullscreen {(p8.OptionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
+            popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
         }
 
         prevState = state;
@@ -242,7 +235,8 @@ class FNAGame : Game
             }
         }
 
-        p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile, new ServiceFactory());
+        OptionsFile.Current = optionsFile;
+        p8 = new Pico8Functions(new TitleScreen(true), new TitleScreen(), scenes, textureDictionary, soundEffectDictionary, musicDictionary, pixel, batch, graphics, GraphicsDevice, Window, optionsFile, optionsFile, new ServiceFactory());
         AccountHandler.p8 = p8;
         RoomHandler.p8 = p8;
     }

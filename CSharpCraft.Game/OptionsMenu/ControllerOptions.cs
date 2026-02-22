@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System.Reflection;
 using Color = Microsoft.Xna.Framework.Color;
 
 namespace CSharpCraft.OptionsMenu;
@@ -21,12 +20,28 @@ public class ControllerOptions(int startIndex = -1) : IScene, IDisposable
     private bool waitingForInput;
     private bool lockout;
 
+    private record BindingDescriptor(
+        string Name,
+        Func<OptionsFile, InputBinding> Get,
+        Action<OptionsFile, InputBinding> Set);
+
+    private static readonly List<BindingDescriptor> Bindings =
+    [
+        new("left",  f => f.Con_Left,  (f, v) => f.Con_Left = v),
+        new("right", f => f.Con_Right, (f, v) => f.Con_Right = v),
+        new("up",    f => f.Con_Up,    (f, v) => f.Con_Up = v),
+        new("down",  f => f.Con_Down,  (f, v) => f.Con_Down = v),
+        new("use",   f => f.Con_Use,   (f, v) => f.Con_Use = v),
+        new("menu",  f => f.Con_Menu,  (f, v) => f.Con_Menu = v),
+        new("pause", f => f.Con_Pause, (f, v) => f.Con_Pause = v),
+    ];
+
     public void Init()
     {
 
         menuSelected = (0, startIndex);
         menuW = 2;
-        menuH = 7;
+        menuH = Bindings.Count;
         waitingForInput = false;
         lockout = true;
     }
@@ -60,22 +75,19 @@ public class ControllerOptions(int startIndex = -1) : IScene, IDisposable
 
             if (!lockout && buttons.Count == 1)
             {
-                PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
-                PropertyInfo currentProperty = properties[7 + menuSelected.ver];
-                PropertyInfo? propertyName = typeof(OptionsFile).GetProperty(currentProperty.Name);
-                Binding binding = (Binding)propertyName.GetValue(p8.OptionsFile);
-                if (menuSelected.hor == 0 && propertyName is not null)
-                {
-                    Binding newBinding = new Binding(ButtonsToString.buttonsToString[buttons[0]], binding.Bind2);
-                    propertyName.SetValue(p8.OptionsFile, newBinding);
-                    OptionsFile.JsonWrite(p8.OptionsFile);
-                }
-                else if (propertyName is not null)
-                {
-                    Binding newBinding = new Binding(binding.Bind1, ButtonsToString.buttonsToString[buttons[0]]);
-                    propertyName.SetValue(p8.OptionsFile, newBinding);
-                    OptionsFile.JsonWrite(p8.OptionsFile);
-                }
+                var optionsFile = OptionsFile.Current;
+                var desc = Bindings[menuSelected.ver];
+                var binding = desc.Get(optionsFile);
+
+                string newButton = ButtonsToString.buttonsToString[buttons[0]];
+
+                InputBinding newBinding = menuSelected.hor == 0
+                    ? new InputBinding(newButton, binding.Bind2)
+                    : new InputBinding(binding.Bind1, newButton);
+
+                desc.Set(optionsFile, newBinding);
+                OptionsFile.JsonWrite(optionsFile);
+
                 waitingForInput = false;
                 lockout = true;
             }
@@ -125,18 +137,15 @@ public class ControllerOptions(int startIndex = -1) : IScene, IDisposable
             p8.Print("keyboard", 19, 33, 7);
             p8.Print("controller", 19 + 54, 33, 7);
 
-            PropertyInfo[] properties = typeof(OptionsFile).GetProperties();
+            var optionsFile = OptionsFile.Current;
             int j = 0;
-            foreach (PropertyInfo property in properties)
+            foreach (var desc in Bindings)
             {
-                if (property.Name.StartsWith("Con_"))
-                {
-                    p8.Print(property.Name.Substring(4).ToLower(), 8, 55 + j, 7);
-                    Binding val = (Binding)property.GetValue(p8.OptionsFile);
-                    p8.Print(ButtonNames.buttonNames[val.Bind1], 51, 55 + j, 6);
-                    p8.Print(ButtonNames.buttonNames[val.Bind2], 87, 55 + j, 6);
-                    j += 6;
-                }
+                p8.Print(desc.Name, 8, 55 + j, 7);
+                var val = desc.Get(optionsFile);
+                p8.Print(ButtonNames.buttonNames[val.Bind1], 51, 55 + j, 6);
+                p8.Print(ButtonNames.buttonNames[val.Bind2], 87, 55 + j, 6);
+                j += 6;
             }
         }
     }

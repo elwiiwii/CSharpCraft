@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
 using CSharpCraft.Pico8;
+using CSharpCraft.OptionsMenu;
 using FixMath;
 
 namespace CSharpCraft.Competitive;
@@ -265,7 +266,7 @@ public class PickBanSceneOld() : IScene, IDisposable
         p8.Batch.Draw(p8.TextureDictionary[$"{gameCount}"], new Vector2(62 * p8.Cell.Width, 12 * p8.Cell.Height), null, p8.Colors[7], 0, Vector2.Zero, halfSize, SpriteEffects.None, 0);
 
         string s1 = $"{player1Name}'s turn";
-        string s2 = $"[{KeyNames.keyNames[p8.OptionsFile.Kbm_Menu.Bind1]}] for random action";
+        string s2 = $"[{KeyNames.keyNames[OptionsFile.Current.Kbm_Menu.Bind1]}] for random action";
         //Printc(Math.Floor(animationTimer) % 2 == 0 ? s1 : s2, 64, 29, 7);
         Printc(s1, 64, 29, 7);
 
