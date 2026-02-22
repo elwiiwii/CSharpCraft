@@ -2,7 +2,6 @@
 using static CSharpCraft.Pico8.Pico8;
 using FixMath;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace CSharpCraft.Pcraft;
 

@@ -55,7 +55,7 @@ public class ProfileScene(IScene prevScene, string username) : IScene
             {
                 p8.Pal(p8.Colors[i + 1], Pico8Utils.HexToColor(user.HexCodes[i]));
             }
-            int lastRowIndex = user.ProfilePicture % (p8.TextureDictionary["PfpIcons"].Width / 32);
+            int lastRowIndex = user.ProfilePicture % (GameRendering.Current.GetTextureWidth("PfpIcons") / 32);
             p8.Spr(user.ProfilePicture * 16 - lastRowIndex * 12, 3, 3, 4, 4);
             p8.Pal();
             p8.Rect(3, 3, 34, 34, Pico8Utils.HexToColor(user.OutlineColor));

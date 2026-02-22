@@ -9,21 +9,21 @@ namespace CSharpCraft.Pico8;
 
 public class Pico8Functions : IDisposable
 {
-    public SpriteBatch Batch { get; }
-    public (F32 x, F32 y) CameraOffset { get; internal set; } = (F32.Zero, F32.Zero);
+    internal SpriteBatch Batch { get; }
+    internal (F32 x, F32 y) CameraOffset { get; set; } = (F32.Zero, F32.Zero);
     public (int Width, int Height) Cell { get; internal set; }
-    public GraphicsDeviceManager Graphics { get; }
-    public GraphicsDevice GraphicsDevice { get; }
-    public Dictionary<string, SoundEffect> MusicDictionary { get; }
-    public Texture2D Pixel { get; }
+    internal GraphicsDeviceManager Graphics { get; }
+    internal GraphicsDevice GraphicsDevice { get; }
+    private Dictionary<string, SoundEffect> MusicDictionary { get; }
+    private Texture2D Pixel { get; }
     public (int w, int h) Resolution { get; private set; } = (128, 128);
     public List<IScene> Scenes { get; }
-    public Dictionary<string, SoundEffect> SoundEffectDictionary { get; }
-    public Dictionary<string, Texture2D> TextureDictionary { get; }
+    private Dictionary<string, SoundEffect> SoundEffectDictionary { get; }
+    internal Dictionary<string, Texture2D> TextureDictionary { get; }
     public object? TitleSceneInstance { get; }
-    public GameWindow Window { get; }
-    public IInputBindingProvider InputBindings { get; set; }
-    public IAudioGraphicsSettings Settings { get; set; }
+    internal GameWindow Window { get; }
+    internal IInputBindingProvider InputBindings { get; set; }
+    internal IAudioGraphicsSettings Settings { get; set; }
 
     // pico-8 colors https://pico-8.fandom.com/wiki/Palette
     public List<Color> Colors { get; } =
@@ -77,10 +77,10 @@ public class Pico8Functions : IDisposable
     private IOutputFacade? _outputFacade;
 
     // Legacy palette access for compatibility
-    public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
+    internal List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
 
     private int[] _flags;
-    public int[] _map;
+    private int[] _map;
     private Color[] _sprites;
     private Dictionary<string, List<SongInst>> _music;
     private Dictionary<string, Dictionary<int, string>> _sfx;
@@ -187,41 +187,41 @@ public class Pico8Functions : IDisposable
     }
 
     // Helper accessors for PauseMenuBuilder and menu state management
-    public int SfxCount => _trackManager?.SfxCount ?? 0;
-    public int MusicCount => _trackManager?.MusicCount ?? 0;
-    public int? LastMusicCall => _musicManager?.LastMusicCall;
+    internal int SfxCount => _trackManager?.SfxCount ?? 0;
+    internal int MusicCount => _trackManager?.MusicCount ?? 0;
+    internal int? LastMusicCall => _musicManager?.LastMusicCall;
 
-    public string GetCurrentSfxPackName() => _trackManager?.GetCurrentSfxPackName() ?? "sfx";
-    public string GetCurrentSoundtrackName() => _trackManager?.GetCurrentSoundtrackName() ?? "music";
+    internal string GetCurrentSfxPackName() => _trackManager?.GetCurrentSfxPackName() ?? "sfx";
+    internal string GetCurrentSoundtrackName() => _trackManager?.GetCurrentSoundtrackName() ?? "music";
 
-    public void DecrementSfxPack()
+    internal void DecrementSfxPack()
     {
         _trackManager?.DecrementSfxPack();
     }
 
-    public void IncrementSfxPack()
+    internal void IncrementSfxPack()
     {
         _trackManager?.IncrementSfxPack();
     }
 
-    public void DecrementSoundtrack()
+    internal void DecrementSoundtrack()
     {
         _trackManager?.DecrementSoundtrack();
     }
 
-    public void IncrementSoundtrack()
+    internal void IncrementSoundtrack()
     {
         _trackManager?.IncrementSoundtrack();
     }
 
-    public void ReloadCart() => LoadCart(_cart);
+    internal void ReloadCart() => LoadCart(_cart);
 
     public void ScheduleScene(Func<IScene> sceneFactory)
     {
         _sceneStateManager?.ScheduleScene(sceneFactory);
     }
 
-    public void LoadCart(IScene cart)
+    internal void LoadCart(IScene cart)
     {
         _cart?.Dispose();
         _sprites = [];
@@ -247,7 +247,7 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public void Init()
+    internal void Init()
     {
         _pauseMenuState?.Reset();
         _cart.Init();
@@ -381,7 +381,7 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public static void CartData(string id) // https://pico-8.fandom.com/wiki/Cartdata
+    internal static void CartData(string id) // https://pico-8.fandom.com/wiki/Cartdata
     {
 
     }
@@ -412,7 +412,7 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public static void Cstore() // https://pico-8.fandom.com/wiki/Cstore
+    internal static void Cstore() // https://pico-8.fandom.com/wiki/Cstore
     {
 
     }
@@ -424,25 +424,25 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public static F32 Dget(int index) // https://pico-8.fandom.com/wiki/Dget
+    internal static F32 Dget(int index) // https://pico-8.fandom.com/wiki/Dget
     {
         return F32.FromInt(index);
     }
 
 
-    public static void Dset(int index, double value) // https://pico-8.fandom.com/wiki/Dset
+    internal static void Dset(int index, double value) // https://pico-8.fandom.com/wiki/Dset
     {
 
     }
 
 
-    public int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
+    private int Fget(int n) // https://pico-8.fandom.com/wiki/Fget
     {
         return _mapManager?.Fget(n) ?? 0;
     }
 
 
-    public static void Load(string fileName)
+    internal static void Load(string fileName)
     {
 
     }
@@ -478,7 +478,7 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null) // https://pico-8.fandom.com/wiki/Menuitem
+    internal void Menuitem(int pos, Func<string> getName, Action function, List<MenuItem>? list = null) // https://pico-8.fandom.com/wiki/Menuitem
     {
         list ??= _pauseMenuState?.CurrentMenuItems ?? [];
         list.Insert(pos, new MenuItem(getName, function));
@@ -687,7 +687,7 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public int Sget(double x, double y) // https://pico-8.fandom.com/wiki/Sget
+    private int Sget(double x, double y) // https://pico-8.fandom.com/wiki/Sget
     {
         int xFlr = (int)Math.Floor(x);
         int yFlr = (int)Math.Floor(y);
@@ -706,13 +706,13 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public void Srand(int seed) // https://pico-8.fandom.com/wiki/Srand
+    private void Srand(int seed) // https://pico-8.fandom.com/wiki/Srand
     {
         random = new Random(seed);
     }
 
 
-    public void Sset(double x, double y, double col) // https://pico-8.fandom.com/wiki/Sset
+    private void Sset(double x, double y, double col) // https://pico-8.fandom.com/wiki/Sset
     {
         int xFlr = (int)Math.Floor(x);
         int yFlr = (int)Math.Floor(y);
@@ -833,7 +833,7 @@ public class Pico8Functions : IDisposable
     }
 
 
-    public void SoundDispose()
+    internal void SoundDispose()
     {
         // Delegate to managers
         _musicManager?.StopAll();

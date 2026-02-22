@@ -43,4 +43,10 @@ public interface ITextureRenderer
     /// Replaces 10 p8.Graphics calls in GeneralOptions.cs.
     /// </summary>
     void ApplyDisplaySettings(bool fullscreen, int width, int height);
+
+    /// <summary>
+    /// Get the pixel width of a named texture.
+    /// Used for texture metadata queries (e.g., sprite atlas dimensions).
+    /// </summary>
+    int GetTextureWidth(string textureName);
 }

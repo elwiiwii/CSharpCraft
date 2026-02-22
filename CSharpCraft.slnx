@@ -9,7 +9,6 @@
   <Project Path="CSharpCraft.FixMath/CSharpCraft.FixMath.csproj" />
   <Project Path="CSharpCraft.Pico8/CSharpCraft.Pico8.csproj" />
   <Project Path="CSharpCraft.Game/CSharpCraft.Game.csproj" />
-  <Project Path="CSharpCraft/CSharpCraft.csproj" />
   <Project Path="RaceServer/RaceServer.csproj" />
   <Project Path="CSharpCraft.Tests/CSharpCraft.Tests.csproj" />
 </Solution>

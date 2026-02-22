@@ -83,6 +83,12 @@ public class FnaTextureRenderer : ITextureRenderer
         _graphics.ApplyChanges();
     }
 
+    /// <inheritdoc />
+    public int GetTextureWidth(string textureName)
+    {
+        return _textures[textureName].Width;
+    }
+
     /// <summary>
     /// Pure cursor position calculation — testable without FNA dependencies.
     /// Replicates the formula copy-pasted across 15 scene files:

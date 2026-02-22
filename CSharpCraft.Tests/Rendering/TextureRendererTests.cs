@@ -207,6 +207,31 @@ public class TextureRendererTests : IDisposable
     }
 
     #endregion
+
+    #region ITextureRenderer.GetTextureWidth
+
+    [Fact]
+    public void GetTextureWidth_DelegatesToRenderer()
+    {
+        _mockRenderer.Setup(r => r.GetTextureWidth("PfpIcons")).Returns(256);
+
+        var width = GameRendering.Current.GetTextureWidth("PfpIcons");
+
+        width.Should().Be(256);
+        _mockRenderer.Verify(r => r.GetTextureWidth("PfpIcons"), Times.Once);
+    }
+
+    [Fact]
+    public void GetTextureWidth_WithDifferentTexture_ReturnsCorrectWidth()
+    {
+        _mockRenderer.Setup(r => r.GetTextureWidth("SurfaceMediumTest")).Returns(128);
+
+        var width = GameRendering.Current.GetTextureWidth("SurfaceMediumTest");
+
+        width.Should().Be(128);
+    }
+
+    #endregion
 }
 
 /// <summary>
