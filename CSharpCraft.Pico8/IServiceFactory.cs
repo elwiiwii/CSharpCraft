@@ -77,7 +77,7 @@ public interface IServiceFactory
     /// <summary>
     /// Creates a pause menu state manager for pause menu rendering and input.
     /// </summary>
-    PauseMenuState CreatePauseMenuState(GameOrchestrator orchestrator);
+    PauseMenuState CreatePauseMenuState(IPauseMenuContext context);
 
     /// <summary>
     /// Creates an input state manager for button handling and input queries.

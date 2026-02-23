@@ -121,24 +121,20 @@ public class ServiceFactoryTests
     [Fact]
     public void CreatePauseMenuState_ReturnsNonNull()
     {
-        var orchestrator = new GameOrchestrator(
-            new Mock<IInputStateManager>().Object,
-            new Mock<IGraphicsAPI>().Object,
-            new Mock<IAudioAPI>().Object,
-            new Mock<ISceneManager>().Object);
-        var result = _factory.CreatePauseMenuState(orchestrator);
+        var context = new Mock<IPauseMenuContext>();
+        context.Setup(c => c.Settings).Returns(new Mock<IAudioGraphicsSettings>().Object);
+        context.Setup(c => c.Scenes).Returns(new List<IScene>());
+        var result = _factory.CreatePauseMenuState(context.Object);
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void CreatePauseMenuState_ReturnsCorrectType()
     {
-        var orchestrator = new GameOrchestrator(
-            new Mock<IInputStateManager>().Object,
-            new Mock<IGraphicsAPI>().Object,
-            new Mock<IAudioAPI>().Object,
-            new Mock<ISceneManager>().Object);
-        var result = _factory.CreatePauseMenuState(orchestrator);
+        var context = new Mock<IPauseMenuContext>();
+        context.Setup(c => c.Settings).Returns(new Mock<IAudioGraphicsSettings>().Object);
+        context.Setup(c => c.Scenes).Returns(new List<IScene>());
+        var result = _factory.CreatePauseMenuState(context.Object);
         result.Should().BeOfType<PauseMenuState>();
     }
 

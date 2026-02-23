@@ -13,17 +13,16 @@ namespace CSharpCraft.Tests.Pico8;
 /// </summary>
 public class PauseMenuStateTests
 {
-    private static GameOrchestrator CreateOrchestrator()
+    private static IPauseMenuContext CreateMockContext()
     {
-        var input = new Mock<IInputStateManager>();
-        var graphics = new Mock<IGraphicsAPI>();
-        var audio = new Mock<IAudioAPI>();
-        var scenes = new Mock<ISceneManager>();
-        return new GameOrchestrator(
-            input.Object, graphics.Object, audio.Object, scenes.Object);
+        var mock = new Mock<IPauseMenuContext>();
+        mock.Setup(c => c.Settings).Returns(new Mock<IAudioGraphicsSettings>().Object);
+        mock.Setup(c => c.Scenes).Returns(new List<IScene>());
+        mock.Setup(c => c.Resolution).Returns((128, 128));
+        return mock.Object;
     }
 
-    private PauseMenuState CreateState() => new(CreateOrchestrator());
+    private PauseMenuState CreateState() => new(CreateMockContext());
 
     // ── Constructor ──
 

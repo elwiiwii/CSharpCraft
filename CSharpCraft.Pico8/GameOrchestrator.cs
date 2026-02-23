@@ -11,7 +11,7 @@ namespace CSharpCraft.Pico8
     /// Replaces Pico8Functions as the single source of truth for the game loop.
     /// The static Pico8 class delegates to this for all operations.
     /// </summary>
-    public class GameOrchestrator : IDisposable
+    public class GameOrchestrator : IDisposable, IPauseMenuContext
     {
         // Sub-orchestrators
         private readonly IInputStateManager _inputManager;
@@ -106,16 +106,9 @@ namespace CSharpCraft.Pico8
         public Color[] Sprites => _cartData.Sprites;
         public CartData CartData => _cartData;
 
-        // Track/Music accessors for PauseMenuBuilder
-        internal int SfxCount => _trackManager?.SfxCount ?? 0;
-        internal int MusicCount => _trackManager?.MusicCount ?? 0;
-        internal int? LastMusicCall => _musicManager?.LastMusicCall;
-        internal string GetCurrentSfxPackName() => _trackManager?.GetCurrentSfxPackName() ?? "sfx";
-        internal string GetCurrentSoundtrackName() => _trackManager?.GetCurrentSoundtrackName() ?? "music";
-        internal void DecrementSfxPack() => _trackManager?.DecrementSfxPack();
-        internal void IncrementSfxPack() => _trackManager?.IncrementSfxPack();
-        internal void DecrementSoundtrack() => _trackManager?.DecrementSoundtrack();
-        internal void IncrementSoundtrack() => _trackManager?.IncrementSoundtrack();
+        // IPauseMenuContext implementation
+        public ITrackManager? TrackManager => _trackManager;
+        public int? LastMusicCall => _musicManager?.LastMusicCall;
 
         /// <summary>
         /// Standard PICO-8 color palette.
@@ -412,6 +405,22 @@ namespace CSharpCraft.Pico8
         {
             _musicManager?.StopAll();
             _audioChannels?.StopAll();
+        }
+
+        /// <summary>
+        /// Toggle fullscreen mode, applying graphics and viewport changes.
+        /// Encapsulates GraphicsDeviceManager manipulation so PauseMenuBuilder
+        /// doesn't need direct access to GraphicsManager.
+        /// </summary>
+        public void ToggleFullscreen()
+        {
+            if (_settings == null || _graphics == null) return;
+            _settings.IsFullscreen = !_settings.IsFullscreen;
+            _graphics.IsFullScreen = _settings.IsFullscreen;
+            _graphics.PreferredBackBufferWidth = _settings.WindowWidth / 128 * _resolution.w;
+            _graphics.PreferredBackBufferHeight = _settings.WindowHeight / 128 * _resolution.h;
+            _graphics.ApplyChanges();
+            UpdateViewport();
         }
 
         private void DisposeManagers()

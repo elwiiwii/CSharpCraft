@@ -3,13 +3,13 @@ namespace CSharpCraft.Pico8;
 /// <summary>
 /// Encapsulates pause menu state and behavior.
 /// </summary>
-public class PauseMenuState(GameOrchestrator orchestrator)
+public class PauseMenuState(IPauseMenuContext context)
 {
     private bool _isPaused = false;
     private int _menuSelected = 0;
     private readonly List<MenuItem> _mainMenuItems = [];
     private readonly List<MenuItem> _currentMenuItems = [];
-    private readonly GameOrchestrator _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
+    private readonly IPauseMenuContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
     public bool IsPaused => _isPaused;
     public int SelectedIndex => _menuSelected;
@@ -20,7 +20,7 @@ public class PauseMenuState(GameOrchestrator orchestrator)
         _mainMenuItems.Clear();
         _currentMenuItems.Clear();
 
-        var menuBuilder = new PauseMenuBuilder(_orchestrator, _mainMenuItems, _currentMenuItems);
+        var menuBuilder = new PauseMenuBuilder(_context, _mainMenuItems, _currentMenuItems);
         menuBuilder.Build();
 
         _currentMenuItems.Clear();

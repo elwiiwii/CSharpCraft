@@ -97,9 +97,9 @@ public class ServiceFactory : IServiceFactory
             getSfxVolume);
     }
 
-    public PauseMenuState CreatePauseMenuState(GameOrchestrator orchestrator)
+    public PauseMenuState CreatePauseMenuState(IPauseMenuContext context)
     {
-        return new PauseMenuState(orchestrator);
+        return new PauseMenuState(context);
     }
 
     public IInputStateManager CreateInputStateManager()
