@@ -18,6 +18,7 @@ namespace CSharpCraft.Pico8
         private readonly GraphicsOrchestrator _graphicsOrch;
         private readonly AudioOrchestrator _audioOrch;
         private readonly ISceneManager _sceneManager;
+        private readonly ICartDataLoader _cartDataLoader;
 
         // Managers
         private IMapManager? _mapManager;
@@ -47,12 +48,8 @@ namespace CSharpCraft.Pico8
         private readonly SinDict _sinDict = new();
         private Random _random = new();
 
-        // Mutable game data
-        private Color[] _sprites = [];
-        private int[] _flags = [];
-        private int[] _map = [];
-        private Dictionary<string, List<SongInst>> _music = [];
-        private Dictionary<string, Dictionary<int, string>> _sfx = [];
+        // Parsed cart data (managed by ICartDataLoader)
+        private CartData _cartData = CartData.Empty;
 
         private (int Width, int Height) _cell;
         private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
@@ -106,7 +103,8 @@ namespace CSharpCraft.Pico8
         public (int w, int h) Resolution => _resolution;
         public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
         public SpriteCache? SpriteCache => _spriteCache;
-        public Color[] Sprites => _sprites;
+        public Color[] Sprites => _cartData.Sprites;
+        public CartData CartData => _cartData;
 
         // Track/Music accessors for PauseMenuBuilder
         internal int SfxCount => _trackManager?.SfxCount ?? 0;
@@ -159,6 +157,7 @@ namespace CSharpCraft.Pico8
             IGraphicsAPI graphicsAPI,
             IAudioAPI audioAPI,
             ISceneManager sceneManager,
+            ICartDataLoader cartDataLoader,
             IPaletteManager? paletteManager = null,
             IMapManager? mapManager = null,
             IGameState? gameState = null)
@@ -177,6 +176,7 @@ namespace CSharpCraft.Pico8
             _inputBindings = inputBindings;
 
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
+            _cartDataLoader = cartDataLoader ?? throw new ArgumentNullException(nameof(cartDataLoader));
             _graphicsOrch = new GraphicsOrchestrator(graphicsAPI, paletteManager);
             _audioOrch = new AudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
@@ -194,6 +194,7 @@ namespace CSharpCraft.Pico8
             IGraphicsAPI graphicsAPI,
             IAudioAPI audioAPI,
             ISceneManager sceneManager,
+            ICartDataLoader? cartDataLoader = null,
             IPaletteManager? paletteManager = null,
             IMapManager? mapManager = null,
             IGameState? gameState = null)
@@ -201,6 +202,7 @@ namespace CSharpCraft.Pico8
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             ArgumentNullException.ThrowIfNull(graphicsAPI, nameof(graphicsAPI));
             ArgumentNullException.ThrowIfNull(audioAPI, nameof(audioAPI));
+            _cartDataLoader = cartDataLoader ?? new CartDataLoader();
             _graphicsOrch = new GraphicsOrchestrator(graphicsAPI, paletteManager);
             _audioOrch = new AudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
@@ -239,11 +241,7 @@ namespace CSharpCraft.Pico8
             if (cart == null) throw new ArgumentNullException(nameof(cart));
 
             _currentCart?.Dispose();
-            _sprites = [];
-            _flags = [];
-            _map = [];
-            _music = cart.Music;
-            _sfx = cart.Sfx;
+            _cartData = CartData.Empty;
             _currentCart = cart;
 
             _inputManager.Reset();
@@ -275,18 +273,11 @@ namespace CSharpCraft.Pico8
         {
             DisposeManagers();
 
-            if (!string.IsNullOrEmpty(_currentCart.SpriteData))
-                _sprites = Pico8Utils.DataToColorArray(_colors, _currentCart.SpriteData, 1);
-            if (!string.IsNullOrEmpty(_currentCart.SpriteImage))
-                _sprites = Pico8Utils.ImageToColorArray(_textureDictionary, _currentCart.SpriteImage);
-            _flags = Pico8Utils.DataToArray(_currentCart.FlagData, 2);
-            if (_currentCart.MapDimensions.x * _currentCart.MapDimensions.y != _currentCart.MapData.Length / 2)
-                throw new Exception($"Map dimensions do not match map data length.");
-            _map = Pico8Utils.MapDataToArray(_currentCart.MapData);
+            _cartData = _cartDataLoader.Load(_currentCart, _colors, _textureDictionary);
 
             _trackManager = new TrackManager(
-                () => _music,
-                () => _sfx,
+                () => _cartData.Music,
+                () => _cartData.Sfx,
                 _settings);
         }
 

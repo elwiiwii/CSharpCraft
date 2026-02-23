@@ -240,6 +240,7 @@ class FNAGame : Game
             graphicsAPI,
             audioAPI,
             sceneManager,
+            new CartDataLoader(),
             paletteManager);
 
         orchestrator.Initialize();

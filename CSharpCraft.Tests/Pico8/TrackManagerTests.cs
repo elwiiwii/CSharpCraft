@@ -100,7 +100,7 @@ public class TrackManagerTests
         // Index is 0 by default, but force it to be out of bounds
 
         // Actually, let's test the normal case first
-        Assert.Equal("track1", manager.GetCurrentSoundtrackName());
+        manager.GetCurrentSoundtrackName().Should().Be("track1");
     }
 
     [Fact]
