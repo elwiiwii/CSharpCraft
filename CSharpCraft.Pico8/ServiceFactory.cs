@@ -40,8 +40,8 @@ public class ServiceFactory : IServiceFactory
     }
 
     public ITrackManager CreateTrackManager(
-        Func<Dictionary<string, List<SongInst>>> getMusicDict,
-        Func<Dictionary<string, Dictionary<int, string>>> getSfxDict,
+        Func<Dictionary<string, List<SongInst>>?> getMusicDict,
+        Func<Dictionary<string, Dictionary<int, string>>?> getSfxDict,
         IAudioGraphicsSettings settings)
     {
         return new TrackManager(
@@ -95,6 +95,16 @@ public class ServiceFactory : IServiceFactory
             getCurrentSfxPack,
             isSoundEnabled,
             getSfxVolume);
+    }
+
+    public GraphicsOrchestrator CreateGraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null)
+    {
+        return new GraphicsOrchestrator(graphicsAPI, paletteManager);
+    }
+
+    public AudioOrchestrator CreateAudioOrchestrator(IAudioAPI audioAPI)
+    {
+        return new AudioOrchestrator(audioAPI);
     }
 
     public PauseMenuState CreatePauseMenuState(IPauseMenuContext context)

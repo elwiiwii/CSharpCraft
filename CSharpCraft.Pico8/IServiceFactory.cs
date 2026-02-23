@@ -39,8 +39,8 @@ public interface IServiceFactory
     /// Creates a track manager service for music/SFX selection.
     /// </summary>
     ITrackManager CreateTrackManager(
-        Func<Dictionary<string, List<SongInst>>> getMusicDict,
-        Func<Dictionary<string, Dictionary<int, string>>> getSfxDict,
+        Func<Dictionary<string, List<SongInst>>?> getMusicDict,
+        Func<Dictionary<string, Dictionary<int, string>>?> getSfxDict,
         IAudioGraphicsSettings settings);
 
     /// <summary>
@@ -73,6 +73,16 @@ public interface IServiceFactory
         Func<int> getCurrentSfxPack,
         Func<bool> isSoundEnabled,
         Func<int> getSfxVolume);
+
+    /// <summary>
+    /// Creates a graphics orchestrator for coordinating drawing operations.
+    /// </summary>
+    GraphicsOrchestrator CreateGraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null);
+
+    /// <summary>
+    /// Creates an audio orchestrator for coordinating sound operations.
+    /// </summary>
+    AudioOrchestrator CreateAudioOrchestrator(IAudioAPI audioAPI);
 
     /// <summary>
     /// Creates a pause menu state manager for pause menu rendering and input.

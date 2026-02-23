@@ -19,6 +19,7 @@ namespace CSharpCraft.Pico8
         private readonly AudioOrchestrator _audioOrch;
         private readonly ISceneManager _sceneManager;
         private readonly ICartDataLoader _cartDataLoader;
+        private readonly IServiceFactory _serviceFactory;
 
         // Managers
         private IMapManager? _mapManager;
@@ -26,7 +27,7 @@ namespace CSharpCraft.Pico8
         private MusicManager? _musicManager;
         private PaletteManager? _paletteManager;
         private SpriteCache? _spriteCache;
-        private TrackManager? _trackManager;
+        private ITrackManager? _trackManager;
         private PauseMenuState? _pauseMenuState;
 
         // State
@@ -148,7 +149,8 @@ namespace CSharpCraft.Pico8
             ISceneManager sceneManager,
             ICartDataLoader cartDataLoader,
             IPaletteManager? paletteManager = null,
-            IMapManager? mapManager = null)
+            IMapManager? mapManager = null,
+            IServiceFactory? serviceFactory = null)
         {
             _currentCart = cart ?? throw new ArgumentNullException(nameof(cart));
             _scenes = scenes ?? throw new ArgumentNullException(nameof(scenes));
@@ -163,14 +165,15 @@ namespace CSharpCraft.Pico8
             _settings = settings;
             _inputBindings = inputBindings;
 
+            _serviceFactory = serviceFactory ?? new ServiceFactory();
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             _cartDataLoader = cartDataLoader ?? throw new ArgumentNullException(nameof(cartDataLoader));
-            _graphicsOrch = new GraphicsOrchestrator(graphicsAPI, paletteManager);
-            _audioOrch = new AudioOrchestrator(audioAPI);
+            _graphicsOrch = _serviceFactory.CreateGraphicsOrchestrator(graphicsAPI, paletteManager);
+            _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
             _colors = DefaultColors;
-            _pauseMenuState = new PauseMenuState(this);
+            _pauseMenuState = _serviceFactory.CreatePauseMenuState(this);
         }
 
         /// <summary>
@@ -183,14 +186,16 @@ namespace CSharpCraft.Pico8
             ISceneManager sceneManager,
             ICartDataLoader? cartDataLoader = null,
             IPaletteManager? paletteManager = null,
-            IMapManager? mapManager = null)
+            IMapManager? mapManager = null,
+            IServiceFactory? serviceFactory = null)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             ArgumentNullException.ThrowIfNull(graphicsAPI, nameof(graphicsAPI));
             ArgumentNullException.ThrowIfNull(audioAPI, nameof(audioAPI));
+            _serviceFactory = serviceFactory ?? new ServiceFactory();
             _cartDataLoader = cartDataLoader ?? new CartDataLoader();
-            _graphicsOrch = new GraphicsOrchestrator(graphicsAPI, paletteManager);
-            _audioOrch = new AudioOrchestrator(audioAPI);
+            _graphicsOrch = _serviceFactory.CreateGraphicsOrchestrator(graphicsAPI, paletteManager);
+            _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
 
@@ -208,7 +213,7 @@ namespace CSharpCraft.Pico8
             _settings = null!;
             _inputBindings = null!;
             _colors = DefaultColors;
-            _pauseMenuState = new PauseMenuState(this);
+            _pauseMenuState = _serviceFactory.CreatePauseMenuState(this);
         }
 
         public void Initialize()
@@ -260,7 +265,7 @@ namespace CSharpCraft.Pico8
 
             _cartData = _cartDataLoader.Load(_currentCart, _colors, _textureDictionary);
 
-            _trackManager = new TrackManager(
+            _trackManager = _serviceFactory.CreateTrackManager(
                 () => _cartData.Music,
                 () => _cartData.Sfx,
                 _settings);
