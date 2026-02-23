@@ -64,15 +64,15 @@ public class TitleScreen(bool animation = false) : IScene, IDisposable
 
         Vector2 position = new(1 * CellWidth, 1 * CellHeight);
 
-        GameRendering.Current.Draw("CSharpCraftLogo", position, Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("CSharpCraftLogo", 1, 1, Color.White);
 
         if (frame >= 5) { Print($"c# craft {version}", 0, 18, 6); }
         if (frame >= 6) { Print("by nusan-2016 and ellie-2024", 0, 24, 6); }
 
-        if (frame >= 7) { GameRendering.Current.Draw("MusicNote", new Vector2(3 * CellWidth, 36 * CellHeight), Colors[13], CellWidth, CellHeight); }
-        if (frame >= 11) { GameRendering.Current.Draw("MusicNote", new Vector2(11 * CellWidth, 38 * CellHeight), Colors[13], CellWidth, CellHeight); }
-        if (frame >= 15) { GameRendering.Current.Draw("MusicNote", new Vector2(19 * CellWidth, 36 * CellHeight), Colors[13], CellWidth, CellHeight); }
-        if (frame >= 19) { GameRendering.Current.Draw("MusicNote", new Vector2(27 * CellWidth, 34 * CellHeight), Colors[13], CellWidth, CellHeight); }
+        if (frame >= 7) { GameRendering.Current.Draw("MusicNote", 3, 36, Colors[13]); }
+        if (frame >= 11) { GameRendering.Current.Draw("MusicNote", 11, 38, Colors[13]); }
+        if (frame >= 15) { GameRendering.Current.Draw("MusicNote", 19, 36, Colors[13]); }
+        if (frame >= 19) { GameRendering.Current.Draw("MusicNote", 27, 34, Colors[13]); }
 
         if (frame >= 29) { Print("choose a game mode", 0, 50, 6); }
 

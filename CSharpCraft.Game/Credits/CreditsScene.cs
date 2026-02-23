@@ -139,7 +139,7 @@ public class CreditsScene : IScene, IDisposable
     {
         Cls(1);
 
-        GameRendering.Current.Draw("Credits", new Vector2(27 * CellWidth, 8 * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("Credits", 27, 8, Color.White);
 
         int icon_gap = 4;
         int item_gap = 4;
@@ -164,7 +164,7 @@ public class CreditsScene : IScene, IDisposable
                 else
                 {
                     Vector2 position2 = new((xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap) * CellWidth, (ystart - 5 + menuSelected.ver * 9 + yoff) * CellHeight);
-                    GameRendering.Current.Draw("ArrowV", position2, Colors[7], CellWidth, CellHeight);
+                    GameRendering.Current.Draw("ArrowV", xstart + credits[menuSelected.ver].Name.Length * 4 + (menuSelected.hor - 1) * 8 + icon_gap, ystart - 5 + menuSelected.ver * 9 + yoff, Colors[7]);
                     Print(credits[menuSelected.ver].Links[menuSelected.hor - 1].link.Replace("https://", ""),
                         xstart + 6 + credits[menuSelected.ver].Name.Length * 4 + 8 * credits[menuSelected.ver].Links.Count,
                         ystart + menuSelected.ver * 9 + yoff,
@@ -178,7 +178,7 @@ public class CreditsScene : IScene, IDisposable
             foreach ((string type , string link) icon in item.Links)
             {
                 Vector2 position = new((xstart + item.Name.Length * 4 + xpos + icon_gap - 1) * CellWidth, (ypos + yoff + ystart - 1) * CellHeight);
-                GameRendering.Current.Draw(icon.type, position, Color.White, CellWidth / 2f, CellHeight / 2f);
+                GameRendering.Current.Draw(icon.type, xstart + item.Name.Length * 4 + xpos + icon_gap - 1, ypos + yoff + ystart - 1, Color.White, 0.5, 0.5);
                 xpos += 8;
             }
 

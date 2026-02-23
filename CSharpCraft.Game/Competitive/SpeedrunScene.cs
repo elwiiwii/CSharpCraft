@@ -87,7 +87,7 @@ public class SpeedrunScene(IScene prevScene) : IScene
 
         if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        GameRendering.Current.Draw("SpeedrunBackground", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("SpeedrunBackground", 0, 0, Color.White);
 
         Shared.DrawIcons(icons, cursorX, cursorY);
 

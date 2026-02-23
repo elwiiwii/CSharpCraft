@@ -97,15 +97,15 @@ public class CompetitiveScene : IScene
 
         if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        GameRendering.Current.Draw("CompetitiveBackground", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("CompetitiveBackground", 0, 0, Color.White);
 
         Shared.DrawIcons(icons, cursorX, cursorY);
 
         if (curIcon is not null) { labelLength = curIcon.Label.Length * 4; }
         else { labelLength = Math.Max(labelLength - labelLength / 4, 0); }
-        GameRendering.Current.Draw("12pxHighlightCenter", new Vector2((63 - labelLength / 2) * CellWidth, 108 * CellHeight), Color.White, CellWidth * (labelLength + 1), CellHeight);
-        GameRendering.Current.Draw("12pxHighlightEdge", new Vector2((63 - 5 - labelLength / 2 - 1) * CellWidth, 108 * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw("12pxHighlightEdge", new Vector2((63 + labelLength / 2 + 1) * CellWidth, 108 * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw("12pxHighlightCenter", 63 - labelLength / 2, 108, Color.White, scaleX: labelLength + 1);
+        GameRendering.Current.Draw("12pxHighlightEdge", 63 - 5 - labelLength / 2 - 1, 108, Color.White);
+        GameRendering.Current.Draw("12pxHighlightEdge", 63 + labelLength / 2 + 1, 108, Color.White, flipX: true);
         if (curIcon is not null) { Shared.Printcb(curIcon.Label, 63, 111, 15, 1); }
 
         Shared.DrawCursor(cursorX, cursorY);

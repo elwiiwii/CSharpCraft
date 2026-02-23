@@ -70,62 +70,50 @@ public class TextureRendererTests : IDisposable
     [Fact]
     public void Draw_WithTextureName_DelegatesToRenderer()
     {
-        var position = new Vector2(10, 20);
+        GameRendering.Current.Draw("CompetitiveBackground", 10.0, 20.0, Color.White);
 
-        GameRendering.Current.Draw("CompetitiveBackground", position,
-            Color.White, 4f, 4f);
-
-        _mockRenderer.Verify(r => r.Draw("CompetitiveBackground", position,
-            Color.White, 4f, 4f, false, false), Times.Once);
+        _mockRenderer.Verify(r => r.Draw("CompetitiveBackground", 10.0, 20.0,
+            Color.White, 1.0, 1.0, false, false), Times.Once);
     }
 
     [Fact]
     public void Draw_WithFlipX_PassesFlipCorrectly()
     {
-        var position = new Vector2(5, 10);
+        GameRendering.Current.Draw("12pxHighlightEdge", 5.0, 10.0,
+            Color.White, flipX: true);
 
-        GameRendering.Current.Draw("12pxHighlightEdge", position,
-            Color.White, 4f, 4f, flipX: true);
-
-        _mockRenderer.Verify(r => r.Draw("12pxHighlightEdge", position,
-            Color.White, 4f, 4f, true, false), Times.Once);
+        _mockRenderer.Verify(r => r.Draw("12pxHighlightEdge", 5.0, 10.0,
+            Color.White, 1.0, 1.0, true, false), Times.Once);
     }
 
     [Fact]
     public void Draw_WithPaletteColor_PassesColorCorrectly()
     {
         var lavender = new Color(131, 118, 156); // PICO-8 color 13
-        var position = new Vector2(24, 288);
 
-        GameRendering.Current.Draw("MusicNote", position, lavender, 8f, 8f);
+        GameRendering.Current.Draw("MusicNote", 24.0, 288.0, lavender, 8.0, 8.0);
 
-        _mockRenderer.Verify(r => r.Draw("MusicNote", position,
-            lavender, 8f, 8f, false, false), Times.Once);
+        _mockRenderer.Verify(r => r.Draw("MusicNote", 24.0, 288.0,
+            lavender, 8.0, 8.0, false, false), Times.Once);
     }
 
     [Fact]
     public void Draw_WithFlipY_PassesFlipCorrectly()
     {
-        var position = new Vector2(0, 0);
+        GameRendering.Current.Draw("Checker", 0.0, 0.0, Color.White, flipY: true);
 
-        GameRendering.Current.Draw("Checker", position,
-            Color.White, 4f, 4f, flipY: true);
-
-        _mockRenderer.Verify(r => r.Draw("Checker", position,
-            Color.White, 4f, 4f, false, true), Times.Once);
+        _mockRenderer.Verify(r => r.Draw("Checker", 0.0, 0.0,
+            Color.White, 1.0, 1.0, false, true), Times.Once);
     }
 
     [Fact]
     public void Draw_WithCustomScale_PassesScaleCorrectly()
     {
-        // Simulates: new Vector2(p8.Cell.Width * (labelLength + 1), p8.Cell.Height)
-        var position = new Vector2(200, 400);
+        GameRendering.Current.Draw("12pxHighlightCenter", 200.0, 400.0,
+            Color.White, 80.0, 4.0);
 
-        GameRendering.Current.Draw("12pxHighlightCenter", position,
-            Color.White, 80f, 4f); // scaleX = 4 * 20, scaleY = 4
-
-        _mockRenderer.Verify(r => r.Draw("12pxHighlightCenter", position,
-            Color.White, 80f, 4f, false, false), Times.Once);
+        _mockRenderer.Verify(r => r.Draw("12pxHighlightCenter", 200.0, 400.0,
+            Color.White, 80.0, 4.0, false, false), Times.Once);
     }
 
     #endregion
@@ -135,14 +123,13 @@ public class TextureRendererTests : IDisposable
     [Fact]
     public void Draw_WithSourceRectangle_DelegatesToRenderer()
     {
-        var position = new Vector2(100, 200);
         var sourceRect = new Rectangle(0, 0, 10, 18);
 
-        GameRendering.Current.Draw("SurfaceMediumTest", position, sourceRect,
-            Color.White, 4f, 4f);
+        GameRendering.Current.Draw("SurfaceMediumTest", 100.0, 200.0,
+            sourceRect, Color.White);
 
-        _mockRenderer.Verify(r => r.Draw("SurfaceMediumTest", position, sourceRect,
-            Color.White, 4f, 4f, false, false), Times.Once);
+        _mockRenderer.Verify(r => r.Draw("SurfaceMediumTest", 100.0, 200.0,
+            sourceRect, Color.White, 1.0, 1.0, false, false), Times.Once);
     }
 
     #endregion
@@ -286,8 +273,7 @@ public class SceneRenderingErgonomicsTests : IDisposable
 
         // Step 2: Game texture rendering
         GameRendering.Current.ClearDevice(Color.Black);
-        GameRendering.Current.Draw("CompetitiveBackground", new Vector2(0, 0),
-            Color.White, Pico8API.CellWidth, Pico8API.CellHeight);
+        GameRendering.Current.Draw("CompetitiveBackground", 0.0, 0.0, Color.White);
 
         // Step 3: More PICO-8 operations
         Pico8API.Print("loading...", 64, 61, 15);
@@ -296,8 +282,8 @@ public class SceneRenderingErgonomicsTests : IDisposable
         _mockGraphics.Verify(g => g.Cls(0), Times.Once);
         _mockRenderer.Verify(r => r.ClearDevice(Color.Black), Times.Once);
         _mockRenderer.Verify(r => r.Draw("CompetitiveBackground",
-            It.IsAny<Vector2>(), Color.White,
-            It.IsAny<float>(), It.IsAny<float>(), false, false), Times.Once);
+            It.IsAny<double>(), It.IsAny<double>(), Color.White,
+            It.IsAny<double>(), It.IsAny<double>(), false, false), Times.Once);
     }
 
     [Fact]
@@ -310,11 +296,10 @@ public class SceneRenderingErgonomicsTests : IDisposable
         // Scene code would be:
         // GameRendering.Current.Draw("MusicNote", pos, Pico8API.GetColor(13), cellW, cellH);
         var color = Pico8API.GetColor(13);
-        GameRendering.Current.Draw("MusicNote", new Vector2(24, 288),
-            color, 4f, 4f);
+        GameRendering.Current.Draw("MusicNote", 24.0, 288.0, color);
 
         _mockRenderer.Verify(r => r.Draw("MusicNote",
-            new Vector2(24, 288), lavender, 4f, 4f, false, false), Times.Once);
+            24.0, 288.0, lavender, 1.0, 1.0, false, false), Times.Once);
     }
 
     [Fact]

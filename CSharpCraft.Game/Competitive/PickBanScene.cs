@@ -236,20 +236,20 @@ public class PickBanScene : IScene, IDisposable
             {
                 if (games[sel + i].SurfaceType is not null && games[sel + i].SurfaceType > 0 && games[sel + i].SurfaceType <= 5)
                 {
-                    GameRendering.Current.Draw($"Surface{games[sel + i].SurfaceType}Test", new Vector2(3 * CellWidth, (3 + i * 20) * CellHeight), new Rectangle(0, 0, 10, 18), Color.White, CellWidth, CellHeight);
+                    GameRendering.Current.Draw($"Surface{games[sel + i].SurfaceType}Test", 3, 3 + i * 20, new Rectangle(0, 0, 10, 18), Color.White);
                 }
                 if (games[sel + i].CaveType is not null && games[sel + i].CaveType > 0 && games[sel + i].CaveType <= 5)
                 {
-                    GameRendering.Current.Draw($"Cave{games[sel + i].CaveType}Test", new Vector2(13 * CellWidth, (3 + i * 20) * CellHeight), new Rectangle(10, 0, 8, 18), Color.White, CellWidth, CellHeight);
+                    GameRendering.Current.Draw($"Cave{games[sel + i].CaveType}Test", 13, 3 + i * 20, new Rectangle(10, 0, 8, 18), Color.White);
                 }
 
                 int col;
                 if (games[sel + i].CavePicker is null) col = 7;
                 else col = games[sel + i].CavePicker == 0 ? 24 : 28;
-                GameRendering.Current.Draw("SeedPickIndicator", new Vector2(11 * CellWidth, (3 + i * 20) * CellHeight), Colors[col], CellWidth, CellHeight, flipX: true);
+                GameRendering.Current.Draw("SeedPickIndicator", 11, 3 + i * 20, Colors[col], flipX: true);
                 if (games[sel + i].SurfacePicker is null) col = 7;
                 else col = games[sel + i].SurfacePicker == 0 ? 24 : 28;
-                GameRendering.Current.Draw("SeedPickIndicator", new Vector2(3 * CellWidth, (3 + i * 20) * CellHeight), Colors[col], CellWidth, CellHeight);
+                GameRendering.Current.Draw("SeedPickIndicator", 3, 3 + i * 20, Colors[col]);
 
                 Print($"game {sel + i + 1}", 24, 6 + i * 20, 7);
                 if (games[sel + i].Time is not null) Print(games[sel + i].Time, 24, 13 + i * 20, 7);

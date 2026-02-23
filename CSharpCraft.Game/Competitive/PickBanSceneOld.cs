@@ -157,29 +157,29 @@ public class PickBanSceneOld() : IScene, IDisposable
         int color = 2;
         bool animationCheck = animated && seedType.Status == "UNBANNED" && !seedType.Unavailable;
 
-        GameRendering.Current.Draw(animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name, new Vector2((seedType.Xpos + 2) * CellWidth, (seedType.Ypos + 2) * CellHeight), Color.White, CellWidth / 4f, CellHeight / 4f);
+        GameRendering.Current.Draw(animationCheck ? seedType.Name + Math.Floor(animationTimer % 4) : seedType.Name, seedType.Xpos + 2, seedType.Ypos + 2, Color.White, 0.25, 0.25);
         
         if (seedType.Status == "BANNED")
         {
             color = 1;
-            GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * CellWidth, seedType.Ypos * CellHeight), seedType.Selected ? Colors[14] : Colors[color], CellWidth, CellHeight);
-            GameRendering.Current.Draw("SeedCross", new Vector2((seedType.Xpos + 2) * CellWidth, (seedType.Ypos + 2) * CellHeight), seedType.Selected ? Colors[14] : Colors[1], CellWidth, CellHeight);
+            GameRendering.Current.Draw("SeedSelector", seedType.Xpos, seedType.Ypos, seedType.Selected ? Colors[14] : Colors[color]);
+            GameRendering.Current.Draw("SeedCross", seedType.Xpos + 2, seedType.Ypos + 2, seedType.Selected ? Colors[14] : Colors[1]);
         }
         else
         {
-            GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * CellWidth, seedType.Ypos * CellHeight), seedType.Selected ? Colors[14] : Colors[color], CellWidth, CellHeight);
+            GameRendering.Current.Draw("SeedSelector", seedType.Xpos, seedType.Ypos, seedType.Selected ? Colors[14] : Colors[color]);
         }
         if (seedType.Status == "PLAYED" || seedType.Unavailable)
         {
             color = 1;
-            GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * CellWidth, seedType.Ypos * CellHeight), seedType.Selected ? Colors[14] : Colors[color], CellWidth, CellHeight);
-            GameRendering.Current.Draw("SeedGreyOut", new Vector2(seedType.Xpos * CellWidth, seedType.Ypos * CellHeight), Color.White, CellWidth, CellHeight);
+            GameRendering.Current.Draw("SeedSelector", seedType.Xpos, seedType.Ypos, seedType.Selected ? Colors[14] : Colors[color]);
+            GameRendering.Current.Draw("SeedGreyOut", seedType.Xpos, seedType.Ypos, Color.White);
         }
     }
 
     private void DrawInitialSeedSelection(SeedType seedType, int order)
     {
-        GameRendering.Current.Draw(seedType.Name, new Vector2((seedType.Xpos + 2) * CellWidth, (seedType.Ypos + 2) * CellHeight), Color.White, CellWidth / 4f, CellHeight / 4f);
+        GameRendering.Current.Draw(seedType.Name, seedType.Xpos + 2, seedType.Ypos + 2, Color.White, 0.25, 0.25);
 
         int color = 2;
         if (order > turn)
@@ -195,12 +195,12 @@ public class PickBanSceneOld() : IScene, IDisposable
             color = 14;
         }
 
-        GameRendering.Current.Draw("SeedSelectorArrow", new Vector2((seedType.Xpos - 9) * CellWidth, seedType.Ypos * CellHeight), Colors[color], CellWidth, CellHeight);
+        GameRendering.Current.Draw("SeedSelectorArrow", seedType.Xpos - 9, seedType.Ypos, Colors[color]);
     }
 
     private void DrawSeedSelection(SeedType seedType, int order)
     {
-        GameRendering.Current.Draw(seedType.Name, new Vector2((seedType.Xpos + 2) * CellWidth, (seedType.Ypos + 2) * CellHeight), Color.White, CellWidth / 4f, CellHeight / 4f);
+        GameRendering.Current.Draw(seedType.Name, seedType.Xpos + 2, seedType.Ypos + 2, Color.White, 0.25, 0.25);
 
         int color = 2;
         if (order > gameCount)
@@ -217,7 +217,7 @@ public class PickBanSceneOld() : IScene, IDisposable
             color = 14;
         }
 
-        GameRendering.Current.Draw("SeedSelector", new Vector2(seedType.Xpos * CellWidth, seedType.Ypos * CellHeight), Colors[color], CellWidth, CellHeight);
+        GameRendering.Current.Draw("SeedSelector", seedType.Xpos, seedType.Ypos, Colors[color]);
     }
 
     private void Printc(string t, int x, int y, int c)
@@ -234,8 +234,8 @@ public class PickBanSceneOld() : IScene, IDisposable
     {
         Cls();
 
-        GameRendering.Current.Draw("SmallNameBanner", new Vector2(0 * CellWidth, 4 * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw("SmallNameBanner", new Vector2(73 * CellWidth, 4 * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw("SmallNameBanner", 0, 4, Color.White);
+        GameRendering.Current.Draw("SmallNameBanner", 73, 4, Color.White, flipX: true);
         Circfill(F32.FromInt(47) - player1Score.ToString().Length, F32.FromInt(9), 3, 1);
         Circfill(F32.FromInt(47) + player1Score.ToString().Length, F32.FromInt(9), 3, 1);
         Rectfill(47 - 1 - player1Score.ToString().Length, 6, 47 + 1 + player1Score.ToString().Length, 12, 1);
@@ -248,8 +248,8 @@ public class PickBanSceneOld() : IScene, IDisposable
         Printc($"{player2Score}", 81, 7, 7);
         Print(player2Name, 87, 7, 7);
 
-        GameRendering.Current.Draw("Game", new Vector2(56 * CellWidth, 6 * CellHeight), Colors[7], CellWidth / 2f, CellHeight / 2f);
-        GameRendering.Current.Draw($"{gameCount}", new Vector2(62 * CellWidth, 12 * CellHeight), Colors[7], CellWidth / 2f, CellHeight / 2f);
+        GameRendering.Current.Draw("Game", 56, 6, Colors[7], 0.5, 0.5);
+        GameRendering.Current.Draw($"{gameCount}", 62, 12, Colors[7], 0.5, 0.5);
 
         string s1 = $"{player1Name}'s turn";
         string s2 = $"[{KeyNames.keyNames[OptionsFile.Current.Kbm_Menu.Bind1]}] for random action";

@@ -9,44 +9,47 @@ namespace CSharpCraft.Pico8;
 /// 
 /// Scenes access this via GameRendering.Current (static accessor pattern).
 /// Implementation wraps SpriteBatch + TextureDictionary for FNA rendering.
+///
+/// Draw methods accept virtual coordinates (PICO-8 pixel space).
+/// The implementation converts to physical pixels using the current cell size.
+/// Scale parameters default to 1.0 (one virtual pixel = one cell).
 /// </summary>
 public interface ITextureRenderer
 {
     /// <summary>
-    /// Draw a named texture at a position with color tint and cell-based scaling.
-    /// Covers 81 of 83 legacy p8.Batch.Draw calls (null sourceRectangle).
+    /// Draw a named texture at a virtual position with color tint and optional scaling.
+    /// Position (x, y) is in virtual PICO-8 coordinates.
+    /// Scale defaults to 1.0 (texture renders at 1:1 virtual pixel size).
     /// </summary>
-    void Draw(string textureName, Vector2 position, Color color,
-        float scaleX, float scaleY, bool flipX = false, bool flipY = false);
+    void Draw(string textureName, double x, double y, Color color,
+        double scaleX = 1, double scaleY = 1, bool flipX = false, bool flipY = false);
 
     /// <summary>
-    /// Draw a named texture at a position with a source rectangle for atlas clipping.
-    /// Covers 2 of 83 legacy p8.Batch.Draw calls (non-null sourceRectangle).
+    /// Draw a named texture at a virtual position with a source rectangle for atlas clipping.
+    /// Position (x, y) is in virtual PICO-8 coordinates.
+    /// Scale defaults to 1.0 (texture renders at 1:1 virtual pixel size).
     /// </summary>
-    void Draw(string textureName, Vector2 position, Rectangle sourceRect, Color color,
-        float scaleX, float scaleY, bool flipX = false, bool flipY = false);
+    void Draw(string textureName, double x, double y, Rectangle sourceRect, Color color,
+        double scaleX = 1, double scaleY = 1, bool flipX = false, bool flipY = false);
 
     /// <summary>
     /// Clear the graphics device to a solid color.
-    /// Replaces 16 p8.Batch.GraphicsDevice.Clear(Color.Black) calls.
     /// </summary>
     void ClearDevice(Color color);
 
     /// <summary>
     /// Calculate cursor position adjusted for window/viewport offset.
-    /// Replaces 33 copy-pasted cursor coordinate calculations across 15 files.
+    /// Returns physical pixel coordinates.
     /// </summary>
     (float X, float Y) GetCursorPosition(int mouseX, int mouseY);
 
     /// <summary>
     /// Apply fullscreen/resolution display settings.
-    /// Replaces 10 p8.Graphics calls in GeneralOptions.cs.
     /// </summary>
     void ApplyDisplaySettings(bool fullscreen, int width, int height);
 
     /// <summary>
     /// Get the pixel width of a named texture.
-    /// Used for texture metadata queries (e.g., sprite atlas dimensions).
     /// </summary>
     int GetTextureWidth(string textureName);
 }

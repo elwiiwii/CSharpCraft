@@ -23,21 +23,21 @@ public static class Shared
         foreach (Icon icon in icons)
         {
             bool sel = UpdateIcon([icon], x, y) is not null;
-            if (icon.ShadowTexture is not null) { GameRendering.Current.Draw(icon.ShadowTexture, new Vector2 (icon.StartPos.x * CellWidth, icon.StartPos.y * CellHeight), Color.White, CellWidth, CellHeight); }
-            if (icon.IconTexture is not null) { GameRendering.Current.Draw(icon.IconTexture, new Vector2 ((icon.StartPos.x + (sel ? icon.Offset.x : 0)) * CellWidth, (icon.StartPos.y + (sel ? icon.Offset.y : 0)) * CellHeight), Color.White, CellWidth, CellHeight); }
+            if (icon.ShadowTexture is not null) { GameRendering.Current.Draw(icon.ShadowTexture, icon.StartPos.x, icon.StartPos.y, Color.White); }
+            if (icon.IconTexture is not null) { GameRendering.Current.Draw(icon.IconTexture, icon.StartPos.x + (sel ? icon.Offset.x : 0), icon.StartPos.y + (sel ? icon.Offset.y : 0), Color.White); }
         }
     }
 
     public static void DrawCursor(float x, float y)
     {
-        GameRendering.Current.Draw("Cursor", new Vector2(x - 15 * (CellWidth / 2.0f), y - 15 * (CellHeight / 2.0f)), Color.White, CellWidth / 2.0f, CellHeight / 2.0f);
+        GameRendering.Current.Draw("Cursor", x / CellWidth - 7.5, y / CellHeight - 7.5, Color.White, 0.5, 0.5);
     }
 
     public static void DrawNameBubble(string s, int x, int y)
     {
-        GameRendering.Current.Draw("10pxHighlightEdge", new Vector2 ((x - s.Length * 2 - 5) * CellWidth, y * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw("10pxHighlightCenter", new Vector2((x - s.Length * 2) * CellWidth, y * CellHeight), Color.White, (s.Length * 4 + 1) * CellWidth, CellHeight);
-        GameRendering.Current.Draw("10pxHighlightEdge", new Vector2((x + s.Length * 2 + 1) * CellWidth, y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw("10pxHighlightEdge", x - s.Length * 2 - 5, y, Color.White);
+        GameRendering.Current.Draw("10pxHighlightCenter", x - s.Length * 2, y, Color.White, scaleX: s.Length * 4 + 1);
+        GameRendering.Current.Draw("10pxHighlightEdge", x + s.Length * 2 + 1, y, Color.White, flipX: true);
         Printc("rooms", x + 1, y + 2, 15);
     }
 

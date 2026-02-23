@@ -71,14 +71,14 @@ public class Selector
         {
             int x = (i == 0 || i == Sel) ? 5 : -4;
             int w = i == Sel ? Options[i].Name.Length * 4 + 1 : Options[i].Name.Length * 4 + 5;
-            GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}Center", new Vector2((Options[i].Area.x1 + x) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * w, CellHeight);
+            GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}Center", Options[i].Area.x1 + x, StartPos.y, Color.White, scaleX: w);
             Print(Options[i].Name, Options[i].Area.x1 + ((i == 0 || i == Sel) ? 6 : 1), StartPos.y + 2, i == Sel ? 15 : 29);
         }
         for (int i = 0; i < Options.Length; i++)
         {
             int x = (i == 0 || i == Sel) ? 5 : -4;
-            if (Sel >= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i <= 0 ? "" : "Overlap")}Edge", new Vector2((Options[i].Area.x1 + x - 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight); }
-            if (Sel <= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i >= Options.Length - 1 ? "" : "Overlap")}Edge", new Vector2((Options[i].Area.x2 - 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true); }
+            if (Sel >= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i <= 0 ? "" : "Overlap")}Edge", Options[i].Area.x1 + x - 5, StartPos.y, Color.White); }
+            if (Sel <= i) { GameRendering.Current.Draw($"10px{(i == Sel ? "Highlight" : "Background")}{(i >= Options.Length - 1 ? "" : "Overlap")}Edge", Options[i].Area.x2 - 5, StartPos.y, Color.White, flipX: true); }
         }
     }
 }
@@ -104,10 +104,10 @@ public class Button((int x, int y) startPos, string label, bool isActive)
 
     public void Draw()
     {
-        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Center", new Vector2((StartPos.x + 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * (Label.Length * 4 + 1), CellHeight);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Center", StartPos.x + 5, StartPos.y, Color.White, scaleX: Label.Length * 4 + 1);
         Print(Label, StartPos.x + 6, StartPos.y + 2, IsHovered ? 15 : 29);
-        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2((StartPos.x + (Label.Length * 4) + 6) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", StartPos.x, StartPos.y, Color.White);
+        GameRendering.Current.Draw($"10px{(IsHovered ? "Highlight" : "Background")}Edge", StartPos.x + (Label.Length * 4) + 6, StartPos.y, Color.White, flipX: true);
     }
 }
 
@@ -198,9 +198,9 @@ public class TextBox
         frameCount++;
         string indicator = " ";
         if (IsActive && frameCount / 30 % 2 == 0) { indicator = "|"; }
-        GameRendering.Current.Draw($"10pxBackgroundCenter", new Vector2((StartPos.x + 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * Math.Max(Math.Min((Label + Text).Length + 1, Size.max - 10), Size.min - 10), CellHeight);
-        GameRendering.Current.Draw($"10pxBackgroundEdge", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw($"10pxBackgroundEdge", new Vector2(Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw($"10pxBackgroundCenter", StartPos.x + 5, StartPos.y, Color.White, scaleX: Math.Max(Math.Min((Label + Text).Length + 1, Size.max - 10), Size.min - 10));
+        GameRendering.Current.Draw($"10pxBackgroundEdge", StartPos.x, StartPos.y, Color.White);
+        GameRendering.Current.Draw($"10pxBackgroundEdge", Math.Max(Math.Min((Label + Text).Length + 1, StartPos.x + Size.max - 5), StartPos.x + Size.min - 5), StartPos.y, Color.White, flipX: true);
         string s = Label + Text + indicator;
         int startIndex = !IsActive ? 0 : Math.Max(0, s.Length - ((Size.max - 12) / 4));
         int length = s.Length > ((Size.max - 11) / 4) ? ((Size.max - 11) / 4) : s.Length;
@@ -255,8 +255,8 @@ public class PlayerList(string roomName, string roomPassword, int startY)
         //    if (player.Name.Length + 10 > menuWidth) { menuWidth = Math.Min(player.Name.Length, 16) + 10; }
         //}
         //int x = 63 - menuWidth * 2 - 9;
-        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((lBound - 3) * CellWidth, StartY * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw("LobbyPlayerListContainer", new Vector2((rBound - 61) * CellWidth, StartY * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw("LobbyPlayerListContainer", lBound - 3, StartY, Color.White);
+        GameRendering.Current.Draw("LobbyPlayerListContainer", rBound - 61, StartY, Color.White, flipX: true);
         Rectfill(63 - RoomName.Length * 2 - 1, StartY + 1, 63 + RoomName.Length * 2 + 1, StartY + 7, 13);
         Shared.Printc(RoomName, 64, StartY + 2, 7);
         Shared.Printc($"password-{RoomPassword}", 64, StartY + 12, 7);
@@ -266,11 +266,11 @@ public class PlayerList(string roomName, string roomPassword, int startY)
         {
             if (i >= Sel && i < Sel + 7)
             {
-                GameRendering.Current.Draw($"{player.Role}Icon", new Vector2((lBound + 5) * CellWidth, (StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7) * CellHeight), Color.White, CellWidth / 2f, CellHeight / 2f);
+                GameRendering.Current.Draw($"{player.Role}Icon", lBound + 5, StartY + (player.Role == Role.Player ? 21 : 20.75f) + (i - Sel) * 7, Color.White, 0.5, 0.5);
                 Print(player.Name, lBound + 16, StartY + 21 + (i - Sel) * 7, 7);
                 if (player.Ready)
                 {
-                    GameRendering.Current.Draw("Tick", new Vector2((lBound + 17 + player.Name.Length * 4) * CellWidth, (StartY + 21 + (i - Sel) * 7) * CellHeight), Colors[6], CellWidth, CellHeight);
+                    GameRendering.Current.Draw("Tick", lBound + 17 + player.Name.Length * 4, StartY + 21 + (i - Sel) * 7, Colors[6]);
                 }
                 if (player.Host)
                 {
@@ -359,8 +359,8 @@ public class RoomSettings
 
     public void Draw()
     {
-        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw("LobbySettingsContainer", new Vector2((rBound - 40) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw("LobbySettingsContainer", StartPos.x, StartPos.y, Color.White);
+        GameRendering.Current.Draw("LobbySettingsContainer", rBound - 40, StartPos.y, Color.White, flipX: true);
 
         int centerX = StartPos.x + (rBound - StartPos.x) / 2;
         Rectfill(centerX - Title.Length * 2 - 1, StartPos.y + 2, centerX + Title.Length * 2 - 1, StartPos.y + 7, 13);
@@ -425,12 +425,12 @@ public class SeedTypeUI((int x, int y) startPos, bool isSurface, int type, bool 
     {
         if (Type > 0 && Type <= 5)
         {
-            GameRendering.Current.Draw($"{(IsSurface ? "Surface" : "Cave")}{Type}Test", new Vector2((StartPos.x + 2) * CellWidth, (StartPos.y + 2) * CellHeight), Color.White, CellWidth, CellHeight);
-            GameRendering.Current.Draw("SeedSelector", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Colors[isHovered && IsAvailable ? 14 : 2], CellWidth, CellHeight);
+            GameRendering.Current.Draw($"{(IsSurface ? "Surface" : "Cave")}{Type}Test", StartPos.x + 2, StartPos.y + 2, Color.White);
+            GameRendering.Current.Draw("SeedSelector", StartPos.x, StartPos.y, Colors[isHovered && IsAvailable ? 14 : 2]);
             if (IsBanned)
-                GameRendering.Current.Draw("SeedCross", new Vector2((StartPos.x + 2) * CellWidth, (StartPos.y + 2) * CellHeight), Colors[isHovered && IsAvailable ? 14 : 2], CellWidth, CellHeight);
+                GameRendering.Current.Draw("SeedCross", StartPos.x + 2, StartPos.y + 2, Colors[isHovered && IsAvailable ? 14 : 2]);
             if (!IsAvailable || (!UnbansOn && IsBanned))
-                GameRendering.Current.Draw("SeedGreyOut", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
+                GameRendering.Current.Draw("SeedGreyOut", StartPos.x, StartPos.y, Color.White);
         }
     }
 }
@@ -456,9 +456,9 @@ public class SeedPickButton((int x, int y) startPos, string label, bool isActive
 
     public void Draw()
     {
-        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Center", new Vector2((StartPos.x + 2) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth * (Label.Length * 4 + 1), CellHeight);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Center", StartPos.x + 2, StartPos.y, Color.White, scaleX: Label.Length * 4 + 1);
         Print(Label, StartPos.x + 3, StartPos.y + 2, IsHovered ? 15 : 22);
-        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2(StartPos.x * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight);
-        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", new Vector2((StartPos.x + (Label.Length * 4) + 3) * CellWidth, StartPos.y * CellHeight), Color.White, CellWidth, CellHeight, flipX: true);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", StartPos.x, StartPos.y, Color.White);
+        GameRendering.Current.Draw($"SeedPick{(IsHovered ? "Highlight" : "Background")}Edge", StartPos.x + (Label.Length * 4) + 3, StartPos.y, Color.White, flipX: true);
     }
 }

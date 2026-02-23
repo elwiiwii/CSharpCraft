@@ -32,7 +32,7 @@ public class BackOptions1 : IScene, IDisposable
 
         drawScene.Draw();
         
-        GameRendering.Current.Draw("OptionsBackground0", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("OptionsBackground0", 0, 0, Color.White);
 
     }
     public string SpriteImage => "";

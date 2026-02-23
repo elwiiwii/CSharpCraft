@@ -20,6 +20,7 @@ namespace CSharpCraft.Pico8
         private readonly ISceneManager _sceneManager;
         private readonly ICartDataLoader _cartDataLoader;
         private readonly IServiceFactory _serviceFactory;
+        private readonly IDisplayManager _displayManager;
 
         // Managers
         private IMapManager? _mapManager;
@@ -35,17 +36,12 @@ namespace CSharpCraft.Pico8
         private readonly IAudioGraphicsSettings _settings;
         private readonly SpriteBatch _batch;
         private readonly Texture2D _pixel;
-        private readonly GraphicsDeviceManager _graphics;
-        private readonly GraphicsDevice _graphicsDevice;
-        private readonly GameWindow _window;
         private readonly Dictionary<string, Texture2D> _textureDictionary;
         private readonly List<Color> _colors;
 
         // Parsed cart data (managed by ICartDataLoader)
         private CartData _cartData = CartData.Empty;
 
-        private (int Width, int Height) _cell = (1, 1);
-        private (int w, int h) _resolution = (128, 128);
         private bool _initialized;
 
         // Public properties
@@ -86,11 +82,8 @@ namespace CSharpCraft.Pico8
         public Dictionary<string, Texture2D> TextureDictionary => _textureDictionary;
         public SpriteBatch Batch => _batch;
         public Texture2D Pixel => _pixel;
-        public GraphicsDevice GraphicsDevice => _graphicsDevice;
-        public GraphicsDeviceManager GraphicsManager => _graphics;
-        public GameWindow Window => _window;
-        public (int Width, int Height) Cell => _cell;
-        public (int w, int h) Resolution => _resolution;
+        public (int Width, int Height) Cell => _displayManager.Cell;
+        public (int w, int h) Resolution => _displayManager.Resolution;
         public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
         public SpriteCache? SpriteCache => _spriteCache;
         public Color[] Sprites => _cartData.Sprites;
@@ -141,11 +134,9 @@ namespace CSharpCraft.Pico8
             _textureDictionary = host.TextureDictionary;
             _pixel = host.Pixel;
             _batch = host.Batch;
-            _graphics = host.Graphics;
-            _graphicsDevice = host.GraphicsDevice;
-            _window = host.Window;
             _settings = host.Settings;
             _inputBindings = host.InputBindings;
+            _displayManager = new DisplayManager(host.Graphics, host.GraphicsDevice, host.Window, host.Settings);
 
             _serviceFactory = serviceFactory ?? new ServiceFactory();
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
@@ -169,7 +160,8 @@ namespace CSharpCraft.Pico8
             ICartDataLoader? cartDataLoader = null,
             IPaletteManager? paletteManager = null,
             IMapManager? mapManager = null,
-            IServiceFactory? serviceFactory = null)
+            IServiceFactory? serviceFactory = null,
+            IDisplayManager? displayManager = null)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             ArgumentNullException.ThrowIfNull(graphicsAPI, nameof(graphicsAPI));
@@ -180,6 +172,7 @@ namespace CSharpCraft.Pico8
             _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
+            _displayManager = displayManager ?? new DisplayManager(null, null, null, null);
 
             // Test defaults
             _currentCart = null!;
@@ -187,9 +180,6 @@ namespace CSharpCraft.Pico8
             _textureDictionary = [];
             _pixel = null!;
             _batch = null!;
-            _graphics = null!;
-            _graphicsDevice = null!;
-            _window = null!;
             _settings = null!;
             _inputBindings = null!;
             _colors = DefaultColors;
@@ -256,8 +246,7 @@ namespace CSharpCraft.Pico8
             if (!_initialized)
                 throw new InvalidOperationException("GameOrchestrator must be initialized before Update().");
 
-            _cell = (_graphicsDevice.Viewport.Width / _currentCart.Resolution.w,
-                     _graphicsDevice.Viewport.Height / _currentCart.Resolution.h);
+            _displayManager.RecalculateCell(_currentCart.Resolution);
 
             if (!(_currentCart.SceneName == "TitleScreen") && _inputManager.Btnp(6))
             {
@@ -322,7 +311,8 @@ namespace CSharpCraft.Pico8
             var curMenuItems = _pauseMenuState!.CurrentMenuItems;
             var menuSelected = _pauseMenuState.SelectedIndex;
 
-            Vector2 size = new(_cell.Width, _cell.Height);
+            var cell = _displayManager.Cell;
+            Vector2 size = new(cell.Width, cell.Height);
 
             int i = (int)Math.Floor(64 - (curMenuItems.Count / 2.0) * 8);
 
@@ -332,7 +322,7 @@ namespace CSharpCraft.Pico8
             _graphicsOrch.Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + curMenuItems.Count * 8 + 2 - 2, 0);
 
             _batch.Draw(_textureDictionary["PauseArrow"],
-                new Vector2((xborder + 4) * _cell.Width, (i - 1 + menuSelected * 8) * _cell.Height),
+                new Vector2((xborder + 4) * cell.Width, (i - 1 + menuSelected * 8) * cell.Height),
                 null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
 
             for (int j = 0; j < curMenuItems.Count; j++)
@@ -345,36 +335,7 @@ namespace CSharpCraft.Pico8
 
         public void UpdateViewport()
         {
-            if (_window == null || _graphics == null || _graphicsDevice == null || _currentCart == null)
-                return;
-
-            double windowWidth = _window.ClientBounds.Width;
-            double windowHeight = _window.ClientBounds.Height;
-
-            if (!_graphics.IsFullScreen)
-            {
-                windowWidth /= _resolution.w;
-                windowHeight /= _resolution.h;
-                windowWidth *= _currentCart.Resolution.w;
-                windowHeight *= _currentCart.Resolution.h;
-
-                _graphics.PreferredBackBufferWidth = (int)windowWidth;
-                _graphics.PreferredBackBufferHeight = (int)windowHeight;
-                _graphics.ApplyChanges();
-            }
-            _resolution = _currentCart.Resolution;
-
-            int scale = Math.Min((int)windowWidth / _currentCart.Resolution.w, (int)windowHeight / _currentCart.Resolution.h);
-            int width = _currentCart.Resolution.w * scale;
-            int height = _currentCart.Resolution.h * scale;
-
-            double centerX = windowWidth / 2.0;
-            double centerY = windowHeight / 2.0;
-
-            int left = (int)Math.Round(centerX - width / 2.0);
-            int top = (int)Math.Round(centerY - height / 2.0);
-
-            _graphicsDevice.Viewport = new Viewport(left, top, width, height);
+            _displayManager.UpdateViewport(_currentCart);
         }
 
         public void SoundDispose()
@@ -389,8 +350,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void SetDisplayConfig((int w, int h) resolution, (int Width, int Height) cell)
         {
-            _resolution = resolution;
-            _cell = cell;
+            _displayManager.SetDisplayConfig(resolution, cell);
         }
 
         /// <summary>
@@ -400,13 +360,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void ToggleFullscreen()
         {
-            if (_settings == null || _graphics == null) return;
-            _settings.IsFullscreen = !_settings.IsFullscreen;
-            _graphics.IsFullScreen = _settings.IsFullscreen;
-            _graphics.PreferredBackBufferWidth = _settings.WindowWidth / 128 * _resolution.w;
-            _graphics.PreferredBackBufferHeight = _settings.WindowHeight / 128 * _resolution.h;
-            _graphics.ApplyChanges();
-            UpdateViewport();
+            _displayManager.ToggleFullscreen(_currentCart);
         }
 
         private void DisposeManagers()

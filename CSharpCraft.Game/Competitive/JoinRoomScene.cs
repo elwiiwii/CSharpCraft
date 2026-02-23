@@ -120,7 +120,7 @@ public class JoinRoomScene() : IScene, IDisposable
         {
             joinAs.Draw();
             roleBtn.Draw();
-            GameRendering.Current.Draw($"{role}Icon", new Vector2(80.25f * CellWidth, (role == Role.Player ? 61 : 60.75f) * CellHeight), Color.White, CellWidth / 2f, CellHeight / 2f);
+            GameRendering.Current.Draw($"{role}Icon", 80.25f, role == Role.Player ? 61 : 60.75f, Color.White, 0.5, 0.5);
             
             if (!string.IsNullOrEmpty(prompt))
             {

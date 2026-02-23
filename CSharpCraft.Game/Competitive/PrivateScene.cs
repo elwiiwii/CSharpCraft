@@ -90,7 +90,7 @@ public class PrivateScene(IScene prevScene) : IScene
 
         if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        GameRendering.Current.Draw("PrivateBackground", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("PrivateBackground", 0, 0, Color.White);
 
         Shared.DrawNameBubble("rooms", 63, 25);
 

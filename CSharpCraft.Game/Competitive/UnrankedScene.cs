@@ -87,7 +87,7 @@ public class UnrankedScene(IScene prevScene) : IScene
 
         if (!isInitialized || isInitializing) { Shared.Printc("loading...", 64, 61, 15); return; }
 
-        GameRendering.Current.Draw("UnrankedBackground", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("UnrankedBackground", 0, 0, Color.White);
 
         Shared.DrawIcons(icons, cursorX, cursorY);
 

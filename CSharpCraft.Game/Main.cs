@@ -244,7 +244,7 @@ class FNAGame : Game
 
         orchestrator.Initialize();
 
-        GameRendering.Current = new FnaTextureRenderer(batch, textureDictionary, Window, graphics);
+        GameRendering.Current = new FnaTextureRenderer(batch, textureDictionary, Window, graphics, () => orchestrator.Cell);
     }
 
 

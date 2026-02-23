@@ -111,7 +111,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
     {
         Cls();
 
-        GameRendering.Current.Draw("OptionsBackground5", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("OptionsBackground5", 0, 0, Color.White);
 
         var optionsFile = OptionsFile.Current;
         int x = 15;
@@ -121,10 +121,10 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
         if (menuSelected > -1)
         {
             Vector2 position5 = new((x - 4) * CellWidth, (menuSelected * step + y) * CellHeight);
-            GameRendering.Current.Draw("Arrow", position5, Colors[6], CellWidth, CellHeight, flipX: true);
+            GameRendering.Current.Draw("Arrow", x - 4, menuSelected * step + y, Colors[6], flipX: true);
         }
 
-        GameRendering.Current.Draw("Checker", new Vector2(x * CellWidth, (y - 5) * CellHeight), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("Checker", x, y - 5, Color.White);
 
         foreach (var setting in Settings)
         {
@@ -132,7 +132,7 @@ public class GeneralOptions(int startIndex = 0) : IScene, IDisposable
             y += step;
         }
 
-        GameRendering.Current.Draw("Checker", new Vector2(x * CellWidth, (y + 1) * CellHeight), Color.White, CellWidth, CellHeight, flipY: true);
+        GameRendering.Current.Draw("Checker", x, y + 1, Color.White, flipY: true);
     }
     public string SpriteImage => "";
     public string SpriteData => @"";

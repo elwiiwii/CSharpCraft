@@ -108,20 +108,20 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
     {
         Cls();
 
-        GameRendering.Current.Draw("OptionsBackground4", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("OptionsBackground4", 0, 0, Color.White);
 
         if (waitingForInput)
         {
-            GameRendering.Current.Draw("WaitingForInput", new Vector2(20 * CellWidth, 51 * CellHeight), Color.White, CellWidth, CellHeight);
+            GameRendering.Current.Draw("WaitingForInput", 20, 51, Color.White);
         }
         else
         {
-            GameRendering.Current.Draw("KeybindsMenu", new Vector2(8 * CellWidth, 46 * CellHeight), Color.White, CellWidth, CellHeight);
+            GameRendering.Current.Draw("KeybindsMenu", 8, 46, Color.White);
 
             if (menuSelected.ver >= 0)
             {
                 Vector2 position5 = new((46 + 36 * menuSelected.hor) * CellWidth, (menuSelected.ver * 6 + 55) * CellHeight);
-                GameRendering.Current.Draw("Arrow", position5, Colors[6], CellWidth, CellHeight, flipX: true);
+                GameRendering.Current.Draw("Arrow", 46 + 36 * menuSelected.hor, menuSelected.ver * 6 + 55, Colors[6], flipX: true);
             }
             else if (menuSelected.ver == -1)
             {
@@ -130,8 +130,8 @@ public class KeyboardOptions(int startIndex = -1) : IScene, IDisposable
 
             Vector2 position3 = new(16 * CellWidth, 31 * CellHeight);
             Vector2 position4 = new(30 * CellWidth, 31 * CellHeight);
-            GameRendering.Current.Draw("SelectorHalf", position3, Colors[7], CellWidth, CellHeight);
-            GameRendering.Current.Draw("SelectorHalf", position4, Colors[7], CellWidth, CellHeight, flipX: true);
+            GameRendering.Current.Draw("SelectorHalf", 16, 31, Colors[7]);
+            GameRendering.Current.Draw("SelectorHalf", 30, 31, Colors[7], flipX: true);
 
             Print("keyboard", 19, 33, 7);
             Print("controller", 19 + 54, 33, 7);

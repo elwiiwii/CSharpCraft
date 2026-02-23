@@ -33,7 +33,7 @@ public class ControlsOptions : IScene, IDisposable
 
         drawScene.Draw();
 
-        GameRendering.Current.Draw("OptionsBackground2", new Vector2(0, 0), Color.White, CellWidth, CellHeight);
+        GameRendering.Current.Draw("OptionsBackground2", 0, 0, Color.White);
 
     }
     public string SpriteImage => "";
