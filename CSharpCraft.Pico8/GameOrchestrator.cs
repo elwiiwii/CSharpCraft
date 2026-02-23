@@ -39,12 +39,7 @@ namespace CSharpCraft.Pico8
         private readonly GraphicsDevice _graphicsDevice;
         private readonly GameWindow _window;
         private readonly Dictionary<string, Texture2D> _textureDictionary;
-        private readonly Dictionary<string, SoundEffect> _soundEffectDictionary;
-        private readonly Dictionary<string, SoundEffect> _musicDictionary;
         private readonly List<Color> _colors;
-        private readonly CosDict _cosDict = new();
-        private readonly SinDict _sinDict = new();
-        private Random _random = new();
 
         // Parsed cart data (managed by ICartDataLoader)
         private CartData _cartData = CartData.Empty;
@@ -130,17 +125,7 @@ namespace CSharpCraft.Pico8
 
         public GameOrchestrator(
             IScene cart,
-            List<IScene> scenes,
-            Dictionary<string, Texture2D> textureDictionary,
-            Dictionary<string, SoundEffect> soundEffectDictionary,
-            Dictionary<string, SoundEffect> musicDictionary,
-            Texture2D pixel,
-            SpriteBatch batch,
-            GraphicsDeviceManager graphics,
-            GraphicsDevice graphicsDevice,
-            GameWindow window,
-            IAudioGraphicsSettings settings,
-            IInputBindingProvider inputBindings,
+            GameHostContext host,
             IInputStateManager inputManager,
             IGraphicsAPI graphicsAPI,
             IAudioAPI audioAPI,
@@ -150,18 +135,17 @@ namespace CSharpCraft.Pico8
             IMapManager? mapManager = null,
             IServiceFactory? serviceFactory = null)
         {
+            ArgumentNullException.ThrowIfNull(host, nameof(host));
             _currentCart = cart ?? throw new ArgumentNullException(nameof(cart));
-            _scenes = scenes ?? throw new ArgumentNullException(nameof(scenes));
-            _textureDictionary = textureDictionary;
-            _soundEffectDictionary = soundEffectDictionary;
-            _musicDictionary = musicDictionary;
-            _pixel = pixel;
-            _batch = batch;
-            _graphics = graphics;
-            _graphicsDevice = graphicsDevice;
-            _window = window;
-            _settings = settings;
-            _inputBindings = inputBindings;
+            _scenes = host.Scenes ?? throw new ArgumentNullException(nameof(host));
+            _textureDictionary = host.TextureDictionary;
+            _pixel = host.Pixel;
+            _batch = host.Batch;
+            _graphics = host.Graphics;
+            _graphicsDevice = host.GraphicsDevice;
+            _window = host.Window;
+            _settings = host.Settings;
+            _inputBindings = host.InputBindings;
 
             _serviceFactory = serviceFactory ?? new ServiceFactory();
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
@@ -201,8 +185,6 @@ namespace CSharpCraft.Pico8
             _currentCart = null!;
             _scenes = [];
             _textureDictionary = [];
-            _soundEffectDictionary = [];
-            _musicDictionary = [];
             _pixel = null!;
             _batch = null!;
             _graphics = null!;
