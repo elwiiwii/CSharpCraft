@@ -51,4 +51,27 @@ public class AudioAPI(
         musicManager?.Mute(0.0f);
         audioChannels?.MuteAll(0.0f);
     }
+
+    public void Pause()
+    {
+        musicManager?.Pause();
+        audioChannels?.PauseAll();
+    }
+
+    public void Resume()
+    {
+        musicManager?.Resume();
+        audioChannels?.ResumeAll();
+    }
+
+    public void StopAll()
+    {
+        musicManager?.StopAll();
+        audioChannels?.StopAll();
+    }
+
+    public void Update()
+    {
+        musicManager?.Update();
+    }
 }

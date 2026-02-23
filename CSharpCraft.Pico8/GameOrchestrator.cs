@@ -23,8 +23,6 @@ namespace CSharpCraft.Pico8
 
         // Managers
         private IMapManager? _mapManager;
-        private AudioChannels? _audioChannels;
-        private MusicManager? _musicManager;
         private PaletteManager? _paletteManager;
         private SpriteCache? _spriteCache;
         private ITrackManager? _trackManager;
@@ -105,7 +103,7 @@ namespace CSharpCraft.Pico8
 
         // IPauseMenuContext implementation
         public ITrackManager? TrackManager => _trackManager;
-        public int? LastMusicCall => _musicManager?.LastMusicCall;
+        public int? LastMusicCall => _audioOrch.LastMusicCall;
 
         /// <summary>
         /// Standard PICO-8 color palette.
@@ -314,13 +312,12 @@ namespace CSharpCraft.Pico8
             }
 
             _inputManager.Update();
-            _musicManager?.Update();
+            _audioOrch.Update();
         }
 
         private void PlaySound(bool play)
         {
-            if (play) { _musicManager?.Resume(); _audioChannels?.ResumeAll(); }
-            else { _musicManager?.Pause(); _audioChannels?.PauseAll(); }
+            _audioOrch.PlaySound(play);
         }
 
         public void Draw()
@@ -400,8 +397,7 @@ namespace CSharpCraft.Pico8
 
         public void SoundDispose()
         {
-            _musicManager?.StopAll();
-            _audioChannels?.StopAll();
+            _audioOrch.SoundDispose();
         }
 
         /// <summary>
@@ -433,8 +429,7 @@ namespace CSharpCraft.Pico8
 
         private void DisposeManagers()
         {
-            _musicManager?.StopAll();
-            _audioChannels?.StopAll();
+            _audioOrch.DisposeAudio();
             _spriteCache?.Dispose();
         }
 
@@ -442,8 +437,6 @@ namespace CSharpCraft.Pico8
         {
             DisposeManagers();
             _paletteManager = null;
-            _musicManager = null;
-            _audioChannels = null;
             _spriteCache = null;
         }
     }

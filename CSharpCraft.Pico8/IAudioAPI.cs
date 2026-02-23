@@ -28,4 +28,24 @@ public interface IAudioAPI
     /// Mute all audio (both music and sound effects).
     /// </summary>
     void Mute();
+
+    /// <summary>
+    /// Pause all audio playback (music and sound effects).
+    /// </summary>
+    void Pause();
+
+    /// <summary>
+    /// Resume all paused audio playback.
+    /// </summary>
+    void Resume();
+
+    /// <summary>
+    /// Stop and clear all audio (music and sound effects).
+    /// </summary>
+    void StopAll();
+
+    /// <summary>
+    /// Advance audio state (music transitions, fades, etc.).
+    /// </summary>
+    void Update();
 }

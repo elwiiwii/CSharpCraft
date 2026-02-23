@@ -39,14 +39,14 @@ public class AudioAPITests
     }
 
     [Fact]
-    public void IAudioAPI_Interface_Has_Three_Methods()
+    public void IAudioAPI_Interface_Has_Seven_Methods()
     {
-        // Verify the interface has exactly 3 public methods (Sfx, Music, Mute)
+        // Verify the interface has exactly 7 public methods (Sfx, Music, Mute, Pause, Resume, StopAll, Update)
         var methods = typeof(IAudioAPI).GetMethods(
             System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance
         );
         
-        methods.Should().HaveCount(3);
+        methods.Should().HaveCount(7);
     }
 
     [Fact]

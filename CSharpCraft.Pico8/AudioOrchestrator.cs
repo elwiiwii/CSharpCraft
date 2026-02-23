@@ -60,5 +60,43 @@ namespace CSharpCraft.Pico8
         }
 
         #endregion
+
+        #region LIFECYCLE MANAGEMENT
+
+        /// <summary>
+        /// Resume or pause all audio based on play state.
+        /// Called each frame by GameOrchestrator based on pause state.
+        /// </summary>
+        public void PlaySound(bool play)
+        {
+            if (play) { _audioAPI.Resume(); }
+            else { _audioAPI.Pause(); }
+        }
+
+        /// <summary>
+        /// Stop all audio playback (music and sound effects).
+        /// </summary>
+        public void SoundDispose()
+        {
+            _audioAPI.StopAll();
+        }
+
+        /// <summary>
+        /// Advance audio state each frame (music transitions, fades).
+        /// </summary>
+        public void Update()
+        {
+            _audioAPI.Update();
+        }
+
+        /// <summary>
+        /// Dispose all audio resources and stop playback.
+        /// </summary>
+        public void DisposeAudio()
+        {
+            _audioAPI.StopAll();
+        }
+
+        #endregion
     }
 }
