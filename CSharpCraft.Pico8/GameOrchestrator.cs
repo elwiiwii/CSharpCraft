@@ -22,7 +22,6 @@ namespace CSharpCraft.Pico8
 
         // Managers
         private IMapManager? _mapManager;
-        private IGameState? _gameState;
         private AudioChannels? _audioChannels;
         private MusicManager? _musicManager;
         private PaletteManager? _paletteManager;
@@ -51,8 +50,7 @@ namespace CSharpCraft.Pico8
         // Parsed cart data (managed by ICartDataLoader)
         private CartData _cartData = CartData.Empty;
 
-        private (int Width, int Height) _cell;
-        private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
+        private (int Width, int Height) _cell = (1, 1);
         private (int w, int h) _resolution = (128, 128);
         private bool _initialized;
 
@@ -62,7 +60,6 @@ namespace CSharpCraft.Pico8
         public AudioOrchestrator Audio => _audioOrch;
         public ISceneManager SceneManager => _sceneManager;
         public IMapManager? MapManager => _mapManager;
-        public IGameState? GameState => _gameState;
         public IScene CurrentCart => _currentCart;
         public bool IsPaused => _pauseMenuState?.IsPaused ?? false;
 
@@ -99,7 +96,6 @@ namespace CSharpCraft.Pico8
         public GraphicsDeviceManager GraphicsManager => _graphics;
         public GameWindow Window => _window;
         public (int Width, int Height) Cell => _cell;
-        public (F32 x, F32 y) CameraOffset { get => _cameraOffset; set => _cameraOffset = value; }
         public (int w, int h) Resolution => _resolution;
         public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
         public SpriteCache? SpriteCache => _spriteCache;
@@ -152,8 +148,7 @@ namespace CSharpCraft.Pico8
             ISceneManager sceneManager,
             ICartDataLoader cartDataLoader,
             IPaletteManager? paletteManager = null,
-            IMapManager? mapManager = null,
-            IGameState? gameState = null)
+            IMapManager? mapManager = null)
         {
             _currentCart = cart ?? throw new ArgumentNullException(nameof(cart));
             _scenes = scenes ?? throw new ArgumentNullException(nameof(scenes));
@@ -174,7 +169,6 @@ namespace CSharpCraft.Pico8
             _audioOrch = new AudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
-            _gameState = gameState;
             _colors = DefaultColors;
             _pauseMenuState = new PauseMenuState(this);
         }
@@ -189,8 +183,7 @@ namespace CSharpCraft.Pico8
             ISceneManager sceneManager,
             ICartDataLoader? cartDataLoader = null,
             IPaletteManager? paletteManager = null,
-            IMapManager? mapManager = null,
-            IGameState? gameState = null)
+            IMapManager? mapManager = null)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             ArgumentNullException.ThrowIfNull(graphicsAPI, nameof(graphicsAPI));
@@ -200,7 +193,6 @@ namespace CSharpCraft.Pico8
             _audioOrch = new AudioOrchestrator(audioAPI);
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
-            _gameState = gameState;
 
             // Test defaults
             _currentCart = null!;
@@ -405,6 +397,17 @@ namespace CSharpCraft.Pico8
         {
             _musicManager?.StopAll();
             _audioChannels?.StopAll();
+        }
+
+        /// <summary>
+        /// Set display configuration (virtual resolution and cell size).
+        /// In production, these are computed from viewport + scene resolution.
+        /// This method provides test access to set them directly.
+        /// </summary>
+        public void SetDisplayConfig((int w, int h) resolution, (int Width, int Height) cell)
+        {
+            _resolution = resolution;
+            _cell = cell;
         }
 
         /// <summary>

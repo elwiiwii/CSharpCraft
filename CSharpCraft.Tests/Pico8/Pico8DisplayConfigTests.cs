@@ -74,7 +74,7 @@ namespace CSharpCraft.Tests.Pico8
         public void CellWidth_ReflectsDisplayConfigChange()
         {
             // Arrange
-            _orchestrator.Graphics.SetDisplayConfig((128, 128), (4, 4));
+            _orchestrator.SetDisplayConfig((128, 128), (4, 4));
 
             // Act & Assert
             CSharpCraft.Pico8.Pico8.CellWidth.Should().Be(4,
@@ -85,7 +85,7 @@ namespace CSharpCraft.Tests.Pico8
         public void CellHeight_ReflectsDisplayConfigChange()
         {
             // Arrange
-            _orchestrator.Graphics.SetDisplayConfig((128, 128), (3, 5));
+            _orchestrator.SetDisplayConfig((128, 128), (3, 5));
 
             // Act & Assert
             CSharpCraft.Pico8.Pico8.CellHeight.Should().Be(5,
@@ -116,7 +116,7 @@ namespace CSharpCraft.Tests.Pico8
         public void ResolutionWidth_ReflectsDisplayConfigChange()
         {
             // Arrange
-            _orchestrator.Graphics.SetDisplayConfig((256, 192), (2, 2));
+            _orchestrator.SetDisplayConfig((256, 192), (2, 2));
 
             // Act & Assert
             CSharpCraft.Pico8.Pico8.ResolutionWidth.Should().Be(256,
@@ -127,7 +127,7 @@ namespace CSharpCraft.Tests.Pico8
         public void ResolutionHeight_ReflectsDisplayConfigChange()
         {
             // Arrange
-            _orchestrator.Graphics.SetDisplayConfig((256, 192), (2, 2));
+            _orchestrator.SetDisplayConfig((256, 192), (2, 2));
 
             // Act & Assert
             CSharpCraft.Pico8.Pico8.ResolutionHeight.Should().Be(192,

@@ -86,18 +86,6 @@ public interface IServiceFactory
     IInputStateManager CreateInputStateManager();
 
     /// <summary>
-    /// Creates a game state container for consolidated state access.
-    /// Phase 9: State Container Pattern
-    /// </summary>
-    IGameState CreateGameState(
-        IScene initialScene,
-        int[] mapData,
-        int[] flagData,
-        Microsoft.Xna.Framework.Color[] sprites,
-        Dictionary<string, List<SongInst>> music,
-        Dictionary<string, Dictionary<int, string>> sfx);
-
-    /// <summary>
     /// Creates an output facade for graphics and audio coordination.
     /// Phase 9: Output Facade Pattern
     /// </summary>

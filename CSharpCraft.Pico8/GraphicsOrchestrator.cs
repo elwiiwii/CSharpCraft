@@ -25,8 +25,6 @@ namespace CSharpCraft.Pico8
     {
         private readonly IGraphicsAPI _graphicsAPI = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
         private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
-        private (int Width, int Height) _cell = (1, 1);
-        private (int w, int h) _resolution = (128, 128);
 
         /// <summary>
         /// Exposes the underlying IGraphicsAPI for testing and advanced access
@@ -42,16 +40,6 @@ namespace CSharpCraft.Pico8
         /// Current camera offset position
         /// </summary>
         public (F32 x, F32 y) CameraOffset => _cameraOffset;
-
-        /// <summary>
-        /// Current cell/tile size (physical pixels per PICO-8 pixel)
-        /// </summary>
-        public (int Width, int Height) Cell => _cell;
-
-        /// <summary>
-        /// Current virtual resolution (PICO-8 canvas size)
-        /// </summary>
-        public (int w, int h) Resolution => _resolution;
 
         #region DRAWING PRIMITIVES
 
@@ -186,16 +174,6 @@ namespace CSharpCraft.Pico8
         #endregion
 
         #region DISPLAY CONFIG
-
-        /// <summary>
-        /// Set display configuration (virtual resolution and cell size).
-        /// Called when a scene is loaded or display settings change.
-        /// </summary>
-        public void SetDisplayConfig((int w, int h) resolution, (int Width, int Height) cell)
-        {
-            _resolution = resolution;
-            _cell = cell;
-        }
 
         /// <summary>
         /// Get palette color by PICO-8 index (delegates to IGraphicsAPI)

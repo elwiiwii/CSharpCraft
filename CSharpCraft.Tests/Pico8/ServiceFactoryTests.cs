@@ -162,30 +162,6 @@ public class ServiceFactoryTests
         a.Should().NotBeSameAs(b);
     }
 
-    // ── CreateGameState ──
-
-    [Fact]
-    public void CreateGameState_ReturnsNonNull()
-    {
-        var scene = new Mock<IScene>().Object;
-        var result = _factory.CreateGameState(
-            scene, new int[1], new int[1], new Color[1],
-            new Dictionary<string, List<SongInst>>(),
-            new Dictionary<string, Dictionary<int, string>>());
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void CreateGameState_ReturnsIGameState()
-    {
-        var scene = new Mock<IScene>().Object;
-        var result = _factory.CreateGameState(
-            scene, new int[1], new int[1], new Color[1],
-            new Dictionary<string, List<SongInst>>(),
-            new Dictionary<string, Dictionary<int, string>>());
-        result.Should().BeAssignableTo<IGameState>();
-    }
-
     // ── CreateOutputFacade ──
 
     [Fact]

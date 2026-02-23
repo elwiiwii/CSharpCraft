@@ -81,7 +81,7 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Current resolution.
         /// </summary>
-        public static (int w, int h) Resolution => (Orch.Graphics.Resolution.w, Orch.Graphics.Resolution.h);
+        public static (int w, int h) Resolution => (Orch.Resolution.w, Orch.Resolution.h);
 
         #region INPUT API
 
@@ -209,12 +209,12 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Get the current cell/tile width (physical pixels per PICO-8 pixel)
         /// </summary>
-        public static int CellWidth => Orch.Graphics.Cell.Width;
+        public static int CellWidth => Orch.Cell.Width;
 
         /// <summary>
         /// Get the current cell/tile height (physical pixels per PICO-8 pixel)
         /// </summary>
-        public static int CellHeight => Orch.Graphics.Cell.Height;
+        public static int CellHeight => Orch.Cell.Height;
 
         /// <summary>
         /// Get the palette colors list
@@ -224,12 +224,12 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Get the current virtual resolution width
         /// </summary>
-        public static int ResolutionWidth => Orch.Graphics.Resolution.w;
+        public static int ResolutionWidth => Orch.Resolution.w;
 
         /// <summary>
         /// Get the current virtual resolution height
         /// </summary>
-        public static int ResolutionHeight => Orch.Graphics.Resolution.h;
+        public static int ResolutionHeight => Orch.Resolution.h;
 
         /// <summary>
         /// Get a palette color by PICO-8 index (0-15)

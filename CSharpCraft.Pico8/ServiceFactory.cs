@@ -107,17 +107,6 @@ public class ServiceFactory : IServiceFactory
         return new InputStateManager();
     }
 
-    public IGameState CreateGameState(
-        IScene initialScene,
-        int[] mapData,
-        int[] flagData,
-        Microsoft.Xna.Framework.Color[] sprites,
-        Dictionary<string, List<SongInst>> music,
-        Dictionary<string, Dictionary<int, string>> sfx)
-    {
-        return new GameStateContainer(initialScene, mapData, flagData, sprites, music, sfx);
-    }
-
     public IOutputFacade CreateOutputFacade(IGraphicsAPI? graphicsAPI, IAudioAPI? audioAPI)
     {
         return new OutputFacade(graphicsAPI, audioAPI);
