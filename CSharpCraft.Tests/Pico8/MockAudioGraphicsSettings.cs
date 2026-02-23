@@ -16,4 +16,5 @@ internal class MockAudioGraphicsSettings : IAudioGraphicsSettings
     public bool IsFullscreen { get; set; } = false;
     public int WindowWidth { get; set; } = 1024;
     public int WindowHeight { get; set; } = 576;
+    public void Save() { /* no-op in tests */ }
 }

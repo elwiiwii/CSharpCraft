@@ -1,14 +1,19 @@
+using Microsoft.Xna.Framework.Input;
+
 namespace CSharpCraft.Pico8;
 
 /// <summary>
 /// Manages input state and button processing.
 /// Encapsulates P8Btns and provides clean input query interface.
 /// Uses the Pico8 static API for button state queries.
+/// Also tracks raw keyboard state for system hotkeys.
 /// </summary>
 public class InputStateManager : IInputStateManager
 {
     private readonly P8Btns _buttons;
     private bool _isPauseMode;
+    private KeyboardState _prevKeyState;
+    private KeyboardState _curKeyState;
 
     public P8Btns Buttons => _buttons;
 
@@ -16,6 +21,8 @@ public class InputStateManager : IInputStateManager
     {
         _buttons = new P8Btns();
         _isPauseMode = false;
+        _prevKeyState = Keyboard.GetState();
+        _curKeyState = _prevKeyState;
     }
 
     public bool Btn(int buttonIndex, int player = 0)
@@ -40,6 +47,8 @@ public class InputStateManager : IInputStateManager
     public void Update()
     {
         _buttons.Update();
+        _prevKeyState = _curKeyState;
+        _curKeyState = Keyboard.GetState();
     }
 
     public void SetPauseMode(bool isPauseMode)
@@ -60,5 +69,15 @@ public class InputStateManager : IInputStateManager
     public void UpdateLockout()
     {
         _buttons.UpLockout(_isPauseMode);
+    }
+
+    public bool IsKeyDown(Keys key)
+    {
+        return _curKeyState.IsKeyDown(key);
+    }
+
+    public bool IsKeyJustPressed(Keys key)
+    {
+        return _curKeyState.IsKeyDown(key) && !_prevKeyState.IsKeyDown(key);
     }
 }

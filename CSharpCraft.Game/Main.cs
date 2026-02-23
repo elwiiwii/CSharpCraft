@@ -6,7 +6,6 @@ using CSharpCraft.Competitive;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using static CSharpCraft.Pico8.Pico8;
 
 namespace CSharpCraft;
@@ -37,9 +36,7 @@ class FNAGame : Game
     private readonly Dictionary<string, SoundEffect> soundEffectDictionary = new();
 
     private Texture2D pixel;
-    private KeyboardState prevState;
 
-    private (string text, double frame) popup;
     private (int w, int h) resolution = (128, 128);
 
 
@@ -68,8 +65,6 @@ class FNAGame : Game
         this.IsFixedTimeStep = true;
         this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
         graphics.SynchronizeWithVerticalRetrace = true;
-
-        prevState = Keyboard.GetState();
     }
 
 
@@ -88,8 +83,6 @@ class FNAGame : Game
         scenes.Add(new ControlsOptions());
         scenes.Add(new CreditsScene());
         scenes.Add(new ExitScene());
-
-        popup = ("", 0);
     }
 
 
@@ -99,63 +92,7 @@ class FNAGame : Game
 
         CSharpCraft.Pico8.Pico8.Update();
 
-        KeyboardState state = Keyboard.GetState();
-
-        int halfDur = 30;
-        if (Math.Abs(popup.frame) < 1.5)
-        {
-            popup.frame = 0;
-        }
-        else if (!(popup.frame == 0) && popup.frame < halfDur)
-        {
-            popup.frame += 1.5;
-        }
-        else if (!(popup.frame == 0) && popup.frame >= halfDur)
-        {
-            popup.frame *= -1;
-        }
-
-        if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q))
-        {
-            ScheduleScene(() => new TitleScreen(false));
-            popup = ("quit (ctrl-q)", 1.5);
-        }
-
-        if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R))
-        {
-            ScheduleScene(() => CurrentCart);
-        }
-
-        if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M))
-        {
-            optionsFile.Gen_Sound_On = !optionsFile.Gen_Sound_On;
-            OptionsFile.JsonWrite(optionsFile);
-            Mute();
-            popup = ($"sound {(optionsFile.Gen_Sound_On ? "on" : "off")} (ctrl-m)", 1.5);
-        }
-
-        if ((state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl)) && state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F))
-        {
-            optionsFile.Gen_Fullscreen = !optionsFile.Gen_Fullscreen;
-            OptionsFile.JsonWrite(optionsFile);
-            GameRendering.Current.ApplyDisplaySettings(
-                optionsFile.Gen_Fullscreen,
-                optionsFile.Gen_Window_Width / 128 * Resolution.w,
-                optionsFile.Gen_Window_Height / 128 * Resolution.h);
-            UpdateViewport();
-            popup = ($"fullscreen {(optionsFile.Gen_Fullscreen ? "on" : "off")} (ctrl-f)", 1.5);
-        }
-
-        prevState = state;
-
         base.Update(gameTime);
-    }
-
-
-    private void Popup(string s, int x1, int y1, int x2, int y2)
-    {
-        Rectfill(x1, y1, x2, y2, 8);
-        Print(s, 1, y1 + 1, 15);
     }
 
 
@@ -164,9 +101,6 @@ class FNAGame : Game
         batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
 
         CSharpCraft.Pico8.Pico8.Draw();
-
-        int clampFrame = Math.Abs((int)Math.Floor(popup.frame)) > 7 ? 7 : Math.Abs((int)Math.Floor(popup.frame));
-        if (Math.Abs(popup.frame) > 0) { Popup(popup.text, 0, Resolution.h - clampFrame, Resolution.w - 1, Resolution.h - clampFrame + 7); }
 
         batch.End();
 
@@ -240,11 +174,18 @@ class FNAGame : Game
             audioAPI,
             sceneManager,
             new CartDataLoader(),
-            paletteManager);
+            titleSceneFactory: () => new TitleScreen(false),
+            paletteManager: paletteManager);
 
         orchestrator.Initialize();
 
         GameRendering.Current = new FnaTextureRenderer(batch, textureDictionary, Window, graphics, () => orchestrator.Cell);
+
+        var popupService = new PopupService(graphicsAPI);
+        Notifications.Current = popupService;
+
+        orchestrator.PauseMenuRenderer = new PauseMenuRenderer(graphicsAPI, GameRendering.Current);
+        orchestrator.PopupService = popupService;
     }
 
 

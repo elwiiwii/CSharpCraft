@@ -48,8 +48,19 @@ public interface IPauseMenuContext
     void SoundDispose();
 
     /// <summary>
-    /// Toggle fullscreen mode, applying graphics changes and viewport update.
-    /// Encapsulates GraphicsDeviceManager manipulation.
+    /// Toggle fullscreen mode, applying graphics changes, viewport update,
+    /// settings persistence, and showing a notification popup.
     /// </summary>
     void ToggleFullscreen();
+
+    /// <summary>
+    /// Toggle sound on/off, persisting the change and showing a notification popup.
+    /// Handles muting audio when disabled.
+    /// </summary>
+    void ToggleSound();
+
+    /// <summary>
+    /// Quit to the title screen (first scene in Scenes list) and show a notification popup.
+    /// </summary>
+    void QuitToTitle();
 }

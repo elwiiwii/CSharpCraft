@@ -91,6 +91,8 @@ public class OptionsFile : IAudioGraphicsSettings, IInputBindingProvider
         set => Gen_Window_Height = value;
     }
 
+    void IAudioGraphicsSettings.Save() => JsonWrite(this);
+
     // === IInputBindingProvider explicit implementation ===
     // Delegates to the serialized properties — engine reads bindings directly.
 

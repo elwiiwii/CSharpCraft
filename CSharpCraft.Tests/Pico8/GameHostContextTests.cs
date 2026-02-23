@@ -72,10 +72,11 @@ namespace CSharpCraft.Tests.Pico8
 
             productionCtor.Should().NotBeNull();
             // GameHostContext + cart + inputManager + graphicsAPI + audioAPI + sceneManager 
-            // + cartDataLoader + optional paletteManager + optional mapManager + optional serviceFactory
-            // = 10 params max (down from 20)
-            productionCtor!.GetParameters().Length.Should().BeLessOrEqualTo(10,
-                "production constructor should have at most 10 params (down from 20)");
+            // + cartDataLoader + optional titleSceneFactory + optional paletteManager
+            // + optional mapManager + optional serviceFactory
+            // = 11 params max (down from 20)
+            productionCtor!.GetParameters().Length.Should().BeLessOrEqualTo(11,
+                "production constructor should have at most 11 params (down from 20)");
         }
 
         #endregion

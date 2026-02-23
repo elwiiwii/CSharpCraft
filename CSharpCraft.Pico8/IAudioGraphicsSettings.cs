@@ -45,4 +45,10 @@ public interface IAudioGraphicsSettings
     /// Window height in pixels
     /// </summary>
     int WindowHeight { get; set; }
+
+    /// <summary>
+    /// Persist settings to storage.
+    /// Game-layer implementations write to a file; test implementations can no-op.
+    /// </summary>
+    void Save();
 }

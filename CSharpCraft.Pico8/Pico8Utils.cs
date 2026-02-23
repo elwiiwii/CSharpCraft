@@ -212,4 +212,27 @@ public static class Pico8Utils
             _ => false,
         };
     }
+
+    /// <summary>
+    /// Standard PICO-8 32-color palette.
+    /// </summary>
+    public static List<Color> DefaultColors =>
+    [
+        HexToColor("000000"), HexToColor("1D2B53"),
+        HexToColor("7E2553"), HexToColor("008751"),
+        HexToColor("AB5236"), HexToColor("5F574F"),
+        HexToColor("C2C3C7"), HexToColor("FFF1E8"),
+        HexToColor("FF004D"), HexToColor("FFA300"),
+        HexToColor("FFEC27"), HexToColor("00E436"),
+        HexToColor("29ADFF"), HexToColor("83769C"),
+        HexToColor("FF77A8"), HexToColor("FFCCAA"),
+        HexToColor("291814"), HexToColor("111D35"),
+        HexToColor("422136"), HexToColor("125359"),
+        HexToColor("742F29"), HexToColor("49333B"),
+        HexToColor("A28879"), HexToColor("F3EF7D"),
+        HexToColor("BE1250"), HexToColor("FF6C24"),
+        HexToColor("A8E72E"), HexToColor("00B543"),
+        HexToColor("065AB5"), HexToColor("754665"),
+        HexToColor("FF6E59"), HexToColor("FF9D81"),
+    ];
 }

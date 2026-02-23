@@ -90,11 +90,7 @@ public class PauseMenuBuilder
         {
             if (Btnp(4) || Btnp(5))
             {
-                var scenes = _context.Scenes;
-                if (scenes.Count > 0 && scenes[0] is IScene titleScreen)
-                {
-                    _context.LoadCart(titleScreen);
-                }
+                _context.QuitToTitle();
             }
         }
 
@@ -128,11 +124,7 @@ public class PauseMenuBuilder
         {
             if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
             {
-                _context.Settings.SoundEnabled = !_context.Settings.SoundEnabled;
-                if (!_context.Settings.SoundEnabled)
-                {
-                    Mute();
-                }
+                _context.ToggleSound();
             }
         }
 

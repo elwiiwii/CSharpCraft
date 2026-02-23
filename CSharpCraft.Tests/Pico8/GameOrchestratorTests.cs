@@ -159,8 +159,8 @@ namespace CSharpCraft.Tests.Pico8
             _orchestrator.Initialize();
             var mockScene = CreateMockScene();
             _orchestrator.LoadScene(mockScene.Object);
-            _orchestrator.CurrentScene.Should().BeSameAs(mockScene.Object,
-                "CurrentScene should reference the loaded scene");
+            _orchestrator.CurrentCart.Should().BeSameAs(mockScene.Object,
+                "CurrentCart should reference the loaded scene");
         }
 
         [Fact]
@@ -189,7 +189,7 @@ namespace CSharpCraft.Tests.Pico8
             var scene2 = CreateMockScene("Scene2");
             _orchestrator.LoadScene(scene1.Object);
             _orchestrator.LoadScene(scene2.Object);
-            _orchestrator.CurrentScene.Should().BeSameAs(scene2.Object,
+            _orchestrator.CurrentCart.Should().BeSameAs(scene2.Object,
                 "LoadScene should replace the previous scene");
         }
 

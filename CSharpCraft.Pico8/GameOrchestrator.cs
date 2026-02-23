@@ -1,8 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using FixMath;
+using Microsoft.Xna.Framework.Input;
 
 namespace CSharpCraft.Pico8
 {
@@ -21,6 +20,8 @@ namespace CSharpCraft.Pico8
         private readonly ICartDataLoader _cartDataLoader;
         private readonly IServiceFactory _serviceFactory;
         private readonly IDisplayManager _displayManager;
+        private IPauseMenuRenderer? _pauseMenuRenderer;
+        private IPopupService? _popupService;
 
         // Managers
         private IMapManager? _mapManager;
@@ -31,11 +32,10 @@ namespace CSharpCraft.Pico8
 
         // State
         private IScene _currentCart;
+        private readonly Func<IScene> _titleSceneFactory;
         private readonly List<IScene> _scenes;
         private readonly IInputBindingProvider _inputBindings;
         private readonly IAudioGraphicsSettings _settings;
-        private readonly SpriteBatch _batch;
-        private readonly Texture2D _pixel;
         private readonly Dictionary<string, Texture2D> _textureDictionary;
         private readonly List<Color> _colors;
 
@@ -54,9 +54,16 @@ namespace CSharpCraft.Pico8
         public bool IsPaused => _pauseMenuState?.IsPaused ?? false;
 
         /// <summary>
-        /// The currently loaded scene (alias for CurrentCart, used in tests).
+        /// Set the pause menu renderer for drawing the pause menu overlay.
+        /// Set after construction since ITextureRenderer may not be available during construction.
         /// </summary>
-        public IScene CurrentScene => _currentCart;
+        public IPauseMenuRenderer? PauseMenuRenderer { set => _pauseMenuRenderer = value; }
+
+        /// <summary>
+        /// Set the popup service for notification display.
+        /// Set after construction since IGraphicsAPI may not be ready during construction.
+        /// </summary>
+        public IPopupService? PopupService { set => _popupService = value; }
 
         /// <summary>
         /// Pause the game.
@@ -79,9 +86,6 @@ namespace CSharpCraft.Pico8
         public IAudioGraphicsSettings Settings => _settings;
         public List<IScene> Scenes => _scenes;
         public List<Color> Colors => _colors;
-        public Dictionary<string, Texture2D> TextureDictionary => _textureDictionary;
-        public SpriteBatch Batch => _batch;
-        public Texture2D Pixel => _pixel;
         public (int Width, int Height) Cell => _displayManager.Cell;
         public (int w, int h) Resolution => _displayManager.Resolution;
         public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
@@ -94,27 +98,9 @@ namespace CSharpCraft.Pico8
         public int? LastMusicCall => _audioOrch.LastMusicCall;
 
         /// <summary>
-        /// Standard PICO-8 color palette.
+        /// Standard PICO-8 color palette (delegates to Pico8Utils.DefaultColors).
         /// </summary>
-        public static List<Color> DefaultColors =>
-        [
-            Pico8Utils.HexToColor("000000"), Pico8Utils.HexToColor("1D2B53"),
-            Pico8Utils.HexToColor("7E2553"), Pico8Utils.HexToColor("008751"),
-            Pico8Utils.HexToColor("AB5236"), Pico8Utils.HexToColor("5F574F"),
-            Pico8Utils.HexToColor("C2C3C7"), Pico8Utils.HexToColor("FFF1E8"),
-            Pico8Utils.HexToColor("FF004D"), Pico8Utils.HexToColor("FFA300"),
-            Pico8Utils.HexToColor("FFEC27"), Pico8Utils.HexToColor("00E436"),
-            Pico8Utils.HexToColor("29ADFF"), Pico8Utils.HexToColor("83769C"),
-            Pico8Utils.HexToColor("FF77A8"), Pico8Utils.HexToColor("FFCCAA"),
-            Pico8Utils.HexToColor("291814"), Pico8Utils.HexToColor("111D35"),
-            Pico8Utils.HexToColor("422136"), Pico8Utils.HexToColor("125359"),
-            Pico8Utils.HexToColor("742F29"), Pico8Utils.HexToColor("49333B"),
-            Pico8Utils.HexToColor("A28879"), Pico8Utils.HexToColor("F3EF7D"),
-            Pico8Utils.HexToColor("BE1250"), Pico8Utils.HexToColor("FF6C24"),
-            Pico8Utils.HexToColor("A8E72E"), Pico8Utils.HexToColor("00B543"),
-            Pico8Utils.HexToColor("065AB5"), Pico8Utils.HexToColor("754665"),
-            Pico8Utils.HexToColor("FF6E59"), Pico8Utils.HexToColor("FF9D81"),
-        ];
+        public static List<Color> DefaultColors => Pico8Utils.DefaultColors;
 
         public GameOrchestrator(
             IScene cart,
@@ -124,16 +110,16 @@ namespace CSharpCraft.Pico8
             IAudioAPI audioAPI,
             ISceneManager sceneManager,
             ICartDataLoader cartDataLoader,
+            Func<IScene>? titleSceneFactory = null,
             IPaletteManager? paletteManager = null,
             IMapManager? mapManager = null,
             IServiceFactory? serviceFactory = null)
         {
             ArgumentNullException.ThrowIfNull(host, nameof(host));
             _currentCart = cart ?? throw new ArgumentNullException(nameof(cart));
+            _titleSceneFactory = titleSceneFactory ?? (() => cart);
             _scenes = host.Scenes ?? throw new ArgumentNullException(nameof(host));
             _textureDictionary = host.TextureDictionary;
-            _pixel = host.Pixel;
-            _batch = host.Batch;
             _settings = host.Settings;
             _inputBindings = host.InputBindings;
             _displayManager = new DisplayManager(host.Graphics, host.GraphicsDevice, host.Window, host.Settings);
@@ -176,10 +162,9 @@ namespace CSharpCraft.Pico8
 
             // Test defaults
             _currentCart = null!;
+            _titleSceneFactory = () => null!;
             _scenes = [];
             _textureDictionary = [];
-            _pixel = null!;
-            _batch = null!;
             _settings = null!;
             _inputBindings = null!;
             _colors = DefaultColors;
@@ -248,6 +233,9 @@ namespace CSharpCraft.Pico8
 
             _displayManager.RecalculateCell(_currentCart.Resolution);
 
+            // System hotkeys (Ctrl+Q/R/M/F)
+            HandleHotkeys();
+
             if (!(_currentCart.SceneName == "TitleScreen") && _inputManager.Btnp(6))
             {
                 _pauseMenuState?.TogglePause();
@@ -273,7 +261,15 @@ namespace CSharpCraft.Pico8
                 _inputManager.UpdateLockout();
 
                 PlaySound(true);
-                _currentCart.Update();
+
+                try
+                {
+                    _currentCart.Update();
+                }
+                catch (Exception ex)
+                {
+                    HandleSceneException(ex, "Update");
+                }
 
                 var scheduledScene = _sceneManager.GetAndClearScheduledScene();
                 if (scheduledScene is not null)
@@ -284,6 +280,42 @@ namespace CSharpCraft.Pico8
 
             _inputManager.Update();
             _audioOrch.Update();
+            _popupService?.Update();
+        }
+
+        private void HandleHotkeys()
+        {
+            bool ctrl = _inputManager.IsKeyDown(Keys.LeftControl) || _inputManager.IsKeyDown(Keys.RightControl);
+            if (!ctrl) return;
+
+            if (_inputManager.IsKeyJustPressed(Keys.Q))
+            {
+                QuitToTitle();
+            }
+            else if (_inputManager.IsKeyJustPressed(Keys.R))
+            {
+                ReloadCart();
+            }
+            else if (_inputManager.IsKeyJustPressed(Keys.M))
+            {
+                ToggleSound();
+            }
+            else if (_inputManager.IsKeyJustPressed(Keys.F))
+            {
+                ToggleFullscreen();
+            }
+        }
+
+        private void HandleSceneException(Exception ex, string phase)
+        {
+            Console.WriteLine($"Scene error in {phase}: {ex.Message}");
+            Console.WriteLine(ex.StackTrace);
+
+            // Only show a new error popup if one isn't already active (debounce)
+            if (_popupService is not null && !_popupService.HasActivePopup)
+            {
+                Notifications.ShowError(ex.Message);
+            }
         }
 
         private void PlaySound(bool play)
@@ -298,39 +330,25 @@ namespace CSharpCraft.Pico8
 
             _graphicsOrch.Pal();
             _graphicsOrch.Palt();
-            _currentCart.Draw();
+
+            try
+            {
+                _currentCart.Draw();
+            }
+            catch (Exception ex)
+            {
+                HandleSceneException(ex, "Draw");
+            }
 
             if (_pauseMenuState?.IsPaused ?? false)
             {
-                DrawPauseMenu();
+                _pauseMenuRenderer?.DrawPauseMenu(
+                    _pauseMenuState.CurrentMenuItems,
+                    _pauseMenuState.SelectedIndex,
+                    _displayManager.Cell);
             }
-        }
 
-        private void DrawPauseMenu()
-        {
-            var curMenuItems = _pauseMenuState!.CurrentMenuItems;
-            var menuSelected = _pauseMenuState.SelectedIndex;
-
-            var cell = _displayManager.Cell;
-            Vector2 size = new(cell.Width, cell.Height);
-
-            int i = (int)Math.Floor(64 - (curMenuItems.Count / 2.0) * 8);
-
-            int xborder = 23;
-            _graphicsOrch.Rectfill(0 + xborder, i - 7, 127 - xborder, i + curMenuItems.Count * 8 + 2, 0);
-            _graphicsOrch.Rectfill(0 + xborder + 1, i - 7 + 1, 127 - xborder - 1, i + curMenuItems.Count * 8 + 2 - 1, 7);
-            _graphicsOrch.Rectfill(0 + xborder + 2, i - 7 + 2, 127 - xborder - 2, i + curMenuItems.Count * 8 + 2 - 2, 0);
-
-            _batch.Draw(_textureDictionary["PauseArrow"],
-                new Vector2((xborder + 4) * cell.Width, (i - 1 + menuSelected * 8) * cell.Height),
-                null, Color.White, 0, Vector2.Zero, size, SpriteEffects.None, 0);
-
-            for (int j = 0; j < curMenuItems.Count; j++)
-            {
-                int indent = menuSelected == j ? 1 : 0;
-                _graphicsOrch.Print(curMenuItems[j].GetName(), xborder + indent + 12, i, 7);
-                i += 8;
-            }
+            _popupService?.Draw(_displayManager.Resolution);
         }
 
         public void UpdateViewport()
@@ -355,12 +373,39 @@ namespace CSharpCraft.Pico8
 
         /// <summary>
         /// Toggle fullscreen mode, applying graphics and viewport changes.
-        /// Encapsulates GraphicsDeviceManager manipulation so PauseMenuBuilder
-        /// doesn't need direct access to GraphicsManager.
+        /// Persists settings and shows a notification popup.
         /// </summary>
         public void ToggleFullscreen()
         {
+            _settings.IsFullscreen = !_settings.IsFullscreen;
+            _settings.Save();
             _displayManager.ToggleFullscreen(_currentCart);
+            Notifications.Show($"fullscreen {(_settings.IsFullscreen ? "on" : "off")} (ctrl-f)");
+        }
+
+        /// <summary>
+        /// Toggle sound on/off. Persists settings, mutes audio if disabled,
+        /// and shows a notification popup.
+        /// </summary>
+        public void ToggleSound()
+        {
+            _settings.SoundEnabled = !_settings.SoundEnabled;
+            _settings.Save();
+            if (!_settings.SoundEnabled)
+            {
+                _audioOrch.Mute();
+            }
+            Notifications.Show($"sound {(_settings.SoundEnabled ? "on" : "off")} (ctrl-m)");
+        }
+
+        /// <summary>
+        /// Quit to the title screen (first scene in Scenes list).
+        /// Shows a notification popup.
+        /// </summary>
+        public void QuitToTitle()
+        {
+            ScheduleScene(_titleSceneFactory);
+            Notifications.Show("quit (ctrl-q)");
         }
 
         private void DisposeManagers()

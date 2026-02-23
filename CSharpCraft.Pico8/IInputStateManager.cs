@@ -1,5 +1,7 @@
 namespace CSharpCraft.Pico8;
 
+using Microsoft.Xna.Framework.Input;
+
 /// <summary>
 /// Manages input state and button processing for the game.
 /// Uses the Pico8 static API for button state queries.
@@ -45,4 +47,14 @@ public interface IInputStateManager
     /// Updates button lockout state based on pause mode.
     /// </summary>
     void UpdateLockout();
+
+    /// <summary>
+    /// Checks if a raw keyboard key is currently held down.
+    /// </summary>
+    bool IsKeyDown(Keys key);
+
+    /// <summary>
+    /// Checks if a raw keyboard key was just pressed this frame (rising edge).
+    /// </summary>
+    bool IsKeyJustPressed(Keys key);
 }
