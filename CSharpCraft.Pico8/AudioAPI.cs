@@ -6,34 +6,15 @@ namespace CSharpCraft.Pico8;
 /// Implementation of Pico-8 audio API using AudioChannels and MusicManager.
 /// Consolidates sound effect and music playback into a single cohesive interface.
 /// </summary>
-public class AudioAPI : IAudioAPI
+public class AudioAPI(
+    AudioChannels? audioChannels,
+    MusicManager? musicManager,
+    Dictionary<string, SoundEffect>? soundEffectDictionary,
+    Func<Dictionary<string, Dictionary<int, string>>>? getSfxDict,
+    Func<int> getCurrentSfxPack,
+    Func<bool> isSoundEnabled,
+    Func<int> getSfxVolume) : IAudioAPI
 {
-    private readonly AudioChannels? audioChannels;
-    private readonly MusicManager? musicManager;
-    private readonly Dictionary<string, SoundEffect>? soundEffectDictionary;
-    private readonly Func<Dictionary<string, Dictionary<int, string>>>? getSfxDict;
-    private readonly Func<int> getCurrentSfxPack;
-    private readonly Func<bool> isSoundEnabled;
-    private readonly Func<int> getSfxVolume;
-
-    public AudioAPI(
-        AudioChannels? audioChannels,
-        MusicManager? musicManager,
-        Dictionary<string, SoundEffect>? soundEffectDictionary,
-        Func<Dictionary<string, Dictionary<int, string>>>? getSfxDict,
-        Func<int> getCurrentSfxPack,
-        Func<bool> isSoundEnabled,
-        Func<int> getSfxVolume)
-    {
-        this.audioChannels = audioChannels;
-        this.musicManager = musicManager;
-        this.soundEffectDictionary = soundEffectDictionary;
-        this.getSfxDict = getSfxDict;
-        this.getCurrentSfxPack = getCurrentSfxPack;
-        this.isSoundEnabled = isSoundEnabled;
-        this.getSfxVolume = getSfxVolume;
-    }
-
     public void Sfx(double n, double channel = -1.0, double offset = 0.0, double length = 31.0)
     {
         if (audioChannels is null || soundEffectDictionary is null || getSfxDict is null)
@@ -51,7 +32,7 @@ public class AudioAPI : IAudioAPI
         // Get the sound effect key from the sfx dictionary
         string sfxKey = sfxDict.ElementAt(currentSfxPack).Value[nFlr];
         
-        if (!soundEffectDictionary.ContainsKey(sfxKey))
+        if (!soundEffectDictionary.TryGetValue(sfxKey, out var _))
             return;
 
         SoundEffectInstance instance = soundEffectDictionary[sfxKey].CreateInstance();
@@ -62,10 +43,7 @@ public class AudioAPI : IAudioAPI
 
     public void Music(int n, double fadems = 0)
     {
-        if (musicManager != null)
-        {
-            musicManager.PlayMusic(n, fadems);
-        }
+        musicManager?.PlayMusic(n, fadems);
     }
 
     public void Mute()

@@ -8,21 +8,27 @@ namespace CSharpCraft.Pico8;
 /// Provides single source of truth for game data access.
 /// Phase 9: State Container Pattern
 /// </summary>
-public class GameStateContainer : IGameState
+public class GameStateContainer(
+    IScene initialScene,
+    int[] mapData,
+    int[] flagData,
+    Color[] sprites,
+    Dictionary<string, List<SongInst>> music,
+    Dictionary<string, Dictionary<int, string>> sfx) : IGameState
 {
-    private IScene _currentScene;
+    private IScene _currentScene = initialScene ?? throw new ArgumentNullException(nameof(initialScene));
     
     // View state
-    private (F32 x, F32 y) _cameraOffset;
-    private (int w, int h) _resolution;
-    private (int Width, int Height) _cell;
+    private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
+    private (int w, int h) _resolution = (128, 128);
+    private (int Width, int Height) _cell = (1, 1);
 
     // Game data
-    private readonly int[] _mapData;
-    private readonly int[] _flagData;
-    private readonly Color[] _sprites;
-    private readonly Dictionary<string, List<SongInst>> _music;
-    private readonly Dictionary<string, Dictionary<int, string>> _sfx;
+    private readonly int[] _mapData = mapData ?? throw new ArgumentNullException(nameof(mapData));
+    private readonly int[] _flagData = flagData ?? throw new ArgumentNullException(nameof(flagData));
+    private readonly Color[] _sprites = sprites ?? throw new ArgumentNullException(nameof(sprites));
+    private readonly Dictionary<string, List<SongInst>> _music = music ?? throw new ArgumentNullException(nameof(music));
+    private readonly Dictionary<string, Dictionary<int, string>> _sfx = sfx ?? throw new ArgumentNullException(nameof(sfx));
 
     /// <summary>
     /// Gets or sets the camera offset for viewport positioning.
@@ -76,26 +82,6 @@ public class GameStateContainer : IGameState
     /// Gets the currently active scene.
     /// </summary>
     public IScene CurrentScene => _currentScene;
-
-    public GameStateContainer(
-        IScene initialScene,
-        int[] mapData,
-        int[] flagData,
-        Color[] sprites,
-        Dictionary<string, List<SongInst>> music,
-        Dictionary<string, Dictionary<int, string>> sfx)
-    {
-        _currentScene = initialScene ?? throw new ArgumentNullException(nameof(initialScene));
-        _mapData = mapData ?? throw new ArgumentNullException(nameof(mapData));
-        _flagData = flagData ?? throw new ArgumentNullException(nameof(flagData));
-        _sprites = sprites ?? throw new ArgumentNullException(nameof(sprites));
-        _music = music ?? throw new ArgumentNullException(nameof(music));
-        _sfx = sfx ?? throw new ArgumentNullException(nameof(sfx));
-
-        _cameraOffset = (F32.Zero, F32.Zero);
-        _resolution = (128, 128);
-        _cell = (1, 1);
-    }
 
     /// <summary>
     /// Updates the current scene reference.

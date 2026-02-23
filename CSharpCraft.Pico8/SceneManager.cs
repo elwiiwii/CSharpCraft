@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace CSharpCraft.Pico8;
 
 /// <summary>
@@ -33,7 +35,7 @@ public class SceneManager : ISceneManager
         _currentScene = scene;
     }
 
-    public List<IScene> GetRegisteredScenes() => [.. _registeredScenes];
+    public List<IScene> GetRegisteredScenes() => _registeredScenes.ToList();
 
     public Func<IScene>? GetAndClearScheduledScene()
     {

@@ -4,22 +4,11 @@ namespace CSharpCraft.Pico8;
 /// Manages track selection for music and sound effects.
 /// Encapsulates increment/decrement logic and current track accessors.
 /// </summary>
-public class TrackManager : ITrackManager
+public class TrackManager(
+    Func<Dictionary<string, List<SongInst>>?> getMusicDict,
+    Func<Dictionary<string, Dictionary<int, string>>?> getSfxDict,
+    IAudioGraphicsSettings settings) : ITrackManager
 {
-    private readonly Func<Dictionary<string, List<SongInst>>?> getMusicDict;
-    private readonly Func<Dictionary<string, Dictionary<int, string>>?> getSfxDict;
-    private readonly IAudioGraphicsSettings settings;
-
-    public TrackManager(
-        Func<Dictionary<string, List<SongInst>>?> getMusicDict,
-        Func<Dictionary<string, Dictionary<int, string>>?> getSfxDict,
-        IAudioGraphicsSettings settings)
-    {
-        this.getMusicDict = getMusicDict;
-        this.getSfxDict = getSfxDict;
-        this.settings = settings;
-    }
-
     public int MusicCount => getMusicDict()?.Count ?? 0;
     public int SfxCount => getSfxDict()?.Count ?? 0;
 

@@ -1,4 +1,4 @@
-﻿namespace CSharpCraft.Pico8;
+﻿/**namespace CSharpCraft.Pico8;
 
 public static class Font
 {
@@ -967,3 +967,4 @@ public static class Font
         //{ 'flower', flower }
     };
 }
+**/

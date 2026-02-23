@@ -6,29 +6,16 @@ namespace CSharpCraft.Pico8;
 /// Manages music state machine, track progression, and fade transitions.
 /// Extracts 5 scattered state fields and 40+ lines from Update() into a cohesive system.
 /// </summary>
-public class MusicManager
+public class MusicManager(
+    Func<Dictionary<string, List<SongInst>>> getMusicDict,
+    Func<Dictionary<string, SoundEffect>> getMusicSoundDict,
+    Func<IAudioGraphicsSettings> getSettings,
+    Action soundDispose)
 {
     private List<List<MusicInst>> _channelMusic = [];
     private int _curTrack = 0;
     private (List<SoundEffectInstance> fromSong, List<SoundEffectInstance> toSong) _musicTransition = new();
     private int? _lastMusicCall;
-
-    private readonly Func<Dictionary<string, List<SongInst>>> _getMusicDict;
-    private readonly Func<Dictionary<string, SoundEffect>> _getMusicSoundDict;
-    private readonly Func<IAudioGraphicsSettings> _getSettings;
-    private readonly Action _soundDispose;
-
-    public MusicManager(
-        Func<Dictionary<string, List<SongInst>>> getMusicDict,
-        Func<Dictionary<string, SoundEffect>> getMusicSoundDict,
-        Func<IAudioGraphicsSettings> getSettings,
-        Action soundDispose)
-    {
-        _getMusicDict = getMusicDict;
-        _getMusicSoundDict = getMusicSoundDict;
-        _getSettings = getSettings;
-        _soundDispose = soundDispose;
-    }
 
     public List<List<MusicInst>> ChannelMusic => _channelMusic;
     public int CurrentTrack => _curTrack;
@@ -43,9 +30,9 @@ public class MusicManager
     {
         _lastMusicCall = n;
 
-        var musicDict = _getMusicDict();
-        var musicSoundDict = _getMusicSoundDict();
-        var settings = _getSettings();
+        var musicDict = getMusicDict();
+        var musicSoundDict = getMusicSoundDict();
+        var settings = getSettings();
 
         SongInst curSong = musicDict.ElementAt(settings.CurrentSoundtrack).Value[n];
 
@@ -75,7 +62,7 @@ public class MusicManager
         else
         {
             // Switch to different group - full reset
-            _soundDispose();
+            soundDispose();
 
             foreach (SongInst song in musicDict.ElementAt(settings.CurrentSoundtrack).Value)
             {
@@ -106,7 +93,7 @@ public class MusicManager
     /// </summary>
     public void Update()
     {
-        var settings = _getSettings();
+        var settings = getSettings();
         float fadeStep = settings.MusicVolume / 1600.0f;
 
         foreach (List<MusicInst> song in _channelMusic)
@@ -125,7 +112,7 @@ public class MusicManager
             if (_musicTransition.fromSong is null || _musicTransition.toSong is null)
             {
                 _musicTransition = new();
-                var songName = _getMusicDict().ElementAt(settings.CurrentSoundtrack).Value[_lastMusicCall ?? 0].Tracks[_curTrack].name;
+                var songName = getMusicDict().ElementAt(settings.CurrentSoundtrack).Value[_lastMusicCall ?? 0].Tracks[_curTrack].name;
                 if (settings.SoundEnabled && _lastMusicCall is not null && song[_curTrack].Name == songName)
                 {
                     song[_curTrack].Track.Volume = settings.MusicVolume / 100.0f;

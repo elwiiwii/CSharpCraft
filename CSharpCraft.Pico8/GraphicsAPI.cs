@@ -8,31 +8,14 @@ namespace CSharpCraft.Pico8;
 /// Implementation of Pico-8 graphics primitives using XNA/FNA.
 /// This class encapsulates all drawing operations and depends on graphics context.
 /// </summary>
-public class GraphicsAPI : IGraphicsAPI
+public class GraphicsAPI(
+    SpriteBatch batch,
+    Texture2D pixel,
+    List<Color> colors,
+    F32 cameraOffsetX,
+    F32 cameraOffsetY,
+    (int Width, int Height) cell) : IGraphicsAPI
 {
-    private readonly SpriteBatch batch;
-    private readonly Texture2D pixel;
-    private readonly List<Color> colors;
-    private readonly F32 cameraOffsetX;
-    private readonly F32 cameraOffsetY;
-    private readonly (int Width, int Height) cell;
-
-    public GraphicsAPI(
-        SpriteBatch batch,
-        Texture2D pixel,
-        List<Color> colors,
-        F32 cameraOffsetX,
-        F32 cameraOffsetY,
-        (int Width, int Height) cell)
-    {
-        this.batch = batch;
-        this.pixel = pixel;
-        this.colors = colors;
-        this.cameraOffsetX = cameraOffsetX;
-        this.cameraOffsetY = cameraOffsetY;
-        this.cell = cell;
-    }
-
     public void Pset(F32 x, F32 y, double c)
     {
         int xFlr = F32.FloorToInt(x);

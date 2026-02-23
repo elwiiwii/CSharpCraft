@@ -15,9 +15,12 @@ namespace CSharpCraft.Pico8
     /// Note: GameOrchestrator composes this for audio operations.
     /// Pico8 static class delegates through GameOrchestrator.Audio to here.
     /// </summary>
-    public class AudioOrchestrator
+    /// <remarks>
+    /// Initialize AudioOrchestrator with required IAudioAPI
+    /// </remarks>
+    public class AudioOrchestrator(IAudioAPI audioAPI)
     {
-        private readonly IAudioAPI _audioAPI;
+        private readonly IAudioAPI _audioAPI = audioAPI ?? throw new ArgumentNullException(nameof(audioAPI));
 
         /// <summary>
         /// Exposes the underlying IAudioAPI for testing and advanced access
@@ -27,16 +30,7 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Last music track ID that was played, or null if no music has been played
         /// </summary>
-        public int? LastMusicCall { get; private set; }
-
-        /// <summary>
-        /// Initialize AudioOrchestrator with required IAudioAPI
-        /// </summary>
-        public AudioOrchestrator(IAudioAPI audioAPI)
-        {
-            _audioAPI = audioAPI ?? throw new ArgumentNullException(nameof(audioAPI));
-            LastMusicCall = null;
-        }
+        public int? LastMusicCall { get; private set; } = null;
 
         #region AUDIO OPERATIONS
 

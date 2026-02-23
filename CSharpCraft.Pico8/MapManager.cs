@@ -4,22 +4,11 @@ namespace CSharpCraft.Pico8;
 /// Manages Pico-8 map and flag data.
 /// Encapsulates map tile access and flag checking.
 /// </summary>
-public class MapManager : IMapManager
+public class MapManager(
+    int[] mapData,
+    int[] flagData,
+    (int x, int y) mapDimensions) : IMapManager
 {
-    private readonly int[] mapData;
-    private readonly int[] flagData;
-    private readonly (int x, int y) mapDimensions;
-
-    public MapManager(
-        int[] mapData,
-        int[] flagData,
-        (int x, int y) mapDimensions)
-    {
-        this.mapData = mapData;
-        this.flagData = flagData;
-        this.mapDimensions = mapDimensions;
-    }
-
     public int Mget(double celx, double cely)
     {
         int xFlr = Math.Abs((int)Math.Floor(celx));

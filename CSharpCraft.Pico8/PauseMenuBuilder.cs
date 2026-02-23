@@ -1,3 +1,5 @@
+using static CSharpCraft.Pico8.Pico8;
+
 namespace CSharpCraft.Pico8;
 
 /// <summary>
@@ -47,7 +49,7 @@ public class PauseMenuBuilder
     {
         void ContinueAction()
         {
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(4) || Btnp(5))
             {
                 // Unpause will be handled by pause menu toggle
             }
@@ -60,7 +62,7 @@ public class PauseMenuBuilder
     {
         void OptionsAction()
         {
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(4) || Btnp(5))
             {
                 ShowOptionsSubmenu();
             }
@@ -73,7 +75,7 @@ public class PauseMenuBuilder
     {
         void ResetAction()
         {
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(4) || Btnp(5))
             {
                 _orchestrator.ReloadCart();
             }
@@ -86,7 +88,7 @@ public class PauseMenuBuilder
     {
         void ExitAction()
         {
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(4) || Btnp(5))
             {
                 var scenes = _orchestrator.Scenes;
                 if (scenes.Count > 0 && scenes[0] is IScene titleScreen)
@@ -124,12 +126,12 @@ public class PauseMenuBuilder
     {
         void SoundAction()
         {
-            if (Pico8.Btnp(0) || Pico8.Btnp(1) || Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
             {
                 _orchestrator.Settings.SoundEnabled = !_orchestrator.Settings.SoundEnabled;
                 if (!_orchestrator.Settings.SoundEnabled)
                 {
-                    Pico8.Mute();
+                    Mute();
                 }
             }
         }
@@ -141,9 +143,9 @@ public class PauseMenuBuilder
     {
         void MusicVolAction()
         {
-            if (Pico8.Btnp(0))
+            if (Btnp(0))
                 _orchestrator.Settings.MusicVolume = Math.Max(_orchestrator.Settings.MusicVolume - 10, 0);
-            if (Pico8.Btnp(1))
+            if (Btnp(1))
                 _orchestrator.Settings.MusicVolume = Math.Min(_orchestrator.Settings.MusicVolume + 10, 100);
         }
 
@@ -154,9 +156,9 @@ public class PauseMenuBuilder
     {
         void SfxVolAction()
         {
-            if (Pico8.Btnp(0))
+            if (Btnp(0))
                 _orchestrator.Settings.SfxVolume = Math.Max(_orchestrator.Settings.SfxVolume - 10, 0);
-            if (Pico8.Btnp(1))
+            if (Btnp(1))
                 _orchestrator.Settings.SfxVolume = Math.Min(_orchestrator.Settings.SfxVolume + 10, 100);
         }
 
@@ -167,7 +169,7 @@ public class PauseMenuBuilder
     {
         void FullscreenAction()
         {
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(4) || Btnp(5))
             {
                 _orchestrator.Settings.IsFullscreen = !_orchestrator.Settings.IsFullscreen;
                 _orchestrator.GraphicsManager.IsFullScreen = _orchestrator.Settings.IsFullscreen;
@@ -185,7 +187,7 @@ public class PauseMenuBuilder
     {
         void BackAction()
         {
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Btnp(4) || Btnp(5))
             {
                 _curMenuItems.Clear();
                 foreach (var item in previousMenu)
@@ -205,9 +207,9 @@ public class PauseMenuBuilder
 
         void SfxPackAction()
         {
-            if (Pico8.Btnp(0))
+            if (Btnp(0))
                 _orchestrator.DecrementSfxPack();
-            if (Pico8.Btnp(1))
+            if (Btnp(1))
                 _orchestrator.IncrementSfxPack();
         }
 
@@ -221,17 +223,17 @@ public class PauseMenuBuilder
 
         void SoundtrackAction()
         {
-            if (Pico8.Btnp(0))
+            if (Btnp(0))
                 _orchestrator.DecrementSoundtrack();
-            if (Pico8.Btnp(1))
+            if (Btnp(1))
                 _orchestrator.IncrementSoundtrack();
 
-            if (Pico8.Btnp(0) || Pico8.Btnp(1))
+            if (Btnp(0) || Btnp(1))
             {
                 _orchestrator.SoundDispose();
                 if (_orchestrator.LastMusicCall is not null)
                 {
-                    Pico8.Music((int)_orchestrator.LastMusicCall);
+                    Music((int)_orchestrator.LastMusicCall);
                 }
             }
         }

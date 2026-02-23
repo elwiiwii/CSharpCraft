@@ -18,13 +18,15 @@ namespace CSharpCraft.Pico8
     /// Note: GameOrchestrator composes this for graphics operations.
     /// Pico8 static class delegates through GameOrchestrator.Graphics to here.
     /// </summary>
-    public class GraphicsOrchestrator
+    /// <remarks>
+    /// Initialize GraphicsOrchestrator with required IGraphicsAPI and optional palette
+    /// </remarks>
+    public class GraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null)
     {
-        private readonly IGraphicsAPI _graphicsAPI;
-        private readonly IPaletteManager? _paletteManager;
-        private (F32 x, F32 y) _cameraOffset;
-        private (int Width, int Height) _cell;
-        private (int w, int h) _resolution;
+        private readonly IGraphicsAPI _graphicsAPI = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
+        private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
+        private (int Width, int Height) _cell = (1, 1);
+        private (int w, int h) _resolution = (128, 128);
 
         /// <summary>
         /// Exposes the underlying IGraphicsAPI for testing and advanced access
@@ -34,7 +36,7 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Exposes the palette manager for testing and advanced access
         /// </summary>
-        public IPaletteManager? PaletteManager => _paletteManager;
+        public IPaletteManager? PaletteManager => paletteManager;
 
         /// <summary>
         /// Current camera offset position
@@ -50,18 +52,6 @@ namespace CSharpCraft.Pico8
         /// Current virtual resolution (PICO-8 canvas size)
         /// </summary>
         public (int w, int h) Resolution => _resolution;
-
-        /// <summary>
-        /// Initialize GraphicsOrchestrator with required IGraphicsAPI and optional palette
-        /// </summary>
-        public GraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null)
-        {
-            _graphicsAPI = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
-            _paletteManager = paletteManager;
-            _cameraOffset = (F32.Zero, F32.Zero);
-            _cell = (1, 1);
-            _resolution = (128, 128);
-        }
 
         #region DRAWING PRIMITIVES
 
@@ -138,7 +128,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Pal()
         {
-            _paletteManager?.ResetPalette();
+            paletteManager?.ResetPalette();
         }
 
         /// <summary>
@@ -146,7 +136,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Pal(int c0, int c1)
         {
-            _paletteManager?.SetPalette(c0, c1);
+            paletteManager?.SetPalette(c0, c1);
         }
 
         /// <summary>
@@ -154,7 +144,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Pal(Color c0, Color c1)
         {
-            _paletteManager?.SetPalette(c0, c1);
+            paletteManager?.SetPalette(c0, c1);
         }
 
         /// <summary>
@@ -162,7 +152,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Palt()
         {
-            _paletteManager?.ResetTransparency();
+            paletteManager?.ResetTransparency();
         }
 
         /// <summary>
@@ -170,7 +160,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Palt(int col, bool transparent)
         {
-            _paletteManager?.SetTransparency(col, transparent);
+            paletteManager?.SetTransparency(col, transparent);
         }
 
         #endregion

@@ -3,26 +3,17 @@ namespace CSharpCraft.Pico8;
 /// <summary>
 /// Encapsulates pause menu state and behavior.
 /// </summary>
-public class PauseMenuState
+public class PauseMenuState(GameOrchestrator orchestrator)
 {
-    private bool _isPaused;
-    private int _menuSelected;
-    private readonly List<MenuItem> _mainMenuItems;
-    private readonly List<MenuItem> _currentMenuItems;
-    private readonly GameOrchestrator _orchestrator;
+    private bool _isPaused = false;
+    private int _menuSelected = 0;
+    private readonly List<MenuItem> _mainMenuItems = [];
+    private readonly List<MenuItem> _currentMenuItems = [];
+    private readonly GameOrchestrator _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
 
     public bool IsPaused => _isPaused;
     public int SelectedIndex => _menuSelected;
     public List<MenuItem> CurrentMenuItems => _currentMenuItems;
-
-    public PauseMenuState(GameOrchestrator orchestrator)
-    {
-        _orchestrator = orchestrator ?? throw new ArgumentNullException(nameof(orchestrator));
-        _isPaused = false;
-        _menuSelected = 0;
-        _mainMenuItems = [];
-        _currentMenuItems = [];
-    }
 
     public void InitializeMenuStructure()
     {

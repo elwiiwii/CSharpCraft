@@ -10,24 +10,14 @@ namespace CSharpCraft.Pico8;
 /// 
 /// Scenes access this via GameRendering.Current — never directly.
 /// </summary>
-public class FnaTextureRenderer : ITextureRenderer
+public class FnaTextureRenderer(
+    SpriteBatch batch,
+    Dictionary<string, Texture2D> textures,
+    GameWindow? window,
+    GraphicsDeviceManager? graphics) : ITextureRenderer
 {
-    private readonly SpriteBatch _batch;
-    private readonly Dictionary<string, Texture2D> _textures;
-    private readonly GameWindow? _window;
-    private readonly GraphicsDeviceManager? _graphics;
-
-    public FnaTextureRenderer(
-        SpriteBatch batch,
-        Dictionary<string, Texture2D> textures,
-        GameWindow? window,
-        GraphicsDeviceManager? graphics)
-    {
-        _batch = batch ?? throw new ArgumentNullException(nameof(batch));
-        _textures = textures ?? throw new ArgumentNullException(nameof(textures));
-        _window = window;
-        _graphics = graphics;
-    }
+    private readonly SpriteBatch _batch = batch ?? throw new ArgumentNullException(nameof(batch));
+    private readonly Dictionary<string, Texture2D> _textures = textures ?? throw new ArgumentNullException(nameof(textures));
 
     /// <inheritdoc />
     public void Draw(string textureName, Vector2 position, Color color,
@@ -62,25 +52,25 @@ public class FnaTextureRenderer : ITextureRenderer
     /// <inheritdoc />
     public (float X, float Y) GetCursorPosition(int mouseX, int mouseY)
     {
-        if (_window == null)
+        if (window == null)
             return (mouseX, mouseY);
 
         var viewport = _batch.GraphicsDevice.Viewport;
         return CalculateCursorPosition(
             mouseX, mouseY,
-            _window.ClientBounds.Width, _window.ClientBounds.Height,
+            window.ClientBounds.Width, window.ClientBounds.Height,
             viewport.Width, viewport.Height);
     }
 
     /// <inheritdoc />
     public void ApplyDisplaySettings(bool fullscreen, int width, int height)
     {
-        if (_graphics == null) return;
+        if (graphics == null) return;
 
-        _graphics.IsFullScreen = fullscreen;
-        _graphics.PreferredBackBufferWidth = width;
-        _graphics.PreferredBackBufferHeight = height;
-        _graphics.ApplyChanges();
+        graphics.IsFullScreen = fullscreen;
+        graphics.PreferredBackBufferWidth = width;
+        graphics.PreferredBackBufferHeight = height;
+        graphics.ApplyChanges();
     }
 
     /// <inheritdoc />
