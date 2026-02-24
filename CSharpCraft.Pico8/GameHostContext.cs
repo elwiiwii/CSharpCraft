@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace CSharpCraft.Pico8;
@@ -18,6 +19,8 @@ public record GameHostContext(
     GraphicsDevice GraphicsDevice,
     GameWindow Window,
     Dictionary<string, Texture2D> TextureDictionary,
+    Dictionary<string, SoundEffect> MusicDictionary,
+    Dictionary<string, SoundEffect> SoundEffectDictionary,
     IAudioGraphicsSettings Settings,
     IInputBindingProvider InputBindings,
     List<IScene> Scenes);

@@ -147,9 +147,33 @@ class FNAGame : Game
         // Create sub-systems
         var inputManager = new InputStateManager();
         var graphicsAPI = new GraphicsAPI(batch, pixel, Pico8Utils.DefaultColors, FixMath.F32.Zero, FixMath.F32.Zero, (1, 1));
-        var audioAPI = new AudioAPI(null, null, soundEffectDictionary, () => new(), () => 0, () => optionsFile.Gen_Sound_On, () => optionsFile.Gen_Sfx_Vol);
         var sceneManager = new SceneManager();
         var paletteManager = new PaletteManager(Pico8Utils.DefaultColors);
+
+        // Audio wiring: AudioChannels → MusicManager → AudioAPI
+        // MusicManager's soundDispose callback needs AudioAPI.StopAll(), but AudioAPI
+        // needs MusicManager. Resolve via late-bound captured reference.
+        var audioChannels = new CSharpCraft.Pico8.AudioChannels();
+        AudioAPI? audioAPIRef = null;
+        IAudioGraphicsSettings settings = optionsFile;
+
+        var musicManager = new MusicManager(
+            () => CSharpCraft.Pico8.Pico8.CurrentCart.Music,
+            () => musicDictionary,
+            () => settings,
+            () => audioAPIRef?.StopAll()
+        );
+
+        audioAPIRef = new AudioAPI(
+            audioChannels,
+            musicManager,
+            soundEffectDictionary,
+            () => CSharpCraft.Pico8.Pico8.CurrentCart.Sfx,
+            () => settings.CurrentSfxPack,
+            () => optionsFile.Gen_Sound_On,
+            () => optionsFile.Gen_Sfx_Vol
+        );
+        IAudioAPI audioAPI = audioAPIRef;
 
         orchestrator = new GameOrchestrator(
             inputManager,
@@ -164,6 +188,8 @@ class FNAGame : Game
                 GraphicsDevice,
                 Window,
                 textureDictionary,
+                musicDictionary,
+                soundEffectDictionary,
                 optionsFile,
                 optionsFile,
                 scenes),

@@ -42,6 +42,8 @@ namespace CSharpCraft.Tests.Pico8
             type.GetProperty("GraphicsDevice").Should().NotBeNull();
             type.GetProperty("Window").Should().NotBeNull();
             type.GetProperty("TextureDictionary").Should().NotBeNull();
+            type.GetProperty("MusicDictionary").Should().NotBeNull();
+            type.GetProperty("SoundEffectDictionary").Should().NotBeNull();
             type.GetProperty("Settings").Should().NotBeNull();
             type.GetProperty("InputBindings").Should().NotBeNull();
             type.GetProperty("Scenes").Should().NotBeNull();
