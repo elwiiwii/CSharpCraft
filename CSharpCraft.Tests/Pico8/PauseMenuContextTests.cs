@@ -176,8 +176,8 @@ namespace CSharpCraft.Tests.Pico8
             var context = CreateMockContext();
             var state = new PauseMenuState(context.Object);
 
-            state.CurrentMenuItems.Add(new MenuItem(() => "A", () => { }));
-            state.CurrentMenuItems.Add(new MenuItem(() => "B", () => { }));
+            state.CurrentMenuItems.Add(new MenuItem(() => "A", _ => { }));
+            state.CurrentMenuItems.Add(new MenuItem(() => "B", _ => { }));
 
             state.HandleMenuInput(false, true, false);
             state.SelectedIndex.Should().Be(1);

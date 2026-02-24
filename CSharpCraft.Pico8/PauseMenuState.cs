@@ -38,11 +38,14 @@ public class PauseMenuState(IPauseMenuContext context)
         _menuSelected = 0;
     }
 
-    public void HandleMenuInput(bool upPressed, bool downPressed, bool selectPressed)
+    public void HandleMenuInput(bool upPressed, bool downPressed, bool selectPressed,
+        bool leftPressed = false, bool rightPressed = false,
+        bool actionAPressed = false, bool actionBPressed = false)
     {
         if (selectPressed)
         {
-            _currentMenuItems[_menuSelected].Function();
+            var input = new MenuInput(leftPressed, rightPressed, actionAPressed, actionBPressed);
+            _currentMenuItems[_menuSelected].Function(input);
         }
 
         if (upPressed) { _menuSelected -= 1; }

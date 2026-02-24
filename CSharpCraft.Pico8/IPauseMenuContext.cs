@@ -63,4 +63,9 @@ public interface IPauseMenuContext
     /// Quit to the title screen (first scene in Scenes list) and show a notification popup.
     /// </summary>
     void QuitToTitle();
+
+    /// <summary>
+    /// Play background music by index. Used by soundtrack switching in the pause menu.
+    /// </summary>
+    void PlayMusic(int n);
 }

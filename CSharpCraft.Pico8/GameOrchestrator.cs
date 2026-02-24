@@ -228,10 +228,14 @@ namespace CSharpCraft.Pico8
                 _inputManager.UpdateLockout();
 
                 _pauseMenuState?.HandleMenuInput(
-                    _inputManager.Btnp(2),
-                    _inputManager.Btnp(3),
-                    _inputManager.Btnp(0) || _inputManager.Btnp(1) ||
-                    _inputManager.Btnp(4) || _inputManager.Btnp(5));
+                    upPressed: _inputManager.Btnp(2),
+                    downPressed: _inputManager.Btnp(3),
+                    selectPressed: _inputManager.Btnp(0) || _inputManager.Btnp(1) ||
+                        _inputManager.Btnp(4) || _inputManager.Btnp(5),
+                    leftPressed: _inputManager.Btnp(0),
+                    rightPressed: _inputManager.Btnp(1),
+                    actionAPressed: _inputManager.Btnp(4),
+                    actionBPressed: _inputManager.Btnp(5));
 
                 PlaySound(false);
             }
@@ -386,6 +390,14 @@ namespace CSharpCraft.Pico8
         {
             ScheduleScene(_titleSceneFactory);
             Notifications.Show("quit (ctrl-q)");
+        }
+
+        /// <summary>
+        /// Play background music by index. Delegates to AudioOrchestrator.
+        /// </summary>
+        public void PlayMusic(int n)
+        {
+            _audioOrch.Music(n);
         }
 
         private void DisposeManagers()

@@ -148,7 +148,7 @@ public class PauseMenuRendererTests
 
     private static List<MenuItem> CreateMenuItems(params string[] names)
     {
-        return names.Select(n => new MenuItem(() => n, () => { })).ToList();
+        return names.Select(n => new MenuItem(() => n, _ => { })).ToList();
     }
 
     #endregion

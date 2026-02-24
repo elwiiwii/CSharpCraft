@@ -134,9 +134,9 @@ public class PauseMenuStateTests
     {
         var state = CreateState();
         // Manually add menu items for testing navigation
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 0", () => { }));
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 1", () => { }));
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 2", () => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 0", _ => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 1", _ => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 2", _ => { }));
 
         state.HandleMenuInput(upPressed: false, downPressed: true, selectPressed: false);
         state.SelectedIndex.Should().Be(1);
@@ -146,9 +146,9 @@ public class PauseMenuStateTests
     public void HandleMenuInput_UpPressed_DecrementsSelection()
     {
         var state = CreateState();
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 0", () => { }));
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 1", () => { }));
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 2", () => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 0", _ => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 1", _ => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 2", _ => { }));
 
         // Start at 0, go up → should wrap to 2
         state.HandleMenuInput(upPressed: true, downPressed: false, selectPressed: false);
@@ -159,8 +159,8 @@ public class PauseMenuStateTests
     public void HandleMenuInput_DownWrapsAround()
     {
         var state = CreateState();
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 0", () => { }));
-        state.CurrentMenuItems.Add(new MenuItem(() => "Item 1", () => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 0", _ => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Item 1", _ => { }));
 
         // Go down twice from 0 → 1 → 0 (wraps)
         state.HandleMenuInput(false, true, false);
@@ -173,7 +173,7 @@ public class PauseMenuStateTests
     {
         var state = CreateState();
         bool invoked = false;
-        state.CurrentMenuItems.Add(new MenuItem(() => "Test", () => invoked = true));
+        state.CurrentMenuItems.Add(new MenuItem(() => "Test", _ => invoked = true));
 
         state.HandleMenuInput(upPressed: false, downPressed: false, selectPressed: true);
         invoked.Should().BeTrue();
@@ -184,9 +184,9 @@ public class PauseMenuStateTests
     {
         var state = CreateState();
         int invokedIndex = -1;
-        state.CurrentMenuItems.Add(new MenuItem(() => "A", () => invokedIndex = 0));
-        state.CurrentMenuItems.Add(new MenuItem(() => "B", () => invokedIndex = 1));
-        state.CurrentMenuItems.Add(new MenuItem(() => "C", () => invokedIndex = 2));
+        state.CurrentMenuItems.Add(new MenuItem(() => "A", _ => invokedIndex = 0));
+        state.CurrentMenuItems.Add(new MenuItem(() => "B", _ => invokedIndex = 1));
+        state.CurrentMenuItems.Add(new MenuItem(() => "C", _ => invokedIndex = 2));
 
         // Move down to item 1, then select
         state.HandleMenuInput(false, true, false);
@@ -198,8 +198,8 @@ public class PauseMenuStateTests
     public void HandleMenuInput_NoInput_NoChange()
     {
         var state = CreateState();
-        state.CurrentMenuItems.Add(new MenuItem(() => "A", () => { }));
-        state.CurrentMenuItems.Add(new MenuItem(() => "B", () => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "A", _ => { }));
+        state.CurrentMenuItems.Add(new MenuItem(() => "B", _ => { }));
 
         state.HandleMenuInput(false, false, false);
         state.SelectedIndex.Should().Be(0);

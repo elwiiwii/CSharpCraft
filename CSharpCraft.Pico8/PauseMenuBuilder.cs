@@ -1,10 +1,8 @@
-using static CSharpCraft.Pico8.Pico8;
-
 namespace CSharpCraft.Pico8;
 
 /// <summary>
 /// Builds the pause menu structure and handles menu item callbacks.
-/// Uses GameOrchestrator for game state and static Pico8 API for input.
+/// All callbacks receive MenuInput — no static Pico8 dependency.
 /// </summary>
 public class PauseMenuBuilder
 {
@@ -38,63 +36,55 @@ public class PauseMenuBuilder
         }
     }
 
-    private static void AddMenuItem(int pos, Func<string> getName, Action function, List<MenuItem> list)
+    private static void AddMenuItem(int pos, Func<string> getName, Action<MenuInput> function, List<MenuItem> list)
     {
         while (list.Count <= pos)
-            list.Add(new MenuItem(() => "", () => { }));
+            list.Add(new MenuItem(() => "", _ => { }));
         list[pos] = new MenuItem(getName, function);
     }
 
     private void BuildContinueMenuItem()
     {
-        void ContinueAction()
+        AddMenuItem(0, () => "continue", input =>
         {
-            if (Btnp(4) || Btnp(5))
+            if (input.ActionA || input.ActionB)
             {
                 // Unpause will be handled by pause menu toggle
             }
-        }
-
-        AddMenuItem(0, () => "continue", ContinueAction, _mainMenuItems);
+        }, _mainMenuItems);
     }
 
     private void BuildOptionsMenuItem()
     {
-        void OptionsAction()
+        AddMenuItem(1, () => "options", input =>
         {
-            if (Btnp(4) || Btnp(5))
+            if (input.ActionA || input.ActionB)
             {
                 ShowOptionsSubmenu();
             }
-        }
-
-        AddMenuItem(1, () => "options", OptionsAction, _mainMenuItems);
+        }, _mainMenuItems);
     }
 
     private void BuildResetMenuItem()
     {
-        void ResetAction()
+        AddMenuItem(2, () => "reset cart", input =>
         {
-            if (Btnp(4) || Btnp(5))
+            if (input.ActionA || input.ActionB)
             {
                 _context.ReloadCart();
             }
-        }
-
-        AddMenuItem(2, () => "reset cart", ResetAction, _mainMenuItems);
+        }, _mainMenuItems);
     }
 
     private void BuildExitMenuItem()
     {
-        void ExitAction()
+        AddMenuItem(3, () => "exit", input =>
         {
-            if (Btnp(4) || Btnp(5))
+            if (input.ActionA || input.ActionB)
             {
                 _context.QuitToTitle();
             }
-        }
-
-        AddMenuItem(3, () => "exit", ExitAction, _mainMenuItems);
+        }, _mainMenuItems);
     }
 
     private void ShowOptionsSubmenu()
@@ -120,61 +110,53 @@ public class PauseMenuBuilder
 
     private void BuildSoundToggleMenuItem()
     {
-        void SoundAction()
+        AddMenuItem(0, () => $"sound:{(_context.Settings.SoundEnabled ? "on" : "off")}", input =>
         {
-            if (Btnp(0) || Btnp(1) || Btnp(4) || Btnp(5))
+            if (input.Left || input.Right || input.ActionA || input.ActionB)
             {
                 _context.ToggleSound();
             }
-        }
-
-        AddMenuItem(0, () => $"sound:{(_context.Settings.SoundEnabled ? "on" : "off")}", SoundAction, _curMenuItems);
+        }, _curMenuItems);
     }
 
     private void BuildMusicVolumeMenuItem()
     {
-        void MusicVolAction()
+        AddMenuItem(1, () => $"music vol:{_context.Settings.MusicVolume}%", input =>
         {
-            if (Btnp(0))
+            if (input.Left)
                 _context.Settings.MusicVolume = Math.Max(_context.Settings.MusicVolume - 10, 0);
-            if (Btnp(1))
+            if (input.Right)
                 _context.Settings.MusicVolume = Math.Min(_context.Settings.MusicVolume + 10, 100);
-        }
-
-        AddMenuItem(1, () => $"music vol:{_context.Settings.MusicVolume}%", MusicVolAction, _curMenuItems);
+        }, _curMenuItems);
     }
 
     private void BuildSfxVolumeMenuItem()
     {
-        void SfxVolAction()
+        AddMenuItem(2, () => $"sfx vol:{_context.Settings.SfxVolume}%", input =>
         {
-            if (Btnp(0))
+            if (input.Left)
                 _context.Settings.SfxVolume = Math.Max(_context.Settings.SfxVolume - 10, 0);
-            if (Btnp(1))
+            if (input.Right)
                 _context.Settings.SfxVolume = Math.Min(_context.Settings.SfxVolume + 10, 100);
-        }
-
-        AddMenuItem(2, () => $"sfx vol:{_context.Settings.SfxVolume}%", SfxVolAction, _curMenuItems);
+        }, _curMenuItems);
     }
 
     private void BuildFullscreenToggleMenuItem()
     {
-        void FullscreenAction()
+        AddMenuItem(3, () => $"fullscreen:{(_context.Settings.IsFullscreen ? "on" : "off")}", input =>
         {
-            if (Btnp(4) || Btnp(5))
+            if (input.ActionA || input.ActionB)
             {
                 _context.ToggleFullscreen();
             }
-        }
-
-        AddMenuItem(3, () => $"fullscreen:{(_context.Settings.IsFullscreen ? "on" : "off")}", FullscreenAction, _curMenuItems);
+        }, _curMenuItems);
     }
 
     private void BuildBackMenuItem(List<MenuItem> previousMenu)
     {
-        void BackAction()
+        AddMenuItem(4, () => "back", input =>
         {
-            if (Btnp(4) || Btnp(5))
+            if (input.ActionA || input.ActionB)
             {
                 _curMenuItems.Clear();
                 foreach (var item in previousMenu)
@@ -182,9 +164,7 @@ public class PauseMenuBuilder
                     _curMenuItems.Add(item.Clone());
                 }
             }
-        }
-
-        AddMenuItem(4, () => "back", BackAction, _curMenuItems);
+        }, _curMenuItems);
     }
 
     private void BuildSfxPackMenuItem()
@@ -192,15 +172,13 @@ public class PauseMenuBuilder
         if ((_context.TrackManager?.SfxCount ?? 0) <= 1)
             return;
 
-        void SfxPackAction()
+        AddMenuItem(5, () => $"sfx:{_context.TrackManager?.GetCurrentSfxPackName() ?? "sfx"}", input =>
         {
-            if (Btnp(0))
+            if (input.Left)
                 _context.TrackManager?.DecrementSfxPack();
-            if (Btnp(1))
+            if (input.Right)
                 _context.TrackManager?.IncrementSfxPack();
-        }
-
-        AddMenuItem(5, () => $"sfx:{_context.TrackManager?.GetCurrentSfxPackName() ?? "sfx"}", SfxPackAction, _curMenuItems);
+        }, _curMenuItems);
     }
 
     private void BuildSoundtrackMenuItem()
@@ -208,23 +186,21 @@ public class PauseMenuBuilder
         if ((_context.TrackManager?.MusicCount ?? 0) <= 1)
             return;
 
-        void SoundtrackAction()
+        AddMenuItem(6, () => $"music:{_context.TrackManager?.GetCurrentSoundtrackName() ?? "music"}", input =>
         {
-            if (Btnp(0))
+            if (input.Left)
                 _context.TrackManager?.DecrementSoundtrack();
-            if (Btnp(1))
+            if (input.Right)
                 _context.TrackManager?.IncrementSoundtrack();
 
-            if (Btnp(0) || Btnp(1))
+            if (input.Left || input.Right)
             {
                 _context.SoundDispose();
                 if (_context.LastMusicCall is not null)
                 {
-                    Music((int)_context.LastMusicCall);
+                    _context.PlayMusic((int)_context.LastMusicCall);
                 }
             }
-        }
-
-        AddMenuItem(6, () => $"music:{_context.TrackManager?.GetCurrentSoundtrackName() ?? "music"}", SoundtrackAction, _curMenuItems);
+        }, _curMenuItems);
     }
 }
