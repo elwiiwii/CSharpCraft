@@ -102,41 +102,13 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public static List<Color> DefaultColors => Pico8Utils.DefaultColors;
 
-        public GameOrchestrator(
-            IScene cart,
-            GameHostContext host,
-            IInputStateManager inputManager,
-            IGraphicsAPI graphicsAPI,
-            IAudioAPI audioAPI,
-            ISceneManager sceneManager,
-            ICartDataLoader cartDataLoader,
-            Func<IScene>? titleSceneFactory = null,
-            IPaletteManager? paletteManager = null,
-            IMapManager? mapManager = null,
-            IServiceFactory? serviceFactory = null)
-        {
-            ArgumentNullException.ThrowIfNull(host, nameof(host));
-            _currentCart = cart ?? throw new ArgumentNullException(nameof(cart));
-            _titleSceneFactory = titleSceneFactory ?? (() => cart);
-            _scenes = host.Scenes ?? throw new ArgumentNullException(nameof(host));
-            _textureDictionary = host.TextureDictionary;
-            _settings = host.Settings;
-            _inputBindings = host.InputBindings;
-            _displayManager = new DisplayManager(host.Graphics, host.GraphicsDevice, host.Window, host.Settings);
-
-            _serviceFactory = serviceFactory ?? new ServiceFactory();
-            _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
-            _cartDataLoader = cartDataLoader ?? throw new ArgumentNullException(nameof(cartDataLoader));
-            _graphicsOrch = _serviceFactory.CreateGraphicsOrchestrator(graphicsAPI, paletteManager);
-            _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
-            _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
-            _mapManager = mapManager;
-            _colors = DefaultColors;
-            _pauseMenuState = _serviceFactory.CreatePauseMenuState(this);
-        }
-
         /// <summary>
-        /// Simplified constructor for testing.
+        /// Unified constructor. The four core services (inputManager, graphicsAPI,
+        /// audioAPI, sceneManager) are required. All other dependencies are optional
+        /// with safe Null Object defaults — no null! fragility.
+        /// 
+        /// Production: pass host + cart + cartDataLoader + titleSceneFactory.
+        /// Testing: pass just the 4 required params (all others default safely).
         /// </summary>
         public GameOrchestrator(
             IInputStateManager inputManager,
@@ -144,6 +116,9 @@ namespace CSharpCraft.Pico8
             IAudioAPI audioAPI,
             ISceneManager sceneManager,
             ICartDataLoader? cartDataLoader = null,
+            GameHostContext? host = null,
+            IScene? cart = null,
+            Func<IScene>? titleSceneFactory = null,
             IPaletteManager? paletteManager = null,
             IMapManager? mapManager = null,
             IServiceFactory? serviceFactory = null,
@@ -152,21 +127,26 @@ namespace CSharpCraft.Pico8
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             ArgumentNullException.ThrowIfNull(graphicsAPI, nameof(graphicsAPI));
             ArgumentNullException.ThrowIfNull(audioAPI, nameof(audioAPI));
+            _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
+
+            // Scene & host defaults (Null Object pattern — no null! anywhere)
+            _currentCart = cart ?? NullScene.Instance;
+            _titleSceneFactory = titleSceneFactory ?? (() => _currentCart);
+            _scenes = host?.Scenes ?? [];
+            _textureDictionary = host?.TextureDictionary ?? [];
+            _settings = host?.Settings ?? InMemorySettings.Default;
+            _inputBindings = host?.InputBindings ?? DefaultInputBindings.Instance;
+
+            _displayManager = displayManager
+                ?? (host != null
+                    ? new DisplayManager(host.Graphics, host.GraphicsDevice, host.Window, host.Settings)
+                    : new DisplayManager(null, null, null, null));
+
             _serviceFactory = serviceFactory ?? new ServiceFactory();
             _cartDataLoader = cartDataLoader ?? new CartDataLoader();
             _graphicsOrch = _serviceFactory.CreateGraphicsOrchestrator(graphicsAPI, paletteManager);
             _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
-            _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
             _mapManager = mapManager;
-            _displayManager = displayManager ?? new DisplayManager(null, null, null, null);
-
-            // Test defaults
-            _currentCart = null!;
-            _titleSceneFactory = () => null!;
-            _scenes = [];
-            _textureDictionary = [];
-            _settings = null!;
-            _inputBindings = null!;
             _colors = DefaultColors;
             _pauseMenuState = _serviceFactory.CreatePauseMenuState(this);
         }

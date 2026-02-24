@@ -54,29 +54,35 @@ namespace CSharpCraft.Tests.Pico8
         [Fact]
         public void GameOrchestrator_ProductionConstructor_AcceptsGameHostContext()
         {
-            // Verify the production constructor has a GameHostContext parameter
+            // Verify the unified constructor has a GameHostContext parameter
             var ctors = typeof(GameOrchestrator).GetConstructors();
-            var productionCtor = ctors.FirstOrDefault(c =>
+            var unifiedCtor = ctors.FirstOrDefault(c =>
                 c.GetParameters().Any(p => p.ParameterType == typeof(GameHostContext)));
 
-            productionCtor.Should().NotBeNull(
+            unifiedCtor.Should().NotBeNull(
                 "GameOrchestrator should have a constructor accepting GameHostContext");
         }
 
         [Fact]
-        public void GameOrchestrator_ProductionConstructor_HasReducedParameterCount()
+        public void GameOrchestrator_HasSingleUnifiedConstructor()
         {
             var ctors = typeof(GameOrchestrator).GetConstructors();
-            var productionCtor = ctors.FirstOrDefault(c =>
-                c.GetParameters().Any(p => p.ParameterType == typeof(GameHostContext)));
+            ctors.Should().HaveCount(1,
+                "GameOrchestrator should have exactly one unified constructor");
+        }
 
-            productionCtor.Should().NotBeNull();
-            // GameHostContext + cart + inputManager + graphicsAPI + audioAPI + sceneManager 
-            // + cartDataLoader + optional titleSceneFactory + optional paletteManager
-            // + optional mapManager + optional serviceFactory
-            // = 11 params max (down from 20)
-            productionCtor!.GetParameters().Length.Should().BeLessOrEqualTo(11,
-                "production constructor should have at most 11 params (down from 20)");
+        [Fact]
+        public void GameOrchestrator_UnifiedConstructor_HasReducedParameterCount()
+        {
+            var ctors = typeof(GameOrchestrator).GetConstructors();
+            var ctor = ctors.Single();
+
+            // 4 required + 8 optional = 12 params
+            // (inputManager + graphicsAPI + audioAPI + sceneManager
+            //  + cartDataLoader? + host? + cart? + titleSceneFactory?
+            //  + paletteManager? + mapManager? + serviceFactory? + displayManager?)
+            ctor.GetParameters().Length.Should().BeLessOrEqualTo(12,
+                "unified constructor should have at most 12 params (4 required + 8 optional)");
         }
 
         #endregion
@@ -92,9 +98,8 @@ namespace CSharpCraft.Tests.Pico8
                 new Mock<IAudioAPI>().Object,
                 new Mock<ISceneManager>().Object);
 
-            // Settings is null in test constructor — that's fine, just verify the property exists
-            var prop = typeof(GameOrchestrator).GetProperty("Settings");
-            prop.Should().NotBeNull("Settings property should still be accessible");
+            // Settings now defaults to InMemorySettings — always non-null
+            orchestrator.Settings.Should().NotBeNull("Settings should always be available via Null Object default");
         }
 
         [Fact]
@@ -178,12 +183,12 @@ namespace CSharpCraft.Tests.Pico8
 
         #endregion
 
-        #region TEST CONSTRUCTOR UNCHANGED
+        #region UNIFIED CONSTRUCTOR WORKS WITH MINIMAL PARAMS
 
         [Fact]
-        public void TestConstructor_StillWorks_WithFourParams()
+        public void UnifiedConstructor_StillWorks_WithFourParams()
         {
-            // The simplified test constructor should not change
+            // The unified constructor should work with just the 4 required params
             var orchestrator = new GameOrchestrator(
                 new Mock<IInputStateManager>().Object,
                 new Mock<IGraphicsAPI>().Object,
@@ -193,6 +198,23 @@ namespace CSharpCraft.Tests.Pico8
             orchestrator.Should().NotBeNull();
             orchestrator.Graphics.Should().NotBeNull();
             orchestrator.Audio.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void UnifiedConstructor_NoNullBangDefaults()
+        {
+            // Verify that settings, inputBindings, scenes, and currentCart
+            // all get safe Null Object defaults — no null! fragility
+            var orchestrator = new GameOrchestrator(
+                new Mock<IInputStateManager>().Object,
+                new Mock<IGraphicsAPI>().Object,
+                new Mock<IAudioAPI>().Object,
+                new Mock<ISceneManager>().Object);
+
+            orchestrator.Settings.Should().NotBeNull("Settings should default to InMemorySettings");
+            orchestrator.InputBindings.Should().NotBeNull("InputBindings should default to DefaultInputBindings");
+            orchestrator.Scenes.Should().NotBeNull("Scenes should default to empty list");
+            orchestrator.CurrentCart.Should().NotBeNull("CurrentCart should default to NullScene");
         }
 
         #endregion

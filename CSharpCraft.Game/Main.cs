@@ -158,8 +158,12 @@ class FNAGame : Game
         var paletteManager = new PaletteManager(GameOrchestrator.DefaultColors);
 
         orchestrator = new GameOrchestrator(
-            new TitleScreen(true),
-            new GameHostContext(
+            inputManager,
+            graphicsAPI,
+            audioAPI,
+            sceneManager,
+            cartDataLoader: new CartDataLoader(),
+            host: new GameHostContext(
                 batch,
                 pixel,
                 graphics,
@@ -169,11 +173,7 @@ class FNAGame : Game
                 optionsFile,
                 optionsFile,
                 scenes),
-            inputManager,
-            graphicsAPI,
-            audioAPI,
-            sceneManager,
-            new CartDataLoader(),
+            cart: new TitleScreen(true),
             titleSceneFactory: () => new TitleScreen(false),
             paletteManager: paletteManager);
 
