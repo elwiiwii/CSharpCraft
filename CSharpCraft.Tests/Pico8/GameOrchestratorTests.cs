@@ -44,25 +44,6 @@ namespace CSharpCraft.Tests.Pico8
             // Clean up between tests
         }
 
-        /// <summary>
-        /// Create a properly configured mock IScene suitable for LoadCart/LoadScene.
-        /// </summary>
-        private Mock<IScene> CreateMockScene(string name = "TestScene")
-        {
-            var mockScene = new Mock<IScene>();
-            mockScene.Setup(s => s.SceneName).Returns(name);
-            mockScene.Setup(s => s.Fps).Returns(60.0);
-            mockScene.Setup(s => s.Resolution).Returns((128, 128));
-            mockScene.Setup(s => s.SpriteData).Returns("");
-            mockScene.Setup(s => s.SpriteImage).Returns("");
-            mockScene.Setup(s => s.FlagData).Returns("");
-            mockScene.Setup(s => s.MapDimensions).Returns((0, 0));
-            mockScene.Setup(s => s.MapData).Returns("");
-            mockScene.Setup(s => s.Music).Returns(new Dictionary<string, List<SongInst>>());
-            mockScene.Setup(s => s.Sfx).Returns(new Dictionary<string, Dictionary<int, string>>());
-            return mockScene;
-        }
-
         #region CONSTRUCTOR TESTS
 
         [Fact]
@@ -130,12 +111,6 @@ namespace CSharpCraft.Tests.Pico8
             _orchestrator.SceneManager.Should().BeSameAs(_mockSceneManager.Object);
         }
 
-        [Fact]
-        public void Constructor_InitializesNotPaused()
-        {
-            _orchestrator.IsPaused.Should().BeFalse("orchestrator should not be paused on creation");
-        }
-
         #endregion
 
         #region INITIALIZATION TESTS
@@ -147,83 +122,6 @@ namespace CSharpCraft.Tests.Pico8
             _mockInput.Setup(i => i.Btn(0, 0)).Returns(true);
             var result = CSharpCraft.Pico8.Pico8.Btn(0);
             result.Should().BeTrue("Pico8 static API should work after Initialize()");
-        }
-
-        #endregion
-
-        #region SCENE MANAGEMENT TESTS
-
-        [Fact]
-        public void LoadScene_SetsCurrentScene()
-        {
-            _orchestrator.Initialize();
-            var mockScene = CreateMockScene();
-            _orchestrator.LoadScene(mockScene.Object);
-            _orchestrator.CurrentCart.Should().BeSameAs(mockScene.Object,
-                "CurrentCart should reference the loaded scene");
-        }
-
-        [Fact]
-        public void LoadScene_CallsInit_OnNewScene()
-        {
-            _orchestrator.Initialize();
-            var mockScene = CreateMockScene();
-            _orchestrator.LoadScene(mockScene.Object);
-            mockScene.Verify(s => s.Init(), Times.Once(),
-                "LoadScene should initialize the new scene");
-        }
-
-        [Fact]
-        public void LoadScene_ThrowsArgumentNullException_WhenSceneIsNull()
-        {
-            _orchestrator.Initialize();
-            var act = () => _orchestrator.LoadScene(null!);
-            act.Should().Throw<ArgumentNullException>();
-        }
-
-        [Fact]
-        public void LoadScene_ReplacesCurrentScene()
-        {
-            _orchestrator.Initialize();
-            var scene1 = CreateMockScene("Scene1");
-            var scene2 = CreateMockScene("Scene2");
-            _orchestrator.LoadScene(scene1.Object);
-            _orchestrator.LoadScene(scene2.Object);
-            _orchestrator.CurrentCart.Should().BeSameAs(scene2.Object,
-                "LoadScene should replace the previous scene");
-        }
-
-        #endregion
-
-        #region PAUSE STATE TESTS
-
-        [Fact]
-        public void Pause_SetsPausedState()
-        {
-            _orchestrator.Initialize();
-            _orchestrator.Pause();
-            _orchestrator.IsPaused.Should().BeTrue("game should be paused after Pause()");
-        }
-
-        [Fact]
-        public void Resume_ClearsPausedState()
-        {
-            _orchestrator.Initialize();
-            _orchestrator.Pause();
-            _orchestrator.Resume();
-            _orchestrator.IsPaused.Should().BeFalse("game should not be paused after Resume()");
-        }
-
-        [Fact]
-        public void Pause_Resume_CanToggleMultipleTimes()
-        {
-            _orchestrator.Initialize();
-            _orchestrator.Pause();
-            _orchestrator.IsPaused.Should().BeTrue();
-            _orchestrator.Resume();
-            _orchestrator.IsPaused.Should().BeFalse();
-            _orchestrator.Pause();
-            _orchestrator.IsPaused.Should().BeTrue();
         }
 
         #endregion

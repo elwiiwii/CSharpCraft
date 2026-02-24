@@ -25,7 +25,7 @@ namespace CSharpCraft.Tests.Pico8
         public CartDataLoaderTests()
         {
             _loader = new CartDataLoader();
-            _colors = GameOrchestrator.DefaultColors;
+            _colors = Pico8Utils.DefaultColors;
             _textureDictionary = [];
         }
 

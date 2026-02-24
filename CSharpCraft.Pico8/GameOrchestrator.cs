@@ -25,8 +25,6 @@ namespace CSharpCraft.Pico8
 
         // Managers
         private IMapManager? _mapManager;
-        private PaletteManager? _paletteManager;
-        private SpriteCache? _spriteCache;
         private ITrackManager? _trackManager;
         private PauseMenuState? _pauseMenuState;
 
@@ -51,7 +49,6 @@ namespace CSharpCraft.Pico8
         public ISceneManager SceneManager => _sceneManager;
         public IMapManager? MapManager => _mapManager;
         public IScene CurrentCart => _currentCart;
-        public bool IsPaused => _pauseMenuState?.IsPaused ?? false;
 
         /// <summary>
         /// Set the pause menu renderer for drawing the pause menu overlay.
@@ -64,43 +61,16 @@ namespace CSharpCraft.Pico8
         /// Set after construction since IGraphicsAPI may not be ready during construction.
         /// </summary>
         public IPopupService? PopupService { set => _popupService = value; }
-
-        /// <summary>
-        /// Pause the game.
-        /// </summary>
-        public void Pause()
-        {
-            if (_pauseMenuState is not null && !_pauseMenuState.IsPaused)
-                _pauseMenuState.TogglePause();
-        }
-
-        /// <summary>
-        /// Resume the game from pause.
-        /// </summary>
-        public void Resume()
-        {
-            if (_pauseMenuState is not null && _pauseMenuState.IsPaused)
-                _pauseMenuState.TogglePause();
-        }
         public IInputBindingProvider InputBindings => _inputBindings;
         public IAudioGraphicsSettings Settings => _settings;
         public List<IScene> Scenes => _scenes;
         public List<Color> Colors => _colors;
         public (int Width, int Height) Cell => _displayManager.Cell;
         public (int w, int h) Resolution => _displayManager.Resolution;
-        public List<PalCol> PalColors => _paletteManager?.GetAllRemappings() ?? [];
-        public SpriteCache? SpriteCache => _spriteCache;
-        public Color[] Sprites => _cartData.Sprites;
-        public CartData CartData => _cartData;
 
         // IPauseMenuContext implementation
         public ITrackManager? TrackManager => _trackManager;
         public int? LastMusicCall => _audioOrch.LastMusicCall;
-
-        /// <summary>
-        /// Standard PICO-8 color palette (delegates to Pico8Utils.DefaultColors).
-        /// </summary>
-        public static List<Color> DefaultColors => Pico8Utils.DefaultColors;
 
         /// <summary>
         /// Unified constructor. The four core services (inputManager, graphicsAPI,
@@ -147,7 +117,7 @@ namespace CSharpCraft.Pico8
             _graphicsOrch = _serviceFactory.CreateGraphicsOrchestrator(graphicsAPI, paletteManager);
             _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
             _mapManager = mapManager;
-            _colors = DefaultColors;
+            _colors = Pico8Utils.DefaultColors;
             _pauseMenuState = _serviceFactory.CreatePauseMenuState(this);
         }
 
@@ -181,11 +151,6 @@ namespace CSharpCraft.Pico8
             Reload();
             _currentCart.Init();
         }
-
-        /// <summary>
-        /// Load a scene (alias for LoadCart).
-        /// </summary>
-        public void LoadScene(IScene scene) => LoadCart(scene);
 
         public void ReloadCart() => LoadCart(_currentCart);
 
@@ -237,14 +202,14 @@ namespace CSharpCraft.Pico8
                     actionAPressed: _inputManager.Btnp(4),
                     actionBPressed: _inputManager.Btnp(5));
 
-                PlaySound(false);
+                _audioOrch.PlaySound(false);
             }
             else
             {
                 _inputManager.SetPauseMode(false);
                 _inputManager.UpdateLockout();
 
-                PlaySound(true);
+                _audioOrch.PlaySound(true);
 
                 try
                 {
@@ -300,11 +265,6 @@ namespace CSharpCraft.Pico8
             {
                 Notifications.ShowError(ex.Message);
             }
-        }
-
-        private void PlaySound(bool play)
-        {
-            _audioOrch.PlaySound(play);
         }
 
         public void Draw()
@@ -403,14 +363,11 @@ namespace CSharpCraft.Pico8
         private void DisposeManagers()
         {
             _audioOrch.DisposeAudio();
-            _spriteCache?.Dispose();
         }
 
         public void Dispose()
         {
             DisposeManagers();
-            _paletteManager = null;
-            _spriteCache = null;
         }
     }
 }

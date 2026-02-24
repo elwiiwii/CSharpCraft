@@ -6,8 +6,6 @@ using CSharpCraft.Competitive;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using static CSharpCraft.Pico8.Pico8;
-
 namespace CSharpCraft;
 
 class FNAGame : Game
@@ -37,10 +35,6 @@ class FNAGame : Game
 
     private Texture2D pixel;
 
-    private (int w, int h) resolution = (128, 128);
-
-
-    private readonly double elapsedSeconds = 0.0;
     private readonly string graphicsFolderPath = "Content/Graphics";
     private readonly string musicFolderPath = "Content/Music";
     private readonly string sfxFolderPath = "Content/Sfx";
@@ -72,7 +66,7 @@ class FNAGame : Game
     {
         base.Initialize();
 
-        UpdateViewport();
+        CSharpCraft.Pico8.Pico8.UpdateViewport();
         
         scenes.Add(new CompetitiveScene());
         scenes.Add(new PcraftSingleplayer());
@@ -88,7 +82,7 @@ class FNAGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / CurrentCart.Fps));
+        this.TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / CSharpCraft.Pico8.Pico8.CurrentCart.Fps));
 
         CSharpCraft.Pico8.Pico8.Update();
 
@@ -152,10 +146,10 @@ class FNAGame : Game
 
         // Create sub-systems
         var inputManager = new InputStateManager();
-        var graphicsAPI = new GraphicsAPI(batch, pixel, GameOrchestrator.DefaultColors, FixMath.F32.Zero, FixMath.F32.Zero, (1, 1));
+        var graphicsAPI = new GraphicsAPI(batch, pixel, Pico8Utils.DefaultColors, FixMath.F32.Zero, FixMath.F32.Zero, (1, 1));
         var audioAPI = new AudioAPI(null, null, soundEffectDictionary, () => new(), () => 0, () => optionsFile.Gen_Sound_On, () => optionsFile.Gen_Sfx_Vol);
         var sceneManager = new SceneManager();
-        var paletteManager = new PaletteManager(GameOrchestrator.DefaultColors);
+        var paletteManager = new PaletteManager(Pico8Utils.DefaultColors);
 
         orchestrator = new GameOrchestrator(
             inputManager,
@@ -238,7 +232,7 @@ class FNAGame : Game
 
     private void Window_ClientSizeChanged(object sender, EventArgs e)
     {
-        UpdateViewport();
+        CSharpCraft.Pico8.Pico8.UpdateViewport();
     }
 
 }

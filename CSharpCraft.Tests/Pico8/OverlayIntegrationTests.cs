@@ -97,15 +97,6 @@ public class OverlayIntegrationTests
         colors[8].Should().Be(Pico8Utils.HexToColor("FF004D")); // red
     }
 
-    [Fact]
-    public void GameOrchestrator_DefaultColors_StillAccessible()
-    {
-        // Verify backward compatibility — GameOrchestrator.DefaultColors delegates to Pico8Utils
-        var colors = GameOrchestrator.DefaultColors;
-
-        colors.Should().HaveCount(32);
-    }
-
     #endregion
 
     #region IPauseMenuContext Unified Operations
