@@ -8,11 +8,11 @@ Guide for navigating and contributing to the CSharpCraft codebase.
 
 1. **CSharpCraft.FixMath** — Fixed-point arithmetic (F32, F64). No dependencies, pure math. Used for deterministic physics.
 
-2. **CSharpCraft.Pico8** — Static PICO-8 API layer (43 files). Provides `Cls()`, `Spr()`, `Btn()`, etc. via `using static CSharpCraft.Pico8.Pico8`. All platform-specific code (FNA) is behind interfaces.
+2. **CSharpCraft.Pico8** — Static PICO-8 API layer (56 source files). Provides `Cls()`, `Spr()`, `Btn()`, etc. via `using static CSharpCraft.Pico8.Pico8`. All platform-specific code (FNA) is behind 18 interfaces.
 
 3. **CSharpCraft.Game** — All game scenes (62 files). Competitive, Pcraft, OptionsMenu, Credits. Main development area.
 
-4. **CSharpCraft.Tests** — xUnit + Moq + FluentAssertions (419 tests, 24 test files). Full coverage of Pico8 API, orchestrators, and services.
+4. **CSharpCraft.Tests** — xUnit + Moq + FluentAssertions (569 tests, 36 test files). Full coverage of Pico8 API, orchestrators, and services.
 
 ### Dependency Flow
 
@@ -132,14 +132,43 @@ Tests mirror source structure:
 
 ```
 CSharpCraft.Tests/
-├── Pico8/                          # Pico8 API + service tests
-│   ├── Pico8StaticAPITests.cs      # Static API delegation
-│   ├── PaletteManagerTests.cs      # Palette logic (35 tests)
-│   ├── SceneManagerTests.cs        # Scene transitions (22 tests)
-│   ├── InputStateManagerTests.cs   # Input state (20 tests)
-│   └── ...
-├── Rendering/                      # Rendering tests
-└── OptionsMenu/                    # Game-level tests
+├── Pico8/                                  # Pico8 API + service tests (30 files)
+│   ├── Pico8StaticAPITests.cs              # Static API delegation
+│   ├── Pico8APIExpansionTests.cs           # Extended API coverage
+│   ├── Pico8RenderingAPITests.cs           # Rendering delegation
+│   ├── Pico8DisplayConfigTests.cs          # Display config
+│   ├── GameOrchestratorTests.cs            # Orchestrator lifecycle
+│   ├── GameHostContextTests.cs             # Host context record
+│   ├── GraphicsOrchestratorTests.cs        # Graphics state
+│   ├── AudioOrchestratorTests.cs           # Audio state
+│   ├── AudioLifecycleTests.cs              # Audio lifecycle
+│   ├── PaletteManagerTests.cs              # Palette remapping
+│   ├── SceneManagerTests.cs                # Scene transitions
+│   ├── InputStateManagerTests.cs           # Input state
+│   ├── PauseMenuStateTests.cs              # Pause state machine
+│   ├── PauseMenuRendererTests.cs           # Pause menu rendering
+│   ├── PauseMenuContextTests.cs            # IPauseMenuContext
+│   ├── PauseMenuBuilderDependencyTests.cs  # Builder isolation
+│   ├── PopupServiceTests.cs                # Notification popups
+│   ├── NotificationsTests.cs               # Static popup accessor
+│   ├── OverlayIntegrationTests.cs          # Overlay integration
+│   ├── ConstructorConsolidationTests.cs    # Unified constructor
+│   ├── StateUnificationTests.cs            # State unification
+│   ├── FactoryInjectionTests.cs            # Factory injection
+│   ├── DisplayManagerTests.cs              # Display management
+│   ├── CartDataLoaderTests.cs              # Cart data parsing
+│   ├── ServiceFactoryTests.cs              # Factory verification
+│   ├── MapManagerTests.cs                  # Map tile data
+│   ├── TrackManagerTests.cs                # Music track management
+│   ├── GraphicsAPITests.cs                 # Concrete rendering
+│   ├── AudioAPITests.cs                    # Concrete audio
+│   └── Pico8UtilsTests.cs                 # Utility functions
+├── Rendering/
+│   ├── TextureRendererTests.cs
+│   └── FnaTextureRendererTests.cs
+└── OptionsMenu/
+    ├── OptionsFileInterfaceTests.cs
+    └── OptionsFileValidationTests.cs
 ```
 
 ### Test Naming Convention
@@ -282,7 +311,7 @@ dotnet test CSharpCraft.Tests/ --logger "console;verbosity=detailed"
 1. Write tests for current behavior first
 2. Extract smaller methods incrementally
 3. Run tests after each change
-4. Verify all 419 tests pass at the end
+4. Verify all 569 tests pass at the end
 
 ## Best Practices
 
@@ -305,7 +334,8 @@ dotnet test CSharpCraft.Tests/ --logger "console;verbosity=detailed"
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — System design, orchestrator hierarchy, interface table
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) — API cheat sheet, file locations, templates
+- [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) — Refactoring history and metrics
 
 ---
 
-**Last Updated**: July 2025
+**Last Updated**: February 2026

@@ -1,7 +1,7 @@
 # CSharpCraft Architecture
 
 > Static PICO-8 API facade + orchestrator pattern.  
-> All projects compile with 0 errors. 419 tests passing.
+> All projects compile with 0 errors. 569 tests passing.
 
 ## Overview
 
@@ -20,61 +20,83 @@ CSharpCraft.slnx
 │   ├── Fixed32.cs, Fixed64.cs      # Alternative fixed arithmetic
 │   └── FixedUtil.cs                # Utility functions
 │
-├── CSharpCraft.Pico8/              # Static API + orchestrator layer (43 files)
+├── CSharpCraft.Pico8/              # Static API + orchestrator layer (56 files)
 │   ├── Pico8.cs                    # Static PICO-8 API facade (THE entry point)
-│   ├── GameOrchestrator.cs         # Top-level orchestrator (owns sub-orchestrators)
+│   ├── GameOrchestrator.cs         # Top-level orchestrator (373 lines, owns sub-orchestrators)
+│   ├── GameHostContext.cs          # FNA platform dependency record (11 properties)
 │   ├── GraphicsOrchestrator.cs     # Graphics state: camera, palette, display config
 │   ├── AudioOrchestrator.cs        # Audio state: sfx, music, mute
 │   ├── GraphicsAPI.cs              # Concrete FNA/XNA rendering (IGraphicsAPI)
 │   ├── AudioAPI.cs                 # Concrete FNA/XNA audio (IAudioAPI)
+│   ├── AudioChannels.cs            # Multi-channel SFX playback
+│   ├── MusicManager.cs             # Music playback state machine
 │   ├── PaletteManager.cs           # Color remapping + transparency (IPaletteManager)
 │   ├── SceneManager.cs             # Scene transitions + scheduling (ISceneManager)
 │   ├── InputStateManager.cs        # Button state + lockout (IInputStateManager)
 │   ├── MapManager.cs               # Map tile data (IMapManager)
-│   ├── GameStateContainer.cs       # Consolidated game state (IGameState)
+│   ├── DisplayManager.cs           # Resolution/cell management (IDisplayManager)
+│   ├── CartDataLoader.cs           # Cart data parsing (ICartDataLoader)
 │   ├── ServiceFactory.cs           # Service creation (IServiceFactory)
 │   ├── PauseMenuState.cs           # Pause state machine
-│   ├── PauseMenuBuilder.cs         # Menu construction
-│   ├── MusicManager.cs             # Audio playback state machine
-│   ├── GameRendering.cs            # Rendering pipeline
+│   ├── PauseMenuBuilder.cs         # Menu construction (no circular deps)
+│   ├── PauseMenuRenderer.cs        # Pause menu overlay (IPauseMenuRenderer)
+│   ├── PopupService.cs             # Notification popups (IPopupService)
+│   ├── PopupSeverity.cs            # Info/Error severity enum
+│   ├── Notifications.cs            # Static popup accessor (AsyncLocal)
+│   ├── GameRendering.cs            # Rendering pipeline + static accessor
 │   ├── FnaTextureRenderer.cs       # Texture rendering (ITextureRenderer)
 │   ├── OutputFacade.cs             # Graphics+Audio facade (IOutputFacade)
+│   ├── NullScene.cs                # Null Object for IScene (test default)
+│   ├── InMemorySettings.cs         # Null Object for IAudioGraphicsSettings
+│   ├── DefaultInputBindings.cs     # Null Object for IInputBindingProvider
 │   ├── Pico8Classes.cs             # Data classes (PalCol, MenuItem, P8Btns, etc.)
 │   ├── Pico8Utils.cs               # Static utility functions
 │   ├── Pico8MathUtils.cs           # Math utilities (Loop, etc.)
 │   ├── Font.cs                     # Font rendering
 │   ├── SinDict.cs, CosDict.cs     # Lookup tables
-│   └── [Interfaces]                # IScene, IGraphicsAPI, IAudioAPI, etc.
+│   └── [18 Interfaces]             # IScene, IGraphicsAPI, IAudioAPI, etc.
 │
 ├── CSharpCraft.Game/               # Game scenes (62 files, all migrated)
-│   ├── Main.cs                     # Entry point + GameOrchestrator setup
+│   ├── Main.cs                     # Entry point + audio/video wiring (264 lines)
 │   ├── Competitive/                # 15+ competitive multiplayer scenes
 │   ├── Pcraft/                     # Core gameplay (base classes + variants)
-│   ├── OptionsMenu/                # 7 options/settings scenes
+│   ├── OptionsMenu/                # 7 options/settings scenes + OptionsFile
 │   ├── Credits/                    # Credits scene
 │   ├── TitleScreen.cs, ExitScene.cs, MapTest.cs, MapConversion.cs
 │   └── Content/                    # Game assets (graphics, audio, UI)
 │
-├── CSharpCraft.Tests/              # xUnit + Moq + FluentAssertions (419 tests)
-│   ├── Pico8/                      # Pico8 API + service tests (20 files)
+├── CSharpCraft.Tests/              # xUnit + Moq + FluentAssertions (569 tests, 36 files)
+│   ├── Pico8/                      # Pico8 API + service tests (30 files)
 │   │   ├── Pico8StaticAPITests.cs          # Static API delegation
 │   │   ├── Pico8APIExpansionTests.cs       # Extended API coverage
 │   │   ├── Pico8RenderingAPITests.cs       # Rendering delegation
 │   │   ├── Pico8DisplayConfigTests.cs      # Cell, Resolution, GetColor
 │   │   ├── GameOrchestratorTests.cs        # Orchestrator lifecycle
+│   │   ├── GameHostContextTests.cs         # Host context record + constructor
 │   │   ├── GraphicsOrchestratorTests.cs    # Graphics state
 │   │   ├── AudioOrchestratorTests.cs       # Audio state
+│   │   ├── AudioLifecycleTests.cs          # Audio lifecycle
 │   │   ├── GraphicsAPITests.cs             # Concrete rendering
 │   │   ├── AudioAPITests.cs                # Concrete audio
-│   │   ├── PaletteManagerTests.cs          # Palette remapping (35 tests)
-│   │   ├── SceneManagerTests.cs            # Scene transitions (22 tests)
-│   │   ├── InputStateManagerTests.cs       # Input state (20 tests)
-│   │   ├── PauseMenuStateTests.cs          # Pause state machine (17 tests)
-│   │   ├── GameStateContainerTests.cs      # State container (22 tests)
-│   │   ├── ServiceFactoryTests.cs          # Factory verification (22 tests)
-│   │   ├── MapManagerTests.cs              # Map tile data (20 tests)
-│   │   ├── TrackManagerTests.cs            # Music track management (23 tests)
-│   │   └── Pico8UtilsTests.cs             # Utility functions (31 tests)
+│   │   ├── PaletteManagerTests.cs          # Palette remapping
+│   │   ├── SceneManagerTests.cs            # Scene transitions
+│   │   ├── InputStateManagerTests.cs       # Input state
+│   │   ├── PauseMenuStateTests.cs          # Pause state machine
+│   │   ├── PauseMenuRendererTests.cs       # Pause menu rendering
+│   │   ├── PauseMenuContextTests.cs        # IPauseMenuContext
+│   │   ├── PauseMenuBuilderDependencyTests.cs # Builder circular-dep elimination
+│   │   ├── PopupServiceTests.cs            # Notification popups
+│   │   ├── NotificationsTests.cs           # Static popup accessor
+│   │   ├── OverlayIntegrationTests.cs      # Overlay integration
+│   │   ├── ConstructorConsolidationTests.cs # Unified constructor
+│   │   ├── StateUnificationTests.cs        # State unification
+│   │   ├── FactoryInjectionTests.cs        # Factory injection
+│   │   ├── DisplayManagerTests.cs          # Display management
+│   │   ├── CartDataLoaderTests.cs          # Cart data parsing
+│   │   ├── ServiceFactoryTests.cs          # Factory verification
+│   │   ├── MapManagerTests.cs              # Map tile data
+│   │   ├── TrackManagerTests.cs            # Music track management
+│   │   └── Pico8UtilsTests.cs             # Utility functions
 │   ├── Rendering/                  # Rendering abstraction tests
 │   │   ├── TextureRendererTests.cs
 │   │   └── FnaTextureRendererTests.cs
@@ -158,20 +180,43 @@ public void Btn_DelegatesToInputManager()
 ### Orchestrator Hierarchy
 
 ```
-GameOrchestrator (top-level coordinator)
-├── InputManager        : IInputStateManager
-├── Graphics            : GraphicsOrchestrator
-│   ├── API             : IGraphicsAPI (concrete rendering)
-│   ├── PaletteManager  : IPaletteManager
-│   ├── CameraOffset    : (F32 x, F32 y)
-│   ├── Cell            : (int Width, int Height) — pixel scaling
-│   └── Resolution      : (int w, int h) — virtual canvas size
-├── Audio               : AudioOrchestrator
-│   └── API             : IAudioAPI (concrete audio)
-├── SceneManager        : ISceneManager
-├── MapManager?         : IMapManager
-├── GameState?          : IGameState
-└── CurrentScene, IsPaused, etc.
+GameOrchestrator (373 lines, top-level coordinator, implements IPauseMenuContext)
+├── InputManager         : IInputStateManager
+├── Graphics             : GraphicsOrchestrator
+│   ├── API              : IGraphicsAPI (concrete rendering)
+│   ├── PaletteManager   : IPaletteManager
+│   ├── CameraOffset     : (F32 x, F32 y)
+│   └── DisplayManager   : IDisplayManager (Cell, Resolution)
+├── Audio                : AudioOrchestrator
+│   └── API              : IAudioAPI (concrete audio)
+│       ├── AudioChannels    (4-channel SFX playback)
+│       └── MusicManager     (music state machine)
+├── SceneManager         : ISceneManager
+├── CartDataLoader       : ICartDataLoader
+├── DisplayManager       : IDisplayManager
+├── PauseMenuState?      : PauseMenuState
+├── PauseMenuRenderer?   : IPauseMenuRenderer
+├── PopupService?        : IPopupService
+├── MapManager?          : IMapManager
+├── TrackManager?        : ITrackManager
+├── ServiceFactory       : IServiceFactory
+├── TitleSceneFactory    : Func<IScene>
+└── CurrentCart, IsPaused, etc.
+```
+
+### GameHostContext Record
+
+Groups FNA platform dependencies for the production constructor (test constructor bypasses it):
+
+```csharp
+public record GameHostContext(
+    SpriteBatch Batch, Texture2D Pixel,
+    GraphicsDeviceManager Graphics, GraphicsDevice GraphicsDevice, GameWindow Window,
+    Dictionary<string, Texture2D> TextureDictionary,
+    Dictionary<string, SoundEffect> MusicDictionary,
+    Dictionary<string, SoundEffect> SoundEffectDictionary,
+    IAudioGraphicsSettings Settings, IInputBindingProvider InputBindings,
+    List<IScene> Scenes);
 ```
 
 ### Interface Design
@@ -183,13 +228,22 @@ is pure C# and fully testable with mocks.
 |-----------|---------------|------------------------|
 | `IGraphicsAPI` | Draw primitives (Pset, Rect, Circ, Spr, Map, etc.) | `GraphicsAPI` (FNA SpriteBatch) |
 | `IAudioAPI` | Play sfx/music, mute | `AudioAPI` (FNA SoundEffect) |
-| `IInputStateManager` | Button state queries | FNA keyboard/gamepad wrapper |
-| `IPaletteManager` | Palette remapping (Pal/Palt) | Color index remapper |
-| `ISceneManager` | Scene transition scheduling | Scene lifecycle manager |
-| `IMapManager` | Map tile data (Mget/Mset/Fget) | Tile data storage |
-| `IServiceFactory` | Service creation | Runtime factory |
+| `IInputStateManager` | Button state queries | `InputStateManager` (FNA keyboard/gamepad) |
+| `IPaletteManager` | Palette remapping (Pal/Palt) | `PaletteManager` (color index remapper) |
+| `ISceneManager` | Scene transition scheduling | `SceneManager` |
+| `IMapManager` | Map tile data (Mget/Mset/Fget) | `MapManager` |
+| `ITrackManager` | Music/SFX track selection | `TrackManager` |
+| `IServiceFactory` | Service creation | `ServiceFactory` |
 | `ITextureRenderer` | Texture rendering | `FnaTextureRenderer` |
 | `IOutputFacade` | Graphics+Audio facade | `OutputFacade` |
+| `IDisplayManager` | Resolution/cell scaling | `DisplayManager` |
+| `ICartDataLoader` | Cart data parsing | `CartDataLoader` |
+| `IPauseMenuRenderer` | Pause menu overlay drawing | `PauseMenuRenderer` |
+| `IPopupService` | Notification popup lifecycle | `PopupService` |
+| `IPauseMenuContext` | System operations for pause menu | `GameOrchestrator` |
+| `IInputBindingProvider` | Input binding configuration | `DefaultInputBindings` (Null Object) |
+| `IAudioGraphicsSettings` | Audio/graphics settings | `InMemorySettings` (Null Object) |
+| `IScene` | Scene contract (Init/Update/Draw/Dispose) | `NullScene` (Null Object) |
 
 ## Project Dependencies
 
@@ -205,41 +259,49 @@ CSharpCraft.Tests → CSharpCraft.Pico8, xUnit, Moq, FluentAssertions
 
 ## Testing Strategy
 
-- **419 tests**, all passing
+- **569 tests**, all passing
 - **FluentAssertions** exclusively (zero `Assert.*` calls)
 - **Moq** for all interface mocking
 - **Parallel execution** enabled via `xunit.runner.json`
 - **AsyncLocal isolation** ensures no test interference
+- **36 test files** across 3 categories
 
 ### Test Coverage by Area
 
-| Area | Tests | Key Scenarios |
-|------|-------|---------------|
-| PaletteManager | 35 | Remapping, transparency, reset, chaining |
-| Pico8Utils | 31 | Mathematical utilities, edge cases |
-| TrackManager | 23 | Music state machine, transitions |
-| SceneManager | 22 | Scene transitions, scheduling, lifecycle |
-| ServiceFactory | 22 | Service creation, validation |
-| GameStateContainer | 22 | State management, accessors |
-| MapManager | 20 | Tile data, get/set, flags |
-| InputStateManager | 20 | Button state, lockout, multi-player |
-| PauseMenuState | 17 | State machine, menu navigation |
-| Static API + Orchestrators | ~100+ | Delegation, lifecycle, config |
-| Rendering + OptionsMenu | ~30+ | Texture rendering, file I/O |
+| Area | Key Scenarios |
+|------|---------------|
+| Static API + Orchestrators | Delegation, lifecycle, config |
+| PaletteManager | Remapping, transparency, reset, chaining |
+| Pico8Utils | Mathematical utilities, edge cases |
+| TrackManager | Music state machine, transitions |
+| SceneManager | Scene transitions, scheduling, lifecycle |
+| ServiceFactory | Service creation, validation |
+| MapManager | Tile data, get/set, flags |
+| InputStateManager | Button state, lockout, multi-player |
+| PauseMenuState | State machine, menu navigation |
+| PauseMenuRenderer | Overlay drawing, arrow rendering |
+| PopupService + Notifications | Popup lifecycle, severity colors |
+| PauseMenuBuilder | Builder dependency isolation |
+| CartDataLoader | Cart data parsing |
+| DisplayManager | Resolution/cell management |
+| Constructor Consolidation | Unified constructor, Null Objects |
+| GameHostContext | Record properties, production wiring |
+| Audio Lifecycle | AudioChannels → MusicManager → AudioAPI chain |
+| Rendering + OptionsMenu | Texture rendering, file I/O |
 
 ## Refactoring Roadmap
 
-All phases complete.
-
 | Phase | Status | Description |
 |-------|--------|-------------|
-| 1 | ✅ | Pico8 static API design + TDD tests |
-| 2 | ✅ | GameOrchestrator tests & implementation |
-| 3 | ✅ | Sub-orchestrators (Graphics, Audio) |
-| 4 | ✅ | API expansion (Camera, Palette, Scene, Map, Audio, Data, Math, Rendering, Display Config) |
+| 1–4 | ✅ | Pico8 static API + GameOrchestrator + sub-orchestrators + API expansion |
 | 5 | ✅ | Scene migration — all 29 IScene implementations migrated to `using static` |
 | 6 | ✅ | Cleanup — Pico8Functions.cs (875 lines) and Services/ directory removed |
-| 7-10 | ✅ | Extended service extraction, test coverage expansion, GameStateContainer, ServiceFactory |
+| 7–8 | ✅ | Extended service extraction (GameOrchestrator 1,072 → 328 lines) |
+| 9 | ✅ | Notifications + PopupService, IPauseMenuRenderer, hotkey extraction |
+| 10 | ✅ | Constructor consolidation — NullScene, InMemorySettings, DefaultInputBindings |
+| 11 | ✅ | PauseMenuBuilder circular dependency removal (MenuInput record) |
+| 12 | ✅ | YAGNI cleanup — dead code removal from GameOrchestrator and Main.cs |
+| 13 | ✅ | Content loading — GameHostContext expanded, music pipeline wired |
 
 ## Build & Test
 

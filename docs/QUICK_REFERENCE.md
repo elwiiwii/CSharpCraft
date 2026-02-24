@@ -9,7 +9,7 @@ dotnet build CSharpCraft.slnx
 # Build one project
 dotnet build CSharpCraft.Game/
 
-# Run all tests (419 tests)
+# Run all tests (569 tests)
 dotnet test CSharpCraft.Tests/
 
 # Run specific test class
@@ -33,20 +33,30 @@ dotnet clean && dotnet build CSharpCraft.slnx
 
 | File | Purpose |
 |------|---------|
-| `Pico8.cs` | Static API facade — all static methods |
-| `GameOrchestrator.cs` | Top-level coordinator |
+| `Pico8.cs` | Static API facade — all static methods (645 lines) |
+| `GameOrchestrator.cs` | Top-level coordinator (373 lines) |
+| `GameHostContext.cs` | FNA platform dependency record (11 properties) |
 | `GraphicsOrchestrator.cs` | Graphics state (camera, palette, display) |
 | `AudioOrchestrator.cs` | Audio state (sfx, music, mute) |
 | `GraphicsAPI.cs` | FNA rendering (implements `IGraphicsAPI`) |
 | `AudioAPI.cs` | FNA audio (implements `IAudioAPI`) |
+| `AudioChannels.cs` | Multi-channel SFX playback |
+| `MusicManager.cs` | Music playback state machine (200 lines) |
 | `PaletteManager.cs` | Color remapping (implements `IPaletteManager`) |
 | `SceneManager.cs` | Scene transitions (implements `ISceneManager`) |
 | `InputStateManager.cs` | Button state (implements `IInputStateManager`) |
 | `MapManager.cs` | Map tiles (implements `IMapManager`) |
-| `GameStateContainer.cs` | Game state (implements `IGameState`) |
+| `DisplayManager.cs` | Resolution/cell management (implements `IDisplayManager`) |
+| `CartDataLoader.cs` | Cart data parsing (implements `ICartDataLoader`) |
 | `ServiceFactory.cs` | Service creation (implements `IServiceFactory`) |
 | `PauseMenuState.cs` | Pause state machine |
-| `MusicManager.cs` | Music state machine |
+| `PauseMenuBuilder.cs` | Pause menu construction (no circular deps) |
+| `PauseMenuRenderer.cs` | Pause menu overlay (implements `IPauseMenuRenderer`) |
+| `PopupService.cs` | Notification popups (implements `IPopupService`) |
+| `Notifications.cs` | Static popup accessor (AsyncLocal pattern) |
+| `NullScene.cs` | Null Object for `IScene` |
+| `InMemorySettings.cs` | Null Object for `IAudioGraphicsSettings` |
+| `DefaultInputBindings.cs` | Null Object for `IInputBindingProvider` |
 | `Pico8Classes.cs` | Data classes (PalCol, MenuItem, P8Btns, etc.) |
 | `Pico8Utils.cs` | Static utility functions |
 | `Pico8MathUtils.cs` | Math utilities (Loop, etc.) |
@@ -55,41 +65,53 @@ dotnet clean && dotnet build CSharpCraft.slnx
 
 ```
 CSharpCraft.Game/
-├── Main.cs              # Entry point + orchestrator setup
+├── Main.cs              # Entry point + audio/video wiring (264 lines)
 ├── TitleScreen.cs       # Main menu
 ├── ExitScene.cs         # Exit screen
 ├── Competitive/         # 15+ multiplayer scenes
 ├── Pcraft/              # Core gameplay
 │   ├── PcraftBase.cs    # Main engine
 │   └── Entity.cs        # Game entities
-├── OptionsMenu/         # Settings scenes
+├── OptionsMenu/         # Settings scenes + OptionsFile
 ├── Credits/             # Credits scene
 └── Content/             # Assets (graphics, audio)
 ```
 
-### Tests (CSharpCraft.Tests/)
+### Tests (CSharpCraft.Tests/ — 569 tests, 36 files)
 
 ```
 CSharpCraft.Tests/
-├── Pico8/
-│   ├── Pico8StaticAPITests.cs          # Static API delegation
-│   ├── Pico8APIExpansionTests.cs       # Extended API
-│   ├── Pico8RenderingAPITests.cs       # Rendering delegation
-│   ├── Pico8DisplayConfigTests.cs      # Display config
-│   ├── GameOrchestratorTests.cs        # Orchestrator lifecycle
-│   ├── GraphicsOrchestratorTests.cs    # Graphics state
-│   ├── AudioOrchestratorTests.cs       # Audio state
-│   ├── GraphicsAPITests.cs            # Concrete rendering
-│   ├── AudioAPITests.cs               # Concrete audio
-│   ├── PaletteManagerTests.cs         # Palette (35 tests)
-│   ├── SceneManagerTests.cs           # Scenes (22 tests)
-│   ├── InputStateManagerTests.cs      # Input (20 tests)
-│   ├── PauseMenuStateTests.cs         # Pause (17 tests)
-│   ├── GameStateContainerTests.cs     # State (22 tests)
-│   ├── ServiceFactoryTests.cs         # Factory (22 tests)
-│   ├── MapManagerTests.cs             # Maps (20 tests)
-│   ├── TrackManagerTests.cs           # Music (23 tests)
-│   └── Pico8UtilsTests.cs            # Utils (31 tests)
+├── Pico8/                                  # 30 test files
+│   ├── Pico8StaticAPITests.cs              # Static API delegation
+│   ├── Pico8APIExpansionTests.cs           # Extended API
+│   ├── Pico8RenderingAPITests.cs           # Rendering delegation
+│   ├── Pico8DisplayConfigTests.cs          # Display config
+│   ├── GameOrchestratorTests.cs            # Orchestrator lifecycle
+│   ├── GameHostContextTests.cs             # Host context record
+│   ├── GraphicsOrchestratorTests.cs        # Graphics state
+│   ├── AudioOrchestratorTests.cs           # Audio state
+│   ├── AudioLifecycleTests.cs              # Audio lifecycle
+│   ├── GraphicsAPITests.cs                 # Concrete rendering
+│   ├── AudioAPITests.cs                    # Concrete audio
+│   ├── PaletteManagerTests.cs              # Palette remapping
+│   ├── SceneManagerTests.cs                # Scene transitions
+│   ├── InputStateManagerTests.cs           # Input state
+│   ├── PauseMenuStateTests.cs              # Pause state machine
+│   ├── PauseMenuRendererTests.cs           # Pause menu rendering
+│   ├── PauseMenuContextTests.cs            # IPauseMenuContext
+│   ├── PauseMenuBuilderDependencyTests.cs  # Builder isolation
+│   ├── PopupServiceTests.cs                # Notification popups
+│   ├── NotificationsTests.cs               # Static popup accessor
+│   ├── OverlayIntegrationTests.cs          # Overlay integration
+│   ├── ConstructorConsolidationTests.cs    # Unified constructor
+│   ├── StateUnificationTests.cs            # State unification
+│   ├── FactoryInjectionTests.cs            # Factory injection
+│   ├── DisplayManagerTests.cs              # Display management
+│   ├── CartDataLoaderTests.cs              # Cart data parsing
+│   ├── ServiceFactoryTests.cs              # Factory verification
+│   ├── MapManagerTests.cs                  # Map tile data
+│   ├── TrackManagerTests.cs                # Music track management
+│   └── Pico8UtilsTests.cs                 # Utility functions
 ├── Rendering/
 │   ├── TextureRendererTests.cs
 │   └── FnaTextureRendererTests.cs
@@ -268,12 +290,13 @@ public class MyComponentTests
 | File | Purpose |
 |------|---------|
 | [README.md](../README.md) | Project overview, quick start |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | System design, orchestrator hierarchy |
-| [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) | How-to guide, patterns, best practices |
-| [QUICK_REFERENCE.md](QUICK_REFERENCE.md) | This file — API cheat sheet |
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System design, orchestrator hierarchy, interface table
+- [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) — How-to guide, patterns, best practices
+- [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) — Refactoring history and metrics
+- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) — This file — API cheat sheet
 
 **Start here**: QUICK_REFERENCE.md → DEVELOPER_GUIDE.md → ARCHITECTURE.md
 
 ---
 
-**Last Updated**: July 2025
+**Last Updated**: February 2026
