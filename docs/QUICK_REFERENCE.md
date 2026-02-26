@@ -9,7 +9,7 @@ dotnet build CSharpCraft.slnx
 # Build one project
 dotnet build CSharpCraft.Game/
 
-# Run all tests (569 tests)
+# Run all tests (544 tests)
 dotnet test CSharpCraft.Tests/
 
 # Run specific test class
@@ -31,35 +31,90 @@ dotnet clean && dotnet build CSharpCraft.slnx
 
 ### Pico8 API Layer (CSharpCraft.Pico8/)
 
+**Root files:**
+
 | File | Purpose |
 |------|---------|
 | `Pico8.cs` | Static API facade — all static methods (645 lines) |
 | `GameOrchestrator.cs` | Top-level coordinator (373 lines) |
-| `GameHostContext.cs` | FNA platform dependency record (11 properties) |
-| `GraphicsOrchestrator.cs` | Graphics state (camera, palette, display) |
-| `AudioOrchestrator.cs` | Audio state (sfx, music, mute) |
-| `GraphicsAPI.cs` | FNA rendering (implements `IGraphicsAPI`) |
+| `GameRendering.cs` | Rendering pipeline + static accessor |
+| `Notifications.cs` | Static popup accessor (AsyncLocal pattern) |
+| `GlobalUsings.cs` | Cross-namespace imports for sub-folders |
+
+**Audio/** (namespace `CSharpCraft.Pico8.Audio`)
+
+| File | Purpose |
+|------|---------|
 | `AudioAPI.cs` | FNA audio (implements `IAudioAPI`) |
 | `AudioChannels.cs` | Multi-channel SFX playback |
+| `AudioOrchestrator.cs` | Audio state: sfx, music, mute |
 | `MusicManager.cs` | Music playback state machine (200 lines) |
-| `PaletteManager.cs` | Color remapping (implements `IPaletteManager`) |
-| `SceneManager.cs` | Scene transitions (implements `ISceneManager`) |
-| `InputStateManager.cs` | Button state (implements `IInputStateManager`) |
-| `MapManager.cs` | Map tiles (implements `IMapManager`) |
+| `TrackManager.cs` | Music/SFX track selection (implements `ITrackManager`) |
+| `IAudioAPI.cs`, `IAudioSettings.cs`, `ITrackManager.cs` | Interfaces |
+
+**Graphics/** (namespace `CSharpCraft.Pico8.Graphics`)
+
+| File | Purpose |
+|------|---------|
+| `GraphicsAPI.cs` | FNA rendering (implements `IGraphicsAPI`) |
+| `GraphicsOrchestrator.cs` | Graphics state (camera, palette, display) |
 | `DisplayManager.cs` | Resolution/cell management (implements `IDisplayManager`) |
+| `FnaTextureRenderer.cs` | Texture rendering (implements `ITextureRenderer`) |
+| `PaletteManager.cs` | Color remapping (implements `IPaletteManager`) |
+| `SpriteCache.cs` | Sprite caching |
+| `IGraphicsAPI.cs`, `IDisplayManager.cs`, `IDisplaySettings.cs`, `IPaletteManager.cs`, `ITextureRenderer.cs` | Interfaces |
+
+**Input/** (namespace `CSharpCraft.Pico8.Input`)
+
+| File | Purpose |
+|------|---------|
+| `InputStateManager.cs` | Button state (implements `IInputStateManager`) |
+| `InputBindings.cs` | Input binding configuration |
+| `DefaultInputBindings.cs` | Null Object for `IInputBindingProvider` |
+| `P8Btns.cs` | Button state tracker class |
+| `IInputBindingProvider.cs`, `IInputStateManager.cs` | Interfaces |
+
+**Scene/** (namespace `CSharpCraft.Pico8.Scene`)
+
+| File | Purpose |
+|------|---------|
+| `SceneManager.cs` | Scene transitions (implements `ISceneManager`) |
+| `MapManager.cs` | Map tiles (implements `IMapManager`) |
 | `CartDataLoader.cs` | Cart data parsing (implements `ICartDataLoader`) |
-| `ServiceFactory.cs` | Service creation (implements `IServiceFactory`) |
-| `PauseMenuState.cs` | Pause state machine |
+| `NullScene.cs` | Null Object for `IScene` |
+| `IScene.cs`, `ISceneManager.cs`, `IMapManager.cs`, `ICartDataLoader.cs` | Interfaces |
+
+**Menu/** (namespace `CSharpCraft.Pico8.Menu`)
+
+| File | Purpose |
+|------|---------|
 | `PauseMenuBuilder.cs` | Pause menu construction (no circular deps) |
 | `PauseMenuRenderer.cs` | Pause menu overlay (implements `IPauseMenuRenderer`) |
+| `PauseMenuState.cs` | Pause state machine |
 | `PopupService.cs` | Notification popups (implements `IPopupService`) |
-| `Notifications.cs` | Static popup accessor (AsyncLocal pattern) |
-| `NullScene.cs` | Null Object for `IScene` |
-| `InMemorySettings.cs` | Null Object for `IAudioGraphicsSettings` |
-| `DefaultInputBindings.cs` | Null Object for `IInputBindingProvider` |
-| `Pico8Classes.cs` | Data classes (PalCol, MenuItem, P8Btns, etc.) |
+| `PopupSeverity.cs` | Info/Error severity enum |
+| `MenuItem.cs`, `MenuInput.cs` | Menu data types |
+| `IPauseMenuContext.cs`, `IPauseMenuRenderer.cs`, `IPopupService.cs` | Interfaces |
+
+**Models/** (namespace `CSharpCraft.Pico8.Models`)
+
+| File | Purpose |
+|------|---------|
+| `GameHostContext.cs` | FNA platform dependency record (12 properties) |
+| `CartData.cs` | Cart data record |
+| `InMemorySettings.cs` | Null Object for settings |
+| `MusicInst.cs` | Active music instance record |
+| `SongInst.cs` | Song definition record |
+| `PalCol.cs` | Palette color remapping record |
+
+**Utilities/** (namespace `CSharpCraft.Pico8.Utilities`)
+
+| File | Purpose |
+|------|---------|
 | `Pico8Utils.cs` | Static utility functions |
 | `Pico8MathUtils.cs` | Math utilities (Loop, etc.) |
+| `CosDict.cs`, `SinDict.cs` | Trig lookup tables |
+| `IntArrayEqualityComparer.cs` | Array equality comparer |
 
 ### Game Scenes (CSharpCraft.Game/)
 
@@ -287,13 +342,12 @@ public class MyComponentTests
 
 ## Documentation
 
-| File | Purpose |
-|------|---------|
-| [README.md](../README.md) | Project overview, quick start |
-- [ARCHITECTURE.md](ARCHITECTURE.md) — System design, orchestrator hierarchy, interface table
+- [README.md](../README.md) — Project overview, quick start
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System design, orchestrator hierarchy, namespace organization, interface table
 - [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) — How-to guide, patterns, best practices
 - [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) — Refactoring history and metrics
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) — This file — API cheat sheet
+- [PICO8_CLASS_DIAGRAM.md](PICO8_CLASS_DIAGRAM.md) — Mermaid class & interface diagram
 
 **Start here**: QUICK_REFERENCE.md → DEVELOPER_GUIDE.md → ARCHITECTURE.md
 

@@ -8,11 +8,11 @@ Guide for navigating and contributing to the CSharpCraft codebase.
 
 1. **CSharpCraft.FixMath** — Fixed-point arithmetic (F32, F64). No dependencies, pure math. Used for deterministic physics.
 
-2. **CSharpCraft.Pico8** — Static PICO-8 API layer (56 source files). Provides `Cls()`, `Spr()`, `Btn()`, etc. via `using static CSharpCraft.Pico8.Pico8`. All platform-specific code (FNA) is behind 18 interfaces.
+2. **CSharpCraft.Pico8** — Static PICO-8 API layer (59 source files, 7 domain folders). Provides `Cls()`, `Spr()`, `Btn()`, etc. via `using static CSharpCraft.Pico8.Pico8`. All platform-specific code (FNA) is behind 17 interfaces. Organized into sub-namespaces: Audio, Graphics, Input, Scene, Menu, Models, Utilities.
 
 3. **CSharpCraft.Game** — All game scenes (62 files). Competitive, Pcraft, OptionsMenu, Credits. Main development area.
 
-4. **CSharpCraft.Tests** — xUnit + Moq + FluentAssertions (569 tests, 36 test files). Full coverage of Pico8 API, orchestrators, and services.
+4. **CSharpCraft.Tests** — xUnit + Moq + FluentAssertions (544 tests, 35 test files). Full coverage of Pico8 API, orchestrators, and services.
 
 ### Dependency Flow
 
@@ -132,7 +132,7 @@ Tests mirror source structure:
 
 ```
 CSharpCraft.Tests/
-├── Pico8/                                  # Pico8 API + service tests (30 files)
+├── Pico8/                                  # 28 test files + 2 helpers
 │   ├── Pico8StaticAPITests.cs              # Static API delegation
 │   ├── Pico8APIExpansionTests.cs           # Extended API coverage
 │   ├── Pico8RenderingAPITests.cs           # Rendering delegation
@@ -149,20 +149,20 @@ CSharpCraft.Tests/
 │   ├── PauseMenuRendererTests.cs           # Pause menu rendering
 │   ├── PauseMenuContextTests.cs            # IPauseMenuContext
 │   ├── PauseMenuBuilderDependencyTests.cs  # Builder isolation
-│   ├── PopupServiceTests.cs                # Notification popups
-│   ├── NotificationsTests.cs               # Static popup accessor
-│   ├── OverlayIntegrationTests.cs          # Overlay integration
-│   ├── ConstructorConsolidationTests.cs    # Unified constructor
-│   ├── StateUnificationTests.cs            # State unification
-│   ├── FactoryInjectionTests.cs            # Factory injection
-│   ├── DisplayManagerTests.cs              # Display management
-│   ├── CartDataLoaderTests.cs              # Cart data parsing
-│   ├── ServiceFactoryTests.cs              # Factory verification
-│   ├── MapManagerTests.cs                  # Map tile data
-│   ├── TrackManagerTests.cs                # Music track management
-│   ├── GraphicsAPITests.cs                 # Concrete rendering
-│   ├── AudioAPITests.cs                    # Concrete audio
-│   └── Pico8UtilsTests.cs                 # Utility functions
+│   ├── PopupServiceTests.cs               # Notification popups
+│   ├── NotificationsTests.cs              # Static popup accessor
+│   ├── OverlayIntegrationTests.cs         # Overlay integration
+│   ├── ConstructorConsolidationTests.cs   # Unified constructor
+│   ├── StateUnificationTests.cs           # State unification
+│   ├── DisplayManagerTests.cs             # Display management
+│   ├── CartDataLoaderTests.cs             # Cart data parsing
+│   ├── MapManagerTests.cs                 # Map tile data
+│   ├── TrackManagerTests.cs               # Music track management
+│   ├── GraphicsAPITests.cs                # Concrete rendering
+│   ├── AudioAPITests.cs                   # Concrete audio
+│   ├── Pico8UtilsTests.cs                # Utility functions
+│   ├── MockAudioGraphicsSettings.cs       # Test helper
+│   └── Mocks/MockScene.cs                # Test helper
 ├── Rendering/
 │   ├── TextureRendererTests.cs
 │   └── FnaTextureRendererTests.cs
@@ -288,8 +288,8 @@ dotnet build CSharpCraft.Game/
 
 ### "I need to add a new button to the input system"
 
-1. Add button constant in `Pico8Classes.cs` (`P8Btns`)
-2. Update `InputStateManager` to handle the new button
+1. Add button constant in `Input/P8Btns.cs`
+2. Update `Input/InputStateManager.cs` to handle the new button
 3. Add static delegate in `Pico8.cs`
 4. Add test in `InputStateManagerTests.cs`
 
@@ -311,7 +311,7 @@ dotnet test CSharpCraft.Tests/ --logger "console;verbosity=detailed"
 1. Write tests for current behavior first
 2. Extract smaller methods incrementally
 3. Run tests after each change
-4. Verify all 569 tests pass at the end
+4. Verify all 544 tests pass at the end
 
 ## Best Practices
 
@@ -332,9 +332,10 @@ dotnet test CSharpCraft.Tests/ --logger "console;verbosity=detailed"
 
 ## Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — System design, orchestrator hierarchy, interface table
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System design, orchestrator hierarchy, namespace organization, interface table
 - [QUICK_REFERENCE.md](QUICK_REFERENCE.md) — API cheat sheet, file locations, templates
 - [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) — Refactoring history and metrics
+- [PICO8_CLASS_DIAGRAM.md](PICO8_CLASS_DIAGRAM.md) — Mermaid class & interface diagram
 
 ---
 

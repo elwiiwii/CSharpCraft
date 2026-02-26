@@ -1,7 +1,7 @@
 # CSharpCraft Refactoring — Project Summary
 
 ## Executive Summary
-Successfully completed **13 phases of architectural refactoring** to transform CSharpCraft from a monolithic design to a well-structured, SOLID-compliant codebase with comprehensive test coverage.
+Successfully completed **16 phases of architectural refactoring** to transform CSharpCraft from a monolithic design to a well-structured, SOLID-compliant codebase with comprehensive test coverage.
 
 ## Overall Metrics
 
@@ -17,17 +17,21 @@ Successfully completed **13 phases of architectural refactoring** to transform C
 | 11 | PauseMenuBuilder circular dep removal | 373 | 578 |
 | 12 | YAGNI dead code cleanup | 373 | 569 |
 | 13 | Content loading + music pipeline wiring | 373 | 569 |
+| 14 | ISP cleanup (split interfaces, remove dead code) | 373 | 544 |
+| 15 | Architecture consistency (9-phase cleanup) | 373 | 544 |
+| 16 | Folder reorganization + namespace alignment | 373 | 544 |
 
 ### Current Architecture Metrics
 - **GameOrchestrator:** 1,072 → 373 lines (-65% reduction)
-- **Test Coverage:** 569 tests across 36 test files
-- **Source Files (Pico8):** 56 files, ~4,900 LOC (excluding lookup tables)
-- **Public Interfaces:** 18 (all with concrete implementations)
+- **Test Coverage:** 544 tests across 35 test files
+- **Source Files (Pico8):** 59 files in 7 domain folders, ~4,900 LOC (excluding lookup tables)
+- **Public Interfaces:** 17 (all with concrete implementations)
 - **Null Object Types:** 3 (NullScene, InMemorySettings, DefaultInputBindings)
 - **Static Facade Accessors:** 3 (Pico8, GameRendering, Notifications)
+- **Sub-namespaces:** 7 (Audio, Graphics, Input, Scene, Menu, Models, Utilities)
 - **DIP Score:** 5/5 ✅ (Complete Dependency Inversion)
 - **SRP Score:** 5/5 ✅ (Single responsibility per class)
-- **Test Pass Rate:** 100% (569/569 passing)
+- **Test Pass Rate:** 100% (544/544 passing)
 
 ---
 
@@ -106,6 +110,38 @@ Successfully completed **13 phases of architectural refactoring** to transform C
 - Music pipeline fully connected (was previously broken — AudioAPI received `null` for channels and music manager)
 - 569 tests
 
+### Phase 14: ISP Cleanup
+**Goal:** Apply Interface Segregation Principle, remove unused abstractions  
+**Outcome:**
+- Split `IAudioGraphicsSettings` into `IAudioSettings` + `IDisplaySettings` (single-responsibility)
+- Removed `IServiceFactory`/`ServiceFactory` and `IOutputFacade`/`OutputFacade` (unused after earlier extractions)
+- Deleted `FactoryInjectionTests.cs` and `ServiceFactoryTests.cs` (tested removed code)
+- 544 tests
+
+### Phase 15: Architecture Consistency
+**Goal:** Ensure 100% consistent patterns across all 53 Pico8 source files  
+**Outcome (9 sub-phases):**
+1. Converted 9 primary constructors to traditional constructors with explicit field assignments
+2. Standardized null guards from `ThrowIfNull` to `?? throw new ArgumentNullException()`
+3. Added `readonly` to 3 mutable fields that should have been immutable
+4. Converted GameRendering and Notifications from property-setter to `Initialize()` method pattern
+5. AudioOrchestrator now implements `IDisposable` (DisposeAudio → Dispose)
+6. CosDict/SinDict: public readonly field → property with `{ get; }`
+7. Converted MusicInst, SongInst to immutable records; PalCol to mutable record
+8. Fixed IntArrayEqualityComparer null bug, MapManager null-forgiving → validated accessor, DefaultColors caching, Ptn decoupling
+9. Final verification — 544 tests passing, 0 errors, 0 warnings
+
+### Phase 16: Folder Reorganization & Namespace Alignment
+**Goal:** Organize flat Pico8 project into domain folders with matching namespaces  
+**Outcome:**
+- Split 53 flat files into 7 domain folders: Audio (8), Graphics (11), Input (6), Scene (8), Menu (10), Models (6), Utilities (5)
+- 4 root files kept: Pico8.cs, GameOrchestrator.cs, GameRendering.cs, Notifications.cs
+- Split `Pico8Classes.cs` into 6 individual per-type files (P8Btns, MenuInput, MenuItem, MusicInst, SongInst, PalCol)
+- Each folder has its own sub-namespace (e.g., `CSharpCraft.Pico8.Audio`)
+- Interfaces co-located with implementations in domain folders
+- `GlobalUsings.cs` files added to Pico8, Game, and Tests projects for seamless cross-namespace access
+- 544 tests
+
 ---
 
 ## Service Architecture
@@ -128,13 +164,11 @@ Successfully completed **13 phases of architectural refactoring** to transform C
 15. **PauseMenuBuilder** — Pause menu construction (no circular deps)
 16. **PauseMenuRenderer** (IPauseMenuRenderer) — Pause menu overlay
 17. **PopupService** (IPopupService) — Notification popups
-18. **ServiceFactory** (IServiceFactory) — Service creation
-19. **OutputFacade** (IOutputFacade) — Graphics+Audio facade
-20. **FnaTextureRenderer** (ITextureRenderer) — Texture rendering
+18. **FnaTextureRenderer** (ITextureRenderer) — Texture rendering
 
 ### Null Object Types
 - **NullScene** — Safe no-op `IScene` implementation (singleton)
-- **InMemorySettings** — Default `IAudioGraphicsSettings` (all defaults)
+- **InMemorySettings** — Default `IAudioSettings` + `IDisplaySettings` (all defaults)
 - **DefaultInputBindings** — Default `IInputBindingProvider` (empty bindings)
 
 ### Static Facade Accessors (AsyncLocal)
@@ -163,8 +197,9 @@ Each class has a single, clear responsibility:
 - Tests use mocks interchangeably with concrete types
 
 ### Interface Segregation Principle (ISP) — ✅
-- 18 focused interfaces (each service has specific contract)
+- 17 focused interfaces (each service has specific contract)
 - No fat interfaces — each defines a single concern
+- `IAudioGraphicsSettings` split into `IAudioSettings` + `IDisplaySettings`
 - `IPauseMenuContext` groups only what pause menu needs
 
 ### Dependency Inversion Principle (DIP) — 5/5 ✅
@@ -181,7 +216,7 @@ Each class has a single, clear responsibility:
 - **Framework:** xUnit 2.9.1
 - **Assertions:** FluentAssertions 6.12.0 (100% of assertions)
 - **Mocking:** Moq 4.20.70
-- **Coverage:** 569 tests across 36 test files
+- **Coverage:** 544 tests across 35 test files
 - **TreatWarningsAsErrors:** Enabled in test project only
 
 ### Test Quality
@@ -202,5 +237,5 @@ Each class has a single, clear responsibility:
 ---
 
 **Project Status:** ✅ **EXCELLENT HEALTH**  
-**Phases Completed:** 13 (comprehensive refactoring)  
+**Phases Completed:** 16 (comprehensive refactoring)  
 **Last Update:** February 2026

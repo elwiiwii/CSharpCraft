@@ -1,19 +1,20 @@
 # Migration Status
 
 > Tracking the transition from legacy architecture to the current static facade + orchestrator design.
-> Last updated after Phase 13 completion (569 tests passing).
+> Last updated after Phase 16 completion (544 tests passing).
 
 ## Overview
 
 | Metric | Value |
 |--------|-------|
-| Pico8 API Layer | 56 source files, ~4,900 LOC (excluding lookup tables) |
+| Pico8 API Layer | 59 source files in 7 domain folders, ~4,900 LOC (excluding lookup tables) |
 | GameOrchestrator | 373 lines (down from 1,072) |
-| Interfaces | 18 public interfaces |
-| Test count | 569 passing |
-| Test files | 36 |
+| Interfaces | 17 public interfaces |
+| Test count | 544 passing |
+| Test files | 35 |
 | Game build errors | 0 |
 | Scene migration | 100% complete |
+| Sub-namespaces | 7 (Audio, Graphics, Input, Scene, Menu, Models, Utilities) |
 
 ## Phase Status
 
@@ -32,12 +33,15 @@
 | 11 | ✅ Complete | 578 | PauseMenuBuilder circular dependency removal (MenuInput record) |
 | 12 | ✅ Complete | 569 | YAGNI cleanup — dead code removal from GameOrchestrator and Main.cs |
 | 13 | ✅ Complete | 569 | Content loading — GameHostContext expanded with audio dictionaries, music pipeline wired |
+| 14 | ✅ Complete | 544 | ISP cleanup — split IAudioGraphicsSettings → IAudioSettings + IDisplaySettings, removed IServiceFactory/IOutputFacade |
+| 15 | ✅ Complete | 544 | Architecture consistency — 9-sub-phase cleanup (constructors, null guards, readonly, Initialize pattern, IDisposable, records, bug fixes) |
+| 16 | ✅ Complete | 544 | Folder reorganization — 53 flat files → 7 domain folders with matching sub-namespaces, Pico8Classes.cs split into 6 files |
 
 ## Architecture Milestones
 
 ### Legacy Removal (Phase 6)
 - **Pico8Functions.cs** (875 lines) — removed, replaced by GameOrchestrator (373 lines)
-- **Services/ directory** — removed, services live at top level of CSharpCraft.Pico8/
+- **Services/ directory** — removed, services organized into domain folders within CSharpCraft.Pico8/
 - All scenes migrated from `p8.Method()` → `Pico8.Method()` via `using static`
 
 ### Overlay Split (Phase 9)
@@ -54,6 +58,29 @@
 - `GameHostContext` expanded from 9 to 11 properties (added `MusicDictionary`, `SoundEffectDictionary`)
 - Audio wiring: `AudioChannels` → `MusicManager` → `AudioAPI` (resolved chicken-and-egg via captured reference)
 - Fixed broken music playback (AudioAPI previously received `null` for audioChannels and musicManager)
+
+### ISP Cleanup (Phase 14)
+- Split `IAudioGraphicsSettings` into `IAudioSettings` + `IDisplaySettings` (single-responsibility)
+- Removed `IServiceFactory`/`ServiceFactory` and `IOutputFacade`/`OutputFacade` (unused after earlier extractions)
+- Deleted corresponding test files
+
+### Architecture Consistency (Phase 15)
+9 sub-phases ensuring 100% consistent patterns across all Pico8 source files:
+1. Traditional constructors (9 primary constructors converted)
+2. `?? throw new ArgumentNullException()` null guards (standardized from `ThrowIfNull`)
+3. `readonly` on 3 mutable fields
+4. GameRendering and Notifications: property-setter → `Initialize()` method pattern
+5. AudioOrchestrator: `IDisposable` implementation
+6. CosDict/SinDict: public readonly field → property with `{ get; }`
+7. MusicInst, SongInst → immutable records; PalCol → mutable record
+8. Bug fixes: IntArrayEqualityComparer null handling, MapManager validated accessor, DefaultColors caching, Ptn decoupling
+
+### Folder Reorganization (Phase 16)
+- Split 53 flat files into 7 domain folders with matching namespaces
+- `Pico8Classes.cs` split into 6 individual per-type files (P8Btns, MenuInput, MenuItem, MusicInst, SongInst, PalCol)
+- Interfaces co-located with implementations
+- `GlobalUsings.cs` added to Pico8, Game, and Tests projects
+- 4 root files kept: Pico8.cs, GameOrchestrator.cs, GameRendering.cs, Notifications.cs
 
 ## API Coverage
 

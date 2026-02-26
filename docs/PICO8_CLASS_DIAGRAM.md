@@ -2,8 +2,10 @@
 
 > **Color key:**
 > 🔵 Blue = Interface  |  🟢 Green = Concrete class  |  🩵 Teal = Orchestrator
-> 🟠 Orange = Record / value type  |  🟣 Purple = Sealed  |  🔘 Gray (dashed) = Static  |  🩷 Pink = Enum
-
+> 🟠 Orange = Record / value type  |  🟣 Purple = Sealed  |  🔘 Gray (dashed) = Static  |  🩷 Pink = Enum>
+> **Namespace groupings** (Phase 16): Types are organized into 7 sub-namespaces
+> under `CSharpCraft.Pico8`: `.Audio`, `.Graphics`, `.Input`, `.Scene`, `.Menu`, `.Models`, `.Utilities`
+> Root namespace `CSharpCraft.Pico8` contains: Pico8, GameOrchestrator, GameRendering, Notifications
 ```mermaid
 classDiagram
     direction TB
