@@ -9,7 +9,7 @@ namespace CSharpCraft.Pico8;
 public class PaletteManager : IPaletteManager
 {
     private readonly List<Color> _staticPalette;
-    private Dictionary<Color, PalCol> _paletteMap = [];
+    private readonly Dictionary<Color, PalCol> _paletteMap = [];
 
     public PaletteManager(List<Color> staticPalette)
     {

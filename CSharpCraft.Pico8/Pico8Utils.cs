@@ -168,11 +168,10 @@ public static class Pico8Utils
 
     /// <summary>
     /// Physical button test - checks raw input state for a button index.
-    /// Uses InputBindings from the current Pico8 context.
+    /// Receives InputBindings explicitly to avoid coupling to Pico8 static class.
     /// </summary>
-    public static bool Ptn(int i, int p = 0)
+    public static bool Ptn(int i, IInputBindingProvider bindings, int p = 0)
     {
-        var bindings = Pico8.InputBindings;
         return i switch
         {
             0 => IsBindingDown(0, bindings.KeyboardLeft.Bind1) ||
@@ -214,9 +213,11 @@ public static class Pico8Utils
     }
 
     /// <summary>
-    /// Standard PICO-8 32-color palette.
+    /// Standard PICO-8 32-color palette. Cached on first access.
     /// </summary>
-    public static List<Color> DefaultColors =>
+    public static List<Color> DefaultColors => _defaultColors;
+
+    private static readonly List<Color> _defaultColors =
     [
         HexToColor("000000"), HexToColor("1D2B53"),
         HexToColor("7E2553"), HexToColor("008751"),

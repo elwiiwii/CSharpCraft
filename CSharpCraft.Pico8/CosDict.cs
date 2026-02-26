@@ -2,7 +2,7 @@
 
 public class CosDict
 {
-    public readonly Dictionary<double, double> LookupTable = new()
+    public Dictionary<double, double> LookupTable { get; } = new()
     {
 { 0, 6553.6 },
 { 0.1, 6553.6 },

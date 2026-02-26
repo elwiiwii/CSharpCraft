@@ -39,17 +39,17 @@ public class P8Btns
         Prev[6] = Pico8.Btn(6);
     }
 
-    public void UpLockout(bool paused)
+    public void UpLockout(bool paused, IInputBindingProvider bindings)
     {
         for (int i = 0; i < 7; i++)
         {
             if (paused)
             {
-                if (Pico8Utils.Ptn(i)) { Lockout[i] = true; } else { Lockout[i] = false; }
+                if (Pico8Utils.Ptn(i, bindings)) { Lockout[i] = true; } else { Lockout[i] = false; }
             }
             else
             {
-                if (!Pico8Utils.Ptn(i)) { Lockout[i] = false; }
+                if (!Pico8Utils.Ptn(i, bindings)) { Lockout[i] = false; }
             }
         }
     }
@@ -82,47 +82,19 @@ public class MenuItem
 /// <summary>
 /// Represents an active music instance (a playing SoundEffectInstance).
 /// </summary>
-public class MusicInst
-{
-    public string Name { get; }
-    public SoundEffectInstance Track { get; }
-    public bool Loop { get; }
-    public int Group { get; }
-    public MusicInst(string name, SoundEffectInstance track, bool loop, int group)
-    {
-        Name = name;
-        Track = track;
-        Loop = loop;
-        Group = group;
-    }
-}
+public record MusicInst(string Name, SoundEffectInstance Track, bool Loop, int Group);
 
 /// <summary>
 /// Represents a song definition: a list of named tracks with loop settings.
 /// </summary>
-public class SongInst
-{
-    public List<(string name, bool loop)> Tracks { get; }
-    public int Group { get; }
-    public SongInst(List<(string name, bool loop)> tracks, int group)
-    {
-        Tracks = tracks;
-        Group = group;
-    }
-}
+public record SongInst(List<(string name, bool loop)> Tracks, int Group);
 
 /// <summary>
 /// Palette color remapping entry (source color, target color, transparency flag).
 /// </summary>
-public class PalCol
+public record PalCol(Color C0, Color C1, bool Trans)
 {
-    public Color C0 { get; set; }
-    public Color C1 { get; set; }
-    public bool Trans { get; set; } = false;
-    public PalCol(Color c0, Color c1, bool trans)
-    {
-        C0 = c0;
-        C1 = c1;
-        Trans = trans;
-    }
+    public Color C0 { get; set; } = C0;
+    public Color C1 { get; set; } = C1;
+    public bool Trans { get; set; } = Trans;
 }

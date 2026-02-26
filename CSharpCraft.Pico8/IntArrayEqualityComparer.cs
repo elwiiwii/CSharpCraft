@@ -4,18 +4,18 @@ public class IntArrayEqualityComparer : IEqualityComparer<int[]>
 {
     public bool Equals(int[]? x, int[]? y)
     {
-        if (x is not null && y is not null)
+        if (ReferenceEquals(x, y)) return true;
+        if (x is null || y is null) return false;
+
+        if (x.Length != y.Length)
         {
-            if (x.Length != y.Length)
+            return false;
+        }
+        for (int i = 0; i < x.Length; i++)
+        {
+            if (x[i] != y[i])
             {
                 return false;
-            }
-            for (int i = 0; i < x.Length; i++)
-            {
-                if (x[i] != y[i])
-                {
-                    return false;
-                }
             }
         }
         return true;

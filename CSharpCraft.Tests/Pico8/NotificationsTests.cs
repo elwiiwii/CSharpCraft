@@ -31,7 +31,7 @@ public class NotificationsTests : IDisposable
     [Fact]
     public void Current_WhenSetToNull_ThrowsArgumentNullException()
     {
-        var act = () => Notifications.Current = null!;
+        var act = () => Notifications.Initialize(null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
@@ -39,7 +39,7 @@ public class NotificationsTests : IDisposable
     public void Current_WhenSet_ReturnsSetInstance()
     {
         var mockPopup = new Mock<IPopupService>();
-        Notifications.Current = mockPopup.Object;
+        Notifications.Initialize(mockPopup.Object);
 
         Notifications.Current.Should().Be(mockPopup.Object);
     }
@@ -48,7 +48,7 @@ public class NotificationsTests : IDisposable
     public void Show_DelegatesToCurrentWithInfoSeverity()
     {
         var mockPopup = new Mock<IPopupService>();
-        Notifications.Current = mockPopup.Object;
+        Notifications.Initialize(mockPopup.Object);
 
         Notifications.Show("test message");
 
@@ -59,7 +59,7 @@ public class NotificationsTests : IDisposable
     public void ShowError_DelegatesToCurrentWithErrorSeverity()
     {
         var mockPopup = new Mock<IPopupService>();
-        Notifications.Current = mockPopup.Object;
+        Notifications.Initialize(mockPopup.Object);
 
         Notifications.ShowError("error message");
 
@@ -70,7 +70,7 @@ public class NotificationsTests : IDisposable
     public void Reset_ClearsCurrentInstance()
     {
         var mockPopup = new Mock<IPopupService>();
-        Notifications.Current = mockPopup.Object;
+        Notifications.Initialize(mockPopup.Object);
 
         Notifications.Reset();
 

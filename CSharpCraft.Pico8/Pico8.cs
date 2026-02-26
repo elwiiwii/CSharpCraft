@@ -317,29 +317,36 @@ namespace CSharpCraft.Pico8
         #region MAP DATA API
 
         /// <summary>
+        /// Validated map manager accessor. Throws if not initialized (no cart loaded with map data).
+        /// </summary>
+        private static IMapManager MapMgr =>
+            Orch.MapManager ?? throw new InvalidOperationException(
+                "MapManager is not available. Ensure a cart with map data has been loaded.");
+
+        /// <summary>
         /// Get map tile at cell position (PICO-8 mget)
         /// </summary>
         public static int Mget(double celx, double cely)
-            => Orch.MapManager!.Mget(celx, cely);
+            => MapMgr.Mget(celx, cely);
 
         /// <summary>
         /// Set map tile at cell position (PICO-8 mset)
         /// </summary>
         public static void Mset(double celx, double cely, double snum = 0)
-            => Orch.MapManager!.Mset(celx, cely, snum);
+            => MapMgr.Mset(celx, cely, snum);
 
         /// <summary>
         /// Get sprite flag data (PICO-8 fget)
         /// </summary>
         public static int Fget(int n)
-            => Orch.MapManager!.Fget(n);
+            => MapMgr.Fget(n);
 
         /// <summary>
         /// Get reference to raw map data array.
         /// Used for bulk access (e.g., saving/loading seeds).
         /// </summary>
         public static int[] GetMapData()
-            => Orch.MapManager!.GetMapData();
+            => MapMgr.GetMapData();
 
         #endregion
 

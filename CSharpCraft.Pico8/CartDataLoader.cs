@@ -17,9 +17,9 @@ public class CartDataLoader : ICartDataLoader
 {
     public CartData Load(IScene scene, List<Color> colors, Dictionary<string, Texture2D> textureDictionary)
     {
-        ArgumentNullException.ThrowIfNull(scene, nameof(scene));
-        ArgumentNullException.ThrowIfNull(colors, nameof(colors));
-        ArgumentNullException.ThrowIfNull(textureDictionary, nameof(textureDictionary));
+        _ = scene ?? throw new ArgumentNullException(nameof(scene));
+        _ = colors ?? throw new ArgumentNullException(nameof(colors));
+        _ = textureDictionary ?? throw new ArgumentNullException(nameof(textureDictionary));
 
         // Parse sprites from hex string or texture image
         Color[] sprites = [];

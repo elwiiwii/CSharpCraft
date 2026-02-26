@@ -23,9 +23,9 @@ namespace CSharpCraft.Pico8
         private IPopupService? _popupService;
 
         // Managers
-        private IMapManager? _mapManager;
+        private readonly IMapManager? _mapManager;
         private ITrackManager? _trackManager;
-        private PauseMenuState? _pauseMenuState;
+        private readonly PauseMenuState? _pauseMenuState;
 
         // State
         private IScene _currentCart;
@@ -95,8 +95,8 @@ namespace CSharpCraft.Pico8
             IDisplayManager? displayManager = null)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
-            ArgumentNullException.ThrowIfNull(graphicsAPI, nameof(graphicsAPI));
-            ArgumentNullException.ThrowIfNull(audioAPI, nameof(audioAPI));
+            _ = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
+            _ = audioAPI ?? throw new ArgumentNullException(nameof(audioAPI));
             _sceneManager = sceneManager ?? throw new ArgumentNullException(nameof(sceneManager));
 
             // Scene & host defaults (Null Object pattern — no null! anywhere)
@@ -133,7 +133,7 @@ namespace CSharpCraft.Pico8
 
         public void LoadCart(IScene cart)
         {
-            if (cart == null) throw new ArgumentNullException(nameof(cart));
+            _ = cart ?? throw new ArgumentNullException(nameof(cart));
 
             _currentCart?.Dispose();
             _cartData = CartData.Empty;
@@ -362,7 +362,7 @@ namespace CSharpCraft.Pico8
 
         private void DisposeManagers()
         {
-            _audioOrch.DisposeAudio();
+            _audioOrch.Dispose();
         }
 
         public void Dispose()

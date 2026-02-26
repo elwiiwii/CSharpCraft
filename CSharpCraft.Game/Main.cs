@@ -201,10 +201,10 @@ class FNAGame : Game
 
         orchestrator.Initialize();
 
-        GameRendering.Current = new FnaTextureRenderer(batch, textureDictionary, Window, graphics, () => orchestrator.Cell);
+        GameRendering.Initialize(new FnaTextureRenderer(batch, textureDictionary, Window, graphics, () => orchestrator.Cell));
 
         var popupService = new PopupService(graphicsAPI);
-        Notifications.Current = popupService;
+        Notifications.Initialize(popupService);
 
         orchestrator.PauseMenuRenderer = new PauseMenuRenderer(graphicsAPI, GameRendering.Current);
         orchestrator.PopupService = popupService;

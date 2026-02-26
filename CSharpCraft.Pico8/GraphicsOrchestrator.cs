@@ -21,10 +21,17 @@ namespace CSharpCraft.Pico8
     /// <remarks>
     /// Initialize GraphicsOrchestrator with required IGraphicsAPI and optional palette
     /// </remarks>
-    public class GraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null)
+    public class GraphicsOrchestrator
     {
-        private readonly IGraphicsAPI _graphicsAPI = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
+        private readonly IGraphicsAPI _graphicsAPI;
+        private readonly IPaletteManager? _paletteManager;
         private (F32 x, F32 y) _cameraOffset = (F32.Zero, F32.Zero);
+
+        public GraphicsOrchestrator(IGraphicsAPI graphicsAPI, IPaletteManager? paletteManager = null)
+        {
+            _graphicsAPI = graphicsAPI ?? throw new ArgumentNullException(nameof(graphicsAPI));
+            _paletteManager = paletteManager;
+        }
 
         /// <summary>
         /// Exposes the underlying IGraphicsAPI for testing and advanced access
@@ -34,7 +41,7 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Exposes the palette manager for testing and advanced access
         /// </summary>
-        public IPaletteManager? PaletteManager => paletteManager;
+        public IPaletteManager? PaletteManager => _paletteManager;
 
         /// <summary>
         /// Current camera offset position
@@ -116,7 +123,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Pal()
         {
-            paletteManager?.ResetPalette();
+            _paletteManager?.ResetPalette();
         }
 
         /// <summary>
@@ -124,7 +131,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Pal(int c0, int c1)
         {
-            paletteManager?.SetPalette(c0, c1);
+            _paletteManager?.SetPalette(c0, c1);
         }
 
         /// <summary>
@@ -132,7 +139,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Pal(Color c0, Color c1)
         {
-            paletteManager?.SetPalette(c0, c1);
+            _paletteManager?.SetPalette(c0, c1);
         }
 
         /// <summary>
@@ -140,7 +147,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Palt()
         {
-            paletteManager?.ResetTransparency();
+            _paletteManager?.ResetTransparency();
         }
 
         /// <summary>
@@ -148,7 +155,7 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void Palt(int col, bool transparent)
         {
-            paletteManager?.SetTransparency(col, transparent);
+            _paletteManager?.SetTransparency(col, transparent);
         }
 
         #endregion

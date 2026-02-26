@@ -5,8 +5,8 @@ namespace CSharpCraft.Pico8;
 /// Separate from Pico8 static class to preserve SRP — Pico8 is PICO-8 API only,
 /// GameRendering is the game's custom rendering concern.
 /// 
-/// Set once during game initialization (Main.cs), consumed by scenes.
-/// Tests set a Mock&lt;ITextureRenderer&gt; before each test.
+/// Set once during game initialization via GameRendering.Initialize(), consumed by scenes.
+/// Tests call Initialize() with a Mock&lt;ITextureRenderer&gt; before each test.
 /// 
 /// Uses AsyncLocal for thread-safe test isolation (same pattern as Pico8.cs).
 /// </summary>
@@ -18,11 +18,17 @@ public static class GameRendering
     /// The current texture renderer instance.
     /// Throws if not initialized.
     /// </summary>
-    public static ITextureRenderer Current
+    public static ITextureRenderer Current =>
+        _current.Value ?? throw new InvalidOperationException(
+            "GameRendering has not been initialized. Call GameRendering.Initialize() during startup.");
+
+    /// <summary>
+    /// Initialize the static GameRendering accessor with a texture renderer instance.
+    /// Must be called once during game initialization.
+    /// </summary>
+    public static void Initialize(ITextureRenderer renderer)
     {
-        get => _current.Value ?? throw new InvalidOperationException(
-            "GameRendering has not been initialized. Set GameRendering.Current during startup.");
-        set => _current.Value = value ?? throw new ArgumentNullException(nameof(value));
+        _current.Value = renderer ?? throw new ArgumentNullException(nameof(renderer));
     }
 
     /// <summary>

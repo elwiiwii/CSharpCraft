@@ -2,7 +2,7 @@
 
 public class SinDict
 {
-    public readonly Dictionary<double, double> LookupTable = new()
+    public Dictionary<double, double> LookupTable { get; } = new()
     {
 { 0, 0 },
 { 0.1, 0 },

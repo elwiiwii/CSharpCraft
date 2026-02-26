@@ -18,7 +18,7 @@ public class TextureRendererTests : IDisposable
     public TextureRendererTests()
     {
         _mockRenderer = new Mock<ITextureRenderer>();
-        GameRendering.Current = _mockRenderer.Object;
+        GameRendering.Initialize(_mockRenderer.Object);
     }
 
     public void Dispose()
@@ -48,7 +48,7 @@ public class TextureRendererTests : IDisposable
     [Fact]
     public void Current_WhenSetToNull_ThrowsArgumentNullException()
     {
-        var act = () => GameRendering.Current = null!;
+        var act = () => GameRendering.Initialize(null!);
 
         act.Should().Throw<ArgumentNullException>();
     }
@@ -251,7 +251,7 @@ public class SceneRenderingErgonomicsTests : IDisposable
 
         // Setup path 2: GameRendering (separate concern)
         _mockRenderer = new Mock<ITextureRenderer>();
-        GameRendering.Current = _mockRenderer.Object;
+        GameRendering.Initialize(_mockRenderer.Object);
     }
 
     public void Dispose()

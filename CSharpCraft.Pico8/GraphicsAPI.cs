@@ -8,24 +8,41 @@ namespace CSharpCraft.Pico8;
 /// Implementation of Pico-8 graphics primitives using XNA/FNA.
 /// This class encapsulates all drawing operations and depends on graphics context.
 /// </summary>
-public class GraphicsAPI(
-    SpriteBatch batch,
-    Texture2D pixel,
-    List<Color> colors,
-    F32 cameraOffsetX,
-    F32 cameraOffsetY,
-    (int Width, int Height) cell) : IGraphicsAPI
+public class GraphicsAPI : IGraphicsAPI
 {
+    private readonly SpriteBatch _batch;
+    private readonly Texture2D _pixel;
+    private readonly List<Color> _colors;
+    private readonly F32 _cameraOffsetX;
+    private readonly F32 _cameraOffsetY;
+    private readonly (int Width, int Height) _cell;
+
+    public GraphicsAPI(
+        SpriteBatch batch,
+        Texture2D pixel,
+        List<Color> colors,
+        F32 cameraOffsetX,
+        F32 cameraOffsetY,
+        (int Width, int Height) cell)
+    {
+        _batch = batch ?? throw new ArgumentNullException(nameof(batch));
+        _pixel = pixel ?? throw new ArgumentNullException(nameof(pixel));
+        _colors = colors ?? throw new ArgumentNullException(nameof(colors));
+        _cameraOffsetX = cameraOffsetX;
+        _cameraOffsetY = cameraOffsetY;
+        _cell = cell;
+    }
+
     public void Pset(F32 x, F32 y, double c)
     {
         int xFlr = F32.FloorToInt(x);
         int yFlr = F32.FloorToInt(y);
         int cFlr = (int)Math.Floor(c);
 
-        Vector2 position = new((xFlr - F32.FloorToInt(cameraOffsetX)) * cell.Width, (yFlr - F32.FloorToInt(cameraOffsetY)) * cell.Height);
-        Vector2 size = new(cell.Width, cell.Height);
+        Vector2 position = new((xFlr - F32.FloorToInt(_cameraOffsetX)) * _cell.Width, (yFlr - F32.FloorToInt(_cameraOffsetY)) * _cell.Height);
+        Vector2 size = new(_cell.Width, _cell.Height);
 
-        batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        _batch.Draw(_pixel, position, null, _colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
     }
 
     public void Rect(double x1, double y1, double x2, double y2, double c)
@@ -63,16 +80,16 @@ public class GraphicsAPI(
         int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
         int cFlr = (int)Math.Floor(c);
 
-        int rectStartX = (x1Flr - F32.FloorToInt(cameraOffsetX)) * cell.Width;
-        int rectStartY = (y1Flr - F32.FloorToInt(cameraOffsetY)) * cell.Height;
+        int rectStartX = (x1Flr - F32.FloorToInt(_cameraOffsetX)) * _cell.Width;
+        int rectStartY = (y1Flr - F32.FloorToInt(_cameraOffsetY)) * _cell.Height;
 
-        int rectSizeX = (x2Flr - x1Flr + 1) * cell.Width;
-        int rectSizeY = (y2Flr - y1Flr + 1) * cell.Height;
+        int rectSizeX = (x2Flr - x1Flr + 1) * _cell.Width;
+        int rectSizeY = (y2Flr - y1Flr + 1) * _cell.Height;
 
         Vector2 position = new(rectStartX, rectStartY);
         Vector2 size = new(rectSizeX, rectSizeY);
 
-        batch.Draw(pixel, position, null, colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        _batch.Draw(_pixel, position, null, _colors[cFlr], 0, Vector2.Zero, size, SpriteEffects.None, 0);
     }
 
     public void Rectfill(double x1, double y1, double x2, double y2, Color c)
@@ -82,16 +99,16 @@ public class GraphicsAPI(
         int x2Flr = (int)Math.Floor(Math.Max(x1, x2));
         int y2Flr = (int)Math.Floor(Math.Max(y1, y2));
 
-        int rectStartX = (x1Flr - F32.FloorToInt(cameraOffsetX)) * cell.Width;
-        int rectStartY = (y1Flr - F32.FloorToInt(cameraOffsetY)) * cell.Height;
+        int rectStartX = (x1Flr - F32.FloorToInt(_cameraOffsetX)) * _cell.Width;
+        int rectStartY = (y1Flr - F32.FloorToInt(_cameraOffsetY)) * _cell.Height;
 
-        int rectSizeX = (x2Flr - x1Flr + 1) * cell.Width;
-        int rectSizeY = (y2Flr - y1Flr + 1) * cell.Height;
+        int rectSizeX = (x2Flr - x1Flr + 1) * _cell.Width;
+        int rectSizeY = (y2Flr - y1Flr + 1) * _cell.Height;
 
         Vector2 position = new(rectStartX, rectStartY);
         Vector2 size = new(rectSizeX, rectSizeY);
 
-        batch.Draw(pixel, position, null, c, 0, Vector2.Zero, size, SpriteEffects.None, 0);
+        _batch.Draw(_pixel, position, null, c, 0, Vector2.Zero, size, SpriteEffects.None, 0);
     }
 
     public void Circ(F32 x, F32 y, double r, int c)
@@ -154,7 +171,7 @@ public class GraphicsAPI(
 
     public Color GetColor(int index)
     {
-        return colors[index];
+        return _colors[index];
     }
 
     public void DrawPixelScaled(Vector2 position, Color color, float rotation, Vector2 origin, Vector2 scale, int effects, float layerDepth)

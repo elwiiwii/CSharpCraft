@@ -13,16 +13,27 @@ namespace CSharpCraft.Pico8;
 /// 
 /// Scenes access this via GameRendering.Current — never directly.
 /// </summary>
-public class FnaTextureRenderer(
-    SpriteBatch batch,
-    Dictionary<string, Texture2D> textures,
-    GameWindow? window,
-    GraphicsDeviceManager? graphics,
-    Func<(int Width, int Height)>? cellProvider = null) : ITextureRenderer
+public class FnaTextureRenderer : ITextureRenderer
 {
-    private readonly SpriteBatch _batch = batch ?? throw new ArgumentNullException(nameof(batch));
-    private readonly Dictionary<string, Texture2D> _textures = textures ?? throw new ArgumentNullException(nameof(textures));
-    private readonly Func<(int Width, int Height)> _cellProvider = cellProvider ?? (() => (1, 1));
+    private readonly SpriteBatch _batch;
+    private readonly Dictionary<string, Texture2D> _textures;
+    private readonly GameWindow? _window;
+    private readonly GraphicsDeviceManager? _graphics;
+    private readonly Func<(int Width, int Height)> _cellProvider;
+
+    public FnaTextureRenderer(
+        SpriteBatch batch,
+        Dictionary<string, Texture2D> textures,
+        GameWindow? window,
+        GraphicsDeviceManager? graphics,
+        Func<(int Width, int Height)>? cellProvider = null)
+    {
+        _batch = batch ?? throw new ArgumentNullException(nameof(batch));
+        _textures = textures ?? throw new ArgumentNullException(nameof(textures));
+        _window = window;
+        _graphics = graphics;
+        _cellProvider = cellProvider ?? (() => (1, 1));
+    }
 
     /// <inheritdoc />
     public void Draw(string textureName, double x, double y, Color color,
@@ -61,25 +72,25 @@ public class FnaTextureRenderer(
     /// <inheritdoc />
     public (float X, float Y) GetCursorPosition(int mouseX, int mouseY)
     {
-        if (window == null)
+        if (_window == null)
             return (mouseX, mouseY);
 
         var viewport = _batch.GraphicsDevice.Viewport;
         return CalculateCursorPosition(
             mouseX, mouseY,
-            window.ClientBounds.Width, window.ClientBounds.Height,
+            _window.ClientBounds.Width, _window.ClientBounds.Height,
             viewport.Width, viewport.Height);
     }
 
     /// <inheritdoc />
     public void ApplyDisplaySettings(bool fullscreen, int width, int height)
     {
-        if (graphics == null) return;
+        if (_graphics == null) return;
 
-        graphics.IsFullScreen = fullscreen;
-        graphics.PreferredBackBufferWidth = width;
-        graphics.PreferredBackBufferHeight = height;
-        graphics.ApplyChanges();
+        _graphics.IsFullScreen = fullscreen;
+        _graphics.PreferredBackBufferWidth = width;
+        _graphics.PreferredBackBufferHeight = height;
+        _graphics.ApplyChanges();
     }
 
     /// <inheritdoc />

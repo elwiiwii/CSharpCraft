@@ -5,8 +5,8 @@ namespace CSharpCraft.Pico8;
 /// Separate from Pico8 static class to preserve SRP — Pico8 is PICO-8 API only,
 /// Notifications is the game's notification concern.
 /// 
-/// Set once during game initialization (Main.cs), consumed by scenes and system operations.
-/// Tests set a Mock&lt;IPopupService&gt; before each test.
+/// Set once during game initialization via Notifications.Initialize(), consumed by scenes and system operations.
+/// Tests call Initialize() with a Mock&lt;IPopupService&gt; before each test.
 /// 
 /// Uses AsyncLocal for thread-safe test isolation (same pattern as GameRendering).
 /// </summary>
@@ -18,11 +18,17 @@ public static class Notifications
     /// The current popup service instance.
     /// Throws if not initialized.
     /// </summary>
-    public static IPopupService Current
+    public static IPopupService Current =>
+        _current.Value ?? throw new InvalidOperationException(
+            "Notifications has not been initialized. Call Notifications.Initialize() during startup.");
+
+    /// <summary>
+    /// Initialize the static Notifications accessor with a popup service instance.
+    /// Must be called once during game initialization.
+    /// </summary>
+    public static void Initialize(IPopupService popupService)
     {
-        get => _current.Value ?? throw new InvalidOperationException(
-            "Notifications has not been initialized. Set Notifications.Current during startup.");
-        set => _current.Value = value ?? throw new ArgumentNullException(nameof(value));
+        _current.Value = popupService ?? throw new ArgumentNullException(nameof(popupService));
     }
 
     /// <summary>

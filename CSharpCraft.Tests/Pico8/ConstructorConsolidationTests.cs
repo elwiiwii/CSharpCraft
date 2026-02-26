@@ -255,7 +255,7 @@ namespace CSharpCraft.Tests.Pico8
                 new Mock<ISceneManager>().Object);
 
             // ToggleSound needs Notifications.Current set (it shows a popup)
-            Notifications.Current = new Mock<IPopupService>().Object;
+            Notifications.Initialize(new Mock<IPopupService>().Object);
 
             var act = () => orchestrator.ToggleSound();
             act.Should().NotThrow("InMemorySettings should handle ToggleSound safely");

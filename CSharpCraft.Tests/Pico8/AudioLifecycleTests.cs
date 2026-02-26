@@ -52,11 +52,10 @@ namespace CSharpCraft.Tests.Pico8
         }
 
         [Fact]
-        public void AudioOrchestrator_HasDisposeAudioMethod()
+        public void AudioOrchestrator_ImplementsIDisposable()
         {
-            var method = typeof(AudioOrchestrator).GetMethod("DisposeAudio");
-            method.Should().NotBeNull(
-                "AudioOrchestrator should have a DisposeAudio method for cleanup");
+            typeof(AudioOrchestrator).Should().Implement<IDisposable>(
+                "AudioOrchestrator should implement IDisposable for cleanup");
         }
 
         [Fact]
@@ -104,14 +103,14 @@ namespace CSharpCraft.Tests.Pico8
         }
 
         [Fact]
-        public void DisposeAudio_CallsStopAllAndDisposeOnAPI()
+        public void Dispose_CallsStopAllOnAPI()
         {
             // Act
-            _audioOrch.DisposeAudio();
+            _audioOrch.Dispose();
 
             // Assert
             _mockAudioAPI.Verify(a => a.StopAll(), Times.Once(),
-                "DisposeAudio should stop all audio");
+                "Dispose should stop all audio");
         }
 
         #endregion

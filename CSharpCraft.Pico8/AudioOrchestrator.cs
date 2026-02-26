@@ -18,9 +18,14 @@ namespace CSharpCraft.Pico8
     /// <remarks>
     /// Initialize AudioOrchestrator with required IAudioAPI
     /// </remarks>
-    public class AudioOrchestrator(IAudioAPI audioAPI)
+    public class AudioOrchestrator : IDisposable
     {
-        private readonly IAudioAPI _audioAPI = audioAPI ?? throw new ArgumentNullException(nameof(audioAPI));
+        private readonly IAudioAPI _audioAPI;
+
+        public AudioOrchestrator(IAudioAPI audioAPI)
+        {
+            _audioAPI = audioAPI ?? throw new ArgumentNullException(nameof(audioAPI));
+        }
 
         /// <summary>
         /// Exposes the underlying IAudioAPI for testing and advanced access
@@ -92,7 +97,7 @@ namespace CSharpCraft.Pico8
         /// <summary>
         /// Dispose all audio resources and stop playback.
         /// </summary>
-        public void DisposeAudio()
+        public void Dispose()
         {
             _audioAPI.StopAll();
         }

@@ -16,7 +16,7 @@ public class SceneManager : ISceneManager
 
     public void RegisterScene(IScene scene)
     {
-        ArgumentNullException.ThrowIfNull(scene);
+        _ = scene ?? throw new ArgumentNullException(nameof(scene));
         if (!_registeredScenes.Contains(scene))
         {
             _registeredScenes.Add(scene);
@@ -25,14 +25,12 @@ public class SceneManager : ISceneManager
 
     public void ScheduleScene(Func<IScene> sceneFactory)
     {
-        ArgumentNullException.ThrowIfNull(sceneFactory);
-        _scheduledSceneFactory = sceneFactory;
+        _scheduledSceneFactory = sceneFactory ?? throw new ArgumentNullException(nameof(sceneFactory));
     }
 
     public void TransitionToScene(IScene scene)
     {
-        ArgumentNullException.ThrowIfNull(scene);
-        _currentScene = scene;
+        _currentScene = scene ?? throw new ArgumentNullException(nameof(scene));
     }
 
     public List<IScene> GetRegisteredScenes() => _registeredScenes.ToList();
