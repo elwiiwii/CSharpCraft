@@ -29,8 +29,8 @@ public class PauseMenuBuilderDependencyTests
         var builderType = typeof(PauseMenuBuilder);
         var methods = builderType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-        // The type exists and is in the Pico8 namespace
-        builderType.Namespace.Should().Be("CSharpCraft.Pico8");
+        // The type exists and is in the Pico8.Menu namespace
+        builderType.Namespace.Should().Be("CSharpCraft.Pico8.Menu");
 
         // Verify it only depends on IPauseMenuContext (not GameOrchestrator or Pico8 static)
         var ctorParams = builderType.GetConstructors().Single().GetParameters();

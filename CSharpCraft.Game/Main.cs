@@ -153,7 +153,7 @@ class FNAGame : Game
         // Audio wiring: AudioChannels → MusicManager → AudioAPI
         // MusicManager's soundDispose callback needs AudioAPI.StopAll(), but AudioAPI
         // needs MusicManager. Resolve via late-bound captured reference.
-        var audioChannels = new CSharpCraft.Pico8.AudioChannels();
+        var audioChannels = new CSharpCraft.Pico8.Audio.AudioChannels();
         AudioAPI? audioAPIRef = null;
         IAudioSettings audioSettings = optionsFile;
         IDisplaySettings displaySettings = optionsFile;
