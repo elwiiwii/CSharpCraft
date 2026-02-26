@@ -9,7 +9,7 @@ namespace CSharpCraft.Pico8;
 public class MusicManager(
     Func<Dictionary<string, List<SongInst>>> getMusicDict,
     Func<Dictionary<string, SoundEffect>> getMusicSoundDict,
-    Func<IAudioGraphicsSettings> getSettings,
+    Func<IAudioSettings> getSettings,
     Action soundDispose)
 {
     private List<List<MusicInst>> _channelMusic = [];

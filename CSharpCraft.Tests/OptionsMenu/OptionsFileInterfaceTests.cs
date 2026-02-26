@@ -6,18 +6,18 @@ using Xunit;
 namespace CSharpCraft.Tests.OptionsMenu;
 
 /// <summary>
-/// Tests that OptionsFile correctly implements IAudioGraphicsSettings and IInputBindingProvider.
+/// Tests that OptionsFile correctly implements IAudioSettings, IDisplaySettings, and IInputBindingProvider.
 /// Verifies the property mappings between game-layer names and engine-layer interfaces.
 /// </summary>
 public class OptionsFileInterfaceTests
 {
-    // === IAudioGraphicsSettings mapping tests ===
+    // === IAudioSettings mapping tests ===
 
     [Fact]
     public void SoundEnabled_MapsTo_Gen_Sound_On()
     {
         var file = new OptionsFile { Gen_Sound_On = false };
-        IAudioGraphicsSettings settings = file;
+        IAudioSettings settings = file;
 
         settings.SoundEnabled.Should().BeFalse();
 
@@ -29,7 +29,7 @@ public class OptionsFileInterfaceTests
     public void MusicVolume_MapsTo_Gen_Music_Vol()
     {
         var file = new OptionsFile { Gen_Music_Vol = 75 };
-        IAudioGraphicsSettings settings = file;
+        IAudioSettings settings = file;
 
         settings.MusicVolume.Should().Be(75);
 
@@ -41,7 +41,7 @@ public class OptionsFileInterfaceTests
     public void SfxVolume_MapsTo_Gen_Sfx_Vol()
     {
         var file = new OptionsFile { Gen_Sfx_Vol = 80 };
-        IAudioGraphicsSettings settings = file;
+        IAudioSettings settings = file;
 
         settings.SfxVolume.Should().Be(80);
 
@@ -53,7 +53,7 @@ public class OptionsFileInterfaceTests
     public void CurrentSoundtrack_MapsTo_Pcraft_Soundtrack()
     {
         var file = new OptionsFile { Pcraft_Soundtrack = 2 };
-        IAudioGraphicsSettings settings = file;
+        IAudioSettings settings = file;
 
         settings.CurrentSoundtrack.Should().Be(2);
 
@@ -65,7 +65,7 @@ public class OptionsFileInterfaceTests
     public void CurrentSfxPack_MapsTo_Pcraft_Sfx_Pack()
     {
         var file = new OptionsFile { Pcraft_Sfx_Pack = 3 };
-        IAudioGraphicsSettings settings = file;
+        IAudioSettings settings = file;
 
         settings.CurrentSfxPack.Should().Be(3);
 
@@ -77,7 +77,7 @@ public class OptionsFileInterfaceTests
     public void IsFullscreen_MapsTo_Gen_Fullscreen()
     {
         var file = new OptionsFile { Gen_Fullscreen = true };
-        IAudioGraphicsSettings settings = file;
+        IDisplaySettings settings = file;
 
         settings.IsFullscreen.Should().BeTrue();
 
@@ -89,7 +89,7 @@ public class OptionsFileInterfaceTests
     public void WindowWidth_MapsTo_Gen_Window_Width()
     {
         var file = new OptionsFile { Gen_Window_Width = 1024 };
-        IAudioGraphicsSettings settings = file;
+        IDisplaySettings settings = file;
 
         settings.WindowWidth.Should().Be(1024);
 
@@ -101,7 +101,7 @@ public class OptionsFileInterfaceTests
     public void WindowHeight_MapsTo_Gen_Window_Height()
     {
         var file = new OptionsFile { Gen_Window_Height = 768 };
-        IAudioGraphicsSettings settings = file;
+        IDisplaySettings settings = file;
 
         settings.WindowHeight.Should().Be(768);
 
@@ -254,31 +254,41 @@ public class OptionsFileInterfaceTests
     // === Cross-concern: same instance serves both interfaces ===
 
     [Fact]
-    public void SingleInstance_ServesBothInterfaces()
+    public void SingleInstance_ServesAllInterfaces()
     {
         var file = new OptionsFile();
 
-        // Can be used as both interfaces simultaneously
-        IAudioGraphicsSettings settings = file;
+        // Can be used as all three interfaces simultaneously
+        IAudioSettings audioSettings = file;
+        IDisplaySettings displaySettings = file;
         IInputBindingProvider bindings = file;
 
-        settings.SoundEnabled.Should().BeTrue(); // default
+        audioSettings.SoundEnabled.Should().BeTrue(); // default
+        displaySettings.IsFullscreen.Should().BeFalse(); // default
         bindings.KeyboardLeft.Bind1.Should().Be("Left"); // default
     }
 
     // === Default values match ===
 
     [Fact]
-    public void DefaultValues_MatchOriginalDefaults()
+    public void DefaultAudioValues_MatchOriginalDefaults()
     {
         var file = new OptionsFile();
-        IAudioGraphicsSettings settings = file;
+        IAudioSettings settings = file;
 
         settings.SoundEnabled.Should().BeTrue();
         settings.MusicVolume.Should().Be(100);
         settings.SfxVolume.Should().Be(100);
         settings.CurrentSoundtrack.Should().Be(0);
         settings.CurrentSfxPack.Should().Be(0);
+    }
+
+    [Fact]
+    public void DefaultDisplayValues_MatchOriginalDefaults()
+    {
+        var file = new OptionsFile();
+        IDisplaySettings settings = file;
+
         settings.IsFullscreen.Should().BeFalse();
         settings.WindowWidth.Should().Be(512);
         settings.WindowHeight.Should().Be(512);

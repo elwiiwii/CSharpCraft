@@ -42,16 +42,16 @@ namespace CSharpCraft.Tests.Pico8
         #region CONTEXT PROPERTY ACCESS
 
         [Fact]
-        public void Context_Settings_ExposesSettingsInterface()
+        public void Context_AudioSettings_ExposesSettingsInterface()
         {
-            var mockSettings = new Mock<IAudioGraphicsSettings>();
+            var mockSettings = new Mock<IAudioSettings>();
             mockSettings.Setup(s => s.SoundEnabled).Returns(true);
 
             var context = new Mock<IPauseMenuContext>();
-            context.Setup(c => c.Settings).Returns(mockSettings.Object);
+            context.Setup(c => c.AudioSettings).Returns(mockSettings.Object);
 
-            context.Object.Settings.SoundEnabled.Should().BeTrue(
-                "Settings should be accessible through the context interface");
+            context.Object.AudioSettings.SoundEnabled.Should().BeTrue(
+                "AudioSettings should be accessible through the context interface");
         }
 
         [Fact]
@@ -226,7 +226,8 @@ namespace CSharpCraft.Tests.Pico8
         private static Mock<IPauseMenuContext> CreateMockContext()
         {
             var mock = new Mock<IPauseMenuContext>();
-            mock.Setup(c => c.Settings).Returns(new Mock<IAudioGraphicsSettings>().Object);
+            mock.Setup(c => c.AudioSettings).Returns(new Mock<IAudioSettings>().Object);
+            mock.Setup(c => c.DisplaySettings).Returns(new Mock<IDisplaySettings>().Object);
             mock.Setup(c => c.Scenes).Returns(new List<IScene>());
             mock.Setup(c => c.Resolution).Returns((128, 128));
             return mock;

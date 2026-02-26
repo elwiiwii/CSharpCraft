@@ -1,11 +1,11 @@
 namespace CSharpCraft.Pico8;
 
 /// <summary>
-/// In-memory implementation of IAudioGraphicsSettings.
+/// In-memory implementation of IAudioSettings and IDisplaySettings.
 /// Stores all values in memory with no persistence.
 /// Save() is a no-op — used as a safe default when no real settings provider exists (e.g., in tests).
 /// </summary>
-public sealed class InMemorySettings : IAudioGraphicsSettings
+public sealed class InMemorySettings : IAudioSettings, IDisplaySettings
 {
     /// <summary>
     /// Default instance with sensible initial values.

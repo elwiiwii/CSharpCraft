@@ -203,7 +203,8 @@ public class PauseMenuBuilderDependencyTests
     private static Mock<IPauseMenuContext> CreateMockContext()
     {
         var mock = new Mock<IPauseMenuContext>();
-        mock.Setup(c => c.Settings).Returns(new InMemorySettings());
+        mock.Setup(c => c.AudioSettings).Returns(new InMemorySettings());
+        mock.Setup(c => c.DisplaySettings).Returns(new InMemorySettings());
         mock.Setup(c => c.Scenes).Returns(new List<IScene>());
         mock.Setup(c => c.Resolution).Returns((128, 128));
         return mock;

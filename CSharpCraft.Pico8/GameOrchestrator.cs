@@ -18,7 +18,6 @@ namespace CSharpCraft.Pico8
         private readonly AudioOrchestrator _audioOrch;
         private readonly ISceneManager _sceneManager;
         private readonly ICartDataLoader _cartDataLoader;
-        private readonly IServiceFactory _serviceFactory;
         private readonly IDisplayManager _displayManager;
         private IPauseMenuRenderer? _pauseMenuRenderer;
         private IPopupService? _popupService;
@@ -33,7 +32,8 @@ namespace CSharpCraft.Pico8
         private readonly Func<IScene> _titleSceneFactory;
         private readonly List<IScene> _scenes;
         private readonly IInputBindingProvider _inputBindings;
-        private readonly IAudioGraphicsSettings _settings;
+        private readonly IAudioSettings _audioSettings;
+        private readonly IDisplaySettings _displaySettings;
         private readonly Dictionary<string, Texture2D> _textureDictionary;
         private readonly List<Color> _colors;
 
@@ -62,7 +62,8 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public IPopupService? PopupService { set => _popupService = value; }
         public IInputBindingProvider InputBindings => _inputBindings;
-        public IAudioGraphicsSettings Settings => _settings;
+        public IAudioSettings AudioSettings => _audioSettings;
+        public IDisplaySettings DisplaySettings => _displaySettings;
         public List<IScene> Scenes => _scenes;
         public List<Color> Colors => _colors;
         public (int Width, int Height) Cell => _displayManager.Cell;
@@ -91,7 +92,6 @@ namespace CSharpCraft.Pico8
             Func<IScene>? titleSceneFactory = null,
             IPaletteManager? paletteManager = null,
             IMapManager? mapManager = null,
-            IServiceFactory? serviceFactory = null,
             IDisplayManager? displayManager = null)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
@@ -104,21 +104,21 @@ namespace CSharpCraft.Pico8
             _titleSceneFactory = titleSceneFactory ?? (() => _currentCart);
             _scenes = host?.Scenes ?? [];
             _textureDictionary = host?.TextureDictionary ?? [];
-            _settings = host?.Settings ?? InMemorySettings.Default;
+            _audioSettings = host?.AudioSettings ?? InMemorySettings.Default;
+            _displaySettings = host?.DisplaySettings ?? InMemorySettings.Default;
             _inputBindings = host?.InputBindings ?? DefaultInputBindings.Instance;
 
             _displayManager = displayManager
                 ?? (host != null
-                    ? new DisplayManager(host.Graphics, host.GraphicsDevice, host.Window, host.Settings)
+                    ? new DisplayManager(host.Graphics, host.GraphicsDevice, host.Window, host.DisplaySettings)
                     : new DisplayManager(null, null, null, null));
 
-            _serviceFactory = serviceFactory ?? new ServiceFactory();
             _cartDataLoader = cartDataLoader ?? new CartDataLoader();
-            _graphicsOrch = _serviceFactory.CreateGraphicsOrchestrator(graphicsAPI, paletteManager);
-            _audioOrch = _serviceFactory.CreateAudioOrchestrator(audioAPI);
+            _graphicsOrch = new GraphicsOrchestrator(graphicsAPI, paletteManager);
+            _audioOrch = new AudioOrchestrator(audioAPI);
             _mapManager = mapManager;
             _colors = Pico8Utils.DefaultColors;
-            _pauseMenuState = _serviceFactory.CreatePauseMenuState(this);
+            _pauseMenuState = new PauseMenuState(this);
         }
 
         public void Initialize()
@@ -165,10 +165,10 @@ namespace CSharpCraft.Pico8
 
             _cartData = _cartDataLoader.Load(_currentCart, _colors, _textureDictionary);
 
-            _trackManager = _serviceFactory.CreateTrackManager(
+            _trackManager = new TrackManager(
                 () => _cartData.Music,
                 () => _cartData.Sfx,
-                _settings);
+                _audioSettings);
         }
 
         public void Update()
@@ -321,10 +321,10 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void ToggleFullscreen()
         {
-            _settings.IsFullscreen = !_settings.IsFullscreen;
-            _settings.Save();
+            _displaySettings.IsFullscreen = !_displaySettings.IsFullscreen;
+            _displaySettings.Save();
             _displayManager.ToggleFullscreen(_currentCart);
-            Notifications.Show($"fullscreen {(_settings.IsFullscreen ? "on" : "off")} (ctrl-f)");
+            Notifications.Show($"fullscreen {(_displaySettings.IsFullscreen ? "on" : "off")} (ctrl-f)");
         }
 
         /// <summary>
@@ -333,13 +333,13 @@ namespace CSharpCraft.Pico8
         /// </summary>
         public void ToggleSound()
         {
-            _settings.SoundEnabled = !_settings.SoundEnabled;
-            _settings.Save();
-            if (!_settings.SoundEnabled)
+            _audioSettings.SoundEnabled = !_audioSettings.SoundEnabled;
+            _audioSettings.Save();
+            if (!_audioSettings.SoundEnabled)
             {
                 _audioOrch.Mute();
             }
-            Notifications.Show($"sound {(_settings.SoundEnabled ? "on" : "off")} (ctrl-m)");
+            Notifications.Show($"sound {(_audioSettings.SoundEnabled ? "on" : "off")} (ctrl-m)");
         }
 
         /// <summary>

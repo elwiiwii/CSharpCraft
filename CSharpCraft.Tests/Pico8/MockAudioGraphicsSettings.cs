@@ -3,10 +3,10 @@ using CSharpCraft.Pico8;
 namespace CSharpCraft.Tests;
 
 /// <summary>
-/// Mock implementation of IAudioGraphicsSettings for testing purposes.
+/// Mock implementation of IAudioSettings and IDisplaySettings for testing purposes.
 /// Allows manual control of all properties without side effects.
 /// </summary>
-internal class MockAudioGraphicsSettings : IAudioGraphicsSettings
+internal class MockAudioGraphicsSettings : IAudioSettings, IDisplaySettings
 {
     public bool SoundEnabled { get; set; } = true;
     public int MusicVolume { get; set; } = 100;

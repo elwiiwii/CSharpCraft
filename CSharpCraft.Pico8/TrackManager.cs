@@ -7,7 +7,7 @@ namespace CSharpCraft.Pico8;
 public class TrackManager(
     Func<Dictionary<string, List<SongInst>>?> getMusicDict,
     Func<Dictionary<string, Dictionary<int, string>>?> getSfxDict,
-    IAudioGraphicsSettings settings) : ITrackManager
+    IAudioSettings settings) : ITrackManager
 {
     public int MusicCount => getMusicDict()?.Count ?? 0;
     public int SfxCount => getSfxDict()?.Count ?? 0;

@@ -130,11 +130,12 @@ namespace CSharpCraft.Tests.Pico8
         }
 
         [Fact]
-        public void IServiceFactory_DoesNotHaveCreateGameState()
+        public void IServiceFactory_DoesNotExist()
         {
-            var type = typeof(IServiceFactory);
-            type.GetMethod("CreateGameState").Should().BeNull(
-                "CreateGameState should be removed since GameStateContainer is dead code");
+            var assembly = typeof(GameOrchestrator).Assembly;
+            var type = assembly.GetType("CSharpCraft.Pico8.IServiceFactory");
+            type.Should().BeNull(
+                "IServiceFactory was removed — GameOrchestrator creates services directly");
         }
 
         #endregion

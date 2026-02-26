@@ -155,12 +155,13 @@ class FNAGame : Game
         // needs MusicManager. Resolve via late-bound captured reference.
         var audioChannels = new CSharpCraft.Pico8.AudioChannels();
         AudioAPI? audioAPIRef = null;
-        IAudioGraphicsSettings settings = optionsFile;
+        IAudioSettings audioSettings = optionsFile;
+        IDisplaySettings displaySettings = optionsFile;
 
         var musicManager = new MusicManager(
             () => CSharpCraft.Pico8.Pico8.CurrentCart.Music,
             () => musicDictionary,
-            () => settings,
+            () => audioSettings,
             () => audioAPIRef?.StopAll()
         );
 
@@ -169,7 +170,7 @@ class FNAGame : Game
             musicManager,
             soundEffectDictionary,
             () => CSharpCraft.Pico8.Pico8.CurrentCart.Sfx,
-            () => settings.CurrentSfxPack,
+            () => audioSettings.CurrentSfxPack,
             () => optionsFile.Gen_Sound_On,
             () => optionsFile.Gen_Sfx_Vol
         );
@@ -190,6 +191,7 @@ class FNAGame : Game
                 textureDictionary,
                 musicDictionary,
                 soundEffectDictionary,
+                optionsFile,
                 optionsFile,
                 optionsFile,
                 scenes),

@@ -21,6 +21,7 @@ public record GameHostContext(
     Dictionary<string, Texture2D> TextureDictionary,
     Dictionary<string, SoundEffect> MusicDictionary,
     Dictionary<string, SoundEffect> SoundEffectDictionary,
-    IAudioGraphicsSettings Settings,
+    IAudioSettings AudioSettings,
+    IDisplaySettings DisplaySettings,
     IInputBindingProvider InputBindings,
     List<IScene> Scenes);

@@ -8,9 +8,14 @@ namespace CSharpCraft.Pico8;
 public interface IPauseMenuContext
 {
     /// <summary>
-    /// Audio/graphics settings for volume, sound toggle, and fullscreen.
+    /// Audio settings for volume and sound toggle.
     /// </summary>
-    IAudioGraphicsSettings Settings { get; }
+    IAudioSettings AudioSettings { get; }
+
+    /// <summary>
+    /// Display settings for fullscreen toggle.
+    /// </summary>
+    IDisplaySettings DisplaySettings { get; }
 
     /// <summary>
     /// Available scenes (used to find the title screen for "exit" menu item).

@@ -44,7 +44,8 @@ namespace CSharpCraft.Tests.Pico8
             type.GetProperty("TextureDictionary").Should().NotBeNull();
             type.GetProperty("MusicDictionary").Should().NotBeNull();
             type.GetProperty("SoundEffectDictionary").Should().NotBeNull();
-            type.GetProperty("Settings").Should().NotBeNull();
+            type.GetProperty("AudioSettings").Should().NotBeNull();
+            type.GetProperty("DisplaySettings").Should().NotBeNull();
             type.GetProperty("InputBindings").Should().NotBeNull();
             type.GetProperty("Scenes").Should().NotBeNull();
         }
@@ -92,7 +93,7 @@ namespace CSharpCraft.Tests.Pico8
         #region PROPERTIES STILL ACCESSIBLE
 
         [Fact]
-        public void GameOrchestrator_StillExposes_Settings()
+        public void GameOrchestrator_StillExposes_AudioSettings()
         {
             var orchestrator = new GameOrchestrator(
                 new Mock<IInputStateManager>().Object,
@@ -100,8 +101,8 @@ namespace CSharpCraft.Tests.Pico8
                 new Mock<IAudioAPI>().Object,
                 new Mock<ISceneManager>().Object);
 
-            // Settings now defaults to InMemorySettings — always non-null
-            orchestrator.Settings.Should().NotBeNull("Settings should always be available via Null Object default");
+            // AudioSettings now defaults to InMemorySettings — always non-null
+            orchestrator.AudioSettings.Should().NotBeNull("AudioSettings should always be available via Null Object default");
         }
 
         [Fact]
@@ -213,7 +214,8 @@ namespace CSharpCraft.Tests.Pico8
                 new Mock<IAudioAPI>().Object,
                 new Mock<ISceneManager>().Object);
 
-            orchestrator.Settings.Should().NotBeNull("Settings should default to InMemorySettings");
+            orchestrator.AudioSettings.Should().NotBeNull("AudioSettings should default to InMemorySettings");
+            orchestrator.DisplaySettings.Should().NotBeNull("DisplaySettings should default to InMemorySettings");
             orchestrator.InputBindings.Should().NotBeNull("InputBindings should default to DefaultInputBindings");
             orchestrator.Scenes.Should().NotBeNull("Scenes should default to empty list");
             orchestrator.CurrentCart.Should().NotBeNull("CurrentCart should default to NullScene");

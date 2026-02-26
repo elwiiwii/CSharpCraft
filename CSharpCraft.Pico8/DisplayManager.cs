@@ -17,7 +17,7 @@ public class DisplayManager : IDisplayManager
     private readonly GraphicsDeviceManager? _graphics;
     private readonly GraphicsDevice? _graphicsDevice;
     private readonly GameWindow? _window;
-    private readonly IAudioGraphicsSettings? _settings;
+    private readonly IDisplaySettings? _settings;
 
     private (int Width, int Height) _cell = (1, 1);
     private (int w, int h) _resolution = (128, 128);
@@ -26,7 +26,7 @@ public class DisplayManager : IDisplayManager
         GraphicsDeviceManager? graphics,
         GraphicsDevice? graphicsDevice,
         GameWindow? window,
-        IAudioGraphicsSettings? settings)
+        IDisplaySettings? settings)
     {
         _graphics = graphics;
         _graphicsDevice = graphicsDevice;

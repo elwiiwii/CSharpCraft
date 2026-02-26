@@ -127,14 +127,22 @@ public class OverlayIntegrationTests
 
     #endregion
 
-    #region IAudioGraphicsSettings.Save
+    #region IAudioSettings.Save and IDisplaySettings.Save
 
     [Fact]
-    public void IAudioGraphicsSettings_HasSaveMethod()
+    public void IAudioSettings_HasSaveMethod()
     {
-        var methods = typeof(IAudioGraphicsSettings).GetMethods();
+        var methods = typeof(IAudioSettings).GetMethods();
         methods.Should().Contain(m => m.Name == "Save",
-            "IAudioGraphicsSettings should expose Save for persistence");
+            "IAudioSettings should expose Save for persistence");
+    }
+
+    [Fact]
+    public void IDisplaySettings_HasSaveMethod()
+    {
+        var methods = typeof(IDisplaySettings).GetMethods();
+        methods.Should().Contain(m => m.Name == "Save",
+            "IDisplaySettings should expose Save for persistence");
     }
 
     #endregion

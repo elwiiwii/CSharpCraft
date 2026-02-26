@@ -141,7 +141,9 @@ namespace CSharpCraft.Tests.Pico8
             // Every field should have a safe non-null default
             orchestrator.CurrentCart.Should().NotBeNull()
                 .And.BeOfType<NullScene>("should default to NullScene");
-            orchestrator.Settings.Should().NotBeNull()
+            orchestrator.AudioSettings.Should().NotBeNull()
+                .And.BeOfType<InMemorySettings>("should default to InMemorySettings");
+            orchestrator.DisplaySettings.Should().NotBeNull()
                 .And.BeOfType<InMemorySettings>("should default to InMemorySettings");
             orchestrator.InputBindings.Should().NotBeNull()
                 .And.BeOfType<DefaultInputBindings>("should default to DefaultInputBindings");

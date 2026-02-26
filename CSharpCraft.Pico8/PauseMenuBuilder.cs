@@ -110,7 +110,7 @@ public class PauseMenuBuilder
 
     private void BuildSoundToggleMenuItem()
     {
-        AddMenuItem(0, () => $"sound:{(_context.Settings.SoundEnabled ? "on" : "off")}", input =>
+        AddMenuItem(0, () => $"sound:{(_context.AudioSettings.SoundEnabled ? "on" : "off")}", input =>
         {
             if (input.Left || input.Right || input.ActionA || input.ActionB)
             {
@@ -121,29 +121,29 @@ public class PauseMenuBuilder
 
     private void BuildMusicVolumeMenuItem()
     {
-        AddMenuItem(1, () => $"music vol:{_context.Settings.MusicVolume}%", input =>
+        AddMenuItem(1, () => $"music vol:{_context.AudioSettings.MusicVolume}%", input =>
         {
             if (input.Left)
-                _context.Settings.MusicVolume = Math.Max(_context.Settings.MusicVolume - 10, 0);
+                _context.AudioSettings.MusicVolume = Math.Max(_context.AudioSettings.MusicVolume - 10, 0);
             if (input.Right)
-                _context.Settings.MusicVolume = Math.Min(_context.Settings.MusicVolume + 10, 100);
+                _context.AudioSettings.MusicVolume = Math.Min(_context.AudioSettings.MusicVolume + 10, 100);
         }, _curMenuItems);
     }
 
     private void BuildSfxVolumeMenuItem()
     {
-        AddMenuItem(2, () => $"sfx vol:{_context.Settings.SfxVolume}%", input =>
+        AddMenuItem(2, () => $"sfx vol:{_context.AudioSettings.SfxVolume}%", input =>
         {
             if (input.Left)
-                _context.Settings.SfxVolume = Math.Max(_context.Settings.SfxVolume - 10, 0);
+                _context.AudioSettings.SfxVolume = Math.Max(_context.AudioSettings.SfxVolume - 10, 0);
             if (input.Right)
-                _context.Settings.SfxVolume = Math.Min(_context.Settings.SfxVolume + 10, 100);
+                _context.AudioSettings.SfxVolume = Math.Min(_context.AudioSettings.SfxVolume + 10, 100);
         }, _curMenuItems);
     }
 
     private void BuildFullscreenToggleMenuItem()
     {
-        AddMenuItem(3, () => $"fullscreen:{(_context.Settings.IsFullscreen ? "on" : "off")}", input =>
+        AddMenuItem(3, () => $"fullscreen:{(_context.DisplaySettings.IsFullscreen ? "on" : "off")}", input =>
         {
             if (input.ActionA || input.ActionB)
             {

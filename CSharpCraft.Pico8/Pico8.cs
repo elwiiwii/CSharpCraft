@@ -64,9 +64,14 @@ namespace CSharpCraft.Pico8
         public static IInputBindingProvider InputBindings => Orch.InputBindings;
 
         /// <summary>
-        /// Access to audio/graphics settings.
+        /// Access to audio settings.
         /// </summary>
-        public static IAudioGraphicsSettings Settings => Orch.Settings;
+        public static IAudioSettings AudioSettings => Orch.AudioSettings;
+
+        /// <summary>
+        /// Access to display settings.
+        /// </summary>
+        public static IDisplaySettings DisplaySettings => Orch.DisplaySettings;
 
         /// <summary>
         /// Current scenes list.

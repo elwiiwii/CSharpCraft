@@ -4,7 +4,7 @@ using CSharpCraft.Pcraft;
 
 namespace CSharpCraft.OptionsMenu;
 
-public class OptionsFile : IAudioGraphicsSettings, IInputBindingProvider
+public class OptionsFile : IAudioSettings, IDisplaySettings, IInputBindingProvider
 {
     /// <summary>
     /// Global accessor for the current options. Set once in Main.cs at startup.
@@ -40,58 +40,62 @@ public class OptionsFile : IAudioGraphicsSettings, IInputBindingProvider
     public int Gen_Window_Width { get; set; } = 512;
     public int Gen_Window_Height { get; set; } = 512;
 
-    // === IAudioGraphicsSettings explicit implementation ===
+    // === IAudioSettings explicit implementation ===
     // Delegates to the serialized properties — no reflection needed.
 
-    bool IAudioGraphicsSettings.SoundEnabled
+    bool IAudioSettings.SoundEnabled
     {
         get => Gen_Sound_On;
         set => Gen_Sound_On = value;
     }
 
-    int IAudioGraphicsSettings.MusicVolume
+    int IAudioSettings.MusicVolume
     {
         get => Gen_Music_Vol;
         set => Gen_Music_Vol = value;
     }
 
-    int IAudioGraphicsSettings.SfxVolume
+    int IAudioSettings.SfxVolume
     {
         get => Gen_Sfx_Vol;
         set => Gen_Sfx_Vol = value;
     }
 
-    int IAudioGraphicsSettings.CurrentSoundtrack
+    int IAudioSettings.CurrentSoundtrack
     {
         get => Pcraft_Soundtrack;
         set => Pcraft_Soundtrack = value;
     }
 
-    int IAudioGraphicsSettings.CurrentSfxPack
+    int IAudioSettings.CurrentSfxPack
     {
         get => Pcraft_Sfx_Pack;
         set => Pcraft_Sfx_Pack = value;
     }
 
-    bool IAudioGraphicsSettings.IsFullscreen
+    void IAudioSettings.Save() => JsonWrite(this);
+
+    // === IDisplaySettings explicit implementation ===
+
+    bool IDisplaySettings.IsFullscreen
     {
         get => Gen_Fullscreen;
         set => Gen_Fullscreen = value;
     }
 
-    int IAudioGraphicsSettings.WindowWidth
+    int IDisplaySettings.WindowWidth
     {
         get => Gen_Window_Width;
         set => Gen_Window_Width = value;
     }
 
-    int IAudioGraphicsSettings.WindowHeight
+    int IDisplaySettings.WindowHeight
     {
         get => Gen_Window_Height;
         set => Gen_Window_Height = value;
     }
 
-    void IAudioGraphicsSettings.Save() => JsonWrite(this);
+    void IDisplaySettings.Save() => JsonWrite(this);
 
     // === IInputBindingProvider explicit implementation ===
     // Delegates to the serialized properties — engine reads bindings directly.

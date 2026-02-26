@@ -16,7 +16,8 @@ public class PauseMenuStateTests
     private static IPauseMenuContext CreateMockContext()
     {
         var mock = new Mock<IPauseMenuContext>();
-        mock.Setup(c => c.Settings).Returns(new Mock<IAudioGraphicsSettings>().Object);
+        mock.Setup(c => c.AudioSettings).Returns(new Mock<IAudioSettings>().Object);
+        mock.Setup(c => c.DisplaySettings).Returns(new Mock<IDisplaySettings>().Object);
         mock.Setup(c => c.Scenes).Returns(new List<IScene>());
         mock.Setup(c => c.Resolution).Returns((128, 128));
         return mock.Object;
