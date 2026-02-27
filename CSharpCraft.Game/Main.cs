@@ -6,6 +6,7 @@ using CSharpCraft.Competitive;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+
 namespace CSharpCraft;
 
 class FNAGame : Game

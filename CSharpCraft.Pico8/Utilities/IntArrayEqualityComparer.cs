@@ -1,4 +1,4 @@
-﻿namespace CSharpCraft.Pico8;
+﻿namespace CSharpCraft.Pico8.Utilities;
 
 public class IntArrayEqualityComparer : IEqualityComparer<int[]>
 {
