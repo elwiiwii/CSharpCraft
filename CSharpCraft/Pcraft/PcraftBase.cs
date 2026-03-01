@@ -1,4 +1,6 @@
-﻿using CSharpCraft.Pico8;
+﻿using System.Reflection;
+using System.Threading.Channels;
+using CSharpCraft.Pico8;
 using FixMath;
 
 namespace CSharpCraft.Pcraft;
@@ -2182,77 +2184,43 @@ dffffffffff2255555d55d535224224224423b52242555555555ffffff2fffddccccccccccccc1d1
 #4#4#4#4#5#4#4#4#E#E#4#E#4#4#E#4#E#4#4#4#E#4#5#D#4#4#4#4#4#E#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4#4
 ".Replace("\n", "").Replace("\r", "");
 
-    public virtual Dictionary<string, List<SongInst>> Music => new()
-    {
-        { "original", [
-            new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 0),
-            new([("pcraft_og_surface", true)], 1),
-            new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 2),
-            new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 3),
-            new([("pcraft_og_cave_0", false), ("pcraft_og_cave_1", true)], 4)]
-        },
-        { "new!", [
-            new([("pcraft_new_title", true)], 0),
-            new([("pcraft_new_surface", true)], 1),
-            new([("pcraft_new_cave", true)], 1),
-            new([("pcraft_new_title", false), ("pcraft_new_title", true)], 2),
-            new([("pcraft_new_death", true)], 3)]
-        },
-        { "pog edition", [
-            new([("pcraft_pe_title_0", false), ("pcraft_pe_title_1", true)], 0),
-            new([("pcraft_pe_surface_0", false), ("pcraft_pe_surface_1", true)], 1),
-            new([("pcraft_pe_cave_0", false), ("pcraft_pe_cave_1", true)], 2),
-            new([("pcraft_pe_win", false)], 3),
-            new([("pcraft_pe_death", true)], 4)]
-        }
-    };
+    public virtual List<Soundtrack> Music =>
+    [
+        new(name: "original", 
+        tracks: [
+            new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 0),
+            new Track(parts: [new(filename: "pcraft_og_surface", loop: true)], channel: 1),
+            new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 2),
+            new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 3),
+            new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 4)]
+        ),
+        new(name: "new!", 
+        tracks: [
+            new Track(parts: [new(filename: "pcraft_new_title", loop: true)], channel: 0),
+            new Track(parts: [new(filename: "pcraft_new_surface", loop: true)], channel: 1),
+            new Track(parts: [new(filename: "pcraft_new_cave", loop: true)], channel: 1),
+            new Track(parts: [new(filename: "pcraft_new_title", loop: false), new(filename: "pcraft_new_title", loop: true)], channel: 2),
+            new Track(parts: [new(filename: "pcraft_new_death", loop: true)], channel: 3)]
+        ),
+        new(name: "pog edition", 
+        tracks: [
+            new Track(parts: [new(filename: "pcraft_pe_title_0", loop: false), new(filename: "pcraft_pe_title_1", loop: true)], channel: 0),
+            new Track(parts: [new(filename: "pcraft_pe_surface_0", loop: false), new(filename: "pcraft_pe_surface_1", loop: true)], channel: 1),
+            new Track(parts: [new(filename: "pcraft_pe_cave_0", loop: false), new(filename: "pcraft_pe_cave_1", loop: true)], channel: 2),
+            new Track(parts: [new(filename: "pcraft_pe_win", loop: false)], channel: 3),
+            new Track(parts: [new(filename: "pcraft_pe_death", loop: true)], channel: 4)]
+        )
+    ];
 
-    public virtual Dictionary<string, Dictionary<int, string>> Sfx => new()
+    public virtual Dictionary<string, string> Sfx => new()
     {
-        { "original", new() {
-            { 11, "pcraft_og_11" },
-            { 12, "pcraft_og_12" },
-            { 13, "pcraft_og_13" },
-            { 14, "pcraft_og_14" },
-            { 15, "pcraft_og_15" },
-            { 16, "pcraft_og_16" },
-            { 17, "pcraft_og_17" },
-            { 18, "pcraft_og_18" },
-            { 19, "pcraft_og_19" },
-            { 20, "pcraft_og_20" },
-            { 21, "pcraft_og_21" }}
-        },
-        { "soft", new() {
-            { 11, "pcraft_soft_11" },
-            { 12, "pcraft_soft_12" },
-            { 13, "pcraft_soft_13" },
-            { 14, "pcraft_soft_14" },
-            { 15, "pcraft_soft_15" },
-            { 16, "pcraft_soft_16" },
-            { 17, "pcraft_soft_17" },
-            { 18, "pcraft_soft_18" },
-            { 19, "pcraft_soft_19" },
-            { 20, "pcraft_soft_20" },
-            { 21, "pcraft_soft_21" }}
-        },
-        { "pog edition", new() {
-            { 11, "pcraft_pe_11" },
-            { 12, "pcraft_pe_12" },
-            { 13, "pcraft_pe_13" },
-            { 14, "pcraft_pe_14" },
-            { 15, "pcraft_pe_15" },
-            { 16, "pcraft_pe_16" },
-            { 17, "pcraft_pe_17" },
-            { 18, "pcraft_pe_18" },
-            { 19, "pcraft_pe_19" },
-            { 20, "pcraft_pe_20" },
-            { 21, "pcraft_pe_21" }}
-        },
+        { "original", "pcraft_og_" },
+        { "soft", "pcraft_soft_" },
+        { "pog edition", "pcraft_pe_" }
     };
 
     public virtual void Dispose()
     {
 
     }
-
 }
