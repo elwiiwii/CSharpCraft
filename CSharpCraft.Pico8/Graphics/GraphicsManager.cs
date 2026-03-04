@@ -56,7 +56,7 @@ public class GraphicsManager
 
         centerX -= CameraOffset.X;
         centerY -= CameraOffset.Y;
-        _paletteManager.PaletteMap.SetDrawColor(color);
+        _drawState.SetGetDrawColor(color, out _);
 
         for (int dx = radius, dy = 0, error = 0; dx >= dy; )
         {
