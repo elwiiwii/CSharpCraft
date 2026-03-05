@@ -13,8 +13,7 @@ public class GraphicsManager
     private readonly Texture2D _pixel;
     private readonly Dictionary<string, Texture2D> _textureDictionary;
     private readonly GameWindow _window;
-    private readonly Dictionary<string, FontAtlas> _fontAtlases = new(StringComparer.OrdinalIgnoreCase);
-    private readonly PrintDrawState _printState = new();
+    private readonly SpriteFlagMapManager _spriteFlagMapManager;
 
     public GraphicsManager(
         SpriteBatch batch,
@@ -23,7 +22,8 @@ public class GraphicsManager
         PaletteManager paletteManager,
         Texture2D pixel,
         Dictionary<string, Texture2D> textureDictionary,
-        GameWindow window)
+        GameWindow window,
+        SpriteFlagMapManager spriteFlagMapManager)
     {
         _cameraOffset = (0, 0);
         _graphics = graphics ?? throw new ArgumentNullException(nameof(graphics));
@@ -33,17 +33,8 @@ public class GraphicsManager
         _textureDictionary = textureDictionary ?? throw new ArgumentNullException(nameof(textureDictionary));
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _batch = batch ?? throw new ArgumentNullException(nameof(batch));
+        _spriteFlagMapManager = spriteFlagMapManager ?? throw new ArgumentNullException(nameof(spriteFlagMapManager));
     }
-
-    public SpriteBatch Batch => _batch;
-    public (int X, int Y) CameraOffset => _cameraOffset;
-    public GraphicsDeviceManager Graphics => _graphics;
-    public GraphicsDevice GraphicsDevice => _graphicsDevice;
-    public PaletteManager PaletteManager => _paletteManager;
-    public Texture2D Pixel => _pixel;
-    public Dictionary<string, Texture2D> TextureDictionary => _textureDictionary;
-    public GameWindow Window => _window;
-
 
     #region DRAWING PRIMITIVES
 
@@ -54,20 +45,19 @@ public class GraphicsManager
     {
         if (radius <= 0) return;
 
-        centerX -= CameraOffset.X;
-        centerY -= CameraOffset.Y;
-        _drawState.SetGetDrawColor(color, out _);
+        centerX -= _cameraOffset.X;
+        centerY -= _cameraOffset.Y;
 
         for (int dx = radius, dy = 0, error = 0; dx >= dy; )
         {
-            DrawPixel(centerX + dx, centerY + dy, color, 1, 1);
-            DrawPixel(centerX + dy, centerY + dx, color, 1, 1);
-            DrawPixel(centerX - dy, centerY + dx, color, 1, 1);
-            DrawPixel(centerX - dx, centerY + dy, color, 1, 1);
-            DrawPixel(centerX - dx, centerY - dy, color, 1, 1);
-            DrawPixel(centerX - dy, centerY - dx, color, 1, 1);
-            DrawPixel(centerX + dy, centerY - dx, color, 1, 1);
-            DrawPixel(centerX + dx, centerY - dy, color, 1, 1);
+            DrawScaledPixel(centerX + dx, centerY + dy, color, 1, 1);
+            DrawScaledPixel(centerX + dy, centerY + dx, color, 1, 1);
+            DrawScaledPixel(centerX - dy, centerY + dx, color, 1, 1);
+            DrawScaledPixel(centerX - dx, centerY + dy, color, 1, 1);
+            DrawScaledPixel(centerX - dx, centerY - dy, color, 1, 1);
+            DrawScaledPixel(centerX - dy, centerY - dx, color, 1, 1);
+            DrawScaledPixel(centerX + dy, centerY - dx, color, 1, 1);
+            DrawScaledPixel(centerX + dx, centerY - dy, color, 1, 1);
 
             dy += 1;
             if (error < radius - 1)
@@ -87,15 +77,15 @@ public class GraphicsManager
     {
         if (radius <= 0) return;
 
-        centerX -= CameraOffset.X;
-        centerY -= CameraOffset.Y;
+        centerX -= _cameraOffset.X;
+        centerY -= _cameraOffset.Y;
 
         for (int dx = radius, dy = 0, error = 0; dx >= dy; )
         {
-            DrawPixel(centerX - dx, centerY + dy, color, 2 * dx + 1, 1);
-            DrawPixel(centerX - dx, centerY - dy, color, 2 * dx + 1, 1);
-            DrawPixel(centerX - dy, centerY + dx, color, 2 * dy + 1, 1);
-            DrawPixel(centerX - dy, centerY - dx, color, 2 * dy + 1, 1);
+            DrawScaledPixel(centerX - dx, centerY + dy, color, 2 * dx + 1, 1);
+            DrawScaledPixel(centerX - dx, centerY - dy, color, 2 * dx + 1, 1);
+            DrawScaledPixel(centerX - dy, centerY + dx, color, 2 * dy + 1, 1);
+            DrawScaledPixel(centerX - dy, centerY - dx, color, 2 * dy + 1, 1);
 
             dy += 1;
             if (error < radius - 1)
@@ -113,7 +103,7 @@ public class GraphicsManager
     /// </summary>
     public void Cls(Color color)
     {
-        GraphicsDevice.Clear(color);
+        _graphicsDevice.Clear(color);
     }
 
     /// <summary>
@@ -121,7 +111,7 @@ public class GraphicsManager
     /// </summary>
     public void Pset(int x, int y, Color color)
     {
-        DrawPixel(x, y, color, 1, 1);
+        DrawScaledPixel(x, y, color, 1, 1);
     }
 
     /// <summary>
@@ -129,15 +119,15 @@ public class GraphicsManager
     /// </summary>
     public void Rect(int xLeft, int yTop, int xRight, int yBottom, Color color)
     {
-        xLeft -= CameraOffset.X;
-        yTop -= CameraOffset.Y;
+        xLeft -= _cameraOffset.X;
+        yTop -= _cameraOffset.Y;
         int width = xRight - xLeft + 1;
         int height = yBottom - yTop + 1;
 
-        DrawPixel(xLeft, yTop, color, width, 1);
-        DrawPixel(xLeft, yTop + height - 1, color, width, 1);
-        DrawPixel(xLeft, yTop, color, 1, height);
-        DrawPixel(xLeft + width - 1, yTop, color, 1, height);
+        DrawScaledPixel(xLeft, yTop, color, width, 1);
+        DrawScaledPixel(xLeft, yTop + height - 1, color, width, 1);
+        DrawScaledPixel(xLeft, yTop, color, 1, height);
+        DrawScaledPixel(xLeft + width - 1, yTop, color, 1, height);
     }
 
     /// <summary>
@@ -145,12 +135,12 @@ public class GraphicsManager
     /// </summary>
     public void Rectfill(int xLeft, int yTop, int xRight, int yBottom, Color color)
     {
-        xLeft -= CameraOffset.X;
-        yTop -= CameraOffset.Y;
+        xLeft -= _cameraOffset.X;
+        yTop -= _cameraOffset.Y;
         int width = xRight - xLeft + 1;
         int height = yBottom - yTop + 1;
 
-        DrawPixel(xLeft, yTop, color, width, height);
+        DrawScaledPixel(xLeft, yTop, color, width, height);
     }
 
     /// <summary>
@@ -160,8 +150,8 @@ public class GraphicsManager
     {
         if (width <= 0 || height <= 0) return;
 
-        x -= CameraOffset.X;
-        y -= CameraOffset.Y;
+        x -= _cameraOffset.X;
+        y -= _cameraOffset.Y;
 
         int r = Math.Clamp(radius, 0, Math.Min(width, height) / 2);
 
@@ -176,13 +166,13 @@ public class GraphicsManager
         int edgeH = height - 2 * r;
         if (edgeW > 0)
         {
-            DrawPixel(x + r, y, color, edgeW, 1);               // Top
-            DrawPixel(x + r, y + height - 1, color, edgeW, 1);  // Bottom
+            DrawScaledPixel(x + r, y, color, edgeW, 1);               // Top
+            DrawScaledPixel(x + r, y + height - 1, color, edgeW, 1);  // Bottom
         }
         if (edgeH > 0)
         {
-            DrawPixel(x, y + r, color, 1, edgeH);               // Left
-            DrawPixel(x + width - 1, y + r, color, 1, edgeH);   // Right
+            DrawScaledPixel(x, y + r, color, 1, edgeH);               // Left
+            DrawScaledPixel(x + width - 1, y + r, color, 1, edgeH);   // Right
         }
 
         // Corner arc centers (one quadrant per corner via midpoint algorithm)
@@ -193,14 +183,14 @@ public class GraphicsManager
 
         for (int dx = r, dy = 0, error = 0; dx >= dy; )
         {
-            DrawPixel(tlx - dx, tly - dy, color);   // Top-left
-            DrawPixel(tlx - dy, tly - dx, color);
-            DrawPixel(trx + dx, try_ - dy, color);  // Top-right
-            DrawPixel(trx + dy, try_ - dx, color);
-            DrawPixel(blx - dx, bly + dy, color);   // Bottom-left
-            DrawPixel(blx - dy, bly + dx, color);
-            DrawPixel(brx + dx, bry + dy, color);   // Bottom-right
-            DrawPixel(brx + dy, bry + dx, color);
+            DrawScaledPixel(tlx - dx, tly - dy, color);   // Top-left
+            DrawScaledPixel(tlx - dy, tly - dx, color);
+            DrawScaledPixel(trx + dx, try_ - dy, color);  // Top-right
+            DrawScaledPixel(trx + dy, try_ - dx, color);
+            DrawScaledPixel(blx - dx, bly + dy, color);   // Bottom-left
+            DrawScaledPixel(blx - dy, bly + dx, color);
+            DrawScaledPixel(brx + dx, bry + dy, color);   // Bottom-right
+            DrawScaledPixel(brx + dy, bry + dx, color);
 
             dy++;
             if (error < r - 1) error += 1 + 2 * dy;
@@ -215,8 +205,8 @@ public class GraphicsManager
     {
         if (width <= 0 || height <= 0) return;
 
-        x -= CameraOffset.X;
-        y -= CameraOffset.Y;
+        x -= _cameraOffset.X;
+        y -= _cameraOffset.Y;
 
         int r = Math.Clamp(radius, 0, Math.Min(width, height) / 2);
 
@@ -229,7 +219,7 @@ public class GraphicsManager
         // Middle band — full width, between the two corner bands
         int edgeH = height - 2 * r;
         if (edgeH > 0)
-            DrawPixel(x, y + r, color, width, edgeH);
+            DrawScaledPixel(x, y + r, color, width, edgeH);
 
         // Corner regions filled via horizontal scanlines using midpoint algorithm.
         // tlx/trx: x centers of left/right corner columns
@@ -245,18 +235,18 @@ public class GraphicsManager
             // Spans from (tlx - dx) to (trx + dx)
             int left1 = tlx - dx;
             int w1 = trx + dx - left1 + 1; // = width - 2*r + 2*dx
-            DrawPixel(left1, tly - dy, color, w1, 1);  // Top band
+            DrawScaledPixel(left1, tly - dy, color, w1, 1);  // Top band
             if (bly + dy != tly - dy)
-                DrawPixel(left1, bly + dy, color, w1, 1);  // Bottom band
+                DrawScaledPixel(left1, bly + dy, color, w1, 1);  // Bottom band
 
             // Scanline at vertical offset dx from corner center (other octant)
             if (dx != dy)
             {
                 int left2 = tlx - dy;
                 int w2 = trx + dy - left2 + 1; // = width - 2*r + 2*dy
-                DrawPixel(left2, tly - dx, color, w2, 1);  // Top band
+                DrawScaledPixel(left2, tly - dx, color, w2, 1);  // Top band
                 if (bly + dx != tly - dx)
-                    DrawPixel(left2, bly + dx, color, w2, 1);  // Bottom band
+                    DrawScaledPixel(left2, bly + dx, color, w2, 1);  // Bottom band
             }
 
             dy++;
@@ -311,255 +301,52 @@ public class GraphicsManager
 
     #region RENDERING OPERATIONS
 
-    /// <summary>
-    /// Registers a pixel-font atlas for use with <see cref="Print"/>.
-    /// The built-in name <c>"P8SCII"</c> is used as the fallback when the requested font
-    /// is not found.
-    /// </summary>
-    /// <param name="name">Case-insensitive font name, e.g. <c>"P8SCII"</c> or <c>"BigFont"</c>.</param>
-    /// <param name="texture">Atlas texture (white glyphs on transparent background).</param>
-    /// <param name="charWidth">Width of one standard glyph cell in the atlas, in pixels.</param>
-    /// <param name="charHeight">Height of every glyph cell in the atlas, in pixels.</param>
-    /// <param name="extCharWidth">
-    /// Width of one extended-range glyph cell in the atlas, in pixels.
-    /// Pass ≤ 0 to use <c>charWidth * 2</c> (the P8SCII default).
-    /// </param>
-    public void RegisterFont(string name, Texture2D texture, int charWidth, int charHeight, int extCharWidth = -1)
-        => _fontAtlases[name] = new FontAtlas(texture, charWidth, charHeight, extCharWidth);
-
-    /// <summary>
-    /// https://pico-8.fandom.com/wiki/Print
-    /// </summary>
-    public void Print(string text, int x, int y, Color color, string font)
+    public void Print(string text, int x, int y, Color color, Font font)
     {
-        if (!_fontAtlases.TryGetValue(font, out var atlas) &&
-            !_fontAtlases.TryGetValue("P8SCII", out atlas))
+        x -= _cameraOffset.X;
+        y -= _cameraOffset.Y;
+
+        if (!_textureDictionary.TryGetValue(font.TextureName, out Texture2D? fontTexture))
             return;
 
-        _printState.CursorX       = x - CameraOffset.X;
-        _printState.CursorY       = y - CameraOffset.Y;
-        _printState.ForegroundColor = color;
-        _printState.Reset();
-
-        for (int i = 0; i < text.Length; )
+        int cursorX = x;
+        foreach (char c in text)
         {
-            char ch = text[i++];
-            switch (ch)
+            int charIndex = -1;
+            int charWidth = 0;
+            int charHeight = 0;
+            int srcY = 0;
+
+            foreach (var (chars, size) in font.Characters)
             {
-                case '\x00': // jump to home position
-                    _printState.CursorX = _printState.HomeX;
-                    _printState.CursorY = _printState.HomeY;
-                    break;
-                case '\x01': // \* — toggle solid background
-                    _printState.SolidBackground = !_printState.SolidBackground;
-                    break;
-                case '\x02': // toggle wide
-                    _printState.Wide = !_printState.Wide;
-                    break;
-                case '\x03': // toggle tall
-                    _printState.Tall = !_printState.Tall;
-                    break;
-                case '\x04': // set foreground colour — 1 param byte
-                    if (i < text.Length) _printState.ForegroundColor = LookupColor(text[i++]);
-                    break;
-                case '\x05': // set background colour — 1 param byte
-                    if (i < text.Length) _printState.BackgroundColor = LookupColor(text[i++]);
-                    break;
-                case '\x06': // set tab width — 1 param byte
-                    if (i < text.Length) _printState.TabWidth = Math.Max(1, P8Val(text[i++]));
-                    break;
-                case '\x08': // \b — backspace: move cursor left by one glyph
+                int idx = chars.IndexOf(c);
+                if (idx >= 0)
                 {
-                    int bw = atlas.GetCharWidth('\x20') * (_printState.Wide ? 2 : 1);
-                    _printState.CursorX -= bw + (_printState.Padding ? 1 : 0);
+                    charIndex = idx;
+                    charWidth = size.Width;
+                    charHeight = size.Height;
                     break;
                 }
-                case '\x09': // \t — tab: snap to next tab stop
-                {
-                    int cw    = atlas.CharWidth * (_printState.Wide ? 2 : 1);
-                    int tabPx = _printState.TabWidth * cw;
-                    int relX  = _printState.CursorX - _printState.HomeX;
-                    _printState.CursorX = tabPx > 0
-                        ? _printState.HomeX + ((relX / tabPx) + 1) * tabPx
-                        : _printState.CursorX;
-                    break;
-                }
-                case '\x0a': // \n — newline
-                {
-                    int lh = atlas.CharHeight * (_printState.Tall ? 2 : 1);
-                    _printState.CursorX  = _printState.HomeX;
-                    _printState.CursorY += lh + 1;
-                    break;
-                }
-                case '\x0b': // \v — cursor up one line
-                {
-                    int lh = atlas.CharHeight * (_printState.Tall ? 2 : 1);
-                    _printState.CursorY -= lh + 1;
-                    break;
-                }
-                case '\x0c': // \f — clear screen (no-op: call Cls() separately)
-                    break;
-                case '\x0d': // \r — carriage return: return to home X
-                    _printState.CursorX = _printState.HomeX;
-                    break;
-                case '\x0e': // \^ — two-byte caret sequence
-                    if (i < text.Length)
-                        ProcessCaretCode(text[i++], text, ref i, ref atlas);
-                    break;
-                case '\x0f': // revert to default P8SCII font
-                    if (_fontAtlases.TryGetValue("P8SCII", out var p8Font))
-                        atlas = p8Font;
-                    break;
-                default:
-                    DrawGlyph(ch, atlas);
-                    break;
+                srcY += size.Height;
             }
-        }
-    }
 
-    private void ProcessCaretCode(char code, string text, ref int i, ref FontAtlas atlas)
-    {
-        switch (code)
-        {
-            case 'd': // delay — deferred (typewriter pattern); skip 1 param byte
-                if (i < text.Length) i++;
-                break;
-            case 'j': // jump: absolute cursor position relative to home
-                if (i + 1 < text.Length)
-                {
-                    _printState.CursorX = _printState.HomeX + P8CursorVal(text[i++]) * atlas.CharWidth;
-                    _printState.CursorY = _printState.HomeY + P8CursorVal(text[i++]) * atlas.CharHeight;
-                }
-                break;
-            case 'r': // define custom character — skip char-index byte + 8 data bytes
-                i += Math.Min(9, text.Length - i);
-                break;
-            case 's': // set right border (in char-width units, relative to home X)
-                if (i < text.Length)
-                    _printState.RightBorder = _printState.HomeX + P8Val(text[i++]) * atlas.CharWidth;
-                break;
-            case 'u': // underline toggle
-                _printState.Underline = !_printState.Underline;
-                break;
-            case 'x': // set cursor X absolute (relative to home)
-                if (i < text.Length)
-                    _printState.CursorX = _printState.HomeX + P8CursorVal(text[i++]) * atlas.CharWidth;
-                break;
-            case 'y': // set cursor Y absolute (relative to home)
-                if (i < text.Length)
-                    _printState.CursorY = _printState.HomeY + P8CursorVal(text[i++]) * atlas.CharHeight;
-                break;
-            case 'w': // wide toggle
-                _printState.Wide = !_printState.Wide;
-                break;
-            case 'h': // home X + advance one line (\r\n equivalent)
+            if (charIndex < 0)
             {
-                int lh = atlas.CharHeight * (_printState.Tall ? 2 : 1);
-                _printState.CursorX  = _printState.HomeX;
-                _printState.CursorY += lh + 1;
-                break;
+                cursorX += font.Characters.First().Value.Width;
+                continue;
             }
-            case '=': // stripey — requires shader; no-op
-                break;
-            case 'p': // pinball — deferred; no-op
-                break;
-            case 'i': // invert toggle
-                _printState.Invert = !_printState.Invert;
-                break;
-            case 'b': // solid background toggle
-                _printState.SolidBackground = !_printState.SolidBackground;
-                break;
-            case '#': // set outline colour — 1 param byte
-                if (i < text.Length)
-                    _printState.OutlineColor = LookupColor(text[i++]);
-                break;
-            case 'o': // padding toggle
-                _printState.Padding = !_printState.Padding;
-                break;
+
+            int charsPerRow = fontTexture.Width / charWidth;
+            int srcX = (charIndex % charsPerRow) * charWidth;
+            srcY += (charIndex / charsPerRow) * charHeight;
+
+            _batch.Draw(fontTexture,
+                new Rectangle(cursorX, y, charWidth, charHeight),
+                new Rectangle(srcX, srcY, charWidth, charHeight),
+                color);
+
+            cursorX += charWidth;
         }
-    }
-
-    private void DrawGlyph(char ch, FontAtlas atlas)
-    {
-        int charW = atlas.GetCharWidth(ch) * (_printState.Wide ? 2 : 1);
-        int charH = atlas.CharHeight        * (_printState.Tall ? 2 : 1);
-
-        // Auto-wrap at right border
-        if (_printState.RightBorder < int.MaxValue &&
-            _printState.CursorX + charW > _printState.RightBorder)
-        {
-            _printState.CursorX  = _printState.HomeX;
-            _printState.CursorY += charH + 1;
-        }
-
-        var srcRect  = atlas.GetSourceRect(ch);
-        var destRect = new Rectangle(_printState.CursorX, _printState.CursorY, charW, charH);
-
-        Color fg = _printState.Invert ? _printState.BackgroundColor : _printState.ForegroundColor;
-        Color bg = _printState.Invert ? _printState.ForegroundColor : _printState.BackgroundColor;
-
-        // Solid background box
-        if (_printState.SolidBackground || _printState.Invert)
-            _batch.Draw(_pixel, destRect, bg);
-
-        // Outline: render glyph in outline colour at up to 8 surrounding offsets
-        if (_printState.OutlineColor.HasValue)
-        {
-            Color oc = _printState.OutlineColor.Value;
-            ReadOnlySpan<(int X, int Y)> dirs =
-            [
-                (-1, -1), (0, -1), (1, -1),
-                (-1,  0),          (1,  0),
-                (-1,  1), (0,  1), (1,  1)
-            ];
-            for (int bit = 0; bit < 8; bit++)
-            {
-                if ((_printState.OutlineMask & (1 << bit)) != 0)
-                {
-                    var (ox, oy) = dirs[bit];
-                    _batch.Draw(atlas.Texture,
-                        new Rectangle(destRect.X + ox, destRect.Y + oy, charW, charH),
-                        srcRect, oc);
-                }
-            }
-        }
-
-        // Main glyph
-        _batch.Draw(atlas.Texture, destRect, srcRect, fg);
-
-        // Underline: 1-pixel line at the bottom of the glyph cell
-        if (_printState.Underline)
-            _batch.Draw(_pixel,
-                new Rectangle(_printState.CursorX, _printState.CursorY + charH - 1, charW, 1), fg);
-
-        // Advance cursor horizontally
-        _printState.CursorX += charW + (_printState.Padding ? 1 : 0);
-    }
-
-    // ── P8SCII helpers ───────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Decodes a P8SCII parameter byte to a non-negative integer:
-    /// <c>'0'–'9'</c> → 0–9; <c>'a'–'z'</c> → 10–35.
-    /// </summary>
-    private static int P8Val(char ch)
-        => ch >= '0' && ch <= '9' ? ch - '0' : ch - 'a' + 10;
-
-    /// <summary>
-    /// Decodes a P8SCII cursor-offset parameter byte (range −16 … +19).
-    /// </summary>
-    private static int P8CursorVal(char ch) => P8Val(ch) - 16;
-
-    /// <summary>
-    /// Returns the palette colour whose index is encoded in <paramref name="ch"/>
-    /// via <see cref="P8Val"/>.
-    /// </summary>
-    private Color LookupColor(char ch)
-    {
-        int idx = P8Val(ch) & 0x0F;
-        return idx < _paletteManager.PaletteMap.Count
-            ? _paletteManager.PaletteMap.ElementAt(idx).Key
-            : Color.White;
     }
 
     /// <summary>
@@ -567,7 +354,15 @@ public class GraphicsManager
     /// </summary>
     public void Spr(int index, int x, int y, int width = 1, int height = 1, bool flipX = false, bool flipY = false)
     {
-        
+        if (_spriteFlagMapManager is null) return;
+        x -= _cameraOffset.X;
+        y -= _cameraOffset.Y;
+        Texture2D tex = _spriteFlagMapManager.GetSpritesheetTexture();
+        Rectangle src = _spriteFlagMapManager.GetSpriteSourceRect(index, width, height);
+        Rectangle dst = new Rectangle(x, y, width * 8, height * 8);
+        SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
+                              | (flipY ? SpriteEffects.FlipVertically : SpriteEffects.None);
+        _batch.Draw(tex, dst, src, Color.White, 0f, Vector2.Zero, effects, 0f);
     }
 
     /// <summary>
@@ -576,7 +371,15 @@ public class GraphicsManager
     public void Sspr(int sourceX, int sourceY, int sourceWidth, int sourceHeight, int destX, int destY,
             int destWidth, int destHeight, bool flipX = false, bool flipY = false)
     {
-        
+        if (_spriteFlagMapManager is null) return;
+        destX -= _cameraOffset.X;
+        destY -= _cameraOffset.Y;
+        Texture2D tex = _spriteFlagMapManager.GetSpritesheetTexture();
+        Rectangle src = new Rectangle(sourceX, sourceY, sourceWidth, sourceHeight);
+        Rectangle dst = new Rectangle(destX, destY, destWidth, destHeight);
+        SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
+                              | (flipY ? SpriteEffects.FlipVertically : SpriteEffects.None);
+        _batch.Draw(tex, dst, src, Color.White, 0f, Vector2.Zero, effects, 0f);
     }
 
     /// <summary>
@@ -584,7 +387,12 @@ public class GraphicsManager
     /// </summary>
     public void Map(int sourceX, int sourceY, int destX, int destY, int sourceWidth, int sourceHeight, int flags = 0)
     {
-        
+        if (_spriteFlagMapManager is null) return;
+        destX -= _cameraOffset.X;
+        destY -= _cameraOffset.Y;
+        Texture2D tex = _spriteFlagMapManager.GetMapRegionTexture(sourceX, sourceY, sourceWidth, sourceHeight, flags);
+        Rectangle dst = new Rectangle(destX, destY, sourceWidth * 8, sourceHeight * 8);
+        _batch.Draw(tex, dst, null, Color.White);
     }
 
     /// <summary>
@@ -592,7 +400,10 @@ public class GraphicsManager
     /// </summary>
     public void Line(int x0, int y0, int x1, int y1, Color c)
     {
-        
+        x0 -= _cameraOffset.X;
+        y0 -= _cameraOffset.Y;
+        x1 -= _cameraOffset.X;
+        y1 -= _cameraOffset.Y;
     }
 
     #endregion
@@ -605,7 +416,7 @@ public class GraphicsManager
         
     }
 
-    public void DrawPixel(double x, double y, Color color, double scaleX = 1,
+    public void DrawScaledPixel(double x, double y, Color color, double scaleX = 1,
             double scaleY = 1, bool flipX = false, bool flipY = false)
     {
         _batch.Draw(_pixel,

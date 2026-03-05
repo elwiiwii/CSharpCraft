@@ -6,6 +6,8 @@ public class PaletteManager
 {
     private Dictionary<Color, Color> _paletteMap;
 
+    public int PaletteVersion { get; private set; }
+
     public PaletteManager()
     {
         ResetPalette();
@@ -25,6 +27,7 @@ public class PaletteManager
     public void SetPalette(Color key, Color value)
     {
         _paletteMap[key] = value;
+        PaletteVersion++;
     }
 
 //    public void SetTransparency(int index, int opacity)
@@ -44,12 +47,14 @@ public class PaletteManager
 
         existing.A = (byte)Math.Clamp(opacity, 0, 255);
         _paletteMap[key] = existing;
+        PaletteVersion++;
     }
 
     [System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_paletteMap))]
     public void ResetPalette()
     {
         _paletteMap = new(Pico8.Palette);
+        PaletteVersion++;
     }
 
     public void ResetTransparency()
@@ -61,5 +66,6 @@ public class PaletteManager
             value.A = 255;
             _paletteMap[key] = value;
         }
+        PaletteVersion++;
     }
 }

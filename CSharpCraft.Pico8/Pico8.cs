@@ -197,18 +197,18 @@ public static class Pico8
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Print
     /// </summary>
-    public static void Print(string text, double x, double y, double color, string font = "P8SCII")
-        => Orch.GraphicsManager.Print(text, (int)x, (int)y, Palette.ElementAt((int)color).Key, font);
+    public static void Print(string text, double x, double y, double color, Font? font = null)
+        => Orch.GraphicsManager.Print(text, (int)x, (int)y, Palette.ElementAt((int)color).Key, font ?? Fonts.P8SCII);
 
-    public static void Print(string text, double x, double y, Color color, string font = "P8SCII")
-        => Orch.GraphicsManager.Print(text, (int)x, (int)y, color, font);
+    public static void Print(string text, double x, double y, Color color, Font? font = null)
+        => Orch.GraphicsManager.Print(text, (int)x, (int)y, color, font ?? Fonts.P8SCII);
 
-    public static void Print(string text, F32 x, F32 y, F32 color, string font = "P8SCII")
+    public static void Print(string text, F32 x, F32 y, F32 color, Font? font = null)
         => Orch.GraphicsManager.Print(text, F32.FloorToInt(x), F32.FloorToInt(y),
-                Palette.ElementAt(F32.FloorToInt(color)).Key, font);
+                Palette.ElementAt(F32.FloorToInt(color)).Key, font ?? Fonts.P8SCII);
 
-    public static void Print(string text, F32 x, F32 y, Color color, string font = "P8SCII")
-        => Orch.GraphicsManager.Print(text, F32.FloorToInt(x), F32.FloorToInt(y), color, font);
+    public static void Print(string text, F32 x, F32 y, Color color, Font? font = null)
+        => Orch.GraphicsManager.Print(text, F32.FloorToInt(x), F32.FloorToInt(y), color, font ?? Fonts.P8SCII);
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Pset
