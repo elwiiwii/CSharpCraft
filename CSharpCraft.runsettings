@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <!-- Match the game's SDL3 backend -->
+      <FNA_PLATFORM_BACKEND>SDL3</FNA_PLATFORM_BACKEND>
+      <FNA_NO_OPENGL_INTERCEPTION>1</FNA_NO_OPENGL_INTERCEPTION>
+      <!-- SDL3 offscreen driver: creates a virtual display with no real window -->
+      <SDL_VIDEODRIVER>offscreen</SDL_VIDEODRIVER>
+      <!-- Force OpenGL backend: SDL_GPU (default) requires Vulkan/Metal/D3D12 -->
+      <FNA3D_FORCE_DRIVER>OpenGL</FNA3D_FORCE_DRIVER>
+      <!-- Mesa software renderer: pure-CPU OpenGL, no GPU or display required -->
+      <LIBGL_ALWAYS_SOFTWARE>1</LIBGL_ALWAYS_SOFTWARE>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>
