@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<Platforms>AnyCPU;x64</Platforms>
 		<PublishSingleFile>true</PublishSingleFile>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
 	<Target Name="CreateSeedsFolder" BeforeTargets="Build">
