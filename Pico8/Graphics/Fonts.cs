@@ -1,4 +1,4 @@
-namespace CSharpCraft.Pico8.Graphics;
+namespace Pico8.Graphics;
 
 public static class Fonts
 {

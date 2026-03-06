@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-
-namespace CSharpCraft.Pico8;
+﻿namespace Pico8.Scene;
 
 public interface IScene
 {

@@ -25,7 +25,7 @@ using FixPointCS;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace FixMath
+namespace Pico8.FixMath
 {
     /// <summary>
     /// Signed 32.32 fixed point value struct.

@@ -1,4 +1,4 @@
-﻿namespace CSharpCraft.Pico8.Utilities;
+﻿namespace Pico8.FixMath;
 
 public class SinDict
 {

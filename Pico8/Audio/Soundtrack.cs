@@ -1,4 +1,4 @@
-namespace CSharpCraft.Pico8.Audio;
+namespace Pico8.Audio;
   
 public class Soundtrack
 {

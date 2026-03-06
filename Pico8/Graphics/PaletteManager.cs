@@ -1,6 +1,6 @@
 using Color = Microsoft.Xna.Framework.Color;
 
-namespace CSharpCraft.Pico8.Graphics;
+namespace Pico8.Graphics;
 
 public class PaletteManager
 {

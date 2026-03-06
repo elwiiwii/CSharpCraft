@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace CSharpCraft.Pico8.Graphics;
+namespace Pico8.Graphics;
 
 public class SpriteFlagMapManager : IDisposable
 {

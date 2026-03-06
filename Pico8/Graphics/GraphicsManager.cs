@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace CSharpCraft.Pico8.Graphics;
+namespace Pico8.Graphics;
 
 public class GraphicsManager
 {
@@ -359,7 +359,7 @@ public class GraphicsManager
         y -= _cameraOffset.Y;
         Texture2D tex = _spriteFlagMapManager.GetSpritesheetTexture();
         Rectangle src = _spriteFlagMapManager.GetSpriteSourceRect(index, width, height);
-        Rectangle dst = new Rectangle(x, y, width * 8, height * 8);
+        Rectangle dst = new(x, y, width * 8, height * 8);
         SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
                               | (flipY ? SpriteEffects.FlipVertically : SpriteEffects.None);
         _batch.Draw(tex, dst, src, Color.White, 0f, Vector2.Zero, effects, 0f);
@@ -375,8 +375,8 @@ public class GraphicsManager
         destX -= _cameraOffset.X;
         destY -= _cameraOffset.Y;
         Texture2D tex = _spriteFlagMapManager.GetSpritesheetTexture();
-        Rectangle src = new Rectangle(sourceX, sourceY, sourceWidth, sourceHeight);
-        Rectangle dst = new Rectangle(destX, destY, destWidth, destHeight);
+        Rectangle src = new(sourceX, sourceY, sourceWidth, sourceHeight);
+        Rectangle dst = new(destX, destY, destWidth, destHeight);
         SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
                               | (flipY ? SpriteEffects.FlipVertically : SpriteEffects.None);
         _batch.Draw(tex, dst, src, Color.White, 0f, Vector2.Zero, effects, 0f);
@@ -391,7 +391,7 @@ public class GraphicsManager
         destX -= _cameraOffset.X;
         destY -= _cameraOffset.Y;
         Texture2D tex = _spriteFlagMapManager.GetMapRegionTexture(sourceX, sourceY, sourceWidth, sourceHeight, flags);
-        Rectangle dst = new Rectangle(destX, destY, sourceWidth * 8, sourceHeight * 8);
+        Rectangle dst = new(destX, destY, sourceWidth * 8, sourceHeight * 8);
         _batch.Draw(tex, dst, null, Color.White);
     }
 

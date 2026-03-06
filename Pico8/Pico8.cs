@@ -1,7 +1,6 @@
-using FixMath;
 using Microsoft.Xna.Framework;
 
-namespace CSharpCraft.Pico8;
+namespace Pico8;
 
 public static class Pico8
 {
@@ -368,26 +367,13 @@ public static class Pico8
     /// https://pico-8.fandom.com/wiki/Fget
     /// </summary>
     public static int Fget(int n)
-        => Orch.MemoryManager.Fget(n);
-
-    /// <summary>
-    /// Get reference to raw map data array.
-    /// Used for bulk access (e.g., saving/loading seeds).
-    /// </summary>
-    public static int[] GetMapData()
-        => Orch.MemoryManager.GetMapData();
+        => Orch.SfmManager.GetFlag(n);
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Load
     /// </summary>
     public static void Load(string fileName)
         => Orch.MemoryManager.Load(fileName);
-
-    /// <summary>
-    /// https://pico-8.fandom.com/wiki/Memcpy
-    /// </summary>
-    public static void Memcpy(int destaddr, int sourceaddr, int len)
-        => Orch.MemoryManager.Memcpy(destaddr, sourceaddr, len);
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Menuitem
@@ -398,20 +384,20 @@ public static class Pico8
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Mget
     /// </summary>
-    public static int Mget(double celx, double cely)
-        => Orch.MemoryManager.Mget(celx, cely);
+    public static int Mget(int celx, int cely)
+        => Orch.SfmManager.GetMapTile(celx, cely);
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Mset
     /// </summary>
-    public static void Mset(double celx, double cely, double snum = 0)
-        => Orch.MemoryManager.Mset(celx, cely, snum);
+    public static void Mset(int celx, int cely, int snum = 0)
+        => Orch.SfmManager.SetMapTile(celx, cely, snum);
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Reload
     /// </summary>
-    public static void Reload(int dest = 0, int source = 0, int len = 0, string filename = "")
-        => Orch.MemoryManager.Reload(dest, source, len, filename);
+    public static void Reload()
+        => Orch.SfmManager.Reload();
 
     #endregion
 
@@ -446,7 +432,9 @@ public static class Pico8
         => Orch.MathManager.Abs(F32.FromDouble(value));
 
     public static F32 Abs(F32 value)
-        => Orch.MathManager.Abs(value);
+    {
+        return Orch.MathManager.Abs(value);
+    }
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Ceil
@@ -455,13 +443,15 @@ public static class Pico8
         => Orch.MathManager.Ceil(F32.FromDouble(value));
 
     public static F32 Ceil(F32 value)
-        => Orch.MathManager.Ceil(value);
+    {
+        return Orch.MathManager.Ceil(value);
+    }
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Cos
     /// </summary>
     public static F32 Cos(double angle)
-        => Orch.MathManager.Cos(angle);
+        => Orch.MathManager.Cos(F32.FromDouble(angle));
 
     public static F32 Cos(F32 angle)
         => Orch.MathManager.Cos(angle);
@@ -482,7 +472,9 @@ public static class Pico8
         => Orch.MathManager.Max(F32.FromDouble(first), F32.FromDouble(second));
 
     public static F32 Max(F32 first, F32 second)
-        => Orch.MathManager.Max(first, second);
+    {
+        return Orch.MathManager.Max(first, second);
+    }
 
     /// <summary>
     /// https://pico-8.fandom.com/wiki/Mid
@@ -542,7 +534,7 @@ public static class Pico8
     /// https://pico-8.fandom.com/wiki/Sin
     /// </summary>
     public static F32 Sin(double angle)
-        => Orch.MathManager.Sin(angle);
+        => Orch.MathManager.Sin(F32.FromDouble(angle));
 
     public static F32 Sin(F32 angle)
         => Orch.MathManager.Sin(angle);
