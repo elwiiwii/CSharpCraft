@@ -10,6 +10,5 @@
   <Project Path="Pico8/Pico8.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
-  <Project Path="RaceServer/RaceServer.csproj" />
   <Project Path="CSharpCraft.Tests/CSharpCraft.Tests.csproj" />
 </Solution>
