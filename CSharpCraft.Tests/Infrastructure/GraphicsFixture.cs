@@ -1,13 +1,11 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SDL3;
 
 namespace CSharpCraft.Tests.Infrastructure;
 
 /// <summary>
-/// xUnit class fixture that spins up a real FNA <see cref="GraphicsDevice"/> headlessly.
-/// Requires the test process to have been launched with:
-///   SDL_VIDEODRIVER=offscreen, FNA3D_FORCE_DRIVER=OpenGL, LIBGL_ALWAYS_SOFTWARE=1
-/// (set via CSharpCraft.runsettings so they are in effect before any native library loads).
+/// xUnit class fixture that spins up a real FNA <see cref="GraphicsDevice"/>.
 /// </summary>
 public sealed class GraphicsFixture : IDisposable
 {
@@ -15,6 +13,8 @@ public sealed class GraphicsFixture : IDisposable
 
     public GraphicsFixture()
     {
+        ConfigureGraphicsBackend();
+
         _game = new TestGame();
         // Run() blocks until the SDL event loop exits.
         // TestGame.Initialize() calls Exit() after base.Initialize(), which creates
@@ -25,6 +25,33 @@ public sealed class GraphicsFixture : IDisposable
     public GraphicsDevice GraphicsDevice => _game.GraphicsDevice;
 
     public void Dispose() => _game.Dispose();
+
+    private static void ConfigureGraphicsBackend()
+    {
+        // Project-level .runsettings pushes these into the testhost before startup.
+        // Keep the same values here as a fallback for direct runs that bypass it.
+        Environment.SetEnvironmentVariable("FNA_PLATFORM_BACKEND", "SDL3");
+        Environment.SetEnvironmentVariable("FNA_NO_OPENGL_INTERCEPTION", "1");
+        Environment.SetEnvironmentVariable("FNA3D_FORCE_DRIVER", "SDLGPU");
+        Environment.SetEnvironmentVariable("SDL_GPU_DRIVER", "vulkan");
+
+        SDL.SDL_SetHintWithPriority(
+            "FNA_PLATFORM_BACKEND",
+            "SDL3",
+            SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        SDL.SDL_SetHintWithPriority(
+            "FNA_NO_OPENGL_INTERCEPTION",
+            "1",
+            SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        SDL.SDL_SetHintWithPriority(
+            "FNA3D_FORCE_DRIVER",
+            "SDLGPU",
+            SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        SDL.SDL_SetHintWithPriority(
+            SDL.SDL_HINT_GPU_DRIVER,
+            "vulkan",
+            SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+    }
 
     private sealed class TestGame : Game
     {

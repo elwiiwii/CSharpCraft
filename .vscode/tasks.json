@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "test: CSharpCraft.Tests",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "test",
+        "CSharpCraft.Tests/CSharpCraft.Tests.csproj",
+        "-c",
+        "Debug"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

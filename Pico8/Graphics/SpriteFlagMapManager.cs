@@ -193,18 +193,85 @@ public class SpriteFlagMapManager : IDisposable
     }
 
     public void MapToSpritesheet(
-        int mapStartX, int mapStartY,
-        int mapEndX, int mapEndY,
-        int spriteDestX, int spriteDestY)
+        int cellX = 0,
+        int cellY = 32,
+        int destX = 0,
+        int destY = 64,
+        int length = 8192,
+        int @base = 16)
     {
-        int cellCount = (mapEndX - mapStartX) * (mapEndY - mapStartY);
+        if (length <= 0 || @base <= 0)
+            return;
 
-        for (int i = 0; i < cellCount; i++)
+        int mapStartIndex = cellX + (cellY * _mapWidth);
+        int spriteStartIndex = destX + (destY * _spriteSheetWidth);
+        int pixelsWritten = 0;
+
+        for (int pixelOffset = 0; pixelOffset < length; pixelOffset++)
         {
-            int tile = _mapData[mapStartX + (mapStartY * _mapWidth) + i];
-            Color color = Pico8.Palette.ElementAt(tile % 16).Key;
-            _spritesheetData[spriteDestX + (spriteDestY * _spriteSheetWidth) + i] = color;
+            int mapIndex = mapStartIndex + (pixelOffset / 2);
+            int spriteIndex = spriteStartIndex + pixelOffset;
+
+            if (mapIndex < 0 || mapIndex >= _mapData.Length)
+                break;
+
+            if (spriteIndex < 0 || spriteIndex >= _spritesheetData.Length)
+                break;
+
+            int tile = _mapData[mapIndex];
+            int splitValue = (pixelOffset % 2 == 0) ? (tile / @base) : (tile % @base);
+            Color color = Pico8.Palette.ElementAt(splitValue % 16).Key;
+            _spritesheetData[spriteIndex] = color;
+            pixelsWritten++;
         }
+
+        if (pixelsWritten > 0)
+            SpritesheetVersion++;
+    }
+
+    public void MapToSpritesheet(
+        int cellX = 0,
+        int cellY = 32,
+        int cellW = 128,
+        int cellH = 32,
+        int destX = 0,
+        int destY = 64,
+        int destW = 128,
+        int destH = 64,
+        int @base = 16)
+    {
+        if (cellW <= 0 || cellH <= 0 || destW <= 0 || destH <= 0 || @base <= 0)
+            return;
+
+        int sourcePixels = cellW * cellH * 2;
+        int destinationPixels = destW * destH;
+        int copyPixels = Math.Min(sourcePixels, destinationPixels);
+        int pixelsWritten = 0;
+
+        for (int i = 0; i < copyPixels; i++)
+        {
+            int sourceCellOffset = i / 2;
+            int sourceCellX = cellX + (sourceCellOffset % cellW);
+            int sourceCellY = cellY + (sourceCellOffset / cellW);
+
+            if (sourceCellX < 0 || sourceCellX >= _mapWidth || sourceCellY < 0 || sourceCellY >= _mapHeight)
+                break;
+
+            int destinationX = destX + (i % destW);
+            int destinationY = destY + (i / destW);
+
+            if (destinationX < 0 || destinationX >= _spriteSheetWidth || destinationY < 0 || destinationY >= _spriteSheetHeight)
+                break;
+
+            int tile = _mapData[sourceCellX + (sourceCellY * _mapWidth)];
+            int splitValue = (i % 2 == 0) ? (tile / @base) : (tile % @base);
+            Color color = Pico8.Palette.ElementAt(splitValue % 16).Key;
+            _spritesheetData[destinationX + (destinationY * _spriteSheetWidth)] = color;
+            pixelsWritten++;
+        }
+
+        if (pixelsWritten > 0)
+            SpritesheetVersion++;
     }
 
     #region TEXTURE GENERATION

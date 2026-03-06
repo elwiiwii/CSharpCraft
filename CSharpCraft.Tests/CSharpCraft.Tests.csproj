@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 		<IsTestProject>true</IsTestProject>
 		<Platforms>AnyCPU;x64</Platforms>
+		<RunSettingsFilePath>$(MSBuildProjectDirectory)/../.runsettings</RunSettingsFilePath>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
 
