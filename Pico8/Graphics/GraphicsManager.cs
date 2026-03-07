@@ -13,7 +13,7 @@ public class GraphicsManager
     private readonly Texture2D _pixel;
     private readonly Dictionary<string, Texture2D> _textureDictionary;
     private readonly GameWindow _window;
-    private readonly SpriteFlagMapManager _spriteFlagMapManager;
+    private readonly SpriteTextureManager _spriteTextureManager;
 
     public GraphicsManager(
         SpriteBatch batch,
@@ -23,7 +23,7 @@ public class GraphicsManager
         Texture2D pixel,
         Dictionary<string, Texture2D> textureDictionary,
         GameWindow window,
-        SpriteFlagMapManager spriteFlagMapManager)
+        SpriteTextureManager spriteTextureManager)
     {
         _cameraOffset = (0, 0);
         _graphics = graphics ?? throw new ArgumentNullException(nameof(graphics));
@@ -33,7 +33,7 @@ public class GraphicsManager
         _textureDictionary = textureDictionary ?? throw new ArgumentNullException(nameof(textureDictionary));
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _batch = batch ?? throw new ArgumentNullException(nameof(batch));
-        _spriteFlagMapManager = spriteFlagMapManager ?? throw new ArgumentNullException(nameof(spriteFlagMapManager));
+        _spriteTextureManager = spriteTextureManager ?? throw new ArgumentNullException(nameof(spriteTextureManager));
     }
 
     #region DRAWING PRIMITIVES
@@ -354,11 +354,11 @@ public class GraphicsManager
     /// </summary>
     public void Spr(int index, int x, int y, int width = 1, int height = 1, bool flipX = false, bool flipY = false)
     {
-        if (_spriteFlagMapManager is null) return;
+        if (_spriteTextureManager is null) return;
         x -= _cameraOffset.X;
         y -= _cameraOffset.Y;
-        Texture2D tex = _spriteFlagMapManager.GetSpritesheetTexture();
-        Rectangle src = _spriteFlagMapManager.GetSpriteSourceRect(index, width, height);
+        Texture2D tex = _spriteTextureManager.GetSpritesheetTexture();
+        Rectangle src = _spriteTextureManager.GetSpriteSourceRect(index, width, height);
         Rectangle dst = new(x, y, width * 8, height * 8);
         SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
                               | (flipY ? SpriteEffects.FlipVertically : SpriteEffects.None);
@@ -371,10 +371,10 @@ public class GraphicsManager
     public void Sspr(int sourceX, int sourceY, int sourceWidth, int sourceHeight, int destX, int destY,
             int destWidth, int destHeight, bool flipX = false, bool flipY = false)
     {
-        if (_spriteFlagMapManager is null) return;
+        if (_spriteTextureManager is null) return;
         destX -= _cameraOffset.X;
         destY -= _cameraOffset.Y;
-        Texture2D tex = _spriteFlagMapManager.GetSpritesheetTexture();
+        Texture2D tex = _spriteTextureManager.GetSpritesheetTexture();
         Rectangle src = new(sourceX, sourceY, sourceWidth, sourceHeight);
         Rectangle dst = new(destX, destY, destWidth, destHeight);
         SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
@@ -387,10 +387,10 @@ public class GraphicsManager
     /// </summary>
     public void Map(int sourceX, int sourceY, int destX, int destY, int sourceWidth, int sourceHeight, int flags = 0)
     {
-        if (_spriteFlagMapManager is null) return;
+        if (_spriteTextureManager is null) return;
         destX -= _cameraOffset.X;
         destY -= _cameraOffset.Y;
-        Texture2D tex = _spriteFlagMapManager.GetMapRegionTexture(sourceX, sourceY, sourceWidth, sourceHeight, flags);
+        Texture2D tex = _spriteTextureManager.GetMapRegionTexture(sourceX, sourceY, sourceWidth, sourceHeight, flags);
         Rectangle dst = new(destX, destY, sourceWidth * 8, sourceHeight * 8);
         _batch.Draw(tex, dst, null, Color.White);
     }

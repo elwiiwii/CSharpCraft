@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Pico8.Graphics;
 
-public class SpriteFlagMapManager : IDisposable
+public class SpriteMapData
 {
     private const int SPRITE_WIDTH = 8;
     private const int SPRITE_HEIGHT = 8;
@@ -18,26 +18,24 @@ public class SpriteFlagMapManager : IDisposable
     private readonly int _mapHeight;
     private readonly int[] _originalFlags;
     private readonly int[] _flagData;
-    private readonly GraphicsDevice _graphicsDevice;
-    private readonly PaletteManager _paletteManager;
-    private Texture2D? _cachedSpritesheetTexture;
-    private int _cachedSpriteVersion = -1;
-    private int _cachedPaletteVersion = -1;
-    private readonly Dictionary<(int, int, int, int, int), (Texture2D tex, int sprV, int mapV, int palV)> _mapTextureCache = new();
 
     public int SpritesheetVersion { get; private set; }
     public int MapVersion { get; private set; }
 
-    public SpriteFlagMapManager(
-        GraphicsDevice graphicsDevice,
-        PaletteManager paletteManager,
+    public int SpriteSheetWidth => _spriteSheetWidth;
+    public int SpriteSheetHeight => _spriteSheetHeight;
+    public int SpritesPerRow => _spriteSheetWidth / SPRITE_WIDTH;
+    public int SpriteCount => _spriteCount;
+    public int MapWidth => _mapWidth;
+    public int MapHeight => _mapHeight;
+
+    internal Color[] SpritesheetData => _spritesheetData;
+
+    public SpriteMapData(
         Texture2D spriteTexture,
         Texture2D mapTexture,
         string flagString)
     {
-        _graphicsDevice = graphicsDevice ?? throw new ArgumentNullException(nameof(graphicsDevice));
-        _paletteManager = paletteManager ?? throw new ArgumentNullException(nameof(paletteManager));
-        
         if (spriteTexture.Width % SPRITE_WIDTH != 0 || spriteTexture.Height % SPRITE_HEIGHT != 0)
             throw new ArgumentException(
                 $"Sprite texture dimensions ({spriteTexture.Width}x{spriteTexture.Height}) must be multiples of {SPRITE_WIDTH}.",
@@ -48,14 +46,14 @@ public class SpriteFlagMapManager : IDisposable
                 $"Map texture dimensions ({mapTexture.Width}x{mapTexture.Height}) must be multiples of {SPRITE_WIDTH}.",
                 nameof(mapTexture));
 
-        _originalSpritesheetTexture = spriteTexture;
+        _originalSpritesheetTexture = spriteTexture ?? throw new ArgumentNullException(nameof(spriteTexture));
         _spriteSheetWidth = spriteTexture.Width;
         _spriteSheetHeight = spriteTexture.Height;
         _spriteCount = (_spriteSheetWidth / SPRITE_WIDTH) * (_spriteSheetHeight / SPRITE_HEIGHT);
-        _originalMapTexture = mapTexture;
+        _originalMapTexture = mapTexture ?? throw new ArgumentNullException(nameof(mapTexture));
         _mapWidth = mapTexture.Width / SPRITE_WIDTH;
         _mapHeight = mapTexture.Height / SPRITE_HEIGHT;
-        _originalFlags = flagString.Chunk(2)
+        _originalFlags = (flagString ?? "").Chunk(2)
             .Select(c => Convert.ToInt32(new string(c), 16))
             .Concat(Enumerable.Repeat(0, _spriteCount))
             .Take(_spriteCount)
@@ -67,7 +65,7 @@ public class SpriteFlagMapManager : IDisposable
 
         Reload();
     }
-    
+
     public void Reload()
     {
         _originalSpritesheetTexture.GetData(_spritesheetData);
@@ -182,7 +180,7 @@ public class SpriteFlagMapManager : IDisposable
 
     public void SetMapTile(int x, int y, int spriteNumber)
     {
-        if (x < 0 || x >= _mapWidth || y < 0 || y >= _mapHeight )
+        if (x < 0 || x >= _mapWidth || y < 0 || y >= _mapHeight)
             return;
 
         if (spriteNumber < 0 || spriteNumber >= _spriteCount)
@@ -192,7 +190,7 @@ public class SpriteFlagMapManager : IDisposable
         MapVersion++;
     }
 
-    public void MapToSpritesheet(
+    public void MapToSpritesheet1D(
         int cellX = 0,
         int cellY = 32,
         int destX = 0,
@@ -229,7 +227,7 @@ public class SpriteFlagMapManager : IDisposable
             SpritesheetVersion++;
     }
 
-    public void MapToSpritesheet(
+    public void MapToSpritesheet2D(
         int cellX = 0,
         int cellY = 32,
         int cellW = 128,
@@ -274,15 +272,6 @@ public class SpriteFlagMapManager : IDisposable
             SpritesheetVersion++;
     }
 
-    #region TEXTURE GENERATION
-
-    public int SpriteSheetWidth => _spriteSheetWidth;
-    public int SpriteSheetHeight => _spriteSheetHeight;
-    public int SpritesPerRow => _spriteSheetWidth / SPRITE_WIDTH;
-    public int SpriteCount => _spriteCount;
-    public int MapWidth => _mapWidth;
-    public int MapHeight => _mapHeight;
-
     public Rectangle GetSpriteSourceRect(int spriteIndex, int widthSprites = 1, int heightSprites = 1)
     {
         int spritesPerRow = _spriteSheetWidth / SPRITE_WIDTH;
@@ -292,85 +281,4 @@ public class SpriteFlagMapManager : IDisposable
             widthSprites * SPRITE_WIDTH,
             heightSprites * SPRITE_HEIGHT);
     }
-
-    public Texture2D GetSpritesheetTexture()
-    {
-        if (_cachedSpritesheetTexture is null ||
-            SpritesheetVersion != _cachedSpriteVersion ||
-            _paletteManager.PaletteVersion != _cachedPaletteVersion)
-        {
-            _cachedSpritesheetTexture ??= new Texture2D(_graphicsDevice, _spriteSheetWidth, _spriteSheetHeight);
-            Color[] applied = new Color[_spritesheetData.Length];
-            for (int i = 0; i < _spritesheetData.Length; i++)
-                applied[i] = _paletteManager.PaletteMap.TryGetValue(_spritesheetData[i], out Color mapped) ? mapped : _spritesheetData[i];
-            _cachedSpritesheetTexture.SetData(applied);
-            _cachedSpriteVersion = SpritesheetVersion;
-            _cachedPaletteVersion = _paletteManager.PaletteVersion;
-        }
-        return _cachedSpritesheetTexture;
-    }
-
-    public Texture2D GetMapRegionTexture(int mapX, int mapY, int mapW, int mapH, int flags = 0)
-    {
-        var key = (mapX, mapY, mapW, mapH, flags);
-        int texW = mapW * SPRITE_WIDTH;
-        int texH = mapH * SPRITE_HEIGHT;
-        int spritesPerRow = _spriteSheetWidth / SPRITE_WIDTH;
-
-        if (_mapTextureCache.TryGetValue(key, out var cached) &&
-            cached.sprV == SpritesheetVersion &&
-            cached.mapV == MapVersion &&
-            cached.palV == _paletteManager.PaletteVersion)
-        {
-            return cached.tex;
-        }
-
-        Color[] pixels = new Color[texW * texH];
-        for (int cy = 0; cy < mapH; cy++)
-        {
-            for (int cx = 0; cx < mapW; cx++)
-            {
-                int spriteIndex = GetMapTile(mapX + cx, mapY + cy);
-                bool drawSprite = flags == 0 || (GetFlag(spriteIndex) & flags) != 0;
-                int spriteOriginX = (spriteIndex % spritesPerRow) * SPRITE_WIDTH;
-                int spriteOriginY = (spriteIndex / spritesPerRow) * SPRITE_HEIGHT;
-                for (int py = 0; py < SPRITE_HEIGHT; py++)
-                {
-                    for (int px = 0; px < SPRITE_WIDTH; px++)
-                    {
-                        int destIdx = (cx * SPRITE_WIDTH + px) + (cy * SPRITE_HEIGHT + py) * texW;
-                        if (!drawSprite)
-                        {
-                            pixels[destIdx] = Color.Transparent;
-                            continue;
-                        }
-                        Color src = _spritesheetData[(spriteOriginX + px) + (spriteOriginY + py) * _spriteSheetWidth];
-                        pixels[destIdx] = _paletteManager.PaletteMap.TryGetValue(src, out Color mapped) ? mapped : src;
-                    }
-                }
-            }
-        }
-
-        if (_mapTextureCache.TryGetValue(key, out var existing))
-        {
-            existing.tex.SetData(pixels);
-            _mapTextureCache[key] = (existing.tex, SpritesheetVersion, MapVersion, _paletteManager.PaletteVersion);
-            return existing.tex;
-        }
-
-        Texture2D tex = new Texture2D(_graphicsDevice, texW, texH);
-        tex.SetData(pixels);
-        _mapTextureCache[key] = (tex, SpritesheetVersion, MapVersion, _paletteManager.PaletteVersion);
-        return tex;
-    }
-
-    public void Dispose()
-    {
-        _cachedSpritesheetTexture?.Dispose();
-        foreach (var entry in _mapTextureCache.Values)
-            entry.tex.Dispose();
-        _mapTextureCache.Clear();
-    }
-
-    #endregion
 }

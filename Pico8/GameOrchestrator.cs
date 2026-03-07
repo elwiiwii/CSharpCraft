@@ -9,7 +9,7 @@ public class GameOrchestrator : IDisposable
     private readonly MathManager _mathManager;
     private readonly MemoryManager _memoryManager;
     private readonly SceneManager _sceneManager;
-    private readonly SpriteFlagMapManager _sfmManager;
+    private readonly SpriteMapData _sfmManager;
 
     //private IScene _currentScene;
     private readonly IScene _defaultScene;
@@ -21,7 +21,7 @@ public class GameOrchestrator : IDisposable
         MathManager mathManager,
         MemoryManager memoryManager,
         SceneManager sceneManager,
-        SpriteFlagMapManager sfmManager,
+        SpriteMapData sfmManager,
         IScene defaultScene)
     {
         _audioManager = audioManager ?? throw new ArgumentNullException(nameof(audioManager));
@@ -41,7 +41,7 @@ public class GameOrchestrator : IDisposable
     public MathManager MathManager => _mathManager;
     public MemoryManager MemoryManager => _memoryManager;
     public SceneManager SceneManager => _sceneManager;
-    public SpriteFlagMapManager SfmManager => _sfmManager;
+    public SpriteMapData SfmManager => _sfmManager;
 
 //    public GameOrchestrator(
 //        IInputStateManager inputManager,
