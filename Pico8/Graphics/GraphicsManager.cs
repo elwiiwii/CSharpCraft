@@ -357,12 +357,11 @@ public class GraphicsManager
         if (_spriteTextureManager is null) return;
         x -= _cameraOffset.X;
         y -= _cameraOffset.Y;
-        Texture2D tex = _spriteTextureManager.GetSpritesheetTexture();
-        Rectangle src = _spriteTextureManager.GetSpriteSourceRect(index, width, height);
+        Texture2D tex = _spriteTextureManager.GetSpriteTexture(index, width, height);
         Rectangle dst = new(x, y, width * 8, height * 8);
         SpriteEffects effects = (flipX ? SpriteEffects.FlipHorizontally : SpriteEffects.None)
                               | (flipY ? SpriteEffects.FlipVertically : SpriteEffects.None);
-        _batch.Draw(tex, dst, src, Color.White, 0f, Vector2.Zero, effects, 0f);
+        _batch.Draw(tex, dst, null, Color.White, 0f, Vector2.Zero, effects, 0f);
     }
 
     /// <summary>
@@ -393,6 +392,11 @@ public class GraphicsManager
         Texture2D tex = _spriteTextureManager.GetMapRegionTexture(sourceX, sourceY, sourceWidth, sourceHeight, flags);
         Rectangle dst = new(destX, destY, sourceWidth * 8, sourceHeight * 8);
         _batch.Draw(tex, dst, null, Color.White);
+    }
+
+    public void Tick()
+    {
+        _spriteTextureManager?.Tick();
     }
 
     /// <summary>

@@ -13,6 +13,7 @@ public class SpriteTextureManagerTests : IDisposable
     private static readonly Color DarkBlue  = new(0x1D, 0x2B, 0x53, 255); // palette index 1
     private static readonly Color DarkGreen = new(0x00, 0x87, 0x51, 255); // palette index 3
     private static readonly Color Red       = new(0xFF, 0x00, 0x4D, 255); // palette index 8
+    private static readonly Color Brown     = new(0xAB, 0x52, 0x36, 255); // palette index 4
 
     private readonly GraphicsDevice _gd;
     private readonly List<Texture2D> _ownedTextures = new();
@@ -39,18 +40,22 @@ public class SpriteTextureManagerTests : IDisposable
         return tex;
     }
 
+    private static LruCache<SpriteSnapshot, Texture2D> MakeCache(int staleTtlFrames = 300)
+        => new(staleTtlFrames);
+
     private (SpriteMapData data, SpriteTextureManager mgr, PaletteManager pm) MakeManager(
         int sheetW = 16, int sheetH = 16,
         int mapW   = 16, int mapH   = 8,
         Color? spriteColor = null,
-        string flagString  = "")
+        string flagString  = "",
+        int staleTtlFrames = 300)
     {
         Color fill = spriteColor ?? DarkBlue;
         var sprite = MakeSolid(sheetW, sheetH, fill);
         var map    = MakeSolid(mapW,   mapH,   fill);
         var smd = new SpriteMapData(sprite, map, flagString);
         var pm  = new PaletteManager();
-        var stm = new SpriteTextureManager(_gd, pm, smd);
+        var stm = new SpriteTextureManager(_gd, pm, smd, MakeCache(staleTtlFrames));
         return (smd, stm, pm);
     }
 
@@ -66,7 +71,7 @@ public class SpriteTextureManagerTests : IDisposable
         var smd = new SpriteMapData(sprite, map, "");
         var pm  = new PaletteManager();
 
-        var act = () => new SpriteTextureManager(null!, pm, smd);
+        var act = () => new SpriteTextureManager(null!, pm, smd, MakeCache());
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("graphicsDevice");
     }
@@ -78,7 +83,7 @@ public class SpriteTextureManagerTests : IDisposable
         var map    = MakeSolid(8, 8, DarkBlue);
         var smd = new SpriteMapData(sprite, map, "");
 
-        var act = () => new SpriteTextureManager(_gd, null!, smd);
+        var act = () => new SpriteTextureManager(_gd, null!, smd, MakeCache());
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("paletteManager");
     }
@@ -87,9 +92,22 @@ public class SpriteTextureManagerTests : IDisposable
     public void Constructor_Throws_WhenSpriteMapDataIsNull()
     {
         var pm = new PaletteManager();
-        var act = () => new SpriteTextureManager(_gd, pm, null!);
+        var act = () => new SpriteTextureManager(_gd, pm, null!, MakeCache());
 
         act.Should().Throw<ArgumentNullException>().WithParameterName("data");
+    }
+
+    [Fact]
+    public void Constructor_Throws_WhenSpriteCacheIsNull()
+    {
+        var sprite = MakeSolid(8, 8, DarkBlue);
+        var map    = MakeSolid(8, 8, DarkBlue);
+        var smd = new SpriteMapData(sprite, map, "");
+        var pm  = new PaletteManager();
+
+        var act = () => new SpriteTextureManager(_gd, pm, smd, null!);
+
+        act.Should().Throw<ArgumentNullException>().WithParameterName("spriteCache");
     }
 
     // -------------------------------------------------------------------------
@@ -268,7 +286,7 @@ public class SpriteTextureManagerTests : IDisposable
         var map    = MakeSolid(16, 16, DarkBlue);
         var smd = new SpriteMapData(sprite, map, "");
         var pm  = new PaletteManager();
-        var stm = new SpriteTextureManager(_gd, pm, smd);
+        var stm = new SpriteTextureManager(_gd, pm, smd, MakeCache());
 
         Texture2D regionA = stm.GetMapRegionTexture(0, 0, 1, 1);
         Texture2D regionB = stm.GetMapRegionTexture(1, 0, 1, 1);
@@ -283,7 +301,7 @@ public class SpriteTextureManagerTests : IDisposable
         var map    = MakeSolid(16, 8, DarkBlue);
         var smd = new SpriteMapData(sprite, map, "");
         var pm  = new PaletteManager();
-        var stm = new SpriteTextureManager(_gd, pm, smd);
+        var stm = new SpriteTextureManager(_gd, pm, smd, MakeCache());
         _ = stm.GetMapRegionTexture(0, 0, 1, 1); // prime cache
 
         // Change tile 0 to sprite 1 — but since both sprites are identical
@@ -342,6 +360,178 @@ public class SpriteTextureManagerTests : IDisposable
     {
         var (_, stm, _) = MakeManager();
         Texture2D tex = stm.GetMapRegionTexture(0, 0, 1, 1);
+
+        stm.Dispose();
+
+        tex.IsDisposed.Should().BeTrue();
+    }
+
+    // -------------------------------------------------------------------------
+    // GetSpriteTexture – basic usage
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void GetSpriteTexture_ReturnsNonNullTexture()
+    {
+        var (_, stm, _) = MakeManager();
+
+        stm.GetSpriteTexture(0).Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GetSpriteTexture_HasCorrectDimensions()
+    {
+        var (_, stm, _) = MakeManager();
+
+        Texture2D tex = stm.GetSpriteTexture(0, w: 2, h: 1);
+
+        tex.Width.Should().Be(16);
+        tex.Height.Should().Be(8);
+    }
+
+    [Fact]
+    public void GetSpriteTexture_AppliesPaletteMapping()
+    {
+        var (_, stm, pm) = MakeManager(spriteColor: DarkBlue);
+        pm.SetPalette(DarkBlue, Red);
+
+        Texture2D tex = stm.GetSpriteTexture(0);
+
+        Color[] pixels = new Color[tex.Width * tex.Height];
+        tex.GetData(pixels);
+        pixels[0].Should().Be(Red);
+    }
+
+    // -------------------------------------------------------------------------
+    // GetSpriteTexture – caching
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void GetSpriteTexture_ReturnsSameInstance_OnRepeatCall()
+    {
+        var (_, stm, _) = MakeManager();
+
+        Texture2D first  = stm.GetSpriteTexture(0);
+        Texture2D second = stm.GetSpriteTexture(0);
+
+        second.Should().BeSameAs(first);
+    }
+
+    [Fact]
+    public void GetSpriteTexture_ReturnsSameInstance_WhenIrrelevantPaletteChanges()
+    {
+        // Sprite is all DarkBlue; remapping Red (not in the sprite) must not bust the cache.
+        var (_, stm, pm) = MakeManager(spriteColor: DarkBlue);
+        Texture2D first = stm.GetSpriteTexture(0);
+
+        pm.SetPalette(Red, Brown); // Red is NOT a pixel colour in sprite 0
+
+        Texture2D second = stm.GetSpriteTexture(0);
+
+        second.Should().BeSameAs(first);
+    }
+
+    [Fact]
+    public void GetSpriteTexture_ReturnsDifferentInstance_WhenRelevantPaletteChanges()
+    {
+        // Sprite is all DarkBlue; remapping DarkBlue must produce a new texture.
+        var (_, stm, pm) = MakeManager(spriteColor: DarkBlue);
+        Texture2D first = stm.GetSpriteTexture(0);
+
+        pm.SetPalette(DarkBlue, Red); // DarkBlue IS in the sprite
+
+        Texture2D second = stm.GetSpriteTexture(0);
+
+        second.Should().NotBeSameAs(first);
+    }
+
+    [Fact]
+    public void GetSpriteTexture_OldTextureNotDisposed_WhenPixelsChange()
+    {
+        // Changing pixels produces a different hash → new cache entry is created.
+        // The old entry is NOT eagerly disposed; it becomes stale and is eventually
+        // collected by TTL eviction.
+        var (smd, stm, _) = MakeManager(spriteColor: DarkBlue);
+        Texture2D first = stm.GetSpriteTexture(0);
+
+        smd.SetSpritePixel(0, 0, Red); // pixel change → different hash
+
+        Texture2D second = stm.GetSpriteTexture(0);
+
+        second.Should().NotBeSameAs(first);
+        first.IsDisposed.Should().BeFalse();
+    }
+
+    [Fact]
+    public void GetSpriteTexture_ReusesOldTexture_WhenPixelsRevert()
+    {
+        // Reverting pixels to their original state produces the same hash, so the
+        // original cache entry is returned rather than a new texture being allocated.
+        var (smd, stm, _) = MakeManager(spriteColor: DarkBlue);
+        Texture2D first = stm.GetSpriteTexture(0);       // cached under hash H0
+
+        smd.SetSpritePixel(0, 0, Red);                   // pixels change → hash H1
+        _ = stm.GetSpriteTexture(0);                     // populates H1 entry
+
+        smd.SetSpritePixel(0, 0, DarkBlue);              // pixels revert → hash H0
+        Texture2D third = stm.GetSpriteTexture(0);       // should hit original H0 entry
+
+        third.Should().BeSameAs(first);
+    }
+
+    [Fact]
+    public void GetSpriteTexture_ReturnsSameInstance_ForIdenticalSpritesAtDifferentIndices()
+    {
+        // Sprites with identical pixel data share one cache entry. The sprite's
+        // position in the sheet (index) is not part of the cache key.
+        var (_, stm, _) = MakeManager(sheetW: 16, sheetH: 16, spriteColor: DarkBlue);
+
+        Texture2D texA = stm.GetSpriteTexture(0);
+        Texture2D texB = stm.GetSpriteTexture(1);
+
+        texB.Should().BeSameAs(texA);
+    }
+
+    // -------------------------------------------------------------------------
+    // GetSpriteTexture – TTL eviction
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void GetSpriteTexture_EvictsTexture_AfterTtlExpires()
+    {
+        var (_, stm, _) = MakeManager(staleTtlFrames: 2);
+        Texture2D tex = stm.GetSpriteTexture(0);
+
+        stm.Tick(); // frame 1: (1-0)=1 not > 2
+        stm.Tick(); // frame 2: (2-0)=2 not > 2
+        stm.Tick(); // frame 3: (3-0)=3 > 2 → evict
+
+        tex.IsDisposed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetSpriteTexture_KeepsTexture_WhenReaccessedBeforeTtlExpires()
+    {
+        var (_, stm, _) = MakeManager(staleTtlFrames: 2);
+        Texture2D tex = stm.GetSpriteTexture(0); // cached at frame 0
+
+        stm.Tick(); // frame 1
+        stm.Tick(); // frame 2
+        _ = stm.GetSpriteTexture(0); // resets lastAccessed to frame 2
+        stm.Tick(); // frame 3: (3-2)=1 not > 2 → alive
+
+        tex.IsDisposed.Should().BeFalse();
+    }
+
+    // -------------------------------------------------------------------------
+    // Dispose – sprite cache
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void Dispose_DisposesPerSpriteTextures()
+    {
+        var (_, stm, _) = MakeManager();
+        Texture2D tex = stm.GetSpriteTexture(0);
 
         stm.Dispose();
 

@@ -12,15 +12,18 @@ public class SpriteTextureManager : IDisposable
     private int _cachedSpriteVersion = -1;
     private int _cachedPaletteVersion = -1;
     private readonly Dictionary<(int, int, int, int, int), (Texture2D tex, int sprV, int mapV, int palV)> _mapTextureCache = new();
+    private readonly LruCache<SpriteSnapshot, Texture2D> _spriteCache;
 
     public SpriteTextureManager(
         GraphicsDevice graphicsDevice,
         PaletteManager paletteManager,
-        SpriteMapData data)
+        SpriteMapData data,
+        LruCache<SpriteSnapshot, Texture2D> spriteCache)
     {
         _graphicsDevice = graphicsDevice ?? throw new ArgumentNullException(nameof(graphicsDevice));
         _paletteManager = paletteManager ?? throw new ArgumentNullException(nameof(paletteManager));
         _data = data ?? throw new ArgumentNullException(nameof(data));
+        _spriteCache = spriteCache ?? throw new ArgumentNullException(nameof(spriteCache));
     }
 
     public Texture2D GetSpritesheetTexture()
@@ -100,11 +103,46 @@ public class SpriteTextureManager : IDisposable
     public Rectangle GetSpriteSourceRect(int spriteIndex, int widthSprites = 1, int heightSprites = 1)
         => _data.GetSpriteSourceRect(spriteIndex, widthSprites, heightSprites);
 
+    public Texture2D GetSpriteTexture(int index, int w = 1, int h = 1)
+    {
+        int texW = w * 8;
+        int texH = h * 8;
+        int spritesPerRow = _data.SpritesPerRow;
+        int sheetWidth = _data.SpriteSheetWidth;
+        Color[] sheet = _data.SpritesheetData;
+        int originX = (index % spritesPerRow) * 8;
+        int originY = (index / spritesPerRow) * 8;
+
+        Color[] pixels = new Color[texW * texH];
+        for (int row = 0; row < texH; row++)
+            for (int col = 0; col < texW; col++)
+                pixels[col + row * texW] = sheet[(originX + col) + (originY + row) * sheetWidth];
+
+        var key = new SpriteSnapshot(pixels, w, h, _paletteManager.PaletteMap);
+
+        Texture2D? cached = _spriteCache.Get(key);
+        if (cached is not null)
+            return cached;
+
+        var pm = _paletteManager.PaletteMap;
+        Color[] applied = new Color[pixels.Length];
+        for (int i = 0; i < pixels.Length; i++)
+            applied[i] = pm.TryGetValue(pixels[i], out Color mapped) ? mapped : pixels[i];
+
+        Texture2D tex = new Texture2D(_graphicsDevice, texW, texH);
+        tex.SetData(applied);
+        _spriteCache.Put(key, tex);
+        return tex;
+    }
+
+    public void Tick() => _spriteCache.Tick();
+
     public void Dispose()
     {
         _cachedSpritesheetTexture?.Dispose();
         foreach (var entry in _mapTextureCache.Values)
             entry.tex.Dispose();
         _mapTextureCache.Clear();
+        _spriteCache.Clear();
     }
 }
