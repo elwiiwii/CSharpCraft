@@ -34,14 +34,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="bin\Debug\net10.0\FAudio.dll" />
-	  <None Include="bin\Debug\net10.0\FNA3D.dll" />
-	  <None Include="bin\Debug\net10.0\libtheorafile.dll" />
-	  <None Include="bin\Debug\net10.0\SDL3.dll" />
-	  <None Include="bin\Release\net10.0\FAudio.dll" />
-	  <None Include="bin\Release\net10.0\FNA3D.dll" />
-	  <None Include="bin\Release\net10.0\libtheorafile.dll" />
-	  <None Include="bin\Release\net10.0\SDL3.dll" />
+		<None Include="../FNAlibs/**" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>

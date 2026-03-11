@@ -25,26 +25,10 @@
 		<ProjectReference Include="..\CSharpCraft.Game\CSharpCraft.Game.csproj" />
 	</ItemGroup>
 
-	<!-- Native FNA libraries required for headless GPU testing on Linux.
-	     CSharpCraft.Game builds first (via ProjectReference above), so
-	     these files are guaranteed to exist before this project copies them. -->
-	<ItemGroup Condition="'$(OS)' != 'Windows_NT'">
-		<None Include="..\CSharpCraft.Game\bin\$(Configuration)\$(TargetFramework)\libSDL3.so.0">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</None>
-		<None Include="..\CSharpCraft.Game\bin\$(Configuration)\$(TargetFramework)\libFNA3D.so.0">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</None>
-		<None Include="..\CSharpCraft.Game\bin\$(Configuration)\$(TargetFramework)\libFAudio.so.0">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</None>
-		<None Include="..\CSharpCraft.Game\bin\$(Configuration)\$(TargetFramework)\libtheorafile.so">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Visible>false</Visible>
-		</None>
+	
+	<!-- Copy native FNA libraries to the output directory so they can be found at runtime -->
+	<ItemGroup>
+		<None Include="../FNAlibs/**" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
-
+	
 </Project>
