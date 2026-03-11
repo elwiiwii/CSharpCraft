@@ -3,12 +3,16 @@
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
   </Configurations>
+  <Project Path="../../../FixPointCS/FixPointCS/FixPointCS.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
   <Project Path="../../../FNA/FNA.Core.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
-  <Project Path="CSharpCraft.Game/CSharpCraft.Game.csproj" />
-  <Project Path="Pico8/Pico8.csproj">
+  <Project Path="../PSharp8/PSharp8/PSharp8.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
-  <Project Path="CSharpCraft.Tests/CSharpCraft.Tests.csproj" />
+  <Project Path="CSharpCraft/CSharpCraft.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
 </Solution>

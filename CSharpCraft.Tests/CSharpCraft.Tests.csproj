@@ -22,7 +22,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="../Pico8/Pico8.csproj" />
 		<ProjectReference Include="..\CSharpCraft.Game\CSharpCraft.Game.csproj" />
 	</ItemGroup>
 
