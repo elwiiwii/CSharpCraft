@@ -22,7 +22,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CSharpCraft.Game\CSharpCraft.Game.csproj" />
+		<ProjectReference Include="..\CSharpCraft\CSharpCraft.csproj" />
+		<ProjectReference Include="../../../../FNA/FNA.Core.csproj" />
+	    <ProjectReference Include="../../PSharp8/PSharp8/PSharp8.csproj" />
 	</ItemGroup>
 
 	

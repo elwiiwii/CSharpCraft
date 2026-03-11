@@ -43,14 +43,14 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="../../../../FNA/FNA.Core.csproj" />
-	  <ProjectReference Include="../Pico8/Pico8.csproj" />
+	  <ProjectReference Include="../../PSharp8/PSharp8/PSharp8.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Protobuf Include="..\RaceServer\Protos\account.proto">
+	  <Protobuf Include="..\RaceServer.Deprecated\Protos\account.proto">
 	    <Link>Protos\account.proto</Link>
 	  </Protobuf>
-	  <Protobuf Include="..\RaceServer\Protos\gameservice.proto">
+	  <Protobuf Include="..\RaceServer.Deprecated\Protos\gameservice.proto">
 	    <Link>Protos\gameservice.proto</Link>
 	  </Protobuf>
 	</ItemGroup>
