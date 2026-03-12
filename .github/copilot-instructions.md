@@ -59,10 +59,10 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 - Centralizes dependency injection and manager lifecycle
 - Subsystems (all stateful managers):
   - **Graphics**: `GraphicsManager`, `PaletteManager`, `SpriteTextureManager` (LRU cache), `SpriteMapData`
-  - **Audio**: `AudioManager` (stub)
-  - **Input**: `InputManager` (stub)
-  - **Memory**: `MemoryManager` (Pico-8 emulation)
-  - **Scene**: `SceneManager`
+  - **Audio**: `AudioManager` (in progress)
+  - **Input**: `InputManager` (in progress)
+  - **Memory**: `MemoryManager` (in progress)
+  - **Scene**: `SceneManager` (in progress)
 
 **Static API Wrapper** ([Pico8.cs](../../PSharp8/PSharp8/Pico8.cs)):
 
@@ -104,7 +104,7 @@ public class MyManager
 ### Testing
 
 - **xUnit `[Fact]`** for unit tests
-- **FluentAssertions** for readable assertions (`result.Should().Be(...)`
+- **FluentAssertions** for readable assertions (`result.Should().Be(...)`)
 - **Moq** for mocking dependencies
 
 Standard test structure:
@@ -278,17 +278,21 @@ CSharpCraft/                          # Workspace root
 
 ---
 
-## Next Steps for Agents
+## For AI Agents
 
-When working in this workspace:
+**Tests:** Always via `dotnet test` CLI or VS Code shell task — **never** the Testing view. Write tests first (Red-Green-Refactor). See [TDD-WORKFLOW.md](TDD-WORKFLOW.md) for patterns and fixtures.
 
-1. **Always run tests via CLI** (`dotnet test`) or VS Code shell task, **never** via Testing view
-2. **Check `.runsettings`** if backend issues arise
-3. **Guard constructor parameters** in all new managers
-4. **Use FluentAssertions** in all xUnit tests
-5. **Reference [GameOrchestrator.cs](../../PSharp8/PSharp8/GameOrchestrator.cs)** when adding new subsystems
-6. **Respect the strict C# settings** (`Nullable: enable`, `TreatWarningsAsErrors: true`)
+**Code rules:**
+- New managers: constructor null guards (`?? throw new ArgumentNullException(...)`)
+- New tests: `[Fact]` + FluentAssertions, named `Method_Context_Expected`
+- Zero warnings (`TreatWarningsAsErrors: true`); nullable-aware throughout
+
+**Documentation:** Don't update docs reflexively on every change — that wastes tokens. Instead, **flag** when something is likely stale (e.g. "Key Files table may need updating") and let the user trigger doc updates as a deliberate task. Only edit docs when explicitly asked or when information is actively wrong.
+
+**Reference guides (load on demand):**
+- [TDD-WORKFLOW.md](TDD-WORKFLOW.md) — Red-Green-Refactor, test patterns, fixtures, online references
+- [DOCUMENTATION-MAINTENANCE.md](DOCUMENTATION-MAINTENANCE.md) — Priority system, when/how to update docs
 
 ---
 
-*Last updated: 11 March 2026*
+*Last updated: 12 March 2026*
