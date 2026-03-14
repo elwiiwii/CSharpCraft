@@ -3,13 +3,22 @@
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
   </Configurations>
+  <Project Path="../../../FixPointCS/Examples/FixMath/FixMath.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
   <Project Path="../../../FixPointCS/FixPointCS/FixPointCS.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
   <Project Path="../../../FNA/FNA.Core.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="../PSharp8/PSharp8.Tests/PSharp8.Tests.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
   <Project Path="../PSharp8/PSharp8/PSharp8.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="CSharpCraft.Tests/CSharpCraft.Tests.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
   <Project Path="CSharpCraft/CSharpCraft.csproj">

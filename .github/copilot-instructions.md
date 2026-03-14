@@ -78,7 +78,7 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 | [PSharp8/GameOrchestrator.cs](../../PSharp8/PSharp8/GameOrchestrator.cs) | Dependency-injected manager factory | Composes all subsystems; IoC container |
 | [PSharp8/Pico8.cs](../../PSharp8/PSharp8/Pico8.cs) | Static facade + `AsyncLocal<T>` | Thread-safe global orchestrator access |
 | [PSharp8/Graphics/LruCache.cs](../../PSharp8/PSharp8/Graphics/LruCache.cs) | Generic LRU eviction | Efficient sprite texture caching |
-| [PSharp8.Tests/LruCacheTests.cs](../../PSharp8/PSharp8.Tests/LruCacheTests.cs) | xUnit + FluentAssertions | Standard test structure |
+| [PSharp8/Graphics/PSharp8.Tests/LruCacheTests.cs](../../PSharp8/PSharp8.Tests/Graphics/LruCacheTests.cs) | xUnit + FluentAssertions | Standard test structure |
 
 ---
 
@@ -229,8 +229,10 @@ ls -la CSharpCraft/FNAlibs/
 
 ## File Organization & Where Things Live
 
+The workspace uses `CSharpCraft.code-workspace` to combine two sibling Git repositories:
+
 ```
-CSharpCraft/                          # Workspace root
+CSharpCraft/                          # Workspace folder 1: game executable
 ├── .github/
 │   └── copilot-instructions.md      # This file
 ├── .runsettings                      # Test backend configuration (CRITICAL)
@@ -238,30 +240,63 @@ CSharpCraft/                          # Workspace root
 │   ├── Main.cs                       # Game entry point (FNAGame)
 │   ├── Content/                      # sprites, sounds, music
 │   └── CSharpCraft.csproj
-├── PSharp8/                          # Emulator library (reusable)
-│   ├── GameOrchestrator.cs           # Manager factory + DI
-│   ├── Pico8.cs                      # Static API facade
-│   ├── Graphics/                     # *Manager classes for drawing
-│   ├── Audio/                        # *Manager classes for sound
-│   ├── Input/                        # *Manager classes for input
-│   ├── Memory/                       # Pico-8 emulation layer
-│   ├── Scene/                        # Scene management
-│   ├── GlobalUsings.cs               # Shared using directives
-│   └── PSharp8.csproj
-├── PSharp8.Tests/                    # Emulator tests
-│   ├── Infrastructure/
-│   │   └── GraphicsFixture.cs        # Graphics test setup
-│   ├── LruCacheTests.cs
-│   ├── PaletteManagerTests.cs
-│   └── PSharp8.Tests.csproj
 ├── CSharpCraft.Tests/                # Game tests
 │   └── CSharpCraft.Tests.csproj
 ├── CSharpCraft.Deprecated/           # Legacy code (ignore)
+├── RaceServer.Deprecated/            # Legacy server code (ignore)
 ├── FNAlibs/                          # SDL3/FNA3D native libs
 │   ├── libFAudio.so.0
 │   ├── libFNA3D.so.0
 │   └── libSDL3.so.0
 └── CSharpCraft.slnx                  # Solution file
+
+PSharp8/                              # Workspace folder 2: emulator library
+├── .runsettings                      # Test backend configuration (CRITICAL)
+├── PSharp8/                          # Emulator library (reusable)
+│   ├── GameOrchestrator.cs           # Manager factory + DI
+│   ├── Pico8.cs                      # Static API facade
+│   ├── GlobalUsings.cs               # Shared using directives
+│   ├── Audio/
+│   │   ├── AudioManager.cs           # Audio playback
+│   │   └── Soundtrack.cs
+│   ├── Graphics/                     # Drawing subsystem
+│   │   ├── Fonts.cs
+│   │   ├── GraphicsManager.cs
+│   │   ├── LruCache.cs               # Generic LRU eviction cache
+│   │   ├── PaletteManager.cs
+│   │   ├── PaletteSnapshot.cs
+│   │   ├── SpriteMapData.cs
+│   │   ├── SpriteSnapshot.cs
+│   │   └── SpriteTextureManager.cs   # LRU-cached sprite textures
+│   ├── Input/
+│   │   └── InputManager.cs
+│   ├── Memory/
+│   │   └── MemoryManager.cs
+│   ├── PMath/                        # Fixed-point math utilities
+│   │   ├── CosDict.cs
+│   │   ├── MathManager.cs
+│   │   └── SinDict.cs
+│   ├── Scene/
+│   │   ├── IScene.cs
+│   │   └── SceneManager.cs
+│   └── PSharp8.csproj
+├── PSharp8.Tests/                    # Emulator tests
+│   ├── Infrastructure/
+│   │   ├── GraphicsCollection.cs     # xUnit collection definition
+│   │   └── GraphicsFixture.cs        # Graphics test setup / FNA fixture
+│   ├── Graphics/
+│   │   ├── GraphicsManagerTests.cs
+│   │   ├── LruCacheTests.cs
+│   │   ├── PaletteManagerTests.cs
+│   │   ├── SpriteMapDataTests.cs
+│   │   ├── SpriteSnapshotTests.cs
+│   │   └── SpriteTextureManagerTests.cs
+│   └── PSharp8.Tests.csproj
+├── FNAlibs/                          # SDL3/FNA3D native libs
+│   ├── libFAudio.so.0
+│   ├── libFNA3D.so.0
+│   └── libSDL3.so.0
+└── PSharp8.slnx                      # Solution file
 ```
 
 ---
