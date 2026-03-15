@@ -6,5 +6,8 @@
 		{
 			"path": "../PSharp8"
 		}
-	]
+	],
+	"settings": {
+		"dotnet.unitTests.runSettingsPath": ""
+	}
 }
