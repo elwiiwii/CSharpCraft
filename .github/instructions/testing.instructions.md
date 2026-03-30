@@ -72,17 +72,21 @@ var sut = new MyClass(mock.Object);
 mock.Verify(d => d.GetValue(), Times.Once);
 ```
 
-## Graphics tests (FNA3D)
-Tests that require `GraphicsDevice` must use `IClassFixture<GraphicsFixture>`:
+## FNA tests (Graphics & Audio)
+Tests that require `GraphicsDevice` or audio (`SoundEffect`) must use `[Collection("Fna")]` + `FnaFixture`:
 ```csharp
-public class MyGraphicsTests : IClassFixture<GraphicsFixture>
+[Collection("Fna")]
+public class MyFnaTests(FnaFixture fixture) : GraphicsTestBase(fixture)
 {
-    private readonly GraphicsFixture _fixture;
-    public MyGraphicsTests(GraphicsFixture fixture) => _fixture = fixture;
 }
 ```
 
-DO NOT use `GraphicsFixture` in tests that don't need the GPU — keep pure logic tests fast and dependency-free.
+Use `FnaFixture.CreateSilentSoundEffect()` when tests need `SoundEffect` instances without real audio files.
+
+DO NOT use `FnaFixture` in tests that don't need GPU or audio — keep pure logic tests fast and dependency-free.
+
+## Accessing internal fields in tests
+PSharp8 declares `[assembly: InternalsVisibleTo("PSharp8.Tests")]` in `GlobalUsings.cs`. Use `internal` fields (e.g. `sut._currentInstance`) directly instead of reflection — it's faster, rename-safe, and compile-checked.
 
 ## Running tests
 ```bash

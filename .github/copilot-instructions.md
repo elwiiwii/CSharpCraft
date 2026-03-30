@@ -77,8 +77,11 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 | [CSharpCraft/Main.cs](../../CSharpCraft/CSharpCraft/Main.cs) | FNA game loop + env var setup | Game entry; pre-configures backend |
 | [PSharp8/GameOrchestrator.cs](../../PSharp8/PSharp8/GameOrchestrator.cs) | Dependency-injected manager factory | Composes all subsystems; IoC container |
 | [PSharp8/Pico8.cs](../../PSharp8/PSharp8/Pico8.cs) | Static facade + `AsyncLocal<T>` | Thread-safe global orchestrator access |
+| [PSharp8/GlobalUsings.cs](../../PSharp8/PSharp8/GlobalUsings.cs) | Global usings + `InternalsVisibleTo` | Shared imports; exposes internals to test project |
 | [PSharp8/Graphics/LruCache.cs](../../PSharp8/PSharp8/Graphics/LruCache.cs) | Generic LRU eviction | Efficient sprite texture caching |
-| [PSharp8/Graphics/PSharp8.Tests/LruCacheTests.cs](../../PSharp8/PSharp8.Tests/Graphics/LruCacheTests.cs) | xUnit + FluentAssertions | Standard test structure |
+| [PSharp8/Audio/AudioManager.cs](../../PSharp8/PSharp8/Audio/AudioManager.cs) | Stateful music manager | Music playback, crossfade, fade in/out |
+| [PSharp8/Audio/Soundtrack.cs](../../PSharp8/PSharp8/Audio/Soundtrack.cs) | Immutable data model | Soundtrack → Track → TrackPart hierarchy |
+| [PSharp8.Tests/Graphics/LruCacheTests.cs](../../PSharp8/PSharp8.Tests/Graphics/LruCacheTests.cs) | xUnit + FluentAssertions | Standard test structure |
 
 ---
 
@@ -129,7 +132,7 @@ public class MyComponentTests
 
 ### Namespacing & Global Usings
 
-- [GlobalUsings.cs](../../PSharp8/PSharp8/GlobalUsings.cs) eliminates boilerplate `using` statements
+- [GlobalUsings.cs](../../PSharp8/PSharp8/GlobalUsings.cs) eliminates boilerplate `using` statements and declares `[assembly: InternalsVisibleTo("PSharp8.Tests")]` so tests can access `internal` fields directly (no reflection)
 - Namespaces: `CSharpCraft`, `CSharpCraft.*`, `PSharp8.*`, `PSharp8.*.Tests`
 
 ---
@@ -166,7 +169,7 @@ Repository `.runsettings` file pre-configures the test environment:
 
 ### Fallback: In-Process Configuration
 
-If needed, [GraphicsFixture.cs](../../PSharp8/PSharp8.Tests/Infrastructure/GraphicsFixture.cs) applies additional SDL hints in-process.
+If needed, [FnaFixture.cs](../../PSharp8/PSharp8.Tests/Infrastructure/FnaFixture.cs) applies additional SDL hints in-process.
 
 ### When This Breaks
 
@@ -282,8 +285,11 @@ PSharp8/                              # Workspace folder 2: emulator library
 │   └── PSharp8.csproj
 ├── PSharp8.Tests/                    # Emulator tests
 │   ├── Infrastructure/
-│   │   ├── GraphicsCollection.cs     # xUnit collection definition
-│   │   └── GraphicsFixture.cs        # Graphics test setup / FNA fixture
+│   │   ├── FnaCollection.cs          # xUnit [CollectionDefinition("Fna")]
+│   │   ├── FnaFixture.cs             # FNA test fixture (graphics + audio)
+│   │   └── GraphicsTestBase.cs       # Base class for graphics tests
+│   ├── Audio/
+│   │   └── AudioManagerTests.cs      # Pure logic + FNA audio tests
 │   ├── Graphics/
 │   │   ├── GraphicsManagerTests.cs
 │   │   ├── LruCacheTests.cs
@@ -330,4 +336,4 @@ PSharp8/                              # Workspace folder 2: emulator library
 
 ---
 
-*Last updated: 12 March 2026*
+*Last updated: 30 March 2026*
