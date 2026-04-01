@@ -8,6 +8,7 @@
 		<Platforms>AnyCPU;x64</Platforms>
 		<PublishSingleFile>true</PublishSingleFile>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<Target Name="CreateSeedsFolder" BeforeTargets="Build">

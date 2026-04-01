@@ -1,10 +1,14 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Concurrent;
+using CSharpCraft.Input;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using PSharp8.Input;
+using SDL3;
 
 namespace CSharpCraft;
 
-class FNAGame : Game
+unsafe class FNAGame : Game
 {
     [STAThread]
     static void Main(string[] args)
@@ -27,6 +31,11 @@ class FNAGame : Game
     private readonly string _musicFolderPath = "Content/Music";
     private readonly string _sfxFolderPath = "Content/Sfx";
 
+    private readonly GameOrchestrator _orchestrator = new();
+    // Kept as a field to prevent the delegate from being garbage-collected
+    private readonly SDL.SDL_EventFilter _eventWatch;
+    private readonly ConcurrentQueue<InputEvent> _eventBuffer = new();
+
     private FNAGame()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -39,18 +48,31 @@ class FNAGame : Game
         Content.RootDirectory = "Content";
 
         IsFixedTimeStep = true;
-        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
+        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 60.0));
         _graphics.SynchronizeWithVerticalRetrace = true;
         //IsMouseVisible = true;
+
+        _eventWatch = OnSdlEvent;
     }
 
     protected override void Initialize()
     {
         base.Initialize();
+        SDL.SDL_AddEventWatch(_eventWatch, IntPtr.Zero);
     }
 
     protected override void Update(GameTime gameTime)
     {
+        // Drain the SDL event buffer and forward events to the input manager
+        var frameEvents = new List<InputEvent>();
+        while (_eventBuffer.TryDequeue(out InputEvent? evt))
+            frameEvents.Add(evt);
+
+        // Events arrive roughly in timestamp order from SDL but sort for safety
+        frameEvents.Sort(static (a, b) => a.TimestampNs.CompareTo(b.TimestampNs));
+
+        _orchestrator.UpdateInput(gameTime.ElapsedGameTime, frameEvents);
+
         base.Update(gameTime);
     }
 
@@ -108,6 +130,8 @@ class FNAGame : Game
 
     protected override void UnloadContent()
     {
+        SDL.SDL_RemoveEventWatch(_eventWatch, IntPtr.Zero);
+
         _batch!.Dispose();
         _pixel!.Dispose();
 
@@ -134,6 +158,30 @@ class FNAGame : Game
 
     private void Window_ClientSizeChanged(object? sender, EventArgs e)
     {
-        
+    }
+
+    private unsafe bool OnSdlEvent(IntPtr userdata, SDL.SDL_Event* evt)
+    {
+        uint type = evt->type;
+        InputEvent? inputEvent = null;
+
+        if (type == (uint)SDL.SDL_EventType.SDL_EVENT_KEY_DOWN)
+            inputEvent = InputEventTranslator.TranslateKeyboard(evt->key.key, isDown: true, evt->key.timestamp);
+        else if (type == (uint)SDL.SDL_EventType.SDL_EVENT_KEY_UP)
+            inputEvent = InputEventTranslator.TranslateKeyboard(evt->key.key, isDown: false, evt->key.timestamp);
+        else if (type == (uint)SDL.SDL_EventType.SDL_EVENT_MOUSE_BUTTON_DOWN)
+            inputEvent = InputEventTranslator.TranslateMouse(evt->button.button, isDown: true, evt->button.timestamp);
+        else if (type == (uint)SDL.SDL_EventType.SDL_EVENT_MOUSE_BUTTON_UP)
+            inputEvent = InputEventTranslator.TranslateMouse(evt->button.button, isDown: false, evt->button.timestamp);
+        else if (type == (uint)SDL.SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_DOWN)
+            inputEvent = InputEventTranslator.TranslateGamepad(evt->gbutton.button, isDown: true, evt->gbutton.timestamp);
+        else if (type == (uint)SDL.SDL_EventType.SDL_EVENT_GAMEPAD_BUTTON_UP)
+            inputEvent = InputEventTranslator.TranslateGamepad(evt->gbutton.button, isDown: false, evt->gbutton.timestamp);
+
+        if (inputEvent is not null)
+            _eventBuffer.Enqueue(inputEvent);
+
+        // Return false so FNA still receives the event
+        return false;
     }
 }

@@ -87,6 +87,32 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 
 ## Code Conventions
 
+### Access Modifiers
+
+**Default to `internal`. Only make types or members `public` when they genuinely cross the PSharp8 → CSharpCraft boundary.**
+
+Concretely:
+- Manager classes (`InputManager`, `GraphicsManager`, etc.) and their interfaces (`IInputManager`, etc.) → **`internal`**. They are never accessed directly by CSharpCraft.
+- Public access to manager functionality is provided **exclusively** through one of two surfaces:
+  - [`Pico8.cs`](../../PSharp8/PSharp8/Pico8.cs) — static facade for game-logic code
+  - [`GameOrchestrator.cs`](../../PSharp8/PSharp8/GameOrchestrator.cs) — for wiring at startup and per-frame update calls (e.g. `UpdateInput`)
+- Data/config types passed in from CSharpCraft (`InputBindings`, `BtnpConfig`, `InputEvent`, `InputSource` subtypes, `PicoButton`, `MouseButton`) → **`public`** because CSharpCraft must construct or reference them.
+- xUnit `[InlineData]` forces enum types used in theory parameters to be `public` — this is an acceptable exception.
+
+```csharp
+// ✅ internal — stays inside PSharp8
+internal interface IInputManager { ... }
+internal class InputManager : IInputManager { ... }
+
+// ✅ public — crosses to CSharpCraft
+public record InputBindings(...) { ... }
+public record BtnpConfig(...) { ... }
+
+// ✅ public access via orchestrator or static facade — not via manager directly
+orchestrator.UpdateInput(elapsed, events);  // GameOrchestrator pass-through
+Pico8.Btn((int)PicoButton.Left);            // Pico8 static facade
+```
+
 ### Nullability & Constructor Guards
 
 ```csharp
