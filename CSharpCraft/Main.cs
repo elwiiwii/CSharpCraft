@@ -25,13 +25,12 @@ unsafe class FNAGame : Game
     private readonly GraphicsDeviceManager _graphics;
     private Texture2D? _pixel;
     private readonly Dictionary<string, Texture2D> _textureDictionary = [];
-    private readonly Dictionary<string, SoundEffect> _musicDictionary = [];
     private readonly Dictionary<string, SoundEffect> _soundEffectDictionary = [];
     private readonly string _graphicsFolderPath = "Content/Graphics";
     private readonly string _musicFolderPath = "Content/Music";
     private readonly string _sfxFolderPath = "Content/Sfx";
 
-    private readonly GameOrchestrator _orchestrator = new();
+    private GameOrchestrator? _orchestrator;
     // Kept as a field to prevent the delegate from being garbage-collected
     private readonly SDL.SDL_EventFilter _eventWatch;
     private readonly ConcurrentQueue<InputEvent> _eventBuffer = new();
@@ -59,6 +58,7 @@ unsafe class FNAGame : Game
     {
         base.Initialize();
         SDL.SDL_AddEventWatch(_eventWatch, IntPtr.Zero);
+        _orchestrator = new GameOrchestrator(musicDirectory: _musicFolderPath, sfxDictionary: _soundEffectDictionary);
     }
 
     protected override void Update(GameTime gameTime)
@@ -71,7 +71,7 @@ unsafe class FNAGame : Game
         // Events arrive roughly in timestamp order from SDL but sort for safety
         frameEvents.Sort(static (a, b) => a.TimestampNs.CompareTo(b.TimestampNs));
 
-        _orchestrator.UpdateInput(gameTime.ElapsedGameTime, frameEvents);
+        _orchestrator!.UpdateInput(gameTime.ElapsedGameTime, frameEvents);
 
         base.Update(gameTime);
     }
@@ -104,17 +104,6 @@ unsafe class FNAGame : Game
             }
         }
 
-        string[] musicFiles = Directory.GetFiles(_musicFolderPath, "*.wav");
-        foreach (string file in musicFiles)
-        {
-            using Stream stream = TitleContainer.OpenStream(file);
-            {
-                SoundEffect music = SoundEffect.FromStream(stream);
-                string musicName = Path.GetFileNameWithoutExtension(file);
-                _musicDictionary.Add(musicName, music);
-            }
-        }
-
         string[] sfxFiles = Directory.GetFiles(_sfxFolderPath, "*.wav");
         foreach (string file in sfxFiles)
         {
@@ -132,16 +121,14 @@ unsafe class FNAGame : Game
     {
         SDL.SDL_RemoveEventWatch(_eventWatch, IntPtr.Zero);
 
+        _orchestrator?.Dispose();
+
         _batch!.Dispose();
         _pixel!.Dispose();
 
         foreach (Texture2D texture in _textureDictionary.Values)
         {
             texture.Dispose();
-        }
-        foreach (SoundEffect music in _musicDictionary.Values)
-        {
-            music.Dispose();
         }
         foreach (SoundEffect soundEffect in _soundEffectDictionary.Values)
         {
@@ -156,11 +143,11 @@ unsafe class FNAGame : Game
         base.OnExiting(sender, args);
     }
 
-    private void Window_ClientSizeChanged(object? sender, EventArgs e)
+    private void Window_ClientSizeChanged(object? sender, EventArgs args)
     {
     }
 
-    private unsafe bool OnSdlEvent(IntPtr userdata, SDL.SDL_Event* evt)
+    private bool OnSdlEvent(IntPtr userdata, SDL.SDL_Event* evt)
     {
         uint type = evt->type;
         InputEvent? inputEvent = null;
