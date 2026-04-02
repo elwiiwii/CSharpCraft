@@ -1,0 +1,181 @@
+using CSharpCraft.Settings;
+using CSharpCraft.Tests.Infrastructure;
+using FluentAssertions;
+using PSharp8;
+using Xunit;
+
+namespace CSharpCraft.Tests.Settings;
+
+public sealed class SettingsManagerTests
+{
+    private static GameOrchestrator CreateOrchestrator()
+        => new(musicDirectory: ".", sfxDictionary: []);
+
+    // --------------------------------------------------------------------------
+    #region Constructor argument validation
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void Constructor_ThrowsArgumentNullException_WhenConfigDirectoryIsNull()
+    {
+        var act = () => new SettingsManager(
+            configDirectory: null!,
+            orchestrator: null!,
+            graphicsDeviceManager: null!);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("configDirectory");
+    }
+
+    [Fact]
+    public void Constructor_ThrowsArgumentNullException_WhenOrchestratorIsNull()
+    {
+        var act = () => new SettingsManager(
+            configDirectory: ".",
+            orchestrator: null!,
+            graphicsDeviceManager: null!);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("orchestrator");
+    }
+
+    [Fact]
+    public void Constructor_ThrowsArgumentNullException_WhenGraphicsDeviceManagerIsNull()
+    {
+        var act = () => new SettingsManager(
+            configDirectory: ".",
+            orchestrator: CreateOrchestrator(),
+            graphicsDeviceManager: null!);
+        act.Should().Throw<ArgumentNullException>().WithParameterName("graphicsDeviceManager");
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    #region Constructor and defaults
+    // --------------------------------------------------------------------------
+
+}
+
+[Collection("Fna")]
+public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
+{
+    private readonly string _tempDir =
+        Path.Combine(Path.GetTempPath(), $"CSharpCraft.Tests_{Guid.NewGuid():N}");
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
+    }
+
+    private SettingsManager CreateSut(string? configDir = null)
+        => new(
+            configDirectory: configDir ?? _tempDir,
+            orchestrator: new GameOrchestrator(musicDirectory: ".", sfxDictionary: []),
+            graphicsDeviceManager: fixture.GraphicsDeviceManager);
+
+    [Fact]
+    public void Constructor_CreatesGeneralJson_WhenFileDoesNotExist()
+    {
+        using var sut = CreateSut();
+
+        File.Exists(Path.Combine(_tempDir, "general.json")).Should().BeTrue();
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    #region Load existing file
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void GeneralSettings_ReturnsDefaults_WhenCreatedFromEmptyDirectory()
+    {
+        using var sut = CreateSut();
+
+        sut.GeneralSettings.MusicVolume.Should().Be(100);
+        sut.GeneralSettings.SfxVolume.Should().Be(100);
+        sut.GeneralSettings.WindowWidth.Should().Be(512);
+        sut.GeneralSettings.WindowHeight.Should().Be(512);
+        sut.GeneralSettings.Fullscreen.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Constructor_LoadsExistingGeneralJson_AndExposesSettings()
+    {
+        Directory.CreateDirectory(_tempDir);
+        File.WriteAllText(
+            Path.Combine(_tempDir, "general.json"),
+            """{"MusicVolume":60,"SfxVolume":40,"WindowWidth":1024,"WindowHeight":768,"Fullscreen":false}""");
+
+        using var sut = CreateSut();
+
+        sut.GeneralSettings.MusicVolume.Should().Be(60);
+        sut.GeneralSettings.SfxVolume.Should().Be(40);
+        sut.GeneralSettings.WindowWidth.Should().Be(1024);
+        sut.GeneralSettings.WindowHeight.Should().Be(768);
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    #region Apply settings to GraphicsDeviceManager
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void Constructor_AppliesWindowWidth_ToGraphicsDeviceManager()
+    {
+        Directory.CreateDirectory(_tempDir);
+        File.WriteAllText(
+            Path.Combine(_tempDir, "general.json"),
+            """{"MusicVolume":100,"SfxVolume":100,"WindowWidth":800,"WindowHeight":600,"Fullscreen":false}""");
+
+        using var sut = CreateSut();
+
+        fixture.GraphicsDeviceManager.PreferredBackBufferWidth.Should().Be(800);
+    }
+
+    [Fact]
+    public void Constructor_AppliesWindowHeight_ToGraphicsDeviceManager()
+    {
+        Directory.CreateDirectory(_tempDir);
+        File.WriteAllText(
+            Path.Combine(_tempDir, "general.json"),
+            """{"MusicVolume":100,"SfxVolume":100,"WindowWidth":800,"WindowHeight":600,"Fullscreen":false}""");
+
+        using var sut = CreateSut();
+
+        fixture.GraphicsDeviceManager.PreferredBackBufferHeight.Should().Be(600);
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    #region Hot reload settings from file
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public async Task Update_AppliesNewWindowWidth_AfterFileChange()
+    {
+        using var sut = CreateSut();
+
+        File.WriteAllText(
+            Path.Combine(_tempDir, "general.json"),
+            """{"MusicVolume":100,"SfxVolume":100,"WindowWidth":640,"WindowHeight":480,"Fullscreen":false}""");
+        await Task.Delay(500); // wait > 300ms debounce
+
+        sut.Update();
+
+        fixture.GraphicsDeviceManager.PreferredBackBufferWidth.Should().Be(640);
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    #region Dispose
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void Dispose_DoesNotThrow()
+    {
+        var sut = CreateSut();
+        var act = () => sut.Dispose();
+        act.Should().NotThrow();
+    }
+    
+    // --------------------------------------------------------------------------
+    #endregion
+    // --------------------------------------------------------------------------
+}

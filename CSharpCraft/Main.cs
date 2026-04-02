@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using CSharpCraft.Input;
+using CSharpCraft.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -31,6 +32,7 @@ unsafe class FNAGame : Game
     private readonly string _sfxFolderPath = "Content/Sfx";
 
     private GameOrchestrator? _orchestrator;
+    private SettingsManager? _settingsManager;
     // Kept as a field to prevent the delegate from being garbage-collected
     private readonly SDL.SDL_EventFilter _eventWatch;
     private readonly ConcurrentQueue<InputEvent> _eventBuffer = new();
@@ -59,10 +61,16 @@ unsafe class FNAGame : Game
         base.Initialize();
         SDL.SDL_AddEventWatch(_eventWatch, IntPtr.Zero);
         _orchestrator = new GameOrchestrator(musicDirectory: _musicFolderPath, sfxDictionary: _soundEffectDictionary);
+        var configDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "CSharpCraft");
+        _settingsManager = new SettingsManager(configDir, _orchestrator, _graphics);
     }
 
     protected override void Update(GameTime gameTime)
     {
+        _settingsManager!.Update();
+
         // Drain the SDL event buffer and forward events to the input manager
         var frameEvents = new List<InputEvent>();
         while (_eventBuffer.TryDequeue(out InputEvent? evt))
@@ -121,6 +129,7 @@ unsafe class FNAGame : Game
     {
         SDL.SDL_RemoveEventWatch(_eventWatch, IntPtr.Zero);
 
+        _settingsManager?.Dispose();
         _orchestrator?.Dispose();
 
         _batch!.Dispose();
@@ -145,6 +154,7 @@ unsafe class FNAGame : Game
 
     private void Window_ClientSizeChanged(object? sender, EventArgs args)
     {
+        
     }
 
     private bool OnSdlEvent(IntPtr userdata, SDL.SDL_Event* evt)
