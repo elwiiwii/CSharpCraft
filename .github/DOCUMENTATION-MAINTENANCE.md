@@ -179,7 +179,7 @@ Don't update docs reflexively on every commit — the cost (time, tokens, review
 ```
 "Managers are composable components (see GraphicsManager, AudioManager, InputManager).
 Add a new manager by:
-1. Create Assets/MyNewManager.cs
+1. Create PSharp8/PSharp8/MySubsystem/MyNewManager.cs
 2. Register in GameOrchestrator.CreateOrchestrator()
 3. Optionally expose static API in Pico8.cs"
 ```
@@ -224,7 +224,7 @@ Instead of prose, use actionable checklists:
 Mark when docs were last verified:
 
 ```
-*Last updated: 12 March 2026*
+*Last updated: 2 April 2026*
 *Last verified against: .NET 10.0, FNA 26.00, CSharpCraft v1.2*
 ```
 
@@ -239,6 +239,7 @@ When AI agents (Copilot, subagents, etc.) work in this workspace, they should:
 3. **Follow TDD-WORKFLOW.md** when adding tests
 4. **Flag stale docs** if architecture changes — don't rewrite docs mid-task
 5. **Ask human** before making decisions not covered in guidance
+6. **Use the Proactive Design Review skill** (.github/skills/proactive-design/SKILL.md) when encountering design smells or architecture drift. Produce a small staged plan, include the design-refactor checklist in the PR, and obtain explicit approval for breaking API changes.
 
 **Example: AI agent working on a new feature**
 ```
@@ -357,4 +358,4 @@ Every 3 months, verify critical docs are still accurate:
 
 ---
 
-*Last updated: 12 March 2026*
+*Last updated: 2 April 2026*

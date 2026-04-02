@@ -1,7 +1,7 @@
 ---
 name: TDD Red
 description: TDD phase — write FAILING tests only
-tools: ['read', 'edit', 'search']
+tools: ['read', 'edit', 'search', 'grep_search']
 infer: true
 handoffs:
   - label: 'Hand off to TDD Green → implement minimal code'
@@ -28,7 +28,9 @@ Write a failing test (or test file) that precisely captures the required behavio
 ## What not to do
 - Do not create or modify any production code files.
 - Do not write implementation stubs or placeholder methods.
-- Do not write passing tests — if a test already passes, it provides no value in this phase.
+- Do not write passing tests — if a test already passes against the current codebase, it provides no value in this phase.
+- Do not assume features exist; if you're unsure whether something is implemented, write a test to verify.
 
 ## When done
 Summarise which test cases you added and why each one should currently fail. Then use the handoff to move to the Green phase.
+If tests indicate deeper architectural or design issues, flag them explicitly and consult the Proactive Design Review skill (.github/skills/proactive-design/SKILL.md) before moving to implementation.

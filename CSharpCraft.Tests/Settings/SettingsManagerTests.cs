@@ -1,3 +1,4 @@
+using CSharpCraft;
 using CSharpCraft.Settings;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;
@@ -8,9 +9,6 @@ namespace CSharpCraft.Tests.Settings;
 
 public sealed class SettingsManagerTests
 {
-    private static GameOrchestrator CreateOrchestrator()
-        => new(musicDirectory: ".", sfxDictionary: []);
-
     // --------------------------------------------------------------------------
     #region Constructor argument validation
     // --------------------------------------------------------------------------
@@ -35,21 +33,9 @@ public sealed class SettingsManagerTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("orchestrator");
     }
 
-    [Fact]
-    public void Constructor_ThrowsArgumentNullException_WhenGraphicsDeviceManagerIsNull()
-    {
-        var act = () => new SettingsManager(
-            configDirectory: ".",
-            orchestrator: CreateOrchestrator(),
-            graphicsDeviceManager: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("graphicsDeviceManager");
-    }
-
     // --------------------------------------------------------------------------
     #endregion
-    #region Constructor and defaults
     // --------------------------------------------------------------------------
-
 }
 
 [Collection("Fna")]
@@ -57,18 +43,39 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
 {
     private readonly string _tempDir =
         Path.Combine(Path.GetTempPath(), $"CSharpCraft.Tests_{Guid.NewGuid():N}");
+    private GameOrchestrator? _lastOrchestrator;
 
     public void Dispose()
     {
+        _lastOrchestrator?.Dispose();
         if (Directory.Exists(_tempDir))
             Directory.Delete(_tempDir, recursive: true);
     }
 
     private SettingsManager CreateSut(string? configDir = null)
-        => new(
+    {
+        _lastOrchestrator?.Dispose();
+        _lastOrchestrator = new GameOrchestrator(
+            ".", ".", ".", new EmptyScene(),
+            fixture.GraphicsDevice, fixture.GraphicsDeviceManager, fixture.Window);
+        return new(
             configDirectory: configDir ?? _tempDir,
-            orchestrator: new GameOrchestrator(musicDirectory: ".", sfxDictionary: []),
+            orchestrator: _lastOrchestrator,
             graphicsDeviceManager: fixture.GraphicsDeviceManager);
+    }
+
+    [Fact]
+    public void Constructor_ThrowsArgumentNullException_WhenGraphicsDeviceManagerIsNull()
+    {
+        var act = () =>
+        {
+            using var orch = new GameOrchestrator(
+                ".", ".", ".", new EmptyScene(),
+                fixture.GraphicsDevice, fixture.GraphicsDeviceManager, fixture.Window);
+            _ = new SettingsManager(".", orch, graphicsDeviceManager: null!);
+        };
+        act.Should().Throw<ArgumentNullException>().WithParameterName("graphicsDeviceManager");
+    }
 
     [Fact]
     public void Constructor_CreatesGeneralJson_WhenFileDoesNotExist()
@@ -79,7 +86,6 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
     }
 
     // --------------------------------------------------------------------------
-    #endregion
     #region Load existing file
     // --------------------------------------------------------------------------
 

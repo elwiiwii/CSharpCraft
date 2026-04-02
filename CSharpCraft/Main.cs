@@ -2,7 +2,6 @@
 using CSharpCraft.Input;
 using CSharpCraft.Settings;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using PSharp8.Input;
 using SDL3;
@@ -22,11 +21,7 @@ unsafe class FNAGame : Game
         g.Run();
     }
 
-    private SpriteBatch? _batch;
     private readonly GraphicsDeviceManager _graphics;
-    private Texture2D? _pixel;
-    private readonly Dictionary<string, Texture2D> _textureDictionary = [];
-    private readonly Dictionary<string, SoundEffect> _soundEffectDictionary = [];
     private readonly string _graphicsFolderPath = "Content/Graphics";
     private readonly string _musicFolderPath = "Content/Music";
     private readonly string _sfxFolderPath = "Content/Sfx";
@@ -59,8 +54,19 @@ unsafe class FNAGame : Game
     protected override void Initialize()
     {
         base.Initialize();
+
         SDL.SDL_AddEventWatch(_eventWatch, IntPtr.Zero);
-        _orchestrator = new GameOrchestrator(musicDirectory: _musicFolderPath, sfxDictionary: _soundEffectDictionary);
+
+        _orchestrator = new GameOrchestrator(
+            musicDirectory: _musicFolderPath,
+            sfxDirectory: _sfxFolderPath,
+            texturesDirectory: _graphicsFolderPath,
+            defaultScene: new EmptyScene(),
+            graphicsDevice: GraphicsDevice,
+            graphicsDeviceManager: _graphics,
+            window: Window);
+        Pico8.Initialize(_orchestrator);
+
         var configDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "CSharpCraft");
@@ -80,50 +86,16 @@ unsafe class FNAGame : Game
         frameEvents.Sort(static (a, b) => a.TimestampNs.CompareTo(b.TimestampNs));
 
         _orchestrator!.UpdateInput(gameTime.ElapsedGameTime, frameEvents);
+        _orchestrator!.Update(gameTime.ElapsedGameTime);
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        _batch!.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, RasterizerState.CullNone);
-
-        _batch!.End();
-
+        _orchestrator!.Draw(gameTime.ElapsedGameTime);
         base.Draw(gameTime);
     }
-
-
-    protected override void LoadContent()
-    {
-        _batch = new SpriteBatch(GraphicsDevice);
-
-        _pixel = new Texture2D(GraphicsDevice, 1, 1);
-        _pixel.SetData([Color.White]);
-
-        string[] graphicsFiles = Directory.GetFiles(_graphicsFolderPath, "*.png");
-        foreach (string file in graphicsFiles)
-        {
-            using Stream stream = TitleContainer.OpenStream(file);
-            {
-                Texture2D texture = Texture2D.FromStream(GraphicsDevice, stream);
-                string textureName = Path.GetFileNameWithoutExtension(file);
-                _textureDictionary.Add(textureName, texture);
-            }
-        }
-
-        string[] sfxFiles = Directory.GetFiles(_sfxFolderPath, "*.wav");
-        foreach (string file in sfxFiles)
-        {
-            using Stream stream = TitleContainer.OpenStream(file);
-            {
-                SoundEffect soundEffect = SoundEffect.FromStream(stream);
-                string soundEffectName = Path.GetFileNameWithoutExtension(file);
-                _soundEffectDictionary.Add(soundEffectName, soundEffect);
-            }
-        }
-    }
-
 
     protected override void UnloadContent()
     {
@@ -131,18 +103,6 @@ unsafe class FNAGame : Game
 
         _settingsManager?.Dispose();
         _orchestrator?.Dispose();
-
-        _batch!.Dispose();
-        _pixel!.Dispose();
-
-        foreach (Texture2D texture in _textureDictionary.Values)
-        {
-            texture.Dispose();
-        }
-        foreach (SoundEffect soundEffect in _soundEffectDictionary.Values)
-        {
-            soundEffect.Dispose();
-        }
 
         base.UnloadContent();
     }
@@ -154,7 +114,7 @@ unsafe class FNAGame : Game
 
     private void Window_ClientSizeChanged(object? sender, EventArgs args)
     {
-        
+
     }
 
     private bool OnSdlEvent(IntPtr userdata, SDL.SDL_Event* evt)

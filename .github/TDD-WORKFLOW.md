@@ -123,23 +123,36 @@ private void MarkAsRecentlyUsed(TKey key)
 
 ```
 PSharp8.Tests/
-├── LruCacheTests.cs              # Tests for Graphics/LruCache.cs
-├── PaletteManagerTests.cs        # Tests for Graphics/PaletteManager.cs
-├── SpriteTextureManagerTests.cs  # Tests for Graphics/SpriteTextureManager.cs
-├── SpriteSnapshotTests.cs        # Tests for Graphics/SpriteSnapshot.cs
-├── SpriteMapDataTests.cs         # Tests for Graphics/SpriteMapData.cs
-└── Infrastructure/
-    ├── GraphicsFixture.cs        # Shared FNA3D setup for graphics tests
-    └── TestConstants.cs          # Shared test data & helpers
+├── Infrastructure/
+│   ├── FnaCollection.cs              # xUnit [CollectionDefinition("Fna")]
+│   ├── FnaFixture.cs                 # FNA game loop fixture (graphics + audio)
+│   └── GraphicsTestBase.cs           # Base class for GPU tests
+├── Audio/
+│   └── AudioManagerTests.cs          # Pure logic + FNA audio tests
+├── Graphics/
+│   ├── GraphicsManagerTests.cs
+│   ├── LruCacheTests.cs
+│   ├── PaletteManagerTests.cs
+│   ├── SpriteMapDataTests.cs
+│   ├── SpriteSnapshotTests.cs
+│   └── SpriteTextureManagerTests.cs
+├── Input/
+│   └── InputManagerTests.cs
+├── Memory/, PMath/, Scene/           # Subsystem test folders
+└── PSharp8.Tests.csproj
 
 CSharpCraft.Tests/
-├── CSharpCraftTests.cs           # Game-level integration tests
-└── Infrastructure/
-    └── GameFixture.cs            # Shared FNA game setup
+├── Infrastructure/
+│   ├── FnaCollection.cs              # xUnit [CollectionDefinition("Fna")]
+│   └── FnaFixture.cs                 # FNA game loop fixture (backend config + graphics)
+├── Settings/
+│   └── GeneralSettingsTests.cs
+├── Input/
+│   └── InputEventTranslatorTests.cs
+└── CSharpCraft.Tests.csproj
 ```
 
-**Rule of thumb:** One test file per production class. Use nested namespaces if needed:
-- `PSharp8.Tests` → test for `PSharp8.Graphics` → `PSharp8.Tests.Graphics`
+**Rule:** One test file per production class. Either namespace tests directly in the test project (e.g., `PSharp8.Tests.Graphics`) or nest them in subfolders with matching namespaces.
 
 ---
 
@@ -195,6 +208,43 @@ public class MyComponentTests
 - **`sut`** = "System Under Test" (the class you're testing)
 - **FluentAssertions** (`.Should().Be(...)`) reads like English
 - **Moq** (`new Mock<T>()`) for mocking dependencies
+
+---
+
+## Organizing Large Test Classes
+
+For test files with 20+ test methods, use `#region`/`#endregion` blocks to organize tests by behavior category. See [testing.instructions.md](../instructions/testing.instructions.md#test-organization-with-regions) for the complete pattern.
+
+**Quick example:** Group constructor validation tests, happy-path tests, and error-case tests into separate regions for easy navigation:
+
+```csharp
+// --------------------------------------------------------------------------
+#region Constructor null guards
+// --------------------------------------------------------------------------
+
+[Fact]
+public void Constructor_ThrowsArgumentNullException_WhenDepIsNull() { ... }
+
+// --------------------------------------------------------------------------
+#endregion
+#region Get method behavior
+// --------------------------------------------------------------------------
+
+// --- Happy path ---
+
+[Fact]
+public void Get_ReturnsCachedValue_WhenKeyExists() { ... }
+
+// --- Error cases ---
+
+[Fact]
+public void Get_ReturnsNull_WhenKeyNotInCache() { ... }
+
+// --------------------------------------------------------------------------
+#endregion
+```
+
+This improves IDE navigation and makes large test files easier to maintain.
 
 ---
 
@@ -510,4 +560,4 @@ When writing tests:
 
 ---
 
-*Last updated: 12 March 2026*
+*Last updated: 2 April 2026*

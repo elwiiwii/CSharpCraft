@@ -23,6 +23,7 @@ public sealed class FnaFixture : IDisposable
 
     public GraphicsDevice GraphicsDevice => _game.GraphicsDevice;
     public GraphicsDeviceManager GraphicsDeviceManager => _game.GraphicsDeviceManager;
+    public GameWindow Window => _game.Window;
 
     public void Dispose() => _game.Dispose();
 

@@ -39,4 +39,6 @@ Improve the implementation that was just written in the Green phase — readabil
 - Do not refactor test code — tests are the safety net, keep them stable.
 
 ## When done
-Summarise what was refactored and why, confirm all tests still pass (show output), and note if any docs need updating (e.g. "Key Files table in copilot-instructions.md may need updating"). Then use the handoff to start the next Red cycle.
+Summatize what was refactored, why, and confirm all tests still pass (show output). Note if any docs need updating. 
+
+If the refactor uncovers design debt or architectural issues, run the Proactive Design Review skill (.github/skills/proactive-design/SKILL.md), create an ADR comment in code, and include those details in the handoff.

@@ -46,6 +46,44 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 
 ## Architecture & Component Boundaries
 
+```mermaid
+flowchart TD
+  subgraph App [CSharpCraft (Executable)]
+    MC["Main.cs\n(FNAGame entry)"]
+  end
+
+  subgraph Lib [PSharp8 (Emulator Library)]
+    GO["GameOrchestrator.cs\n(creates & wires managers)"]
+    Pico["Pico8.cs\n(static facade, AsyncLocal<GameOrchestrator>)"]
+    GM["GraphicsManager"]
+    AM["AudioManager"]
+    IM["InputManager"]
+    MM["MemoryManager"]
+    SM["SceneManager"]
+  end
+
+  subgraph Tests [Test Projects]
+    PT[PSharp8.Tests]
+    CT[CSharpCraft.Tests]
+  end
+
+  subgraph Native [Native libs]
+    NL["FNAlibs: libFNA3D, libSDL3, libFAudio"]
+  end
+
+  MC -->|initializes| GO
+  MC -->|calls static API| Pico
+  GO --> GM
+  GO --> AM
+  GO --> IM
+  GO --> MM
+  GO --> SM
+  Pico -->|accesses| GO
+  PT -->|InternalsVisibleTo| PSharp8/GlobalUsings.cs
+  MC --> NL
+  GO --> NL
+```
+
 ### CSharpCraft (Entry Point: [Main.cs](../../CSharpCraft/CSharpCraft/Main.cs))
 
 - Subclasses `FNAGame` (FNA game loop)
@@ -58,11 +96,12 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 
 - Centralizes dependency injection and manager lifecycle
 - Subsystems (all stateful managers):
-  - **Graphics**: `GraphicsManager`, `PaletteManager`, `SpriteTextureManager` (LRU cache), `SpriteMapData`
-  - **Audio**: `AudioManager` (in progress)
-  - **Input**: `InputManager` (in progress)
-  - **Memory**: `MemoryManager` (in progress)
-  - **Scene**: `SceneManager` (in progress)
+  - **Graphics**: `GraphicsManager`, `PaletteManager`, `SpriteTextureManager` (LRU cache), `SpriteMapData`, `Fonts`
+  - **Audio**: `AudioManager`, `Soundtrack`, `SfxPack`
+  - **Input**: `InputManager`, `InputBindings`, `InputEvent`
+  - **Memory**: `MemoryManager`
+  - **Scene**: `SceneManager`
+  - **PMath**: `MathManager`, `SinDict`, `CosDict` (fixed-point math utilities)
 
 **Static API Wrapper** ([Pico8.cs](../../PSharp8/PSharp8/Pico8.cs)):
 
@@ -81,7 +120,12 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 | [PSharp8/Graphics/LruCache.cs](../../PSharp8/PSharp8/Graphics/LruCache.cs) | Generic LRU eviction | Efficient sprite texture caching |
 | [PSharp8/Audio/AudioManager.cs](../../PSharp8/PSharp8/Audio/AudioManager.cs) | Stateful music manager | Music playback, crossfade, fade in/out |
 | [PSharp8/Audio/Soundtrack.cs](../../PSharp8/PSharp8/Audio/Soundtrack.cs) | Immutable data model | Soundtrack → Track → TrackPart hierarchy |
-| [PSharp8.Tests/Graphics/LruCacheTests.cs](../../PSharp8/PSharp8.Tests/Graphics/LruCacheTests.cs) | xUnit + FluentAssertions | Standard test structure |
+| [PSharp8.Tests/Infrastructure/FnaFixture.cs](../../PSharp8/PSharp8.Tests/Infrastructure/FnaFixture.cs) | FNA game loop fixture | Graphics & audio initialization for tests |
+| [PSharp8.Tests/Infrastructure/GraphicsTestBase.cs](../../PSharp8/PSharp8.Tests/Infrastructure/GraphicsTestBase.cs) | Base class for GPU tests | Texture lifecycle, color constants, helpers |
+| [PSharp8.Tests/Infrastructure/FnaCollection.cs](../../PSharp8/PSharp8.Tests/Infrastructure/FnaCollection.cs) | xUnit collection definition | Shared FNA fixture across test classes |
+| [CSharpCraft.Tests/Infrastructure/FnaFixture.cs](../../CSharpCraft/CSharpCraft.Tests/Infrastructure/FnaFixture.cs) | FNA game loop fixture | Backend configuration, graphics device setup |
+| [CSharpCraft.Tests/Infrastructure/FnaCollection.cs](../../CSharpCraft/CSharpCraft.Tests/Infrastructure/FnaCollection.cs) | xUnit collection definition | Shared FNA fixture for game tests |
+| [PSharp8.Tests/Graphics/LruCacheTests.cs](../../PSharp8/PSharp8.Tests/Graphics/LruCacheTests.cs) | xUnit + FluentAssertions | Standard test structure |}
 
 ---
 
@@ -258,7 +302,7 @@ ls -la CSharpCraft/FNAlibs/
 
 ## File Organization & Where Things Live
 
-The workspace uses `CSharpCraft.code-workspace` to combine two sibling Git repositories:
+This is a **multi-root workspace** using `CSharpCraft.code-workspace` to combine two sibling Git repositories:
 
 ```
 CSharpCraft/                          # Workspace folder 1: game executable
@@ -360,6 +404,14 @@ PSharp8/                              # Workspace folder 2: emulator library
 - [TDD-WORKFLOW.md](TDD-WORKFLOW.md) — Red-Green-Refactor, test patterns, fixtures, online references
 - [DOCUMENTATION-MAINTENANCE.md](DOCUMENTATION-MAINTENANCE.md) — Priority system, when/how to update docs
 
+### Proactive Design Review Skill
+
+- **Purpose:** Be proactive and vigilant in rooting out convoluted, fragile, or poorly designed architecture; propose safe, incremental refactors and migration plans.
+- **When to use:** During code reviews, when reading legacy or high-complexity modules, or when proposed changes increase long-term maintenance cost.
+- **Agent behavior:** Flag specific design/quality smells, present minimal step-by-step refactor plans with required tests, estimate impact and effort, and prefer non-breaking incremental changes. If a breaking change is necessary, require explicit approval and provide a migration path.
+- **Guardrails:** Do not preserve bad design for historical convenience; avoid large one-shot refactors without tests and approval; do not change unrelated code in the same PR.
+- **Skill file:** [.github/skills/proactive-design/SKILL.md](skills/proactive-design/SKILL.md)
+
 ---
 
-*Last updated: 30 March 2026*
+*Last updated: 2 April 2026*

@@ -33,8 +33,76 @@ public void Constructor_Throws_WhenSpritesheetDimensionsNotMultipleOf8(int w, in
 ## Namespace and class structure
 - One test class per production class: `LruCache` → `LruCacheTests`
 - Namespace matches test project: `PSharp8.Tests` or `CSharpCraft.Tests`
-- Group related tests with `// --- Section ---` comments (see `PaletteManagerTests.cs`)
 - Seal helper/fixture types that don't need subclassing
+
+## Test Organization with Regions
+
+For large test classes (20+ tests), use `#region`/`#endregion` to organize related tests into logical groups. Use this pattern consistently:
+
+```csharp
+// --------------------------------------------------------------------------
+#region Constructor argument validation
+// --------------------------------------------------------------------------
+
+[Fact]
+public void Constructor_ThrowsArgumentNullException_WhenDepIsNull()
+{
+    var act = () => new MyManager(dep: null!);
+    act.Should().Throw<ArgumentNullException>().WithParameterName("dep");
+}
+
+[Fact]
+public void Constructor_ThrowsArgumentNullException_WhenOtherDepIsNull()
+{
+    var act = () => new MyManager(dep: realDep, other: null!);
+    act.Should().Throw<ArgumentNullException>().WithParameterName("other");
+}
+
+// --------------------------------------------------------------------------
+#endregion
+// --------------------------------------------------------------------------
+#region Get method behavior
+// --------------------------------------------------------------------------
+
+// --- Cache hit scenario ---
+
+[Fact]
+public void Get_ReturnsCachedValue_WhenKeyExists()
+{
+    var sut = new LruCache<int, string>(10);
+    sut.Put(1, "value");
+    
+    var result = sut.Get(1);
+    result.Should().Be("value");
+}
+
+// --- Cache miss scenario ---
+
+[Fact]
+public void Get_ReturnsNull_WhenKeyNotInCache()
+{
+    var sut = new LruCache<int, string>(10);
+    
+    var result = sut.Get(999);
+    result.Should().BeNull();
+}
+
+// --------------------------------------------------------------------------
+#endregion
+```
+
+**Pattern details:**
+- Top-level separators: `// --------------------------------------------------------------------------` (72 dashes)
+- Region markers: `#region` / `#endregion` with the separator line both above and below
+- Subsection markers (optional): `// --- Subsection Name ---` (two dashes on each side, no region marker)
+- Regions should group tests by **behavior category**, not by test type
+- Use subsections within a region to break up scenarios (e.g., "happy path" vs. "error cases")
+
+**Benefits:**
+- Improves IDE navigation (outline view and Ctrl+K Ctrl+1)
+- Limits cognitive load in large test files
+- Makes it easy to find related tests
+- Collapsible in editors for readability
 
 ## Arrange-Act-Assert (AAA)
 Write all tests in three distinct stages. Only add `// Arrange / // Act / // Assert` comments when the stages aren't obvious from the code itself.
@@ -73,17 +141,58 @@ mock.Verify(d => d.GetValue(), Times.Once);
 ```
 
 ## FNA tests (Graphics & Audio)
-Tests that require `GraphicsDevice` or audio (`SoundEffect`) must use `[Collection("Fna")]` + `FnaFixture`:
+
+Tests that require `GraphicsDevice` or audio (`SoundEffect`) must use the FNA test fixtures. **This is critical on Linux/Wayland** because fixtures pre-configure the SDL3/Vulkan backend before `GraphicsDevice` is created.
+
+### PSharp8 Graphics Tests
+Use `[Collection("Fna")]` + `GraphicsTestBase`:
 ```csharp
 [Collection("Fna")]
-public class MyFnaTests(FnaFixture fixture) : GraphicsTestBase(fixture)
+public class MyGraphicsTests(FnaFixture fixture) : GraphicsTestBase(fixture)
 {
+    [Fact]
+    public void MyTest()
+    {
+        var texture = MakeSolid(8, 8, Black);
+        // ... test GPU resources
+    }
 }
 ```
 
-Use `FnaFixture.CreateSilentSoundEffect()` when tests need `SoundEffect` instances without real audio files.
+`GraphicsTestBase` provides:
+- Pico-8 color constants (`Black`, `DarkBlue`, `White`, etc.)
+- `MakeSolid(width, height, color)` helper for test textures
+- Automatic texture/resource cleanup on `Dispose()`
 
-DO NOT use `FnaFixture` in tests that don't need GPU or audio — keep pure logic tests fast and dependency-free.
+### Audio Tests
+Use `FnaFixture.CreateSilentSoundEffect()` when tests need `SoundEffect` instances without real audio files:
+```csharp
+public void MyAudioTest()
+{
+    var silence = FnaFixture.CreateSilentSoundEffect(durationMs: 100);
+    // ... test audio logic
+}
+```
+
+### Pure Logic Tests (No FNA)
+DO NOT use `FnaFixture` for tests without GPU or audio dependencies — keep them fast and isolated:
+```csharp
+public class MyColorCalcTests  // No fixture needed
+{
+    [Fact]
+    public void MyLogicTest()
+    {
+        var result = PaletteManager.Blend(color1, color2);
+        result.Should().Be(expected);
+    }
+}
+```
+
+### FNA Fixture Details
+- **[Collection("Fna")]**: Marks test class as part of the shared Fna collection
+- **FnaFixture**: Creates a real FNA game loop, initializes GraphicsDevice and audio
+- **FnaCollection.cs**: Mediates fixture sharing across test classes in that collection
+See [FnaCollection.cs](../../PSharp8/PSharp8.Tests/Infrastructure/FnaCollection.cs) for collection definition
 
 ## Accessing internal fields in tests
 PSharp8 declares `[assembly: InternalsVisibleTo("PSharp8.Tests")]` in `GlobalUsings.cs`. Use `internal` fields (e.g. `sut._currentInstance`) directly instead of reflection — it's faster, rename-safe, and compile-checked.
