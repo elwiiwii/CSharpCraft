@@ -37,7 +37,7 @@ public sealed class MenuStateTests
     [Fact]
     public void Constructor_StoresList_WhenProvided()
     {
-        var list = new List<IInventorySlot>();
+        var list = new List<ItemStack>();
         var sut = new MenuState(Inventary, list: list, spr: 128, text: null, text2: null);
         sut.List.Should().BeSameAs(list);
     }
@@ -55,10 +55,10 @@ public sealed class MenuStateTests
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void Sel_IsOne_AfterConstruction()
+    public void Sel_IsZero_AfterConstruction()
     {
         var sut = new MenuState(Inventary, list: null, spr: 128, text: null, text2: null);
-        sut.Sel.Should().Be(1);
+        sut.Sel.Should().Be(0);
     }
 
     [Fact]

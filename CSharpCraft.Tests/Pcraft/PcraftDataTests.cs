@@ -156,9 +156,9 @@ public sealed class PcraftDataTests
     }
 
     [Fact]
-    public void MainMenu_SelIsOneAndOffIsZero()
+    public void MainMenu_SelIsZeroAndOffIsZero()
     {
-        PcraftData.MainMenu.Sel.Should().Be(1);
+        PcraftData.MainMenu.Sel.Should().Be(0);
         PcraftData.MainMenu.Off.Should().Be(0);
     }
 
