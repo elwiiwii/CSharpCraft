@@ -1,4 +1,3 @@
-using CSharpCraft;
 using CSharpCraft.Settings;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;

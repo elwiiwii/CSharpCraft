@@ -1,9 +1,9 @@
-namespace CSharpCraft.Tests.Pcraft;
-
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pcraft.Data;
 using FluentAssertions;
 using Xunit;
+
+namespace CSharpCraft.Tests.Pcraft;
 
 public sealed class WorldStateTests
 {

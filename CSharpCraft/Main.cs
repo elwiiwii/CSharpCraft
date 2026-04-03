@@ -2,7 +2,6 @@
 using CSharpCraft.Input;
 using CSharpCraft.Settings;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using PSharp8.Input;
 using SDL3;
 

@@ -1,6 +1,6 @@
-namespace CSharpCraft.Pcraft;
-
 using CSharpCraft.Pcraft.Data;
+
+namespace CSharpCraft.Pcraft;
 
 internal sealed class WorldState
 {
