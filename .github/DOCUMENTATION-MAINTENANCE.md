@@ -15,7 +15,6 @@ These are the **ground truth** docs for developers and AI agents. Breaking these
 **Files:**
 - `copilot-instructions.md` — Workspace guide (commands, architecture, conventions)
 - `.runsettings` — Test environment configuration (FNA3D backend)
-- `README.md` — Quick start, project overview
 - Comments in `Main.cs`, `GameOrchestrator.cs`, `Pico8.cs` — Entry points
 
 **Check before**:
