@@ -29,7 +29,7 @@ internal sealed class WorldState
     internal int LevelSy => CurrentLevel?.Sy ?? 0;
     internal bool LevelUnder => CurrentLevel?.IsUnder ?? false;
     internal List<ItemEntity> Entities { get; } = [];
-    internal List<CharacterEntity> Enemies { get; } = [];
+    internal List<CharacterEntity> Enemies { get; set; } = [];
     internal Dictionary<int, F32> Data { get; } = [];
     internal F32 Clx { get; set; } = F32.Zero;
     internal F32 Cly { get; set; } = F32.Zero;
