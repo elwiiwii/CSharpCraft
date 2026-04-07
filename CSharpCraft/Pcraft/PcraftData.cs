@@ -96,8 +96,6 @@ internal static class PcraftData
     internal static readonly GroundType GrGem   = new(10, 1){ Mat = Gem,    Tile = GrSand,  Life = 160, IsTree = true, Pal = [1, 2, 14, 12] };
     internal static readonly GroundType GrHole  = new(11, 1);
 
-    internal static readonly GroundType LastGround = GrSand;
-
     internal static readonly GroundType[] Grounds =
     [
         GrWater, GrSand, GrGrass, GrRock, GrTree,
