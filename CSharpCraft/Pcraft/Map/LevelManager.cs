@@ -6,14 +6,7 @@ internal static class LevelManager
 {
     internal static void SetLevel(Level level, WorldState state)
     {
-        state.CurrentLevel = level;
-        state.Entities.Clear();
-        state.Entities.AddRange(level.Ent);
-        state.Enemies.Clear();
-        state.Enemies.AddRange(level.Ene);
-        state.Data.Clear();
-        foreach (var (key, value) in level.Dat)
-            state.Data[key] = value;
+        state.SetLevel(level);
         state.Plx = level.Stx;
         state.Ply = level.Sty;
     }

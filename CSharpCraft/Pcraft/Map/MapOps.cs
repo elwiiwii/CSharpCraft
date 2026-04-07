@@ -10,7 +10,7 @@ internal static class MapOps
 
     internal static GroundType GetDirectGr(int i, int j, WorldState state)
     {
-        if (i < 0 || j < 0 || i >= state.LevelSx || j >= state.LevelSy)
+        if (OutOfBounds(i, j, state))
             return PcraftData.GrWater;
 
         int id = PSharp8.Pico8.Mget(i + state.LevelX, j);
@@ -26,7 +26,7 @@ internal static class MapOps
     internal static void SetGr(F32 x, F32 y, GroundType v, WorldState state)
     {
         var (i, j) = GetMCoord(x, y);
-        if (i < 0 || j < 0 || i >= state.LevelSx || j >= state.LevelSy) return;
+        if (OutOfBounds(i, j, state)) return;
         PSharp8.Pico8.Mset(i + state.LevelX, j, v.Id);
     }
 
@@ -44,7 +44,7 @@ internal static class MapOps
     internal static F32 GetData(F32 x, F32 y, F32 def, WorldState state)
     {
         var (i, j) = GetMCoord(x, y);
-        if (i < 0 || j < 0 || i > state.LevelSx - 1 || j > state.LevelSy - 1)
+        if (OutOfBounds(i, j, state))
             return def;
         return DirGetData(i, j, def, state);
     }
@@ -52,16 +52,19 @@ internal static class MapOps
     internal static void SetData(F32 x, F32 y, F32 v, WorldState state)
     {
         var (i, j) = GetMCoord(x, y);
-        if (i < 0 || j < 0 || i > state.LevelSx - 1 || j > state.LevelSy - 1) return;
+        if (OutOfBounds(i, j, state)) return;
         DirSetData(i, j, v, state);
     }
 
     internal static void ClearData(F32 x, F32 y, WorldState state)
     {
         var (i, j) = GetMCoord(x, y);
-        if (i < 0 || j < 0 || i > state.LevelSx - 1 || j > state.LevelSy - 1) return;
+        if (OutOfBounds(i, j, state)) return;
         state.Data.Remove(i + j * state.LevelSx);
     }
+
+    private static bool OutOfBounds(int i, int j, WorldState state)
+        => i < 0 || j < 0 || i >= state.LevelSx || j >= state.LevelSy;
 
     internal static bool IsFree(F32 x, F32 y, WorldState state)
     {
