@@ -1,3 +1,5 @@
+using CSharpCraft.Pcraft.Draw;
+using CSharpCraft.Pcraft.Update;
 using PSharp8.Audio;
 using PSharp8.Scene;
 
@@ -9,12 +11,25 @@ internal sealed class PcraftSceneBase : IScene
 
     public void Init(ISceneSetup setup)
     {
-        
+        setup.Resolution = (128, 128);
+
+        var state       = new WorldState();
+        var game        = new PcraftGame();
+        var rng         = new Random();
+        bool initialized = false;
+
+        setup.RegisterUpdate(() =>
+        {
+            if (!initialized) { game.Init(); initialized = true; }
+            PcraftUpdate.Update(state, game, rng);
+        }, fps: 30);
+
+        setup.RegisterDraw(() => PcraftDraw.Draw(state, game), fps: 30);
     }
 
-    public string? SpritesPath => "pcraft_sprites.png";
+    public string? SpritesPath => "pcraft_sprites";
 
-    public string? MapPath => "pcraft_map.png";
+    public string? MapPath => "pcraft_map";
 
     public string? FlagData => null;
 
@@ -46,8 +61,8 @@ internal sealed class PcraftSceneBase : IScene
     ];
 
     public IReadOnlyList<SfxPack> Sfx => [
-        new SfxPack(name: "original", prefix: "pcraft_og"),
-        new SfxPack(name: "soft", prefix: "pcraft_soft"),
-        new SfxPack(name: "pog edition", prefix: "pcraft_pe")
+        new SfxPack(name: "original", prefix: "pcraft_og_"),
+        new SfxPack(name: "soft", prefix: "pcraft_soft_"),
+        new SfxPack(name: "pog edition", prefix: "pcraft_pe_")
     ];
 }

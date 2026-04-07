@@ -34,8 +34,18 @@ public sealed class MenuUpdaterPureTests
 }
 
 [Collection("Fna")]
-public sealed class MenuUpdaterFnaTests(FnaFixture fixture)
+public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
 {
+    private TempMusicDirectory? _musicDir;
+    private string? _sfxDir;
+
+    public void Dispose()
+    {
+        _musicDir?.Dispose();
+        if (_sfxDir is not null && Directory.Exists(_sfxDir))
+            Directory.Delete(_sfxDir, recursive: true);
+    }
+
     private sealed class NullScene : IScene
     {
         public string? Name => null;
@@ -44,19 +54,41 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture)
         public string? MapPath => null;
         public string? FlagData => null;
         public IReadOnlyList<Soundtrack> Music => [];
-        public IReadOnlyList<SfxPack> Sfx => [];
+        public IReadOnlyList<SfxPack> Sfx => [new SfxPack("test", "pcraft_og_")];
     }
 
     private GameOrchestrator BuildOrchestrator(IInputManager? input = null)
-        => new(
+    {
+        _musicDir = FnaFixture.CreateTempMusicDirectory(
+            "s0.ogg", "s1.ogg", "s2.ogg", "s3.ogg", "s4.ogg");
+        _sfxDir = FnaFixture.CreateTempSfxDirectory(
+            "pcraft_og_12", "pcraft_og_13", "pcraft_og_14", "pcraft_og_15",
+            "pcraft_og_16", "pcraft_og_17", "pcraft_og_18", "pcraft_og_19", "pcraft_og_21");
+
+        var scene = new NullScene();
+        var orch = new GameOrchestrator(
+            _musicDir.Path,
+            _sfxDir,
             ".",
-            ".",
-            ".",
-            new NullScene(),
+            scene,
             fixture.GraphicsDevice,
             fixture.GraphicsDeviceManager,
             fixture.Window,
             inputManager: input);
+
+        orch.LoadSoundtracks([
+            new Soundtrack("test", [
+                new Track([new TrackPart("s0", false)], 0),
+                new Track([new TrackPart("s1", true)],  1),
+                new Track([new TrackPart("s2", true)],  2),
+                new Track([new TrackPart("s3", true)],  3),
+                new Track([new TrackPart("s4", true)],  4),
+            ])
+        ], "test");
+        orch.LoadSfxPacks(scene.Sfx, "test");
+        orch.Update(TimeSpan.Zero);
+        return orch;
+    }
 
     private static MenuState MakeInvMenu(List<ItemStack> list)
         => new(PcraftData.Inventary, list, spr: 0, text: null, text2: null);

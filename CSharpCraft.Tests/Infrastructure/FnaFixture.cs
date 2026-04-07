@@ -28,6 +28,41 @@ public sealed class FnaFixture : IDisposable
     public void Dispose() => _game.Dispose();
 
     /// <summary>
+    /// Creates a temporary directory containing a minimal silent WAV file for each base name.
+    /// The caller is responsible for deleting the directory when done.
+    /// </summary>
+    public static string CreateTempSfxDirectory(params string[] sfxBaseNames)
+    {
+        var dir = Directory.CreateTempSubdirectory("cscraft_test_sfx_").FullName;
+        foreach (var name in sfxBaseNames)
+            CreateSilentWavFile(Path.Combine(dir, name + ".wav"));
+        return dir;
+    }
+
+    private static void CreateSilentWavFile(string path)
+    {
+        // 16-bit mono PCM WAV, 100ms silence at 44100 Hz (4410 samples)
+        const int sampleRate = 44100;
+        const int sampleCount = 4410;
+        const int dataSize = sampleCount * 2;
+        using var bw = new System.IO.BinaryWriter(File.Create(path));
+        bw.Write(new byte[] { 0x52, 0x49, 0x46, 0x46 }); // "RIFF"
+        bw.Write(36 + dataSize);                           // ChunkSize
+        bw.Write(new byte[] { 0x57, 0x41, 0x56, 0x45 }); // "WAVE"
+        bw.Write(new byte[] { 0x66, 0x6D, 0x74, 0x20 }); // "fmt "
+        bw.Write(16);                                      // SubChunk1Size
+        bw.Write((short)1);                                // AudioFormat = PCM
+        bw.Write((short)1);                                // NumChannels = 1
+        bw.Write(sampleRate);                              // SampleRate
+        bw.Write(sampleRate * 2);                          // ByteRate
+        bw.Write((short)2);                                // BlockAlign
+        bw.Write((short)16);                               // BitsPerSample
+        bw.Write(new byte[] { 0x64, 0x61, 0x74, 0x61 }); // "data"
+        bw.Write(dataSize);                                // SubChunk2Size
+        bw.Write(new byte[dataSize]);                      // silence
+    }
+
+    /// <summary>
     /// Creates a temporary directory containing a silent OGG file for each requested filename.
     /// The directory is cleaned up when the returned <see cref="TempMusicDirectory"/> is disposed.
     /// </summary>

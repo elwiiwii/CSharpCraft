@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using CSharpCraft.Input;
+using CSharpCraft.Pcraft;
 using CSharpCraft.Settings;
 using Microsoft.Xna.Framework;
 using PSharp8.Input;
@@ -56,15 +57,18 @@ unsafe class FNAGame : Game
 
         SDL.SDL_AddEventWatch(_eventWatch, IntPtr.Zero);
 
+        var scene = new PcraftSceneBase();
         _orchestrator = new GameOrchestrator(
             musicDirectory: _musicFolderPath,
             sfxDirectory: _sfxFolderPath,
             texturesDirectory: _graphicsFolderPath,
-            defaultScene: new EmptyScene(),
+            defaultScene: scene,
             graphicsDevice: GraphicsDevice,
             graphicsDeviceManager: _graphics,
             window: Window);
         Pico8.Initialize(_orchestrator);
+        _orchestrator.LoadSoundtracks(scene.Music, "new!");
+        _orchestrator.LoadSfxPacks(scene.Sfx, "soft");
 
         var configDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -113,7 +117,16 @@ unsafe class FNAGame : Game
 
     private void Window_ClientSizeChanged(object? sender, EventArgs args)
     {
-
+        int newW = Window.ClientBounds.Width;
+        int newH = Window.ClientBounds.Height;
+        if (newW > 0 && newH > 0 &&
+            (_graphics.PreferredBackBufferWidth != newW ||
+             _graphics.PreferredBackBufferHeight != newH))
+        {
+            _graphics.PreferredBackBufferWidth  = newW;
+            _graphics.PreferredBackBufferHeight = newH;
+            _graphics.ApplyChanges();
+        }
     }
 
     private bool OnSdlEvent(IntPtr userdata, SDL.SDL_Event* evt)

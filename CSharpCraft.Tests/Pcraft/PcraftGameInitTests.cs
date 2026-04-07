@@ -19,11 +19,11 @@ public sealed class PcraftGameInitTests(FnaFixture fixture) : IDisposable
     [
         new Soundtrack("original",
         [
-            new Track([new TrackPart("s0.ogg", loop: false)], channel: 0),
-            new Track([new TrackPart("s1.ogg", loop: true)],  channel: 1),
-            new Track([new TrackPart("s2.ogg", loop: true)],  channel: 2),
-            new Track([new TrackPart("s3.ogg", loop: true)],  channel: 3),
-            new Track([new TrackPart("s4.ogg", loop: true)],  channel: 4),
+            new Track([new TrackPart("s0", loop: false)], channel: 0),
+            new Track([new TrackPart("s1", loop: true)],  channel: 1),
+            new Track([new TrackPart("s2", loop: true)],  channel: 2),
+            new Track([new TrackPart("s3", loop: true)],  channel: 3),
+            new Track([new TrackPart("s4", loop: true)],  channel: 4),
         ])
     ];
 
