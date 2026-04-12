@@ -76,11 +76,16 @@ public sealed class WorldStateTests
     }
 
     [Fact]
-    public void Constructor_InitializesMenuInventToNull()
+    public void WorldState_DoesNotHave_MenuInventProperty()
     {
-        var state = new WorldState();
-
-        state.MenuInvent.Should().BeNull();
+        // ChestMenu owns chest/player item lists — WorldState should not hold a
+        // separate MenuInvent reference. This test enforces the Phase 4 contract.
+        var prop = typeof(WorldState).GetProperty(
+            "MenuInvent",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("ChestMenu owns dual-panel state — WorldState should not carry MenuInvent");
     }
 
     [Fact]
@@ -189,14 +194,6 @@ public sealed class WorldStateTests
         var state = new WorldState();
 
         state.CanSwitchLevel.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Constructor_InitializesToggleMenuToZero()
-    {
-        var state = new WorldState();
-
-        state.ToogleMenu.Should().Be(0);
     }
 
     [Fact]

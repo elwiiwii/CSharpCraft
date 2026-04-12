@@ -11,8 +11,6 @@ internal sealed class PcraftGame
     internal List<Recipe> FactoryRecipe    { get; } = [];
     internal List<Recipe> ChemRecipe       { get; } = [];
 
-    internal MenuState? CurMenu { get; private set; }
-
     internal void InitRecipes()
     {
         FurnaceRecipe.Clear();
@@ -67,7 +65,6 @@ internal sealed class PcraftGame
     {
         Pico8.Music(4, 10000);
         InitRecipes();
-        CurMenu = PcraftData.MainMenu;
     }
 
     private static Recipe MakeRecipe(ItemDef type, int? count, List<Recipe>? list, (ItemDef def, int qty)[] reqPairs)

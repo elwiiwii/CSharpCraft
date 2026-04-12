@@ -8,7 +8,7 @@ internal static class MapGenerator
     /// Diamond-square noise. Returns (sx+1) × (sy+1) array with all values initialised to 0.5.
     /// sx/sy must be powers of 2.
     /// </summary>
-    internal static F32[,] Noise(int sx, int sy, F32 startScale, F32 scaleMod, int featStep, Random rng)
+    internal static F32[,] Noise(int sx, int sy, F32 startScale, F32 scaleMod, int featStep)
     {
         var n = new F32[sx + 1, sy + 1];
         for (int i = 0; i <= sx; i++)
@@ -30,8 +30,8 @@ internal static class MapGenerator
                     var c1 = n[i, j];
                     var c2 = n[i + step, j];
                     var c3 = n[i, j + step];
-                    n[i + step / 2, j]       = (c1 + c2) * Half + (F32.FromFloat((float)rng.NextDouble()) - Half) * cscal;
-                    n[i, j + step / 2]       = (c1 + c3) * Half + (F32.FromFloat((float)rng.NextDouble()) - Half) * cscal;
+                    n[i + step / 2, j]       = (c1 + c2) * Half + (Pico8.Rnd(1) - Half) * cscal;
+                    n[i, j + step / 2]       = (c1 + c3) * Half + (Pico8.Rnd(1) - Half) * cscal;
                 }
             }
 
@@ -44,7 +44,7 @@ internal static class MapGenerator
                     var c2 = n[i + step, j];
                     var c3 = n[i, j + step];
                     var c4 = n[i + step, j + step];
-                    n[i + step / 2, j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromFloat(0.25f) + (F32.FromFloat((float)rng.NextDouble()) - Half) * cscal;
+                    n[i + step / 2, j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromFloat(0.25f) + (Pico8.Rnd(1) - Half) * cscal;
                 }
             }
 
@@ -55,12 +55,12 @@ internal static class MapGenerator
         return n;
     }
 
-    internal static int[,] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e, Random rng)
+    internal static int[,] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
     {
-        var cur  = Noise(sx, sy, F32.FromFloat(0.9f), F32.FromFloat(0.2f), sx, rng);
-        var cur2 = Noise(sx, sy, F32.FromFloat(0.9f), F32.FromFloat(0.4f), 8,  rng);
-        var cur3 = Noise(sx, sy, F32.FromFloat(0.9f), F32.FromFloat(0.3f), 8,  rng);
-        var cur4 = Noise(sx, sy, F32.FromFloat(0.8f), F32.FromFloat(1.1f), 4,  rng);
+        var cur  = Noise(sx, sy, F32.FromFloat(0.9f), F32.FromFloat(0.2f), sx);
+        var cur2 = Noise(sx, sy, F32.FromFloat(0.9f), F32.FromFloat(0.4f), 8);
+        var cur3 = Noise(sx, sy, F32.FromFloat(0.9f), F32.FromFloat(0.3f), 8);
+        var cur4 = Noise(sx, sy, F32.FromFloat(0.8f), F32.FromFloat(1.1f), 4);
 
         var result = new int[sx + 1, sy + 1];
 
@@ -92,19 +92,19 @@ internal static class MapGenerator
         return result;
     }
 
-    internal static F32[][] InitRndWat(Random rng)
+    internal static F32[][] InitRndWat()
     {
         var result = new F32[16][];
         for (int i = 0; i < 16; i++)
         {
             result[i] = new F32[16];
             for (int j = 0; j < 16; j++)
-                result[i][j] = F32.FromFloat((float)(rng.NextDouble() * 100.0));
+                result[i][j] = Pico8.Rnd(100);
         }
         return result;
     }
 
-    internal static (int holeX, int holeY) CreateMap(WorldState state, Random rng)
+    internal static (int holeX, int holeY) CreateMap(WorldState state)
     {
         int levelSx = state.LevelSx;
         int levelSy = state.LevelSy;
@@ -123,7 +123,7 @@ internal static class MapGenerator
 
             if (isUnder)
             {
-                level = CreateMapStep(levelSx, levelSy, 3, 8, 1, 9, 10, rng);
+                level = CreateMapStep(levelSx, levelSy, 3, 8, 1, 9, 10);
                 CountTypes(level, levelSx, levelSy, typecount);
                 if (typecount[8]  < 30) needMap = true;
                 if (typecount[9]  < 20) needMap = true;
@@ -131,7 +131,7 @@ internal static class MapGenerator
             }
             else
             {
-                level = CreateMapStep(levelSx, levelSy, 0, 1, 2, 3, 4, rng);
+                level = CreateMapStep(levelSx, levelSy, 0, 1, 2, 3, 4);
                 CountTypes(level, levelSx, levelSy, typecount);
                 if (typecount[3] < 30) needMap = true;
                 if (typecount[4] < 30) needMap = true;
@@ -142,8 +142,8 @@ internal static class MapGenerator
                 int plxTile = -1, plyTile = -1;
                 for (int attempt = 0; attempt <= 500; attempt++)
                 {
-                    int depx = F32.FloorToInt(F32.FromInt(levelSx / 8) + F32.FromFloat((float)(rng.NextDouble() * (levelSx * 6.0 / 8))));
-                    int depy = F32.FloorToInt(F32.FromInt(levelSy / 8) + F32.FromFloat((float)(rng.NextDouble() * (levelSy * 6.0 / 8))));
+                    int depx = F32.FloorToInt(F32.FromInt(levelSx / 8) + Pico8.Rnd(levelSx * 6.0 / 8));
+                    int depy = F32.FloorToInt(F32.FromInt(levelSy / 8) + Pico8.Rnd(levelSy * 6.0 / 8));
                     if (depx >= 0 && depx <= levelSx && depy >= 0 && depy <= levelSy)
                     {
                         int tileId = level[depx, depy];

@@ -1,4 +1,5 @@
 using CSharpCraft.Pcraft.Data;
+using CSharpCraft.Pcraft.Menu;
 
 namespace CSharpCraft.Pcraft;
 
@@ -19,7 +20,6 @@ internal sealed class WorldState
     internal bool Block5 { get; set; } = false;
     internal List<ItemStack> Invent { get; } = [];
     internal ItemStack? CurItem { get; set; } = null;
-    internal MenuState? MenuInvent { get; set; } = null;
     internal Level? CurrentLevel { get; set; } = null;
     internal Level? Cave { get; set; } = null;
     internal Level? Island { get; set; } = null;
@@ -40,8 +40,7 @@ internal sealed class WorldState
     internal F32 Time { get; set; } = F32.Zero;
     internal bool SwitchLevel { get; set; } = false;
     internal bool CanSwitchLevel { get; set; } = false;
-    internal int ToogleMenu { get; set; } = 0;
-    internal MenuState? CurMenu { get; set; } = null;
+    internal IMenu? CurMenu { get; set; } = null;
     internal GroundType LastGround { get; set; } = PcraftData.GrSand;
     internal List<CharacterEntity> NearEnemies { get; } = [];
     internal F32[][] RndWat { get; }

@@ -1,8 +1,9 @@
+using System.Runtime.CompilerServices;
 using CSharpCraft.Pcraft.Data;
 using CSharpCraft.Pcraft.Inventory;
 using CSharpCraft.Pcraft.Map;
+using CSharpCraft.Pcraft.Menu;
 using CSharpCraft.Pcraft.Physics;
-using PSharp8;
 
 namespace CSharpCraft.Pcraft.Update;
 
@@ -10,7 +11,7 @@ internal static class PlayerActionUpdater
 {
     internal static void Update(
         WorldState state, PcraftGame game,
-        F32 dx, F32 dy, bool canAct, Random rng)
+        F32 dx, F32 dy, bool canAct)
     {
         // ── Final collision + player advance ─────────────────────────────────
         (dx, dy) = CollisionSystem.ReflectCol(
@@ -23,8 +24,8 @@ internal static class PlayerActionUpdater
         state.Prot = PcraftMath.UpRot(state.Lrot, state.Prot);
 
         // ── Smooth bars (llife / lstam) ───────────────────────────────────────
-        state.Llife += F32.Max(-F32.One, F32.Min(F32.One, state.Plife - state.Llife));
-        state.Lstam += F32.Max(-F32.One, F32.Min(F32.One, state.Pstam - state.Lstam));
+        state.Llife += F32.Clamp(state.Plife - state.Llife, -F32.One, F32.One);
+        state.Lstam += F32.Clamp(state.Pstam - state.Lstam, -F32.One, F32.One);
 
         // ── Btn(5) action block ───────────────────────────────────────────────
         if (Pico8.Btn(5) && !state.Block5 && canAct)
@@ -36,13 +37,13 @@ internal static class PlayerActionUpdater
             var hit      = MapOps.GetGr(hitx, hity, state);
             var stamcost = F32.FromInt(20);
 
-            // Drop placed item
+            // Place bench
             if (!state.Lb5 && state.CurItem != null && state.CurItem.Type.Drop)
             {
                 if (hit == PcraftData.GrSand || hit == PcraftData.GrGrass)
                 {
-                    var tileX  = F32.FromInt(F32.FloorToInt(hitx / F32.FromInt(16)) * 16 + 8);
-                    var tileY  = F32.FromInt(F32.FloorToInt(hity / F32.FromInt(16)) * 16 + 8);
+                    var tileX  = F32.Floor(hitx / F32.FromInt(16)) * 16 + 8;
+                    var tileY  = F32.Floor(hity / F32.FromInt(16)) * 16 + 8;
                     var placed = new ItemEntity(state.CurItem.Type, tileX, tileY)
                     {
                         HasCol = true,
@@ -66,23 +67,23 @@ internal static class PlayerActionUpdater
                     if (state.CurItem != null && state.CurItem.Type == PcraftData.Sword)
                     {
                         var p = state.CurItem.Power ?? 0;
-                        pow = F32.One + F32.FromInt(p) + Pico8.Rnd(p * p, rng);
+                        pow = F32.One + p + Pico8.Rnd(p * p);
                         stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
                         pow = F32.FromInt(F32.FloorToInt(pow));
-                        Pico8.Sfx(14 + Pico8.Rnd(2, rng).Float);
+                        Pico8.Sfx(14 + Pico8.Rnd(2).Double);
                     }
                     var count = F32.FromInt(state.NearEnemies.Count);
-                    foreach (var e in state.NearEnemies.ToList())
+                    foreach (var e in state.NearEnemies)
                     {
                         e.Life -= pow / count;
-                        var push = (pow - F32.One) * F32.FromFloat(0.5f);
-                        e.Ox += F32.Max(-push, F32.Min(push, e.X - state.Plx));
-                        e.Oy += F32.Max(-push, F32.Min(push, e.Y - state.Ply));
+                        var push = (pow - F32.One) * F32.FromDouble(0.5);
+                        e.Ox += F32.Clamp(e.X - state.Plx, -push, push);
+                        e.Oy += F32.Clamp(e.Y - state.Ply, -push, push);
                         if (e.Life <= F32.Zero)
                         {
                             state.Enemies.Remove(e);
-                            LevelManager.AddItem(PcraftData.Ichor,  F32.FloorToInt(Pico8.Rnd(3, rng)), e.X, e.Y, state.Entities, rng);
-                            LevelManager.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3, rng)), e.X, e.Y, state.Entities, rng);
+                            LevelManager.AddItem(PcraftData.Ichor,  F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, state.Entities);
+                            LevelManager.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, state.Entities);
                         }
                         var popup = new ItemEntity(PcraftData.EText, e.X, e.Y - F32.FromInt(10), F32.Zero, -F32.One)
                         {
@@ -105,27 +106,27 @@ internal static class PlayerActionUpdater
                         {
                             if (state.CurItem.Type == PcraftData.Haxe)
                             {
-                                pow = F32.One + F32.FromInt(p) + Pico8.Rnd(p * p, rng);
+                                pow = F32.One + p + Pico8.Rnd(p * p);
                                 stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
                                 Pico8.Sfx(12);
                             }
                         }
                         else if ((hit == PcraftData.GrRock || hit.IsTree) && state.CurItem.Type == PcraftData.Pick)
                         {
-                            pow = F32.One + F32.FromInt(p * 2) + Pico8.Rnd(p * p, rng);
+                            pow = F32.One + p * 2 + Pico8.Rnd(p * p);
                             stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
                             Pico8.Sfx(12);
                         }
                     }
-                    pow = F32.FromInt(F32.FloorToInt(pow));
+                    pow = F32.Floor(pow);
                     var d = MapOps.GetData(hitx, hity, F32.FromInt(hit.Life), state);
                     if (d - pow <= F32.Zero)
                     {
                         MapOps.SetGr(hitx, hity, hit.Tile ?? PcraftData.GrSand, state);
                         MapOps.ClearData(hitx, hity, state);
-                        LevelManager.AddItem(hit.Mat, F32.FloorToInt(Pico8.Rnd(3, rng)) + 2, hitx, hity, state.Entities, rng);
-                        if (hit == PcraftData.GrTree && Pico8.Rnd(1, rng).Float > 0.7f)
-                            LevelManager.AddItem(PcraftData.Apple, 1, hitx, hity, state.Entities, rng);
+                        LevelManager.AddItem(hit.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, state.Entities);
+                        if (hit == PcraftData.GrTree && Pico8.Rnd(1) > F32.FromDouble(0.7))
+                            LevelManager.AddItem(PcraftData.Apple, 1, hitx, hity, state.Entities);
                     }
                     else
                     {
@@ -145,8 +146,8 @@ internal static class PlayerActionUpdater
                     Pico8.Sfx(19);
                     if (state.CurItem != null)
                     {
-                        if (state.CurItem.Power is {} pw)
-                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - pw * 2));
+                        if (state.CurItem.Power is not null)
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (int)state.CurItem.Power * 2));
 
                         if (state.CurItem.Type.GiveLife > 0)
                         {
@@ -157,21 +158,21 @@ internal static class PlayerActionUpdater
                         if (hit == PcraftData.GrGrass && state.CurItem.Type == PcraftData.Scythe)
                         {
                             MapOps.SetGr(hitx, hity, PcraftData.GrSand, state);
-                            if (Pico8.Rnd(1, rng).Float > 0.4f)
-                                LevelManager.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities, rng);
+                            if (Pico8.Rnd(1) > F32.FromDouble(0.4))
+                                LevelManager.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
                         }
                         if (hit == PcraftData.GrSand && state.CurItem.Type == PcraftData.Shovel)
                         {
                             if ((state.CurItem.Power ?? 0) > 3)
                             {
                                 MapOps.SetGr(hitx, hity, PcraftData.GrWater, state);
-                                LevelManager.AddItem(PcraftData.Sand, 2, hitx, hity, state.Entities, rng);
+                                LevelManager.AddItem(PcraftData.Sand, 2, hitx, hity, state.Entities);
                             }
                             else
                             {
                                 MapOps.SetGr(hitx, hity, PcraftData.GrFarm, state);
-                                MapOps.SetData(hitx, hity, state.Time + F32.FromInt(15) + Pico8.Rnd(5, rng), state);
-                                LevelManager.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2, rng)), hitx, hity, state.Entities, rng);
+                                MapOps.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
+                                LevelManager.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2)), hitx, hity, state.Entities);
                             }
                         }
                         if (hit == PcraftData.GrWater && state.CurItem.Type == PcraftData.Sand)
@@ -182,25 +183,26 @@ internal static class PlayerActionUpdater
                         if (hit == PcraftData.GrWater && state.CurItem.Type == PcraftData.Boat)
                         {
                             Pico8.Reload();
+                            Pico8.MapToSpritesheet1D();
                             state.CurMenu = PcraftData.WinMenu;
                             Pico8.Music(4);
                         }
                         if (hit == PcraftData.GrFarm && state.CurItem.Type == PcraftData.Seed)
                         {
                             MapOps.SetGr(hitx, hity, PcraftData.GrWheat, state);
-                            MapOps.SetData(hitx, hity, state.Time + F32.FromInt(15) + Pico8.Rnd(5, rng), state);
+                            MapOps.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
                             InventoryOps.RemInList(state.Invent, new ItemStack(PcraftData.Seed, count: 1));
                         }
                         if (hit == PcraftData.GrWheat && state.CurItem.Type == PcraftData.Scythe)
                         {
                             MapOps.SetGr(hitx, hity, PcraftData.GrSand, state);
-                            var dWh = F32.Max(F32.Zero, F32.Min(
-                                F32.FromInt(4),
-                                F32.FromInt(4) - (MapOps.GetData(hitx, hity, F32.Zero, state) - state.Time)));
+                            var dw = F32.Clamp(F32.FromInt(4) - (MapOps.GetData(hitx, hity, F32.Zero, state) - state.Time),
+                                F32.Zero,
+                                F32.FromInt(4));
                             LevelManager.AddItem(PcraftData.Wheat,
-                                F32.FloorToInt(dWh / F32.FromInt(2) + Pico8.Rnd(dWh / F32.FromInt(2), rng)),
-                                hitx, hity, state.Entities, rng);
-                            LevelManager.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities, rng);
+                                F32.FloorToInt(dw / F32.FromInt(2) + Pico8.Rnd(dw / F32.FromInt(2))),
+                                hitx, hity, state.Entities);
+                            LevelManager.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
                         }
                     }
                 }
@@ -216,18 +218,10 @@ internal static class PlayerActionUpdater
         if (state.Pstam < F32.FromInt(100))
             state.Pstam = F32.Min(F32.FromInt(100), state.Pstam + F32.One);
 
-        // ── Death check (before inventory; lb4 suppresses when held, inventory overrides) ─
-        if (!state.Lb4 && state.Plife <= F32.Zero)
-        {
-            Pico8.Reload();
-            state.CurMenu = PcraftData.DeathMenu;
-            Pico8.Music(4);
-        }
-
         // ── Inventory shortcut (Btnp 4) ───────────────────────────────────────
         if (Pico8.Btnp(4) && !state.Lb4)
         {
-            state.CurMenu = state.MenuInvent;
+            state.CurMenu = new InventoryMenu(state.Invent);
             Pico8.Sfx(13);
         }
 
@@ -238,6 +232,15 @@ internal static class PlayerActionUpdater
             state.Block5 = false;
 
         // ── Time advance ──────────────────────────────────────────────────────
-        state.Time += F32.FromFloat(1f / 30f);
+        state.Time += F32.FromDouble(1.0 / 30.0);
+
+        // ── Death check ───────────────────────────────────────────────────────
+        if (state.Plife <= F32.Zero)
+        {
+            Pico8.Reload();
+            Pico8.MapToSpritesheet1D();
+            state.CurMenu = PcraftData.DeathMenu;
+            Pico8.Music(4);
+        }
     }
 }

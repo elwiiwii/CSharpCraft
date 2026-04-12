@@ -1,6 +1,7 @@
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pcraft.Data;
 using CSharpCraft.Pcraft.Map;
+using CSharpCraft.Pcraft.Menu;
 using CSharpCraft.Pcraft.Update;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;
@@ -24,7 +25,7 @@ public sealed class MenuUpdaterPureTests
         var state = new WorldState { CurMenu = null };
         var game  = new PcraftGame();
 
-        var result = MenuUpdater.Update(state, game, new Random(0));
+        var result = MenuUpdater.Update(state, game);
 
         result.Should().BeFalse();
     }
@@ -90,9 +91,6 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         return orch;
     }
 
-    private static MenuState MakeInvMenu(List<ItemStack> list)
-        => new(PcraftData.Inventary, list, spr: 0, text: null, text2: null);
-
     // --------------------------------------------------------------------------
     #region Splash menu (Spr != 0) — no button pressed
     // --------------------------------------------------------------------------
@@ -104,7 +102,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0)).Should().BeTrue();
+        MenuUpdater.Update(state, new PcraftGame()).Should().BeTrue();
     }
 
     [Fact]
@@ -114,7 +112,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
     }
@@ -129,7 +127,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.Lb4.Should().BeTrue();
     }
@@ -149,7 +147,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.CurMenu.Should().BeSameAs(PcraftData.IntroMenu);
     }
@@ -166,7 +164,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var game  = new PcraftGame();
         game.InitRecipes();
 
-        MenuUpdater.Update(state, game, new Random(42));
+        MenuUpdater.Update(state, game);
 
         state.CurMenu.Should().BeNull();
     }
@@ -182,10 +180,9 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = new WorldState();
-        state.MenuInvent = MakeInvMenu(state.Invent);
-        state.CurMenu    = MakeInvMenu(state.Invent);
+        state.CurMenu = new InventoryMenu(state.Invent);
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0)).Should().BeTrue();
+        MenuUpdater.Update(state, new PcraftGame()).Should().BeTrue();
     }
 
     [Fact]
@@ -194,11 +191,10 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = new WorldState();
-        state.MenuInvent = MakeInvMenu(state.Invent);
-        var menu = MakeInvMenu(state.Invent);
+        var menu = new InventoryMenu(state.Invent);
         state.CurMenu = menu;
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.CurMenu.Should().BeSameAs(menu);
     }
@@ -212,10 +208,9 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var state = new WorldState();
-        state.MenuInvent = MakeInvMenu(state.Invent);
-        state.CurMenu    = MakeInvMenu(state.Invent);
+        state.CurMenu = new InventoryMenu(state.Invent);
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.Lb4.Should().BeTrue();
         state.Lb5.Should().BeTrue();
@@ -229,12 +224,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var state = new WorldState();
         state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
         state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = MakeInvMenu(state.Invent);
-        state.MenuInvent = menu;
-        state.CurMenu    = menu;
+        var menu = new InventoryMenu(state.Invent);
+        state.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         menu.Sel.Should().Be(0);
     }
@@ -253,10 +247,9 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var state = new WorldState();
-        state.MenuInvent = MakeInvMenu(state.Invent);
-        state.CurMenu    = MakeInvMenu(state.Invent);
+        state.CurMenu = new InventoryMenu(state.Invent);
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.CurMenu.Should().BeNull();
     }
@@ -272,12 +265,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var state = new WorldState();
         state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
         state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = MakeInvMenu(state.Invent);
-        state.MenuInvent = menu;
-        state.CurMenu    = menu;
+        var menu = new InventoryMenu(state.Invent);
+        state.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         menu.Sel.Should().Be(1);
     }
@@ -293,12 +285,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var state = new WorldState();
         state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
         state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = MakeInvMenu(state.Invent);
-        state.MenuInvent = menu;
-        state.CurMenu    = menu;
+        var menu = new InventoryMenu(state.Invent);
+        state.CurMenu = menu;
         menu.Sel = 1;
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         menu.Sel.Should().Be(0);
     }
@@ -314,12 +305,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var state = new WorldState();
         state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
         state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = MakeInvMenu(state.Invent);
-        state.MenuInvent = menu;
-        state.CurMenu    = menu;
+        var menu = new InventoryMenu(state.Invent);
+        state.CurMenu = menu;
         menu.Sel = 1; // already at last (0-based, 2 items → max=1)
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         menu.Sel.Should().Be(0); // wraps back to 0
     }
@@ -335,12 +325,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var state = new WorldState();
         var axe = new ItemStack(PcraftData.Haxe) { Power = 1 };
         state.Invent.Add(axe);
-        var menu = MakeInvMenu(state.Invent);
-        state.MenuInvent = menu;
-        state.CurMenu    = menu;
+        var menu = new InventoryMenu(state.Invent);
+        state.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(state, new PcraftGame(), new Random(0));
+        MenuUpdater.Update(state, new PcraftGame());
 
         state.CurItem.Should().BeSameAs(axe);
         state.CurMenu.Should().BeNull();
@@ -361,15 +350,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
 
         // Wood axe requires 5 wood
         state.Invent.Add(new ItemStack(PcraftData.Wood, count: 5));
-        var craftMenu = new MenuState(PcraftData.Workbench, list: null, spr: 0, text: null, text2: null)
-        {
-            RecipeList = game.WorkbenchRecipe
-        };
-        state.MenuInvent = MakeInvMenu(state.Invent);
-        craftMenu.Sel    = 0; // first entry = wood haxe recipe
-        state.CurMenu    = craftMenu;
+        var craftMenu = new CraftingMenu(PcraftData.Workbench, game.WorkbenchRecipe, state.Invent);
+        craftMenu.Sel = 0; // first entry = wood haxe recipe
+        state.CurMenu = craftMenu;
 
-        MenuUpdater.Update(state, game, new Random(0));
+        MenuUpdater.Update(state, game);
 
         state.Invent.Should().Contain(it => it.Type == PcraftData.Haxe);
     }

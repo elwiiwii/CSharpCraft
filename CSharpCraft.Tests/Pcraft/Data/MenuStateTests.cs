@@ -15,65 +15,83 @@ public sealed class MenuStateTests
     [Fact]
     public void Constructor_StoresType()
     {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: "by nusan", text2: "2016");
+        var sut = new MenuState(Inventary, spr: 128, text: "by nusan", text2: "2016");
         sut.Type.Should().BeSameAs(Inventary);
     }
 
     [Fact]
     public void Constructor_StoresSpr()
     {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: null, text2: null);
+        var sut = new MenuState(Inventary, spr: 128, text: null, text2: null);
         sut.Spr.Should().Be(128);
     }
 
     [Fact]
     public void Constructor_StoresText()
     {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: "by nusan", text2: "2016");
+        var sut = new MenuState(Inventary, spr: 128, text: "by nusan", text2: "2016");
         sut.Text.Should().Be("by nusan");
         sut.Text2.Should().Be("2016");
     }
 
     [Fact]
-    public void Constructor_StoresList_WhenProvided()
+    public void Type_DoesNotExpose_InteractiveListProperty()
     {
-        var list = new List<ItemStack>();
-        var sut = new MenuState(Inventary, list: list, spr: 128, text: null, text2: null);
-        sut.List.Should().BeSameAs(list);
-    }
-
-    [Fact]
-    public void Constructor_ListIsNull_WhenNotProvided()
-    {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: null, text2: null);
-        sut.List.Should().BeNull();
+        var prop = typeof(MenuState).GetProperty(
+            "List",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("MenuState is splash-only in Phase 5");
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region Default mutable state
+    #region Design contract
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void Sel_IsZero_AfterConstruction()
+    public void Type_DoesNotExpose_RecipeListProperty()
     {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: null, text2: null);
-        sut.Sel.Should().Be(0);
+        var prop = typeof(MenuState).GetProperty(
+            "RecipeList",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("crafting state now lives on CraftingMenu");
     }
 
     [Fact]
-    public void Off_IsZero_AfterConstruction()
+    public void Type_DoesNotExpose_SelProperty()
     {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: null, text2: null);
-        sut.Off.Should().Be(0);
+        var prop = typeof(MenuState).GetProperty(
+            "Sel",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("selection state now lives on concrete interactive menus");
     }
 
     [Fact]
-    public void Sel_CanBeMutated()
+    public void Type_DoesNotExpose_OffProperty()
     {
-        var sut = new MenuState(Inventary, list: null, spr: 128, text: null, text2: null);
-        sut.Sel = 3;
-        sut.Sel.Should().Be(3);
+        var prop = typeof(MenuState).GetProperty(
+            "Off",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("scroll state now lives on concrete interactive menus");
+    }
+
+    [Fact]
+    public void Type_DoesNotExpose_ToogleMenuProperty()
+    {
+        var prop = typeof(MenuState).GetProperty(
+            "ToogleMenu",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("tab-toggle state now lives on ChestMenu");
     }
 
     // --------------------------------------------------------------------------

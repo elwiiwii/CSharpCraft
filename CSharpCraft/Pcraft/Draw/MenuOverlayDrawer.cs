@@ -1,58 +1,19 @@
 using CSharpCraft.Pcraft.Crafting;
 using CSharpCraft.Pcraft.Data;
 using CSharpCraft.Pcraft.Inventory;
+using CSharpCraft.Pcraft.Menu;
 
 namespace CSharpCraft.Pcraft.Draw;
 
 internal static class MenuOverlayDrawer
 {
-    internal static void DrawMenuOverlay(WorldState state, PcraftGame game)
-    {
-        if (state.CurMenu == null) return;
-
-        Pico8.Camera();
-        var menu = state.CurMenu;
-
-        if (menu.Type == PcraftData.Chest)
-        {
-            var mi = state.MenuInvent ?? menu;
-            if (state.ToogleMenu == 0)
-            {
-                DrawList(mi, 87, 24, 84, 96, 10);
-                DrawList(menu, 4, 24, 84, 96, 10);
-            }
-            else
-            {
-                DrawList(menu, -44, 24, 84, 96, 10);
-                DrawList(mi, 39, 24, 84, 96, 10);
-            }
-        }
-        else if (menu.Type.BeCraft)
-        {
-            var recipeList = menu.RecipeList;
-            if (recipeList != null && menu.Sel >= 1 && menu.Sel < recipeList.Count)
-            {
-                var curGoal = recipeList[menu.Sel];
-                DrawPanel("have", 71, 50, 52, 30);
-                int have = InventoryOps.HowMany(state.Invent, new ItemStack(curGoal.Type));
-                Pico8.Print(have.ToString(), 91, 65, 7);
-                DrawRequireList(curGoal, 4, 79, 104, 50, state);
-            }
-            DrawListRecipes(menu, 4, 16, 68, 64, 6, state);
-        }
-        else
-        {
-            DrawList(menu, 4, 24, 84, 96, 10);
-        }
-    }
-
-    internal static void ItemName(double x, double y, ItemStack item, double col)
+    internal static void ItemName(int x, int y, ItemStack item, int col)
         => DrawItemVisual(x, y, col, item.Power, item.Type);
 
-    private static void DrawItemVisual(double x, double y, double col, int? power, ItemDef type)
+    private static void DrawItemVisual(int x, int y, int col, int? power, ItemDef type)
     {
         Pico8.Pal();
-        double px = x;
+        int px = x;
         if (power.HasValue)
         {
             int pw = power.Value - 1;
@@ -71,7 +32,7 @@ internal static class MenuOverlayDrawer
         Pico8.Print(type.Name, px + 10, y, col);
     }
 
-    private static void DrawPanel(string name, double x, double y, double sx, double sy)
+    private static void DrawPanel(string name, int x, int y, int sx, int sy)
     {
         Pico8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
         Pico8.Spr(66, x, y);
@@ -87,14 +48,49 @@ internal static class MenuOverlayDrawer
         Pico8.Print(name, hx + 1, y + 2, 7);
     }
 
-    private static void DrawList(MenuState menu, double x, double y, double sx, double sy, int my)
+    internal static void DrawInventoryMenu(InventoryMenu menu)
     {
-        DrawPanel(menu.Type.Name, x, y, sx, sy);
+        Pico8.Camera();
+        DrawPanel(PcraftData.Inventary.Name, 4, 24, 84, 96);
         var list = menu.List;
-        if (list == null || list.Count < 1) return;
-        DrawListCore(menu, x, y, sx, sy, my, list.Count, (i, lx, py) =>
+        if (list.Count < 1) return;
+        menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 24, 84, 96, 10, list.Count, (i, lx, py) =>
         {
-            var    it = list[i - 1];
+            var it = list[i - 1];
+            ItemName(lx, py, it, 7);
+            if (it.Count.HasValue)
+            {
+                string c = it.Count.Value.ToString();
+                Pico8.Print(c, lx + 84 - c.Length * 4 - 10, py, 7);
+            }
+        });
+    }
+
+    internal static void DrawChestPanels(ChestMenu menu)
+    {
+        Pico8.Camera();
+        int sel = menu.Sel;
+        int off = menu.Off;
+        if (menu.TabToggle == 0)
+        {
+            off = DrawItemList(menu.ChestItems,  PcraftData.Chest.Name,      sel, off, 4,   24, 84, 96, 10);
+            off = DrawItemList(menu.PlayerItems, PcraftData.Inventary.Name,  sel, off, 87,  24, 84, 96, 10);
+        }
+        else
+        {
+            off = DrawItemList(menu.ChestItems,  PcraftData.Chest.Name,      sel, off, -44, 24, 84, 96, 10);
+            off = DrawItemList(menu.PlayerItems, PcraftData.Inventary.Name,  sel, off, 39,  24, 84, 96, 10);
+        }
+        menu.Off = off;
+    }
+
+    private static int DrawItemList(List<ItemStack> list, string panelName, int sel, int off, int x, int y, int sx, int sy, int my)
+    {
+        DrawPanel(panelName, x, y, sx, sy);
+        if (list.Count < 1) return off;
+        return DrawListCore(sel, off, x, y, sx, sy, my, list.Count, (i, lx, py) =>
+        {
+            var it = list[i - 1];
             ItemName(lx, py, it, 7);
             if (it.Count.HasValue)
             {
@@ -104,62 +100,72 @@ internal static class MenuOverlayDrawer
         });
     }
 
-    private static void DrawListRecipes(MenuState menu, double x, double y, double sx, double sy, int my, WorldState state)
+    internal static void DrawCraftingPanels(CraftingMenu menu, WorldState state)
     {
-        DrawPanel(menu.Type.Name, x, y, sx, sy);
-        var list = menu.RecipeList;
-        if (list == null || list.Count < 1) return;
-        DrawListCore(menu, x, y, sx, sy, my, list.Count, (i, lx, py) =>
+        Pico8.Camera();
+        var recipeList = menu.Recipes;
+        if (recipeList.Count >= 1 && menu.Sel >= 1 && menu.Sel < recipeList.Count)
         {
-            var    it  = list[i - 1];
-            double col = CraftingSystem.CanCraft(state.Invent, it) ? 7 : 0;
+            var curGoal = recipeList[menu.Sel];
+            DrawPanel("have", 71, 50, 52, 30);
+            int have = InventoryOps.HowMany(state.Invent, new ItemStack(curGoal.Type));
+            Pico8.Print(have.ToString(), 91, 65, 7);
+            DrawRequireList(curGoal, 4, 79, 104, 50, state);
+        }
+        if (recipeList.Count < 1) return;
+        menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 16, 68, 64, 6, recipeList.Count, (i, lx, py) =>
+        {
+            var it  = recipeList[i - 1];
+            int col = CraftingSystem.CanCraft(state.Invent, it) ? 7 : 0;
             DrawItemVisual(lx, py, col, it.Power, it.Type);
             if (it.Count.HasValue)
             {
                 string c = it.Count.Value.ToString();
-                Pico8.Print(c, lx + sx - c.Length * 4 - 10, py, col);
+                Pico8.Print(c, lx + 68 - c.Length * 4 - 10, py, col);
             }
         });
+        DrawPanel(menu.BenchType.Name, 4, 16, 68, 64);
     }
 
-    private static void DrawListCore(MenuState menu, double x, double y, double sx, double sy, int my, int tlist, Action<int, double, double> renderRow)
+    private static int DrawListCore(int sel, int off, int x, int y, int sx, int sy, int my, int tlist, Action<int, int, int> renderRow)
     {
-        int sel = menu.Sel;
-        if (menu.Off > Math.Max(0, sel - 4))           menu.Off = Math.Max(0, sel - 4);
-        if (menu.Off < Math.Min(tlist, sel + 3) - my)  menu.Off = Math.Min(tlist, sel + 3) - my;
+        if (off > Math.Max(0, sel - 4))           off = Math.Max(0, sel - 4);
+        if (off < Math.Min(tlist, sel + 3) - my)  off = Math.Min(tlist, sel + 3) - my;
 
-        int selAdj = sel - menu.Off;
-        int debut  = menu.Off + 1;
-        int fin    = Math.Min(menu.Off + my, tlist);
+        int selAdj = sel - off;
+        int debut  = off + 1;
+        int fin    = Math.Min(off + my, tlist);
 
-        double sely = y + 3 + selAdj * 8;
+        int sely = y + 3 + selAdj * 8;
         Pico8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
 
-        double lx = x + 5;
-        double ly = y + 12;
+        int lx = x + 5;
+        int ly = y + 12;
 
         for (int i = debut; i <= fin; i++)
         {
-            double py = ly + (i - 1 - menu.Off) * 8;
+            int py = ly + (i - 1 - off) * 8;
             renderRow(i, lx, py);
         }
 
         Pico8.Spr(68, x - 3,       sely);
         Pico8.Spr(68, x + sx - 10, sely, 1, 1, true, false);
+
+        return off;
     }
 
-    private static void DrawRequireList(Recipe recip, double x, double y, double sx, double sy, WorldState state)
+    private static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, WorldState state)
     {
         DrawPanel("require", x, y, sx, sy);
         if (recip.Req.Count < 1) return;
 
-        double lx = x + 5;
-        double ly = y + 12;
+        int lx = x + 5;
+        int ly = y + 12;
 
         for (int i = 0; i < recip.Req.Count; i++)
         {
             var    it = recip.Req[i];
-            double py = ly + i * 8;
+            int py = ly + i * 8;
             ItemName(lx, py, it, 7);
             if (it.Count.HasValue)
             {

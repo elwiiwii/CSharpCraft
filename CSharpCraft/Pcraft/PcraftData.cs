@@ -124,10 +124,10 @@ internal static class PcraftData
     #region Menus
     // ------------------------------------------------------------------
 
-    internal static readonly MenuState MainMenu  = new(type: Inventary, list: null, spr: 128, text: "by nusan",              text2: "2016");
-    internal static readonly MenuState IntroMenu = new(type: Inventary, list: null, spr: 136, text: "a storm leaved you",    text2: "on a deserted island");
-    internal static readonly MenuState DeathMenu = new(type: Inventary, list: null, spr: 128, text: "you died",              text2: "alone ...");
-    internal static readonly MenuState WinMenu   = new(type: Inventary, list: null, spr: 136, text: "you successfully escaped", text2: "from the island");
+    internal static readonly MenuState MainMenu  = new(type: Inventary, spr: 128, text: "by nusan",              text2: "2016");
+    internal static readonly MenuState IntroMenu = new(type: Inventary, spr: 136, text: "a storm leaved you",    text2: "on a deserted island");
+    internal static readonly MenuState DeathMenu = new(type: Inventary, spr: 128, text: "you died",              text2: "alone ...");
+    internal static readonly MenuState WinMenu   = new(type: Inventary, spr: 136, text: "you successfully escaped", text2: "from the island");
 
     // ------------------------------------------------------------------
     #endregion

@@ -129,7 +129,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         {
             Life = F32.FromInt(10),
             Dtim = F32.FromInt(10), // non-zero so AI step doesn't reset
-            Step = 0               // wait — not patrolling, just stable
+            Step = EnStep.Wait
         };
         state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
 
@@ -169,13 +169,13 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         {
             Life = F32.FromInt(10),
             Dtim = F32.Zero,  // expired
-            Step = 0          // wait
+            Step = EnStep.Wait
         };
         state.Enemies = [new PlayerEntity(F32.FromInt(30), F32.Zero), zombie];
 
         EnemyUpdater.Update(state);
 
-        zombie.Step.Should().Be(1); // enstep_walk
+        zombie.Step.Should().Be(EnStep.Walk);
         zombie.Dtim.Float.Should().BeGreaterThan(0f);
     }
 
@@ -190,13 +190,13 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         {
             Life = F32.FromInt(10),
             Dtim = F32.Zero,
-            Step = 1          // walk
+            Step = EnStep.Walk
         };
         state.Enemies = [new PlayerEntity(F32.FromInt(30), F32.Zero), zombie];
 
         EnemyUpdater.Update(state);
 
-        zombie.Step.Should().Be(0); // enstep_wait
+        zombie.Step.Should().Be(EnStep.Wait);
         zombie.Dx.Float.Should().BeApproximately(0f, 0.01f);
         zombie.Dy.Float.Should().BeApproximately(0f, 0.01f);
     }
@@ -212,13 +212,13 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         {
             Life = F32.FromInt(10),
             Dtim = F32.FromInt(5), // non-zero so we enter the else branch
-            Step = 0               // wait — becomes chase
+            Step = EnStep.Wait     // becomes chase
         };
         state.Enemies = [new PlayerEntity(F32.FromInt(30), F32.Zero), zombie];
 
         EnemyUpdater.Update(state);
 
-        zombie.Step.Should().Be(2); // enstep_chase
+        zombie.Step.Should().Be(EnStep.Chase);
     }
 
     // --------------------------------------------------------------------------

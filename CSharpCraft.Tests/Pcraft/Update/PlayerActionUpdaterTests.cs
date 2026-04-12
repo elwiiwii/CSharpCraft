@@ -1,5 +1,6 @@
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pcraft.Data;
+using CSharpCraft.Pcraft.Menu;
 using CSharpCraft.Pcraft.Update;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;
@@ -81,7 +82,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.FromInt(3), F32.FromInt(4), canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.FromInt(3), F32.FromInt(4), canAct: false);
 
         state.Plx.Float.Should().BeApproximately(3f, 0.01f);
         state.Ply.Float.Should().BeApproximately(4f, 0.01f);
@@ -100,7 +101,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Plife = F32.FromInt(100), Llife = F32.Zero };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Llife.Float.Should().BeApproximately(1f, 0.01f);
     }
@@ -113,7 +114,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Pstam = F32.FromInt(100), Lstam = F32.Zero };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Lstam.Float.Should().BeApproximately(1f, 0.01f);
     }
@@ -131,7 +132,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Pstam = F32.FromInt(50) };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Pstam.Float.Should().BeApproximately(51f, 0.01f);
     }
@@ -144,7 +145,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Pstam = F32.FromInt(100) };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Pstam.Float.Should().BeApproximately(100f, 0.01f);
     }
@@ -162,7 +163,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Banim = F32.FromInt(5) };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Banim.Float.Should().BeApproximately(4f, 0.01f);
     }
@@ -176,7 +177,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Banim = F32.Zero };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Banim.Float.Should().BeApproximately(0f, 0.01f);
     }
@@ -194,7 +195,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Time = F32.Zero };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
@@ -214,7 +215,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Lb4 = false };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Lb4.Should().BeTrue();
     }
@@ -230,7 +231,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // canAct=false prevents action block from firing; also set banim>0 to prevent attack
         var state = new WorldState { Block5 = true, Banim = F32.FromInt(1) };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Lb5.Should().BeTrue();
     }
@@ -244,7 +245,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Block5 = true };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.Block5.Should().BeFalse();
     }
@@ -257,31 +258,30 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_SetsCurMenu_ToMenuInvent_WhenBtnp4()
     {
-        // if btnp(4) and not lb4 then curmenu=menuinvent
-        var menuInvent = new MenuState(PcraftData.Inventary, list: null, spr: 0, text: null, text2: null);
+        // if btnp(4) and not lb4 then curmenu=inventorymenu
         var fakeInput = new FakeInputManager();
         fakeInput.PressOnce(4);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { MenuInvent = menuInvent, Lb4 = false };
+        var state = new WorldState { Lb4 = false, Plife = F32.FromInt(10) };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
-        state.CurMenu.Should().BeSameAs(menuInvent);
+        state.CurMenu.Should().BeOfType<InventoryMenu>()
+            .Which.List.Should().BeSameAs(state.Invent);
     }
 
     [Fact]
     public void Update_DoesNotOpenMenu_WhenBtnp4ButLb4IsTrue()
     {
         // lb4 guard prevents double-open on held press
-        var menuInvent = new MenuState(PcraftData.Inventary, list: null, spr: 0, text: null, text2: null);
         var fakeInput = new FakeInputManager();
         fakeInput.PressOnce(4);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { MenuInvent = menuInvent, Lb4 = true, CurMenu = null };
+        var state = new WorldState { Lb4 = true, CurMenu = null, Plife = F32.FromInt(10) };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.CurMenu.Should().BeNull();
     }
@@ -299,7 +299,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Plife = F32.Zero };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
 
         state.CurMenu.Should().BeSameAs(PcraftData.DeathMenu);
     }
@@ -326,7 +326,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
         state.NearEnemies.Add(zombie);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true);
 
         zombie.Life.Float.Should().BeLessThan(10f);
     }
@@ -349,7 +349,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
         state.NearEnemies.Add(zombie);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true);
 
         state.Enemies.Should().NotContain(zombie);
     }
@@ -371,7 +371,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
         state.NearEnemies.Add(zombie);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true, new Random(0));
+        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true);
 
         zombie.Life.Float.Should().BeApproximately(10f, 0.01f);
     }

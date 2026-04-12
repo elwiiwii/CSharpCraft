@@ -59,27 +59,29 @@ public sealed class PcraftGameInitTests(FnaFixture fixture) : IDisposable
     public void Dispose() => _tempDir?.Dispose();
 
     // --------------------------------------------------------------------------
-    #region CurMenu
+    #region Phase 5 design contract
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void Init_CurMenu_IsNullBeforeInit()
+    public void Type_DoesNotExpose_CurMenuProperty()
     {
-        var sut = new PcraftGame();
-
-        sut.CurMenu.Should().BeNull();
+        var prop = typeof(PcraftGame).GetProperty(
+            "CurMenu",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("runtime menu state lives on WorldState, not PcraftGame");
     }
 
     [Fact]
-    public void Init_SetsCurMenu_ToMainMenu()
+    public void Init_DoesNotThrow_WhenInitializingAudioAndRecipes()
     {
         using var orch = BuildOrchestratorWithMusic();
         Pico8.Initialize(orch);
         var sut = new PcraftGame();
 
-        sut.Init();
-
-        sut.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
+        var act = () => sut.Init();
+        act.Should().NotThrow();
     }
 
     // --------------------------------------------------------------------------

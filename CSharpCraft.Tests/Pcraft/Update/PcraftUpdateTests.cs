@@ -40,7 +40,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         _musicDir = FnaFixture.CreateTempMusicDirectory(
             "s0.ogg", "s1.ogg", "s2.ogg", "s3.ogg", "s4.ogg");
         _sfxDir = FnaFixture.CreateTempSfxDirectory(
-            "pcraft_og_12", "pcraft_og_13", "pcraft_og_14", "pcraft_og_15",
+            "pcraft_og_11", "pcraft_og_12", "pcraft_og_13", "pcraft_og_14", "pcraft_og_15",
             "pcraft_og_16", "pcraft_og_17", "pcraft_og_18", "pcraft_og_19", "pcraft_og_21");
 
         var scene = new NullScene();
@@ -86,7 +86,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
             Time    = F32.Zero
         };
 
-        PcraftUpdate.Update(state, new PcraftGame(), new Random(0));
+        PcraftUpdate.Update(state, new PcraftGame());
 
         state.Time.Should().Be(F32.Zero);
     }
@@ -108,7 +108,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
             Time  = F32.Zero
         };
 
-        PcraftUpdate.Update(state, new PcraftGame(), new Random(0));
+        PcraftUpdate.Update(state, new PcraftGame());
 
         state.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
@@ -128,7 +128,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Plife = F32.FromInt(100) };
 
-        PcraftUpdate.Update(state, new PcraftGame(), new Random(0));
+        PcraftUpdate.Update(state, new PcraftGame());
 
         state.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
     }
@@ -143,7 +143,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Plife = F32.FromInt(100), Panim = F32.Zero };
 
-        PcraftUpdate.Update(state, new PcraftGame(), new Random(0));
+        PcraftUpdate.Update(state, new PcraftGame());
 
         state.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
     }
@@ -156,7 +156,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var state = new WorldState { Plife = F32.FromInt(100), Panim = F32.FromInt(5) };
 
-        PcraftUpdate.Update(state, new PcraftGame(), new Random(0));
+        PcraftUpdate.Update(state, new PcraftGame());
 
         state.Panim.Should().Be(F32.Zero);
     }

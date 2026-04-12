@@ -1,5 +1,6 @@
 using CSharpCraft.Pcraft;
 using CSharpCraft.Pcraft.Data;
+using CSharpCraft.Pcraft.Menu;
 using CSharpCraft.Pcraft.Update;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;
@@ -220,6 +221,50 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         var (_, _, canAct) = EntityUpdater.Update(state, F32.Zero, F32.Zero);
 
         canAct.Should().BeTrue();
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    #region Menu opening — chest and crafting entities
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void Update_SetsCurMenu_ToChestMenu_WhenBtn5AndNearChestEntity()
+    {
+        // When pressing Btn5 near a chest entity (without PickupTool equipped),
+        // EntityUpdater should open a ChestMenu with the player's inventory.
+        var fakeInput = new FakeInputManager();
+        fakeInput.SetBtn(5, true);
+        using var orch = BuildOrchestrator(fakeInput);
+        Pico8.Initialize(orch);
+        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero, Block5 = false, Lb5 = false };
+        var chestEntity = new ItemEntity(PcraftData.Chest, x: F32.Zero, y: F32.Zero);
+        state.Entities.Add(chestEntity);
+
+        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+
+        state.CurMenu.Should().BeOfType<ChestMenu>()
+            .Which.PlayerItems.Should().BeSameAs(state.Invent);
+    }
+
+    [Fact]
+    public void Update_SetsCurMenu_ToCraftingMenu_WhenBtn5AndNearCraftBenchEntity()
+    {
+        // When pressing Btn5 near a crafting bench entity (without PickupTool equipped),
+        // EntityUpdater should open a CraftingMenu with the entity's recipe list.
+        var recipes = new List<Recipe>();
+        var fakeInput = new FakeInputManager();
+        fakeInput.SetBtn(5, true);
+        using var orch = BuildOrchestrator(fakeInput);
+        Pico8.Initialize(orch);
+        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero, Block5 = false, Lb5 = false };
+        var benchEntity = new ItemEntity(PcraftData.Workbench, x: F32.Zero, y: F32.Zero) { List = recipes };
+        state.Entities.Add(benchEntity);
+
+        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+
+        state.CurMenu.Should().BeOfType<CraftingMenu>()
+            .Which.Recipes.Should().BeSameAs(recipes);
     }
 
     // --------------------------------------------------------------------------

@@ -155,10 +155,13 @@ public sealed class PcraftDataTests
     }
 
     [Fact]
-    public void MainMenu_SelIsZeroAndOffIsZero()
+    public void MainMenu_IsSplashOnly_MenuState()
     {
-        PcraftData.MainMenu.Sel.Should().Be(0);
-        PcraftData.MainMenu.Off.Should().Be(0);
+        var type = PcraftData.MainMenu.GetType();
+        type.GetProperty("Sel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
+            .Should().BeNull();
+        type.GetProperty("Off", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
+            .Should().BeNull();
     }
 
     [Fact]

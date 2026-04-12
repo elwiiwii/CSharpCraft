@@ -69,11 +69,11 @@ public sealed class ZombieEntityTests
     {
         var sut = new ZombieEntity(F32.Zero, F32.Zero);
         sut.Life = F32.FromInt(10);
-        sut.Step = 2;
+        sut.Step = EnStep.Chase;
         sut.Ox   = F32.FromFloat(0.4f);
 
         sut.Life.Should().Be(F32.FromInt(10));
-        sut.Step.Should().Be(2);
+        sut.Step.Should().Be(EnStep.Chase);
         sut.Ox.Should().Be(F32.FromFloat(0.4f));
     }
 

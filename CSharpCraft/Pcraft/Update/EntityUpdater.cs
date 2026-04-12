@@ -1,6 +1,7 @@
 using CSharpCraft.Pcraft.Data;
 using CSharpCraft.Pcraft.Inventory;
 using CSharpCraft.Pcraft.Map;
+using CSharpCraft.Pcraft.Menu;
 using CSharpCraft.Pcraft.Physics;
 using PSharp8;
 
@@ -22,13 +23,13 @@ internal static class EntityUpdater
                 (e.Vx, e.Vy) = CollisionSystem.ReflectCol(
                     e.X, e.Y, e.Vx, e.Vy,
                     (x2, y2) => MapOps.IsFree(x2, y2, state),
-                    F32.FromFloat(0.9f));
+                    F32.FromDouble(0.90));
             }
 
             e.X  += e.Vx;
             e.Y  += e.Vy;
-            e.Vx *= F32.FromFloat(0.95f);
-            e.Vy *= F32.FromFloat(0.95f);
+            e.Vx *= F32.FromDouble(0.95);
+            e.Vy *= F32.FromDouble(0.95);
 
             if (e.Timer != null && e.Timer.Value < F32.One)
             {
@@ -83,10 +84,10 @@ internal static class EntityUpdater
                     {
                         if (e.Type == PcraftData.Chest || e.Type.BeCraft)
                         {
-                            state.ToogleMenu = 0;
-                            state.CurMenu = new MenuState(e.Type, null, spr: 0, text: null, text2: null);
                             if (e.Type.BeCraft)
-                                state.CurMenu.RecipeList = e.List;
+                                state.CurMenu = new CraftingMenu(e.Type, e.List ?? [], state.Invent);
+                            else
+                                state.CurMenu = new ChestMenu([], state.Invent);
                             Pico8.Sfx(13);
                         }
                         canAct = false;

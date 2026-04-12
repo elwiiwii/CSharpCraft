@@ -10,8 +10,30 @@ using Xunit;
 
 namespace CSharpCraft.Tests.Pcraft.Map;
 
-public sealed class MapGeneratorPureTests
+[Collection("Fna")]
+public sealed class MapGeneratorPureTests(FnaFixture fixture)
 {
+    private GameOrchestrator BuildOrchestrator()
+        => new(
+            ".",
+            ".",
+            ".",
+            new NullScene(),
+            fixture.GraphicsDevice,
+            fixture.GraphicsDeviceManager,
+            fixture.Window);
+
+    private sealed class NullScene : IScene
+    {
+        public string? Name => null;
+        public void Init(ISceneSetup setup) { }
+        public string? SpritesPath => null;
+        public string? MapPath => null;
+        public string? FlagData => null;
+        public IReadOnlyList<Soundtrack> Music => [];
+        public IReadOnlyList<SfxPack> Sfx => [];
+    }
+
     // --------------------------------------------------------------------------
     #region Noise
     // --------------------------------------------------------------------------
@@ -19,9 +41,11 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void Noise_ReturnsSizedArray_MatchingInputDimensions()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // Lua n[0..sx][0..sy] → C# array of size (sx+1) × (sy+1)
         // sx and sy must be powers of 2 for the diamond-square algorithm
-        var result = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4, new Random(0));
+        var result = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4);
 
         result.GetLength(0).Should().Be(5);   // sx+1 = 5
         result.GetLength(1).Should().Be(5);   // sy+1 = 5
@@ -30,11 +54,12 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void Noise_IsDeterministic_WithSameSeed()
     {
-        var rng1 = new Random(42);
-        var rng2 = new Random(42);
-
-        var result1 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4, rng1);
-        var result2 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4, rng2);
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        Pico8.Srand(42);
+        var result1 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4);
+        Pico8.Srand(42);
+        var result2 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4);
 
         // All interior values must match
         for (int i = 0; i <= 4; i++)
@@ -45,9 +70,11 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void Noise_ProducesDifferentOutput_WithDifferentSeeds()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // Different seeds → different random perturbations → at least one cell differs
-        var result1 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4, new Random(1));
-        var result2 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4, new Random(99999));
+        var result1 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4);
+        var result2 = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4);
 
         bool anyDiffers = false;
         for (int i = 0; i <= 4 && !anyDiffers; i++)
@@ -61,10 +88,12 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void Noise_CornersAreInitialisedToHalf_BeforeFirstIteration()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // Corners of the grid start at 0.5 and the algorithm bypasses them in the
         // first step, so they remain 0.5 when step == sx (only midpoints are set).
         // Use featStep = sx to verify the algorithm runs at all with scale=1 at that step.
-        var result = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4, new Random(0));
+        var result = MapGenerator.Noise(4, 4, F32.FromFloat(0.9f), F32.FromFloat(0.2f), 4);
 
         // Corner (0,0) was never touched by the midpoint subdivision steps
         result[0, 0].Should().Be(F32.FromFloat(0.5f));
@@ -78,8 +107,10 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void CreateMapStep_ReturnsSizedArray_MatchingInputDimensions()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // Returns an (sx+1) × (sy+1) array (same size as the noise arrays it uses internally)
-        var result = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4, new Random(0));
+        var result = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4);
 
         result.GetLength(0).Should().Be(5);   // sx+1
         result.GetLength(1).Should().Be(5);   // sy+1
@@ -88,10 +119,12 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void CreateMapStep_AllGroundIds_AreFromProvidedSet()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // Lua assigns one of the 5 provided ground IDs (a..e) per tile.
         // No other values should appear in the result.
         int a = 0, b = 1, c = 2, d = 3, e = 4;
-        var result = MapGenerator.CreateMapStep(4, 4, a, b, c, d, e, new Random(7));
+        var result = MapGenerator.CreateMapStep(4, 4, a, b, c, d, e);
 
         int[] allowed = [a, b, c, d, e];
         for (int i = 0; i <= 4; i++)
@@ -102,9 +135,11 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void CreateMapStep_UndergroundMap_AllGroundIds_AreFromProvidedSet()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // The cave variant uses different IDs: a=3,b=8,c=1,d=9,e=10
         int a = 3, b = 8, c = 1, d = 9, e = 10;
-        var result = MapGenerator.CreateMapStep(4, 4, a, b, c, d, e, new Random(0));
+        var result = MapGenerator.CreateMapStep(4, 4, a, b, c, d, e);
 
         int[] allowed = [a, b, c, d, e];
         for (int i = 0; i <= 4; i++)
@@ -115,8 +150,12 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void CreateMapStep_IsDeterministic_WithSameSeed()
     {
-        var result1 = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4, new Random(123));
-        var result2 = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4, new Random(123));
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        Pico8.Srand(42);
+        var result1 = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4);
+        Pico8.Srand(42);
+        var result2 = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4);
 
         for (int i = 0; i <= 4; i++)
         for (int j = 0; j <= 4; j++)
@@ -131,7 +170,9 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void InitRndWat_ReturnsSixteenByShixteenJaggedArray()
     {
-        var result = MapGenerator.InitRndWat(new Random(0));
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        var result = MapGenerator.InitRndWat();
 
         result.Should().HaveCount(16, "outer dimension must be 16");
         foreach (var row in result)
@@ -141,8 +182,12 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void InitRndWat_IsDeterministic_WithSameSeed()
     {
-        var result1 = MapGenerator.InitRndWat(new Random(55));
-        var result2 = MapGenerator.InitRndWat(new Random(55));
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        Pico8.Srand(42);
+        var result1 = MapGenerator.InitRndWat();
+        Pico8.Srand(42);
+        var result2 = MapGenerator.InitRndWat();
 
         for (int i = 0; i < 16; i++)
         for (int j = 0; j < 16; j++)
@@ -152,8 +197,10 @@ public sealed class MapGeneratorPureTests
     [Fact]
     public void InitRndWat_AllValues_AreInRangeZeroToHundred()
     {
+        using var orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
         // Lua: rnd(100) → [0, 100)
-        var result = MapGenerator.InitRndWat(new Random(1));
+        var result = MapGenerator.InitRndWat();
 
         for (int i = 0; i < 16; i++)
         for (int j = 0; j < 16; j++)
@@ -204,7 +251,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         var island = new Level(0, 0, 64, 64, isUnder: false);
         state.SetLevel(island);
 
-        MapGenerator.CreateMap(state, new Random(1));
+        MapGenerator.CreateMap(state);
 
         state.Plx.Should().BeGreaterThan(F32.Zero, "island spawn x must be positive");
         state.Ply.Should().BeGreaterThan(F32.Zero, "island spawn y must be positive");
@@ -220,7 +267,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         var island = new Level(0, 0, 64, 64, isUnder: false);
         state.SetLevel(island);
 
-        MapGenerator.CreateMap(state, new Random(2));
+        MapGenerator.CreateMap(state);
 
         state.Clx.Should().Be(state.Plx, "camera x must be initialised to player x");
         state.Cly.Should().Be(state.Ply, "camera y must be initialised to player y");
@@ -239,7 +286,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         var island = new Level(0, 0, 64, 64, isUnder: false);
         state.SetLevel(island);
 
-        var (holeX, holeY) = MapGenerator.CreateMap(state, new Random(3));
+        var (holeX, holeY) = MapGenerator.CreateMap(state);
 
         holeX.Should().Be(32);
         holeY.Should().Be(32);
@@ -259,7 +306,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         var cave = new Level(64, 0, 32, 32, isUnder: true);
         state.SetLevel(cave);
 
-        var act = () => MapGenerator.CreateMap(state, new Random(5));
+        var act = () => MapGenerator.CreateMap(state);
 
         act.Should().NotThrow();
     }
@@ -274,7 +321,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         var cave = new Level(64, 0, 32, 32, isUnder: true);
         state.SetLevel(cave);
 
-        var (holeX, holeY) = MapGenerator.CreateMap(state, new Random(5));
+        var (holeX, holeY) = MapGenerator.CreateMap(state);
 
         holeX.Should().Be(80);
         holeY.Should().Be(16);
@@ -289,7 +336,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         var cave = new Level(64, 0, 32, 32, isUnder: true);
         state.SetLevel(cave);
 
-        MapGenerator.CreateMap(state, new Random(7));
+        MapGenerator.CreateMap(state);
 
         state.Plx.Should().BeGreaterThan(F32.Zero, "cave spawn x must be positive");
         state.Ply.Should().BeGreaterThan(F32.Zero, "cave spawn y must be positive");

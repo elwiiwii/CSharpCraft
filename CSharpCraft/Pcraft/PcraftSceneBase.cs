@@ -15,13 +15,12 @@ internal sealed class PcraftSceneBase : IScene
 
         var state       = new WorldState();
         var game        = new PcraftGame();
-        var rng         = new Random();
         bool initialized = false;
 
         setup.RegisterUpdate(() =>
         {
             if (!initialized) { game.Init(); initialized = true; }
-            PcraftUpdate.Update(state, game, rng);
+            PcraftUpdate.Update(state, game);
         }, fps: 30);
 
         setup.RegisterDraw(() => PcraftDraw.Draw(state, game), fps: 30);

@@ -20,8 +20,8 @@ internal static class EntDrawer
             else
             {
                 if (e.Timer.HasValue &&
-                    e.Timer.Value < F32.FromInt(45) &&
-                    F32.FloorToInt(e.Timer.Value % F32.FromInt(4)) > 2)
+                    e.Timer.Value < 45 &&
+                    e.Timer.Value % 4 > 2)
                 {
                     for (int k = 0; k <= 15; k++)
                         Pico8.Palt(k, true);

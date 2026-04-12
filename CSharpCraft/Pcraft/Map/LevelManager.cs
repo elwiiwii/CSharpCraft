@@ -11,7 +11,7 @@ internal static class LevelManager
         state.Ply = level.Sty;
     }
 
-    internal static void FillEne(Level level, WorldState state, Random rng)
+    internal static void FillEne(Level level, WorldState state)
     {
         level.Ene.Clear();
         level.Ene.Add(new PlayerEntity(F32.Zero, F32.Zero));
@@ -22,11 +22,11 @@ internal static class LevelManager
             for (int j = 0; j < state.LevelSy; j++)
             {
                 var c = MapOps.GetDirectGr(i, j, state);
-                float r = (float)(rng.NextDouble() * 100.0);
+                var r = Pico8.Rnd(100);
                 var ex = F32.FromInt(i * 16 + 8);
                 var ey = F32.FromInt(j * 16 + 8);
                 var dist = F32.Max(F32.Abs(ex - state.Plx), F32.Abs(ey - state.Ply));
-                if (r < 3f &&
+                if (r < 3 &&
                     c != PcraftData.GrWater &&
                     c != PcraftData.GrRock &&
                     !c.IsTree &&
@@ -48,18 +48,18 @@ internal static class LevelManager
         }
     }
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state, Random rng)
+    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
     {
         var level = new Level(x, y, sx, sy, isUnder);
         SetLevel(level, state);
-        var (holeX, holeY) = MapGenerator.CreateMap(state, rng);
-        FillEne(level, state, rng);
+        var (holeX, holeY) = MapGenerator.CreateMap(state);
+        FillEne(level, state);
         level.Stx = F32.FromInt((holeX - state.LevelX) * 16 + 8);
         level.Sty = F32.FromInt((holeY - state.LevelY) * 16 + 8);
         return level;
     }
 
-    internal static void ResetLevel(WorldState state, PcraftGame game, Random rng)
+    internal static void ResetLevel(WorldState state, PcraftGame game)
     {
         state.Prot  = F32.Zero;
         state.Lrot  = F32.Zero;
@@ -72,21 +72,20 @@ internal static class LevelManager
         state.Coffx = F32.Zero;
         state.Coffy = F32.Zero;
         state.Time  = F32.Zero;
-        state.ToogleMenu     = 0;
         state.SwitchLevel    = false;
         state.CanSwitchLevel = false;
         state.CurItem        = null;
 
         state.Invent.Clear();
 
-        var rndWat = MapGenerator.InitRndWat(rng);
+        var rndWat = MapGenerator.InitRndWat();
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
                 state.RndWat[i][j] = rndWat[i][j];
 
         game.InitRecipes();
-        state.Cave   = CreateLevel(64, 0, 32, 32, isUnder: true,  state, rng);
-        state.Island = CreateLevel( 0, 0, 64, 64, isUnder: false, state, rng);
+        state.Cave   = CreateLevel(64, 0, 32, 32, isUnder: true,  state);
+        state.Island = CreateLevel( 0, 0, 64, 64, isUnder: false, state);
 
         var workbench = new ItemEntity(PcraftData.Workbench, state.Plx, state.Ply);
         workbench.HasCol = true;
@@ -96,19 +95,19 @@ internal static class LevelManager
         state.Invent.Add(new ItemStack(PcraftData.PickupTool));
     }
 
-    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities, Random rng)
+    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
     {
         int tileX = F32.FloorToInt(hitX / F32.FromInt(16)) * 16;
         int tileY = F32.FloorToInt(hitY / F32.FromInt(16)) * 16;
 
         for (int k = 0; k < count; k++)
         {
-            var ex = F32.FromInt(tileX + (int)(rng.NextDouble() * 14.0) + 1);
-            var ey = F32.FromInt(tileY + (int)(rng.NextDouble() * 14.0) + 1);
+            var ex = tileX + Pico8.Rnd(14) + 1;
+            var ey = tileY + Pico8.Rnd(14) + 1;
             var entity = new ItemEntity(mat, ex, ey);
             entity.GiveItem = mat;
             entity.HasCol   = true;
-            entity.Timer    = F32.FromInt(110 + (int)(rng.NextDouble() * 20.0));
+            entity.Timer    = 110 + (Pico8.Rnd(20));
             entities.Add(entity);
         }
     }

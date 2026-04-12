@@ -7,7 +7,7 @@ internal abstract class CharacterEntity : Entity
     internal F32 Lrot  { get; set; }
     internal F32 Panim { get; set; }
     internal F32 Banim { get; set; }
-    internal int Step  { get; set; }
+    internal EnStep Step  { get; set; }
     internal F32 Dtim  { get; set; }
     internal F32 Dx    { get; set; }
     internal F32 Dy    { get; set; }

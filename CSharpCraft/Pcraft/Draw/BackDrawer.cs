@@ -7,8 +7,8 @@ internal static class BackDrawer
 {
     internal static void DrawBack(WorldState state)
     {
-        int ci = F32.FloorToInt((state.Clx - F32.FromInt(64)) / F32.FromInt(16));
-        int cj = F32.FloorToInt((state.Cly - F32.FromInt(64)) / F32.FromInt(16));
+        int ci = F32.FloorToInt((state.Clx - 64) / F32.FromInt(16));
+        int cj = F32.FloorToInt((state.Cly - 64) / F32.FromInt(16));
 
         // Pass 1 — write tile indices into the map work area
         for (int i = ci; i <= ci + 8; i++)
@@ -38,10 +38,15 @@ internal static class BackDrawer
                           : gr == PcraftData.GrWater ? 26
                           : 16;
 
-                    Pico8.Mset(gi,     gj,     b + (l ? (u ? (Comp(i-1,j-1,gr,state) ? 17+RndCenter(i,      j,      state) : 20) : 1) : (u ? 16 : 0)));
-                    Pico8.Mset(gi + 1, gj,     b + (r ? (u ? (Comp(i+1,j-1,gr,state) ? 17+RndCenter(i+0.5,  j,      state) : 19) : 1) : (u ? 18 : 2)));
-                    Pico8.Mset(gi,     gj + 1, b + (l ? (d ? (Comp(i-1,j+1,gr,state) ? 17+RndCenter(i,      j+0.5,  state) :  4) : 33) : (d ? 16 : 32)));
-                    Pico8.Mset(gi + 1, gj + 1, b + (r ? (d ? (Comp(i+1,j+1,gr,state) ? 17+RndCenter(i+0.5,  j+0.5,  state) :  3) : 33) : (d ? 18 : 34)));
+                    int tl = CornerOffset(l, u, Comp(i - 1, j - 1, gr, state), RndCenter(i,       j,       state), innerCorner: 20, hOnly:  1, vOnly: 16, outer:  0);
+                    int tr = CornerOffset(r, u, Comp(i + 1, j - 1, gr, state), RndCenter(i + 0.5, j,       state), innerCorner: 19, hOnly:  1, vOnly: 18, outer:  2);
+                    int bl = CornerOffset(l, d, Comp(i - 1, j + 1, gr, state), RndCenter(i,       j + 0.5, state), innerCorner:  4, hOnly: 33, vOnly: 16, outer: 32);
+                    int br = CornerOffset(r, d, Comp(i + 1, j + 1, gr, state), RndCenter(i + 0.5, j + 0.5, state), innerCorner:  3, hOnly: 33, vOnly: 18, outer: 34);
+
+                    Pico8.Mset(gi,     gj,     b + tl);
+                    Pico8.Mset(gi + 1, gj,     b + tr);
+                    Pico8.Mset(gi,     gj + 1, b + bl);
+                    Pico8.Mset(gi + 1, gj + 1, b + br);
                 }
             }
         }
@@ -116,6 +121,16 @@ internal static class BackDrawer
     {
         var gr2 = MapOps.GetDirectGr(i, j, state);
         return gr.Gr == gr2.Gr;
+    }
+
+    private static int CornerOffset(
+        bool sideH, bool sideV, bool diag, int rnd,
+        int innerCorner, int hOnly, int vOnly, int outer)
+    {
+        if (sideH && sideV) return diag ? 17 + rnd : innerCorner;
+        if (sideH)          return hOnly;
+        if (sideV)          return vOnly;
+        return outer;
     }
 
     private static F32 WatVal(double i, double j, WorldState state)

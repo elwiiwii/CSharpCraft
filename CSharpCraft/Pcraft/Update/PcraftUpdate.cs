@@ -1,21 +1,51 @@
 using CSharpCraft.Pcraft.Data;
 using CSharpCraft.Pcraft.Inventory;
 using CSharpCraft.Pcraft.Map;
+using CSharpCraft.Pcraft.Physics;
 using PSharp8;
 
 namespace CSharpCraft.Pcraft.Update;
 
 internal static class PcraftUpdate
 {
-    internal static void Update(WorldState state, PcraftGame game, Random rng)
+    internal static void Update(WorldState state, PcraftGame game)
     {
         // ── Menu guard ────────────────────────────────────────────────────────
-        if (MenuUpdater.Update(state, game, rng))
+        if (MenuUpdater.Update(state, game))
             return;
 
+        if (state.SwitchLevel)
+        {
+            if (state.CurrentLevel == state.Cave)
+                LevelManager.SetLevel(state.Island!, state);
+            else
+                LevelManager.SetLevel(state.Cave!, state);
+            
+            state.Plx = state.CurrentLevel!.Stx;
+            state.Ply = state.CurrentLevel!.Sty;
+            LevelManager.FillEne(state.CurrentLevel!, state);
+            state.SwitchLevel = false;
+            state.CanSwitchLevel = false;
+            Pico8.Music(state.CurrentLevel == state.Cave ? 2 : 1);
+        }
+
         // ── Curitem validation ────────────────────────────────────────────────
-        if (state.CurItem != null && InventoryOps.HowMany(state.Invent, state.CurItem) <= 0)
+        if (state.CurItem is not null && InventoryOps.HowMany(state.Invent, state.CurItem) <= 0)
             state.CurItem = null;
+
+        LevelManager.UpGround(state);
+
+        // ── Speed multiplier (water or no stamina → 1, otherwise 2) ──────────
+        var playHit = MapOps.GetGr(state.Plx, state.Ply, state);
+        if (playHit != state.LastGround && playHit == PcraftData.GrWater)
+            Pico8.Sfx(11);
+        var s = (playHit == PcraftData.GrWater || state.Pstam <= F32.Zero)
+            ? F32.One
+            : F32.FromInt(2);
+        if (playHit == PcraftData.GrHole)
+            state.SwitchLevel = state.SwitchLevel || state.CanSwitchLevel;
+        else
+            state.CanSwitchLevel = true;
 
         // ── Input → dx/dy ─────────────────────────────────────────────────────
         var dx = F32.Zero;
@@ -32,27 +62,26 @@ internal static class PcraftUpdate
 
         if (F32.Abs(dx) > F32.Zero || F32.Abs(dy) > F32.Zero)
         {
-            state.Lrot   = PcraftMath.GetRot(dx, dy);
-            state.Panim += F32.FromFloat(1f / 33f);
+            state.Lrot = PcraftMath.GetRot(dx, dy);
+            state.Panim += F32.FromDouble(1.0 / 33.0);
         }
         else
         {
             state.Panim = F32.Zero;
         }
 
-        // ── Speed multiplier (water or no stamina → 1, otherwise 2) ──────────
-        var playHit = MapOps.GetGr(state.Plx, state.Ply, state);
-        var s = (playHit == PcraftData.GrWater || state.Pstam <= F32.Zero)
-            ? F32.One
-            : F32.FromInt(2);
-
         dx *= s;
         dy *= s;
+
+        //(dx, dy) = CollisionSystem.ReflectCol(
+        //    state.Plx, state.Ply, dx, dy,
+        //    (x2, y2) => MapOps.IsFree(x2, y2, state),
+        //    F32.Zero);
 
         // ── Sub-updaters ──────────────────────────────────────────────────────
         var (fdx, fdy, canAct) = EntityUpdater.Update(state, dx, dy);
         EnemyUpdater.Update(state);
-        PlayerActionUpdater.Update(state, game, fdx, fdy, canAct, rng);
+        PlayerActionUpdater.Update(state, game, fdx, fdy, canAct);
         CameraUpdater.Update(state, fdx, fdy);
     }
 }
