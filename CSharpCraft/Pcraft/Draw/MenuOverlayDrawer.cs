@@ -34,15 +34,8 @@ internal static class MenuOverlayDrawer
 
     private static void DrawPanel(string name, int x, int y, int sx, int sy)
     {
-        Pico8.Rectfill(x + 8, y + 8, x + sx - 9, y + sy - 9, 1);
-        Pico8.Spr(66, x, y);
-        Pico8.Spr(67, x + sx - 8, y);
-        Pico8.Spr(82, x, y + sy - 8);
-        Pico8.Spr(83, x + sx - 8, y + sy - 8);
-        Pico8.Sspr(24, 32, 4, 8, x + 8,      y,          sx - 16, 8);
-        Pico8.Sspr(24, 40, 4, 8, x + 8,      y + sy - 8, sx - 16, 8);
-        Pico8.Sspr(16, 36, 8, 4, x,           y + 8,      8,       sy - 16);
-        Pico8.Sspr(24, 36, 8, 4, x + sx - 8, y + 8,      8,       sy - 16);
+        Pico8.Rrectfill(x, y, sx, sy, 2, 1);
+	    Pico8.Rrect(x + 1, y + 1, sx - 2, sy - 2, 2, 13);
         double hx = x + (sx - name.Length * 4) / 2.0;
         Pico8.Rectfill(hx, y + 1, hx + name.Length * 4, y + 7, 13);
         Pico8.Print(name, hx + 1, y + 2, 7);
@@ -136,7 +129,7 @@ internal static class MenuOverlayDrawer
         int debut  = off + 1;
         int fin    = Math.Min(off + my, tlist);
 
-        int sely = y + 3 + selAdj * 8;
+        int sely = y + 3 + (selAdj + 1) * 8;
         Pico8.Rectfill(x + 1, sely, x + sx - 3, sely + 6, 13);
 
         int lx = x + 5;
@@ -148,8 +141,8 @@ internal static class MenuOverlayDrawer
             renderRow(i, lx, py);
         }
 
-        Pico8.Spr(68, x - 3,       sely);
-        Pico8.Spr(68, x + sx - 10, sely, 1, 1, true, false);
+        Pico8.Spr(68, lx - 8,       sely);
+        Pico8.Spr(68, lx + sx - 10, sely, 1, 1, true, false);
 
         return off;
     }
