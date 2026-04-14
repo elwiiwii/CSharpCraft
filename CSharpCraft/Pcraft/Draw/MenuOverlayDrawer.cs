@@ -97,7 +97,7 @@ internal static class MenuOverlayDrawer
     {
         Pico8.Camera();
         var recipeList = menu.Recipes;
-        if (recipeList.Count >= 1 && menu.Sel >= 1 && menu.Sel < recipeList.Count)
+        if (recipeList.Count >= 1 && menu.Sel >= 0 && menu.Sel < recipeList.Count)
         {
             var curGoal = recipeList[menu.Sel];
             DrawPanel("have", 71, 50, 52, 30);
@@ -105,6 +105,9 @@ internal static class MenuOverlayDrawer
             Pico8.Print(have.ToString(), 91, 65, 7);
             DrawRequireList(curGoal, 4, 79, 104, 50, state);
         }
+
+        DrawPanel(menu.BenchType.Name, 4, 16, 68, 64);
+
         if (recipeList.Count < 1) return;
         menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 16, 68, 64, 6, recipeList.Count, (i, lx, py) =>
         {
@@ -117,7 +120,6 @@ internal static class MenuOverlayDrawer
                 Pico8.Print(c, lx + 68 - c.Length * 4 - 10, py, col);
             }
         });
-        DrawPanel(menu.BenchType.Name, 4, 16, 68, 64);
     }
 
     private static int DrawListCore(int sel, int off, int x, int y, int sx, int sy, int my, int tlist, Action<int, int, int> renderRow)
