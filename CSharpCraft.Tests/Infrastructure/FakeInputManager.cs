@@ -34,6 +34,5 @@ public sealed class FakeInputManager : IInputManager
         return value;
     }
 
-    public void Update(TimeSpan elapsed, IReadOnlyList<InputEvent> events) { }
-    public void SetBindings(InputBindings bindings) { }
+    public void Update(TimeSpan elapsed) { }
 }
