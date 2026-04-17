@@ -1,5 +1,4 @@
 #nullable enable
-using CSharpCraft.PcraftBase.Map;
 
 namespace CSharpCraft.PcraftPreview;
 
@@ -13,5 +12,8 @@ internal sealed class PcraftGameScene : PcraftBase.PcraftSceneBase
     }
 
     protected override void OnGameInit(PcraftBase.WorldState state, PcraftBase.PcraftGame game)
-        => LevelManager.ResetLevel(state, game, _seed);
+    {
+        state.LevelMgr = new SeededLevelManager(_seed);
+        state.LevelMgr.ResetLevel(state, game);
+    }
 }

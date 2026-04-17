@@ -14,13 +14,13 @@ internal static class PcraftUpdate
         if (state.SwitchLevel)
         {
             if (state.CurrentLevel == state.Cave)
-                LevelManager.SetLevel(state.Island!, state);
+                state.LevelMgr.SetLevel(state.Island!, state);
             else
-                LevelManager.SetLevel(state.Cave!, state);
+                state.LevelMgr.SetLevel(state.Cave!, state);
             
             state.Plx = state.CurrentLevel!.Stx;
             state.Ply = state.CurrentLevel!.Sty;
-            LevelManager.FillEne(state.CurrentLevel!, state);
+            state.LevelMgr.FillEne(state.CurrentLevel!, state);
             state.SwitchLevel = false;
             state.CanSwitchLevel = false;
             Pico8.Music(state.CurrentLevel == state.Cave ? 2 : 1);
@@ -30,7 +30,7 @@ internal static class PcraftUpdate
         if (state.CurItem is not null && InventoryOps.HowMany(state.Invent, state.CurItem) <= 0)
             state.CurItem = null;
 
-        LevelManager.UpGround(state);
+        state.LevelMgr.UpGround(state);
 
         // ── Speed multiplier (water or no stamina → 1, otherwise 2) ──────────
         var playHit = MapOps.GetGr(state.Plx, state.Ply, state);

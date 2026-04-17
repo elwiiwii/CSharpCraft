@@ -72,19 +72,19 @@ public sealed class PcraftPreviewBaseTests
     // --------------------------------------------------------------------------
 
     [Theory]
-    [InlineData(1)]   // minimal radius: side = 3
-    [InlineData(2)]   // side = 5
-    [InlineData(4)]   // side = 9
+    [InlineData(1)]   // minimal radius: side = 2
+    [InlineData(2)]   // side = 4
+    [InlineData(4)]   // side = 8
     public void Init_SetsResolution_To16TimesSquareSide(int radius)
     {
         var setup = MakeSetup();
         var sut   = new StubPreview { Seed = 1, Radius = radius };
-        int side  = 2 * radius + 1;
+        int side  = 2 * radius;
 
         sut.Init(setup.Object);
 
         setup.VerifySet(s => s.Resolution = (16 * side, 16 * side),
-            $"radius={radius}: resolution must be 16\u00d7(2r+1) in both dimensions");
+            $"radius={radius}: resolution must be 16\u00d7(2r) in both dimensions");
     }
 
     // --------------------------------------------------------------------------

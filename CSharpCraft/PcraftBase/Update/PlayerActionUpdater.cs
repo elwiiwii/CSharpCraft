@@ -81,8 +81,8 @@ internal static class PlayerActionUpdater
                         if (e.Life <= F32.Zero)
                         {
                             state.Enemies.Remove(e);
-                            LevelManager.AddItem(PcraftData.Ichor,  F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, state.Entities);
-                            LevelManager.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, state.Entities);
+                            state.LevelMgr.AddItem(PcraftData.Ichor,  F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, state.Entities);
+                            state.LevelMgr.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, state.Entities);
                         }
                         var popup = new ItemEntity(PcraftData.EText, e.X, e.Y - F32.FromInt(10), F32.Zero, -F32.One)
                         {
@@ -123,9 +123,9 @@ internal static class PlayerActionUpdater
                     {
                         MapOps.SetGr(hitx, hity, hit.Tile ?? PcraftData.GrSand, state);
                         MapOps.ClearData(hitx, hity, state);
-                        LevelManager.AddItem(hit.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, state.Entities);
+                        state.LevelMgr.AddItem(hit.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, state.Entities);
                         if (hit == PcraftData.GrTree && Pico8.Rnd(1) > F32.FromDouble(0.7))
-                            LevelManager.AddItem(PcraftData.Apple, 1, hitx, hity, state.Entities);
+                            state.LevelMgr.AddItem(PcraftData.Apple, 1, hitx, hity, state.Entities);
                     }
                     else
                     {
@@ -158,20 +158,20 @@ internal static class PlayerActionUpdater
                         {
                             MapOps.SetGr(hitx, hity, PcraftData.GrSand, state);
                             if (Pico8.Rnd(1) > F32.FromDouble(0.4))
-                                LevelManager.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
+                                state.LevelMgr.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
                         }
                         if (hit == PcraftData.GrSand && state.CurItem.Type == PcraftData.Shovel)
                         {
                             if ((state.CurItem.Power ?? 0) > 3)
                             {
                                 MapOps.SetGr(hitx, hity, PcraftData.GrWater, state);
-                                LevelManager.AddItem(PcraftData.Sand, 2, hitx, hity, state.Entities);
+                                state.LevelMgr.AddItem(PcraftData.Sand, 2, hitx, hity, state.Entities);
                             }
                             else
                             {
                                 MapOps.SetGr(hitx, hity, PcraftData.GrFarm, state);
                                 MapOps.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
-                                LevelManager.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2)), hitx, hity, state.Entities);
+                                state.LevelMgr.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2)), hitx, hity, state.Entities);
                             }
                         }
                         if (hit == PcraftData.GrWater && state.CurItem.Type == PcraftData.Sand)
@@ -198,10 +198,10 @@ internal static class PlayerActionUpdater
                             var dw = F32.Clamp(F32.FromInt(4) - (MapOps.GetData(hitx, hity, F32.Zero, state) - state.Time),
                                 F32.Zero,
                                 F32.FromInt(4));
-                            LevelManager.AddItem(PcraftData.Wheat,
+                            state.LevelMgr.AddItem(PcraftData.Wheat,
                                 F32.FloorToInt(dw / F32.FromInt(2) + Pico8.Rnd(dw / F32.FromInt(2))),
                                 hitx, hity, state.Entities);
-                            LevelManager.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
+                            state.LevelMgr.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
                         }
                     }
                 }

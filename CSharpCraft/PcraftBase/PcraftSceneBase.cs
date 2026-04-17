@@ -19,7 +19,7 @@ internal abstract class PcraftSceneBase : IScene
 
         setup.RegisterUpdate(() =>
         {
-            if (!initialized) { game.Init(); initialized = true; }
+            if (!initialized) { game.Init(); OnGameInit(state, game); initialized = true; }
             PcraftUpdate.Update(state, game);
         }, fps: 30);
 
@@ -27,6 +27,8 @@ internal abstract class PcraftSceneBase : IScene
     }
 
     public virtual string? SpritesPath => "pcraft_sprites";
+
+    protected virtual void OnGameInit(WorldState state, PcraftGame game) { }
 
     public virtual string? MapPath => "pcraft_map";
 

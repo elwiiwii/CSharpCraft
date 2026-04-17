@@ -1,6 +1,4 @@
 using CSharpCraft.PcraftBase.Menu;
-using CSharpCraft.PcraftBase.Map;
-using PSharp8;
 
 namespace CSharpCraft.PcraftBase.Data;
 
@@ -23,7 +21,7 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
             }
             else
             {
-                LevelManager.ResetLevel(state, game);
+                state.LevelMgr.ResetLevel(state, game);
                 state.CurMenu = null;
                 Pico8.Music(1);
             }
