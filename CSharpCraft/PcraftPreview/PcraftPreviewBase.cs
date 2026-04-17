@@ -1,28 +1,44 @@
-using CSharpCraft.PcraftBase.Draw;
-using CSharpCraft.PcraftBase.Update;
 using CSharpCraft.PcraftBase;
 using PSharp8.Scene;
 
 namespace CSharpCraft.PcraftPreview;
 
-internal abstract class PcraftPreviewBase : PcraftSceneBase, IScene
+internal class PcraftPreviewBase : PcraftSceneBase, IScene
 {
     public override string? Name => "Pcraft Preview Base";
 
+    /// <summary>World seed — determines the entire map deterministically.</summary>
+    protected virtual long PreviewSeed => 0;
+
+    /// <summary>
+    /// Half-width of the sampled tile window. The rendered area is (2×radius+1)² tiles.
+    /// </summary>
+    protected virtual int PreviewRadius => 4;
+
+    /// <summary>
+    /// Override the window centre tile. When null the detected spawn tile is used.
+    /// </summary>
+    public virtual (int X, int Y)? CenterOverride => null;
+
+    /// <summary>
+    /// When true (default) a 30-fps time counter is registered to animate water tiles.
+    /// </summary>
+    public virtual bool AnimateWater => true;
+
     public override void Init(ISceneSetup setup)
     {
-        setup.Resolution = (128, 128);
+        int side = 2 * PreviewRadius;
+        setup.Resolution = (16 * side, 16 * side);
 
-        var state       = new WorldState();
-        var game        = new PcraftGame();
-        bool initialized = false;
+        var result = PcraftWorldSampler.Sample(
+            PreviewSeed, PreviewRadius,
+            CenterOverride?.X, CenterOverride?.Y);
 
-        setup.RegisterUpdate(() =>
-        {
-            if (!initialized) { game.Init(); initialized = true; }
-            PcraftUpdate.Update(state, game);
-        }, fps: 30);
+        F32 time = F32.Zero;
 
-        setup.RegisterDraw(() => PcraftDraw.Draw(state, game), fps: 30);
+        if (AnimateWater)
+            setup.RegisterUpdate(() => time += F32.One, fps: 30);
+
+        setup.RegisterDraw(() => PreviewDrawer.Draw(result, time), fps: 30);
     }
 }

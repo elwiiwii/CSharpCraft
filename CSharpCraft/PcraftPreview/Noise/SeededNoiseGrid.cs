@@ -7,7 +7,7 @@ namespace CSharpCraft.PcraftPreview.Noise;
 /// Each cell's jitter is derived from (masterSeed, layerIndex, step, x, y), so any cell
 /// can be evaluated independently without running the full sequential algorithm.
 /// </summary>
-internal sealed class SeededNoiseGrid
+internal class SeededNoiseGrid
 {
     private readonly long _masterSeed;
     private readonly int _gridSx;
@@ -40,7 +40,7 @@ internal sealed class SeededNoiseGrid
     /// corner) always return 0.5. All other cells are computed recursively from their
     /// diamond-square parents and memoized.
     /// </summary>
-    internal double GetValue(int x, int y)
+    internal virtual double GetValue(int x, int y)
     {
         // Right boundary (x == gridSx), bottom boundary (y == gridSy), and the top-left corner
         // (0, 0) are never written by the algorithm — they remain permanently at 0.5.

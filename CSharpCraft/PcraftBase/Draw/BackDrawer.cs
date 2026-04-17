@@ -123,7 +123,7 @@ internal static class BackDrawer
         return gr.Gr == gr2.Gr;
     }
 
-    private static int CornerOffset(
+    internal static int CornerOffset(
         bool sideH, bool sideV, bool diag, int rnd,
         int innerCorner, int hOnly, int vOnly, int outer)
     {
