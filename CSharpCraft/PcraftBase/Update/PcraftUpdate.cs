@@ -1,4 +1,3 @@
-using CSharpCraft.PcraftBase.Inventory;
 using CSharpCraft.PcraftBase.Map;
 
 namespace CSharpCraft.PcraftBase.Update;
@@ -8,7 +7,7 @@ internal static class PcraftUpdate
     internal static void Update(WorldState state, PcraftGame game)
     {
         // ── Menu guard ────────────────────────────────────────────────────────
-        if (MenuUpdater.Update(state, game))
+        if (PcraftServices.UpdateMenu(state, game))
             return;
 
         if (state.SwitchLevel)
@@ -27,13 +26,13 @@ internal static class PcraftUpdate
         }
 
         // ── Curitem validation ────────────────────────────────────────────────
-        if (state.CurItem is not null && InventoryOps.HowMany(state.Invent, state.CurItem) <= 0)
+        if (state.CurItem is not null && PcraftServices.HowMany(state.Invent, state.CurItem) <= 0)
             state.CurItem = null;
 
         PcraftServices.UpGround(state);
 
         // ── Speed multiplier (water or no stamina → 1, otherwise 2) ──────────
-        var playHit = MapOps.GetGr(state.Plx, state.Ply, state);
+        var playHit = PcraftServices.GetGr(state.Plx, state.Ply, state);
         if (playHit != state.LastGround && playHit == PcraftData.GrWater)
             Pico8.Sfx(11);
         var s = (playHit == PcraftData.GrWater || state.Pstam <= F32.Zero)
@@ -76,9 +75,9 @@ internal static class PcraftUpdate
         //    F32.Zero);
 
         // ── Sub-updaters ──────────────────────────────────────────────────────
-        var (fdx, fdy, canAct) = EntityUpdater.Update(state, dx, dy);
-        EnemyUpdater.Update(state);
-        PlayerActionUpdater.Update(state, game, fdx, fdy, canAct);
-        CameraUpdater.Update(state, fdx, fdy);
+        var (fdx, fdy, canAct) = PcraftServices.UpdateEntities(state, dx, dy);
+        PcraftServices.UpdateEnemies(state);
+        PcraftServices.UpdatePlayer(state, game, fdx, fdy, canAct);
+        PcraftServices.UpdateCamera(state, fdx, fdy);
     }
 }

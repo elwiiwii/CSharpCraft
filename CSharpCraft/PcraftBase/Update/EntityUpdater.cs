@@ -1,8 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Inventory;
-using CSharpCraft.PcraftBase.Map;
 using CSharpCraft.PcraftBase.Menu;
-using CSharpCraft.PcraftBase.Physics;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -19,9 +16,9 @@ internal static class EntityUpdater
 
             if (e.HasCol)
             {
-                (e.Vx, e.Vy) = CollisionSystem.ReflectCol(
+                (e.Vx, e.Vy) = PcraftServices.ReflectCol(
                     e.X, e.Y, e.Vx, e.Vy,
-                    (x2, y2) => MapOps.IsFree(x2, y2, state),
+                    (x2, y2) => PcraftServices.IsFree(x2, y2, state),
                     F32.FromDouble(0.90));
             }
 
@@ -46,10 +43,10 @@ internal static class EntityUpdater
                 if (dist < F32.FromInt(5) && (e.Timer == null || e.Timer.Value < F32.FromInt(115)))
                 {
                     var newit = new ItemStack(e.GiveItem, count: 1);
-                    InventoryOps.AddItemInList(state.Invent, newit, -1);
+                    PcraftServices.AddItemInList(state.Invent, newit, -1);
                     state.Entities.RemoveAt(i);
                     var popup = new ItemEntity(PcraftData.EText, e.X, e.Y - F32.FromInt(5), F32.Zero, -F32.One);
-                    popup.TextValue = F32.FromInt(InventoryOps.HowMany(state.Invent, newit));
+                    popup.TextValue = F32.FromInt(PcraftServices.HowMany(state.Invent, newit));
                     popup.TextColor = 11;
                     popup.Timer     = F32.FromInt(20);
                     state.Entities.Add(popup);
@@ -60,9 +57,9 @@ internal static class EntityUpdater
             {
                 if (e.HasCol)
                 {
-                    (dx, dy) = CollisionSystem.ReflectCol(
+                    (dx, dy) = PcraftServices.ReflectCol(
                         state.Plx, state.Ply, dx, dy,
-                        (fx, fy) => CollisionSystem.EntColFree(fx, fy, e),
+                        (fx, fy) => PcraftServices.EntColFree(fx, fy, e),
                         F32.Zero);
                 }
 
@@ -73,7 +70,7 @@ internal static class EntityUpdater
                         if (e.Type == PcraftData.Chest || e.Type.BeCraft)
                         {
                             var asStack = new ItemStack(e.Type, list: e.List);
-                            InventoryOps.AddItemInList(state.Invent, asStack, 0);
+                            PcraftServices.AddItemInList(state.Invent, asStack, 0);
                             state.CurItem = asStack;
                             state.Entities.RemoveAt(i);
                         }

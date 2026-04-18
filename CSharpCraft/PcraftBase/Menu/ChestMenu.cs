@@ -1,6 +1,4 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Draw;
-using CSharpCraft.PcraftBase.Inventory;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
@@ -14,8 +12,8 @@ internal sealed class ChestMenu(List<ItemStack> chestItems, List<ItemStack> play
 
     public void Update(WorldState state, PcraftGame game)
     {
-        if (Pico8.Btnp(0)) { TabToggle = InventoryOps.Loop(TabToggle - 1, 2); Pico8.Sfx(18); }
-        if (Pico8.Btnp(1)) { TabToggle = InventoryOps.Loop(TabToggle + 1, 2); Pico8.Sfx(18); }
+        if (Pico8.Btnp(0)) { TabToggle = PcraftServices.Loop(TabToggle - 1, 2); Pico8.Sfx(18); }
+        if (Pico8.Btnp(1)) { TabToggle = PcraftServices.Loop(TabToggle + 1, 2); Pico8.Sfx(18); }
 
         var activeList = TabToggle == 0 ? ChestItems : PlayerItems;
         var otherList  = TabToggle == 0 ? PlayerItems : ChestItems;
@@ -35,5 +33,5 @@ internal sealed class ChestMenu(List<ItemStack> chestItems, List<ItemStack> play
         }
     }
 
-    public void Draw(WorldState state) => MenuOverlayDrawer.DrawChestPanels(this);
+    public void Draw(WorldState state) => PcraftServices.DrawChestPanels(this);
 }

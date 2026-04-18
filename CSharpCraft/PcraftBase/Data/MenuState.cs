@@ -1,5 +1,4 @@
 using CSharpCraft.PcraftBase.Menu;
-using CSharpCraft.PcraftBase.Draw;
 
 namespace CSharpCraft.PcraftBase.Data;
 
@@ -38,10 +37,10 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
         Pico8.Rectfill(0, 0, 128, 46, 12);
         Pico8.Rectfill(0, 46, 128, 128, 1);
         Pico8.Spr(Spr, 32, 14, 8, 8);
-        DrawHelpers.PrintC(Text ?? "", 64, 80, 6);
-        DrawHelpers.PrintC(Text2 ?? "", 64, 90, 6);
+        PcraftServices.PrintC(Text ?? "", 64, 80, 6);
+        PcraftServices.PrintC(Text2 ?? "", 64, 90, 6);
         int tc = 6 + F32.FloorToInt(state.Time % 2);
-        DrawHelpers.PrintC("press button 1", 64, 112, tc);
+        PcraftServices.PrintC("press button 1", 64, 112, tc);
         state.Time += F32.FromDouble(0.1);
     }
 }

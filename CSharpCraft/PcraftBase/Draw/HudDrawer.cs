@@ -11,7 +11,7 @@ internal static class HudDrawer
         {
             const int ix = 35;
             const int iy = 3;
-            MenuOverlayDrawer.ItemName(ix + 1, iy + 3, state.CurItem, 7);
+            PcraftServices.ItemName(ix + 1, iy + 3, state.CurItem, 7);
             if (state.CurItem.Count.HasValue)
             {
                 string cnt = state.CurItem.Count.Value.ToString();

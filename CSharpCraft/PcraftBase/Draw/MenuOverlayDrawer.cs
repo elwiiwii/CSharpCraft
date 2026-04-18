@@ -1,6 +1,4 @@
-using CSharpCraft.PcraftBase.Crafting;
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Inventory;
 using CSharpCraft.PcraftBase.Menu;
 
 namespace CSharpCraft.PcraftBase.Draw;
@@ -23,10 +21,10 @@ internal static class MenuOverlayDrawer
                 Pico8.Print(pwn, x + 10, y, col);
                 px += pwn.Length * 4 + 4;
                 if (pw < PcraftData.PwrPal.Length)
-                    DrawHelpers.SetPal(PcraftData.PwrPal[pw]);
+                    PcraftServices.SetPal(PcraftData.PwrPal[pw]);
             }
         }
-        if (type.Pal != null) DrawHelpers.SetPal(type.Pal);
+        if (type.Pal != null) PcraftServices.SetPal(type.Pal);
         Pico8.Spr(type.Spr, x, y - 2);
         Pico8.Pal();
         Pico8.Print(type.Name, px + 10, y, col);
@@ -101,7 +99,7 @@ internal static class MenuOverlayDrawer
         {
             var curGoal = recipeList[menu.Sel];
             DrawPanel("have", 71, 50, 52, 30);
-            int have = InventoryOps.HowMany(state.Invent, new ItemStack(curGoal.Type));
+            int have = PcraftServices.HowMany(state.Invent, new ItemStack(curGoal.Type));
             Pico8.Print(have.ToString(), 91, 65, 7);
             DrawRequireList(curGoal, 4, 79, 104, 50, state);
         }
@@ -112,7 +110,7 @@ internal static class MenuOverlayDrawer
         menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 16, 68, 64, 6, recipeList.Count, (i, lx, py) =>
         {
             var it  = recipeList[i - 1];
-            int col = CraftingSystem.CanCraft(state.Invent, it) ? 7 : 0;
+            int col = PcraftServices.CanCraft(state.Invent, it) ? 7 : 0;
             DrawItemVisual(lx, py, col, it.Power, it.Type);
             if (it.Count.HasValue)
             {
@@ -164,7 +162,7 @@ internal static class MenuOverlayDrawer
             ItemName(lx, py, it, 7);
             if (it.Count.HasValue)
             {
-                int    h = InventoryOps.HowMany(state.Invent, it);
+                int    h = PcraftServices.HowMany(state.Invent, it);
                 string c = $"{h}/{it.Count.Value}";
                 Pico8.Print(c, lx + sx - c.Length * 4 - 10, py, h < it.Count.Value ? 8 : 7);
             }

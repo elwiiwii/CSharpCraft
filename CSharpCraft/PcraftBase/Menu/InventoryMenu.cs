@@ -1,6 +1,4 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Draw;
-using CSharpCraft.PcraftBase.Inventory;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
@@ -16,7 +14,7 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
         {
             if (Pico8.Btnp(3)) { Sel += 1; Pico8.Sfx(18); }
             if (Pico8.Btnp(2)) { Sel -= 1; Pico8.Sfx(18); }
-            Sel = InventoryOps.Loop(Sel, List.Count);
+            Sel = PcraftServices.Loop(Sel, List.Count);
 
             if (Pico8.Btnp(5) && !state.Lb5)
             {
@@ -35,5 +33,5 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
         }
     }
 
-    public void Draw(WorldState state) => MenuOverlayDrawer.DrawInventoryMenu(this);
+    public void Draw(WorldState state) => PcraftServices.DrawInventoryMenu(this);
 }

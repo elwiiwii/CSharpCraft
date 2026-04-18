@@ -1,8 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Inventory;
-using CSharpCraft.PcraftBase.Map;
 using CSharpCraft.PcraftBase.Menu;
-using CSharpCraft.PcraftBase.Physics;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -13,9 +10,9 @@ internal static class PlayerActionUpdater
         F32 dx, F32 dy, bool canAct)
     {
         // ── Final collision + player advance ─────────────────────────────────
-        (dx, dy) = CollisionSystem.ReflectCol(
+        (dx, dy) = PcraftServices.ReflectCol(
             state.Plx, state.Ply, dx, dy,
-            (x, y) => MapOps.IsFree(x, y, state),
+            (x, y) => PcraftServices.IsFree(x, y, state),
             F32.Zero);
         state.Plx += dx;
         state.Ply += dy;
@@ -33,7 +30,7 @@ internal static class PlayerActionUpdater
             var by       = Pico8.Sin(state.Prot);
             var hitx     = state.Plx + bx * F32.FromInt(8);
             var hity     = state.Ply + by * F32.FromInt(8);
-            var hit      = MapOps.GetGr(hitx, hity, state);
+            var hit      = PcraftServices.GetGr(hitx, hity, state);
             var stamcost = F32.FromInt(20);
 
             // Place bench
@@ -49,7 +46,7 @@ internal static class PlayerActionUpdater
                         List   = state.CurItem.List
                     };
                     state.Entities.Add(placed);
-                    InventoryOps.RemInList(state.Invent, state.CurItem);
+                    PcraftServices.RemInList(state.Invent, state.CurItem);
                     canAct = false;
                 }
             }
@@ -118,18 +115,18 @@ internal static class PlayerActionUpdater
                         }
                     }
                     pow = F32.Floor(pow);
-                    var d = MapOps.GetData(hitx, hity, F32.FromInt(hit.Life), state);
+                    var d = PcraftServices.GetData(hitx, hity, F32.FromInt(hit.Life), state);
                     if (d - pow <= F32.Zero)
                     {
-                        MapOps.SetGr(hitx, hity, hit.Tile ?? PcraftData.GrSand, state);
-                        MapOps.ClearData(hitx, hity, state);
+                        PcraftServices.SetGr(hitx, hity, hit.Tile ?? PcraftData.GrSand, state);
+                        PcraftServices.ClearData(hitx, hity, state);
                         PcraftServices.AddItem(hit.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, state.Entities);
                         if (hit == PcraftData.GrTree && Pico8.Rnd(1) > F32.FromDouble(0.7))
                             PcraftServices.AddItem(PcraftData.Apple, 1, hitx, hity, state.Entities);
                     }
                     else
                     {
-                        MapOps.SetData(hitx, hity, d - pow, state);
+                        PcraftServices.SetData(hitx, hity, d - pow, state);
                     }
                     var popup2 = new ItemEntity(PcraftData.EText, hitx, hity, F32.Zero, -F32.One)
                     {
@@ -151,12 +148,12 @@ internal static class PlayerActionUpdater
                         if (state.CurItem.Type.GiveLife > 0)
                         {
                             state.Plife = F32.Min(F32.FromInt(100), state.Plife + F32.FromInt(state.CurItem.Type.GiveLife));
-                            InventoryOps.RemInList(state.Invent, new ItemStack(state.CurItem.Type, count: 1));
+                            PcraftServices.RemInList(state.Invent, new ItemStack(state.CurItem.Type, count: 1));
                             Pico8.Sfx(21);
                         }
                         if (hit == PcraftData.GrGrass && state.CurItem.Type == PcraftData.Scythe)
                         {
-                            MapOps.SetGr(hitx, hity, PcraftData.GrSand, state);
+                            PcraftServices.SetGr(hitx, hity, PcraftData.GrSand, state);
                             if (Pico8.Rnd(1) > F32.FromDouble(0.4))
                                 PcraftServices.AddItem(PcraftData.Seed, 1, hitx, hity, state.Entities);
                         }
@@ -164,20 +161,20 @@ internal static class PlayerActionUpdater
                         {
                             if ((state.CurItem.Power ?? 0) > 3)
                             {
-                                MapOps.SetGr(hitx, hity, PcraftData.GrWater, state);
+                                PcraftServices.SetGr(hitx, hity, PcraftData.GrWater, state);
                                 PcraftServices.AddItem(PcraftData.Sand, 2, hitx, hity, state.Entities);
                             }
                             else
                             {
-                                MapOps.SetGr(hitx, hity, PcraftData.GrFarm, state);
-                                MapOps.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
+                                PcraftServices.SetGr(hitx, hity, PcraftData.GrFarm, state);
+                                PcraftServices.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
                                 PcraftServices.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2)), hitx, hity, state.Entities);
                             }
                         }
                         if (hit == PcraftData.GrWater && state.CurItem.Type == PcraftData.Sand)
                         {
-                            MapOps.SetGr(hitx, hity, PcraftData.GrSand, state);
-                            InventoryOps.RemInList(state.Invent, new ItemStack(PcraftData.Sand, count: 1));
+                            PcraftServices.SetGr(hitx, hity, PcraftData.GrSand, state);
+                            PcraftServices.RemInList(state.Invent, new ItemStack(PcraftData.Sand, count: 1));
                         }
                         if (hit == PcraftData.GrWater && state.CurItem.Type == PcraftData.Boat)
                         {
@@ -188,14 +185,14 @@ internal static class PlayerActionUpdater
                         }
                         if (hit == PcraftData.GrFarm && state.CurItem.Type == PcraftData.Seed)
                         {
-                            MapOps.SetGr(hitx, hity, PcraftData.GrWheat, state);
-                            MapOps.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
-                            InventoryOps.RemInList(state.Invent, new ItemStack(PcraftData.Seed, count: 1));
+                            PcraftServices.SetGr(hitx, hity, PcraftData.GrWheat, state);
+                            PcraftServices.SetData(hitx, hity, state.Time + 15 + Pico8.Rnd(5), state);
+                            PcraftServices.RemInList(state.Invent, new ItemStack(PcraftData.Seed, count: 1));
                         }
                         if (hit == PcraftData.GrWheat && state.CurItem.Type == PcraftData.Scythe)
                         {
-                            MapOps.SetGr(hitx, hity, PcraftData.GrSand, state);
-                            var dw = F32.Clamp(F32.FromInt(4) - (MapOps.GetData(hitx, hity, F32.Zero, state) - state.Time),
+                            PcraftServices.SetGr(hitx, hity, PcraftData.GrSand, state);
+                            var dw = F32.Clamp(F32.FromInt(4) - (PcraftServices.GetData(hitx, hity, F32.Zero, state) - state.Time),
                                 F32.Zero,
                                 F32.FromInt(4));
                                 PcraftServices.AddItem(PcraftData.Wheat,

@@ -1,6 +1,4 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Map;
-using CSharpCraft.PcraftBase.Physics;
 
 namespace CSharpCraft.PcraftBase.Draw;
 
@@ -17,7 +15,7 @@ internal static class EnemiesDrawer
                 Pico8.Pal();
                 DrawPlayer(state.Plx, state.Ply, state.Prot, state.Panim, state.Banim, isPlayer: true, state);
             }
-            else if (CollisionSystem.IsIn(e, F32.FromInt(72), state.Clx, state.Cly))
+            else if (PcraftServices.IsIn(e, F32.FromInt(72), state.Clx, state.Cly))
             {
                 Pico8.Pal();
                 Pico8.Pal(15, 3);
@@ -40,7 +38,7 @@ internal static class EnemiesDrawer
         F32 fyF = F32.Floor(y - 4);
 
         F32 lan = Pico8.Sin(anim * 2) * F32.FromDouble(1.5);
-        var bel = MapOps.GetGr(x, y, state);
+        var bel = PcraftServices.GetGr(x, y, state);
 
         if (bel == PcraftData.GrWater)
         {
@@ -87,10 +85,10 @@ internal static class EnemiesDrawer
             {
                 int pw = state.CurItem.Power.Value - 1;
                 if (pw >= 0 && pw < PcraftData.PwrPal.Length)
-                    DrawHelpers.SetPal(PcraftData.PwrPal[pw]);
+                    PcraftServices.SetPal(PcraftData.PwrPal[pw]);
             }
             if (state.CurItem.Type.Pal != null)
-                DrawHelpers.SetPal(state.CurItem.Type.Pal);
+                PcraftServices.SetPal(state.CurItem.Type.Pal);
         }
 
         Pico8.Spr(weap,

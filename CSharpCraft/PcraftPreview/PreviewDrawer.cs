@@ -1,4 +1,4 @@
-using CSharpCraft.PcraftBase.Draw;
+using CSharpCraft.PcraftBase;
 
 namespace CSharpCraft.PcraftPreview;
 
@@ -40,10 +40,10 @@ internal static class PreviewDrawer
                     bool dl = SameGroup(tiles, ti - 1, tj + 1, tId, side);
                     bool dr = SameGroup(tiles, ti + 1, tj + 1, tId, side);
 
-                    int tl = BackDrawer.CornerOffset(l, u, ul, RndCenter(ti,       tj,       result.RndWat), innerCorner: 20, hOnly:  1, vOnly: 16, outer:  0);
-                    int tr = BackDrawer.CornerOffset(r, u, ur, RndCenter(ti + 0.5, tj,       result.RndWat), innerCorner: 19, hOnly:  1, vOnly: 18, outer:  2);
-                    int bl = BackDrawer.CornerOffset(l, d, dl, RndCenter(ti,       tj + 0.5, result.RndWat), innerCorner:  4, hOnly: 33, vOnly: 16, outer: 32);
-                    int br = BackDrawer.CornerOffset(r, d, dr, RndCenter(ti + 0.5, tj + 0.5, result.RndWat), innerCorner:  3, hOnly: 33, vOnly: 18, outer: 34);
+                    int tl = PcraftServices.CornerOffset(l, u, ul, RndCenter(ti,       tj,       result.RndWat), innerCorner: 20, hOnly:  1, vOnly: 16, outer:  0);
+                    int tr = PcraftServices.CornerOffset(r, u, ur, RndCenter(ti + 0.5, tj,       result.RndWat), innerCorner: 19, hOnly:  1, vOnly: 18, outer:  2);
+                    int bl = PcraftServices.CornerOffset(l, d, dl, RndCenter(ti,       tj + 0.5, result.RndWat), innerCorner:  4, hOnly: 33, vOnly: 16, outer: 32);
+                    int br = PcraftServices.CornerOffset(r, d, dr, RndCenter(ti + 0.5, tj + 0.5, result.RndWat), innerCorner:  3, hOnly: 33, vOnly: 18, outer: 34);
 
                     Pico8.Mset(mx,     my,     b + tl);
                     Pico8.Mset(mx + 1, my,     b + tr);

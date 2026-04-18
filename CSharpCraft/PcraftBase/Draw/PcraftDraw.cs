@@ -8,7 +8,7 @@ internal static class PcraftDraw
     {
         bool ownedFrame = !Pico8.IsDrawing;
         if (ownedFrame) Pico8.BeginFrame();
-        try { DrawMain(state, game); }
+        try { PcraftServices.DrawMain(state, game); }
         finally { if (ownedFrame) Pico8.EndFrame(); }
     }
 
@@ -16,11 +16,11 @@ internal static class PcraftDraw
     {
         Pico8.Cls();
         Pico8.Camera(state.Clx - F32.FromInt(64), state.Cly - F32.FromInt(64));
-        BackDrawer.DrawBack(state);
-        EntDrawer.DrawEnt(state);
-        EnemiesDrawer.DrawEnemies(state);
+        PcraftServices.DrawBack(state);
+        PcraftServices.DrawEnt(state);
+        PcraftServices.DrawEnemies(state);
         Pico8.Camera();
-        HudDrawer.DrawHud(state);
+        PcraftServices.DrawHud(state);
         state.CurMenu?.Draw(state);
     }
 }

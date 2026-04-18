@@ -1,7 +1,4 @@
-using CSharpCraft.PcraftBase.Crafting;
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Draw;
-using CSharpCraft.PcraftBase.Inventory;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
@@ -25,14 +22,14 @@ internal sealed class CraftingMenu : IMenu
         {
             if (Pico8.Btnp(3)) { Sel += 1; Pico8.Sfx(18); }
             if (Pico8.Btnp(2)) { Sel -= 1; Pico8.Sfx(18); }
-            Sel = InventoryOps.Loop(Sel, Recipes.Count);
+            Sel = PcraftServices.Loop(Sel, Recipes.Count);
 
             if (Pico8.Btnp(5))
             {
                 var recipe = Recipes[Sel];
-                if (CraftingSystem.CanCraft(state.Invent, recipe))
+                if (PcraftServices.CanCraft(state.Invent, recipe))
                 {
-                    CraftingSystem.Craft(state.Invent, recipe);
+                    PcraftServices.Craft(state.Invent, recipe);
                     Pico8.Sfx(16);
                 }
             }
@@ -45,5 +42,5 @@ internal sealed class CraftingMenu : IMenu
         }
     }
 
-    public void Draw(WorldState state) => MenuOverlayDrawer.DrawCraftingPanels(this, state);
+    public void Draw(WorldState state) => PcraftServices.DrawCraftingPanels(this, state);
 }

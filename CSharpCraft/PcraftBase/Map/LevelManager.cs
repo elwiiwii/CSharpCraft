@@ -21,7 +21,7 @@ internal static class LevelManager
         {
             for (int j = 0; j < state.LevelSy; j++)
             {
-                var c = MapOps.GetDirectGr(i, j, state);
+                var c = PcraftServices.GetDirectGr(i, j, state);
                 var r = Pico8.Rnd(100);
                 var ex = F32.FromInt(i * 16 + 8);
                 var ey = F32.FromInt(j * 16 + 8);
@@ -51,9 +51,9 @@ internal static class LevelManager
     internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
     {
         var level = new Level(x, y, sx, sy, isUnder);
-        SetLevel(level, state);
-        var (holeX, holeY) = MapGenerator.CreateMap(state);
-        FillEne(level, state);
+        PcraftServices.SetLevel(level, state);
+        var (holeX, holeY) = PcraftServices.CreateMap(state);
+        PcraftServices.FillEne(level, state);
         level.Stx = F32.FromInt((holeX - state.LevelX) * 16 + 8);
         level.Sty = F32.FromInt((holeY - state.LevelY) * 16 + 8);
         return level;
@@ -79,7 +79,7 @@ internal static class LevelManager
 
         state.Invent.Clear();
 
-        var rndWat = MapGenerator.InitRndWat();
+        var rndWat = PcraftServices.InitRndWat();
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
                 state.RndWat[i][j] = rndWat[i][j];
@@ -122,10 +122,10 @@ internal static class LevelManager
         {
             for (int j = cj; j <= cj + 8; j++)
             {
-                var gr = MapOps.GetDirectGr(i, j, state);
+                var gr = PcraftServices.GetDirectGr(i, j, state);
                 if (gr == PcraftData.GrFarm)
                 {
-                    var d = MapOps.DirGetData(i, j, F32.Zero, state);
+                    var d = PcraftServices.DirGetData(i, j, F32.Zero, state);
                     if (state.Time > d)
                         Pico8.Mset(i + state.LevelX, j, PcraftData.GrSand.Id);
                 }

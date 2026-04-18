@@ -7,7 +7,7 @@ internal static class EntDrawer
         foreach (var e in state.Entities)
         {
             Pico8.Pal();
-            if (e.Type.Pal != null) DrawHelpers.SetPal(e.Type.Pal);
+            if (e.Type.Pal != null) PcraftServices.SetPal(e.Type.Pal);
 
             if (e.Type.BigSpr != 0)
             {
@@ -15,7 +15,7 @@ internal static class EntDrawer
             }
             else if (e.Type == PcraftData.EText)
             {
-                DrawHelpers.PrintB(e.TextValue.Double.ToString("0"), e.X.Double - 2, e.Y.Double - 4, e.TextColor);
+                PcraftServices.PrintB(e.TextValue.Double.ToString("0"), e.X.Double - 2, e.Y.Double - 4, e.TextColor);
             }
             else
             {

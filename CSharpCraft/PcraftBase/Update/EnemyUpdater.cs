@@ -1,6 +1,4 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Map;
-using CSharpCraft.PcraftBase.Physics;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -15,7 +13,7 @@ internal static class EnemyUpdater
 
         foreach (var e in state.Enemies)
         {
-            if (!CollisionSystem.IsIn(e, F32.FromInt(100), state.Clx, state.Cly)) continue;
+            if (!PcraftServices.IsIn(e, F32.FromInt(100), state.Clx, state.Cly)) continue;
 
             if (e is PlayerEntity)
             {
@@ -116,9 +114,9 @@ internal static class EnemyUpdater
 
                 var fx = e.Dx + e.Ox;
                 var fy = e.Dy + e.Oy;
-                (fx, fy) = CollisionSystem.ReflectCol(
+                (fx, fy) = PcraftServices.ReflectCol(
                     e.X, e.Y, fx, fy,
-                    (x2, y2) => MapOps.IsFreeEnem(x2, y2, state),
+                    (x2, y2) => PcraftServices.IsFreeEnem(x2, y2, state),
                     F32.Zero);
 
                 if (F32.Abs(e.Dx) > F32.Zero || F32.Abs(e.Dy) > F32.Zero)

@@ -1,5 +1,4 @@
 using CSharpCraft.PcraftBase.Draw;
-using CSharpCraft.PcraftBase.Update;
 using PSharp8.Audio;
 using PSharp8.Scene;
 
@@ -20,7 +19,7 @@ internal abstract class PcraftSceneBase : IScene
         setup.RegisterUpdate(() =>
         {
             if (!initialized) { game.Init(); PcraftServices.ResetLevel(state, game); initialized = true; }
-            PcraftUpdate.Update(state, game);
+            PcraftServices.UpdateMain(state, game);
         }, fps: 30);
 
         setup.RegisterDraw(() => PcraftDraw.Draw(state, game), fps: 30);
