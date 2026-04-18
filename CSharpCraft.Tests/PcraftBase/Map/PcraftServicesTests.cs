@@ -11,7 +11,7 @@ using Xunit;
 namespace CSharpCraft.Tests.PcraftBase.Map;
 
 [Collection("Fna")]
-public sealed class LevelManagerPureTests(FnaFixture fixture)
+public sealed class PcraftServicesPureTests(FnaFixture fixture)
 {
     private GameOrchestrator BuildOrchestrator()
         => new(
@@ -44,7 +44,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         var state = new WorldState();
         var level = new Level(5, 0, 16, 16, isUnder: false);
 
-        LevelManager.SetLevel(level, state);
+        new PcraftServices().SetLevel(level, state);
 
         state.CurrentLevel.Should().BeSameAs(level);
     }
@@ -55,7 +55,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         var state = new WorldState();
         var level = new Level(x: 10, y: 3, sx: 32, sy: 24, isUnder: true);
 
-        LevelManager.SetLevel(level, state);
+        new PcraftServices().SetLevel(level, state);
 
         state.LevelX.Should().Be(10);
         state.LevelY.Should().Be(3);
@@ -72,7 +72,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         var item = new ItemEntity(PcraftData.Wood, F32.Zero, F32.Zero);
         level.Ent.Add(item);
 
-        LevelManager.SetLevel(level, state);
+        new PcraftServices().SetLevel(level, state);
 
         state.Entities.Should().ContainSingle().Which.Should().BeSameAs(item);
     }
@@ -85,7 +85,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         var enemy = new ZombieEntity(F32.FromInt(8), F32.FromInt(8));
         level.Ene.Add(enemy);
 
-        LevelManager.SetLevel(level, state);
+        new PcraftServices().SetLevel(level, state);
 
         state.Enemies.Should().ContainSingle().Which.Should().BeSameAs(enemy);
     }
@@ -97,7 +97,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         var level = new Level(0, 0, 8, 8, isUnder: false);
         level.Dat[42] = F32.FromInt(7);
 
-        LevelManager.SetLevel(level, state);
+        new PcraftServices().SetLevel(level, state);
 
         state.Data.Should().ContainKey(42).WhoseValue.Should().Be(F32.FromInt(7));
     }
@@ -111,7 +111,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         level.Stx = F32.FromInt(72);
         level.Sty = F32.FromInt(88);
 
-        LevelManager.SetLevel(level, state);
+        new PcraftServices().SetLevel(level, state);
 
         state.Plx.Should().Be(F32.FromInt(72));
         state.Ply.Should().Be(F32.FromInt(88));
@@ -129,7 +129,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var entities = new List<ItemEntity>();
 
-        LevelManager.AddItem(PcraftData.Wood, 3, F32.FromInt(32), F32.FromInt(32), entities);
+        new PcraftServices().AddItem(PcraftData.Wood, 3, F32.FromInt(32), F32.FromInt(32), entities);
 
         entities.Should().HaveCount(3);
     }
@@ -141,7 +141,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var entities = new List<ItemEntity>();
 
-        LevelManager.AddItem(PcraftData.Stone, 2, F32.FromInt(48), F32.FromInt(16), entities);
+        new PcraftServices().AddItem(PcraftData.Stone, 2, F32.FromInt(48), F32.FromInt(16), entities);
 
         entities.Should().AllSatisfy(e => e.GiveItem.Should().BeSameAs(PcraftData.Stone));
     }
@@ -153,7 +153,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var entities = new List<ItemEntity>();
 
-        LevelManager.AddItem(PcraftData.Wood, 2, F32.FromInt(32), F32.FromInt(32), entities);
+        new PcraftServices().AddItem(PcraftData.Wood, 2, F32.FromInt(32), F32.FromInt(32), entities);
 
         entities.Should().AllSatisfy(e => e.HasCol.Should().BeTrue());
     }
@@ -166,7 +166,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         // Lua: timer = 110 + rnd(20)  →  [110, 130)
         var entities = new List<ItemEntity>();
 
-        LevelManager.AddItem(PcraftData.Wood, 5, F32.FromInt(32), F32.FromInt(32), entities);
+        new PcraftServices().AddItem(PcraftData.Wood, 5, F32.FromInt(32), F32.FromInt(32), entities);
 
         entities.Should().AllSatisfy(e =>
         {
@@ -185,7 +185,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         // hitX=32 → tile 2 → x ∈ [32+1, 32+14+1) = [33, 47]
         var entities = new List<ItemEntity>();
 
-        LevelManager.AddItem(PcraftData.Wood, 20, F32.FromInt(32), F32.FromInt(32), entities);
+        new PcraftServices().AddItem(PcraftData.Wood, 20, F32.FromInt(32), F32.FromInt(32), entities);
 
         entities.Should().AllSatisfy(e =>
         {
@@ -199,7 +199,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
 }
 
 [Collection("Fna")]
-public sealed class LevelManagerFnaTests(FnaFixture fixture)
+public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 {
     private GameOrchestrator BuildOrchestrator()
         => new(
@@ -236,7 +236,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var level = new Level(0, 0, 8, 8, isUnder: false);
         state.SetLevel(level);
 
-        LevelManager.FillEne(level, state);
+        new PcraftServices().FillEne(level, state);
 
         level.Ene.Should().NotBeEmpty("FillEne must always add the player entity");
         level.Ene[0].Should().BeOfType<PlayerEntity>("first enemy slot is always the player");
@@ -262,7 +262,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         state.Plx = F32.FromInt(0);
         state.Ply = F32.FromInt(0);
 
-        LevelManager.FillEne(level, state);
+        new PcraftServices().FillEne(level, state);
 
         // At minimum the player exists; some zombies should also spawn on a 16×16 grass map
         level.Ene.Count.Should().BeGreaterThan(1, "zombies should spawn on a large grass field");
@@ -277,7 +277,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var level = new Level(0, 0, 8, 8, isUnder: false);
         state.SetLevel(level);
 
-        LevelManager.FillEne(level, state);
+        new PcraftServices().FillEne(level, state);
 
         state.Enemies.Should().BeSameAs(level.Ene);
     }
@@ -294,7 +294,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var state = new WorldState();
 
-        var level = LevelManager.CreateLevel(0, 0, 64, 64, isUnder: false, state);
+        var level = new PcraftServices().CreateLevel(0, 0, 64, 64, isUnder: false, state);
 
         level.X.Should().Be(0);
         level.Y.Should().Be(0);
@@ -311,7 +311,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var state = new WorldState();
 
-        var level = LevelManager.CreateLevel(0, 0, 64, 64, isUnder: false, state);
+        var level = new PcraftServices().CreateLevel(0, 0, 64, 64, isUnder: false, state);
 
         level.Stx.Should().BeGreaterThan(F32.Zero, "spawn x must be positive");
         level.Sty.Should().BeGreaterThan(F32.Zero, "spawn y must be positive");
@@ -330,7 +330,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         // Lua: pstam=100, lstam=pstam, plife=100, llife=plife
         state.Pstam.Should().Be(F32.FromInt(100));
@@ -350,7 +350,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         state.Time           = F32.FromInt(100);
         var game = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.SwitchLevel.Should().BeFalse();
         state.CanSwitchLevel.Should().BeFalse();
@@ -371,7 +371,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         state.Coffy = F32.FromInt(5);
         var game = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.Prot.Should().Be(F32.Zero);
         state.Lrot.Should().Be(F32.Zero);
@@ -389,7 +389,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.Invent.Should().NotBeEmpty("inventory must be seeded after reset");
         state.Invent[0].Type.Should().BeSameAs(PcraftData.Workbench,
@@ -404,7 +404,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.Invent.Should().HaveCountGreaterThanOrEqualTo(2);
         state.Invent[1].Type.Should().BeSameAs(PcraftData.PickupTool,
@@ -419,7 +419,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.Cave.Should().NotBeNull("cave level must be created by reset");
         state.Cave!.Sx.Should().Be(32);
@@ -435,7 +435,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.Island.Should().NotBeNull("island level must be created by reset");
         state.Island!.Sx.Should().Be(64);
@@ -452,7 +452,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         state.CurrentLevel.Should().BeSameAs(state.Island,
             "current level must be the island after reset");
@@ -466,7 +466,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         var state = new WorldState();
         var game  = new PcraftGame();
 
-        LevelManager.ResetLevel(state, game);
+        new PcraftServices().ResetLevel(state, game);
 
         bool anyNonZero = false;
         for (int i = 0; i < 16 && !anyNonZero; i++)
@@ -503,7 +503,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         CSharpCraft.PcraftBase.Map.MapOps.DirSetData(0, 0, F32.FromInt(1), state);
         state.Time = F32.FromInt(2);
 
-        LevelManager.UpGround(state);
+        new PcraftServices().UpGround(state);
 
         Pico8.Mget(0, 0).Should().Be(PcraftData.GrSand.Id,
             "expired farm tile must be replaced with sand");
@@ -525,7 +525,7 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         CSharpCraft.PcraftBase.Map.MapOps.DirSetData(0, 0, F32.FromInt(100), state);
         state.Time = F32.FromInt(1);   // time < d
 
-        LevelManager.UpGround(state);
+        new PcraftServices().UpGround(state);
 
         Pico8.Mget(0, 0).Should().Be(PcraftData.GrFarm.Id, "tile must stay farm when time has not expired");
     }

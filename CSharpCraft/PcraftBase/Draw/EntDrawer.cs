@@ -15,7 +15,7 @@ internal static class EntDrawer
             }
             else if (e.Type == PcraftData.EText)
             {
-                PrintB(e.TextValue.Double.ToString("0"), e.X.Double - 2, e.Y.Double - 4, e.TextColor);
+                DrawHelpers.PrintB(e.TextValue.Double.ToString("0"), e.X.Double - 2, e.Y.Double - 4, e.TextColor);
             }
             else
             {
@@ -30,14 +30,4 @@ internal static class EntDrawer
             }
         }
     }
-
-    private static void PrintB(string t, double x, double y, double c)
-    {
-        Pico8.Print(t, x + 1, y, 1);
-        Pico8.Print(t, x - 1, y, 1);
-        Pico8.Print(t, x, y + 1, 1);
-        Pico8.Print(t, x, y - 1, 1);
-        Pico8.Print(t, x, y, c);
-    }
-
 }

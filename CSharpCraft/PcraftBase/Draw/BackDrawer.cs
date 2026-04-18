@@ -117,7 +117,7 @@ internal static class BackDrawer
         }
     }
 
-    private static bool Comp(int i, int j, GroundType gr, WorldState state)
+    internal static bool Comp(int i, int j, GroundType gr, WorldState state)
     {
         var gr2 = MapOps.GetDirectGr(i, j, state);
         return gr.Gr == gr2.Gr;
@@ -133,7 +133,7 @@ internal static class BackDrawer
         return outer;
     }
 
-    private static F32 WatVal(double i, double j, WorldState state)
+    internal static F32 WatVal(double i, double j, WorldState state)
     {
         int xi = (int)(i * 2 % 16);
         int yj = (int)(j * 2 % 16);
@@ -142,23 +142,23 @@ internal static class BackDrawer
         return state.RndWat[xi][yj];
     }
 
-    private static void WatAnim(double i, double j, WorldState state)
+    internal static void WatAnim(double i, double j, WorldState state)
     {
         F32 a = ((state.Time * F32.FromFloat(0.6f) + WatVal(i, j, state) / F32.FromInt(100)) % F32.One) * F32.FromInt(19);
         if (a > F32.FromInt(16))
             Pico8.Spr(F32.FloorToInt(F32.FromInt(13) + a - F32.FromInt(16)), i * 16, j * 16);
     }
 
-    private static int RndCenter(double i, double j, WorldState state)
+    internal static int RndCenter(double i, double j, WorldState state)
         => (F32.FloorToInt(WatVal(i, j, state) / F32.FromInt(34)) + 18) % 20;
 
-    private static int RndSand(double i, double j, WorldState state)
+    internal static int RndSand(double i, double j, WorldState state)
         => F32.FloorToInt(WatVal(i, j, state) / F32.FromInt(34)) + 1;
 
-    private static int RndTree(double i, double j, WorldState state)
+    internal static int RndTree(double i, double j, WorldState state)
         => F32.FloorToInt(WatVal(i, j, state) / F32.FromInt(51)) * 32;
 
-    private static void Spr4(double i, double j, int gi, int gj, int a, int b, int c, int d, int off, Func<double, double, int> f)
+    internal static void Spr4(double i, double j, int gi, int gj, int a, int b, int c, int d, int off, Func<double, double, int> f)
     {
         Pico8.Spr(f(i,       j + off)       + a, gi,     gj + 2 * off);
         Pico8.Spr(f(i + 0.5, j + off)       + b, gi + 8, gj + 2 * off);

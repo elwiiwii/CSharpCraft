@@ -10,7 +10,7 @@ internal static class MenuOverlayDrawer
     internal static void ItemName(int x, int y, ItemStack item, int col)
         => DrawItemVisual(x, y, col, item.Power, item.Type);
 
-    private static void DrawItemVisual(int x, int y, int col, int? power, ItemDef type)
+    internal static void DrawItemVisual(int x, int y, int col, int? power, ItemDef type)
     {
         Pico8.Pal();
         int px = x;
@@ -32,7 +32,7 @@ internal static class MenuOverlayDrawer
         Pico8.Print(type.Name, px + 10, y, col);
     }
 
-    private static void DrawPanel(string name, int x, int y, int sx, int sy)
+    internal static void DrawPanel(string name, int x, int y, int sx, int sy)
     {
         Pico8.Rrectfill(x, y, sx, sy, 2, 1);
 	    Pico8.Rrect(x + 1, y + 1, sx - 2, sy - 2, 2, 13);
@@ -77,7 +77,7 @@ internal static class MenuOverlayDrawer
         menu.Off = off;
     }
 
-    private static int DrawItemList(List<ItemStack> list, string panelName, int sel, int off, int x, int y, int sx, int sy, int my)
+    internal static int DrawItemList(List<ItemStack> list, string panelName, int sel, int off, int x, int y, int sx, int sy, int my)
     {
         DrawPanel(panelName, x, y, sx, sy);
         if (list.Count < 1) return off;
@@ -122,7 +122,7 @@ internal static class MenuOverlayDrawer
         });
     }
 
-    private static int DrawListCore(int sel, int off, int x, int y, int sx, int sy, int my, int tlist, Action<int, int, int> renderRow)
+    internal static int DrawListCore(int sel, int off, int x, int y, int sx, int sy, int my, int tlist, Action<int, int, int> renderRow)
     {
         if (off > Math.Max(0, sel - 4))           off = Math.Max(0, sel - 4);
         if (off < Math.Min(tlist, sel + 3) - my)  off = Math.Min(tlist, sel + 3) - my;
@@ -149,7 +149,7 @@ internal static class MenuOverlayDrawer
         return off;
     }
 
-    private static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, WorldState state)
+    internal static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, WorldState state)
     {
         DrawPanel("require", x, y, sx, sy);
         if (recip.Req.Count < 1) return;

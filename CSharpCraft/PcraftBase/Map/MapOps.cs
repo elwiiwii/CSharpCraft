@@ -63,7 +63,7 @@ internal static class MapOps
         state.Data.Remove(i + j * state.LevelSx);
     }
 
-    private static bool OutOfBounds(int i, int j, WorldState state)
+    internal static bool OutOfBounds(int i, int j, WorldState state)
         => i < 0 || j < 0 || i >= state.LevelSx || j >= state.LevelSy;
 
     internal static bool IsFree(F32 x, F32 y, WorldState state)

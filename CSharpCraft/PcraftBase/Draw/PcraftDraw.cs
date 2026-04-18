@@ -8,11 +8,11 @@ internal static class PcraftDraw
     {
         bool ownedFrame = !Pico8.IsDrawing;
         if (ownedFrame) Pico8.BeginFrame();
-        try { DrawImpl(state, game); }
+        try { DrawMain(state, game); }
         finally { if (ownedFrame) Pico8.EndFrame(); }
     }
 
-    private static void DrawImpl(WorldState state, PcraftGame game)
+    internal static void DrawMain(WorldState state, PcraftGame game)
     {
         Pico8.Cls();
         Pico8.Camera(state.Clx - F32.FromInt(64), state.Cly - F32.FromInt(64));

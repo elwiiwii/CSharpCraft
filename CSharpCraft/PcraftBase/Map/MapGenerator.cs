@@ -185,7 +185,7 @@ internal static class MapGenerator
         return (holeX, holeY);
     }
 
-    private static void CountTypes(int[,] tiles, int sx, int sy, int[] typecount)
+    internal static void CountTypes(int[,] tiles, int sx, int sy, int[] typecount)
     {
         for (int i = 0; i <= sx; i++)
             for (int j = 0; j <= sy; j++)

@@ -42,7 +42,6 @@ internal sealed class WorldState
     internal bool SwitchLevel { get; set; } = false;
     internal bool CanSwitchLevel { get; set; } = false;
     internal IMenu? CurMenu { get; set; } = null;
-    internal LevelManager LevelMgr { get; set; } = new LevelManager();
     internal GroundType LastGround { get; set; } = PcraftData.GrSand;
     internal List<CharacterEntity> NearEnemies { get; } = [];
     internal F32[][] RndWat { get; }

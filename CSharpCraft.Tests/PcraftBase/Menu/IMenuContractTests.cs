@@ -20,9 +20,9 @@ public sealed class IMenuContractTests
     public void Interface_HasUpdateMethod_AcceptingWorldStateAndPcraftGame()
     {
         typeof(IMenu)
-            .GetMethod("Update", [typeof(WorldState), typeof(PcraftGame)])
+            .GetMethod("Update", [typeof(WorldState), typeof(PcraftGame), typeof(PcraftServices)])
             .Should().NotBeNull(
-                because: "IMenu.Update(WorldState, PcraftGame) must be part of the contract");
+                because: "IMenu.Update(WorldState, PcraftGame, PcraftServices) must be part of the contract");
     }
 
     [Fact]

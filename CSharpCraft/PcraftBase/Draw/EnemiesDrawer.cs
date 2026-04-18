@@ -29,7 +29,7 @@ internal static class EnemiesDrawer
         }
     }
 
-    private static void DrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, WorldState state)
+    internal static void DrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, WorldState state)
     {
         F32 cr = Pico8.Cos(rot);
         F32 sr = Pico8.Sin(rot);

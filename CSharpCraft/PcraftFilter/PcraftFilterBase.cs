@@ -13,8 +13,8 @@ internal class PcraftFilterBase : PcraftSceneBase, IScene
     {
         setup.Resolution = (128, 128);
 
-        var state       = new WorldState();
-        var game        = new PcraftGame();
+        var state    = new WorldState();
+        var game     = new PcraftGame();
         bool initialized = false;
 
         setup.RegisterUpdate(() =>

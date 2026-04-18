@@ -13,13 +13,13 @@ internal abstract class PcraftSceneBase : IScene
     {
         setup.Resolution = (128, 128);
 
-        var state       = new WorldState();
-        var game        = new PcraftGame();
+        var state    = new WorldState();
+        var game     = new PcraftGame();
         bool initialized = false;
 
         setup.RegisterUpdate(() =>
         {
-            if (!initialized) { game.Init(); OnGameInit(state, game); initialized = true; }
+            if (!initialized) { game.Init(); PcraftServices.ResetLevel(state, game); initialized = true; }
             PcraftUpdate.Update(state, game);
         }, fps: 30);
 
@@ -27,8 +27,6 @@ internal abstract class PcraftSceneBase : IScene
     }
 
     public virtual string? SpritesPath => "pcraft_sprites";
-
-    protected virtual void OnGameInit(WorldState state, PcraftGame game) { }
 
     public virtual string? MapPath => "pcraft_map";
 

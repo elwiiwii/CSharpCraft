@@ -2,16 +2,16 @@ using CSharpCraft.PcraftBase.Data;
 
 namespace CSharpCraft.PcraftBase.Map;
 
-internal class LevelManager
+internal static class LevelManager
 {
-    internal void SetLevel(Level level, WorldState state)
+    internal static void SetLevel(Level level, WorldState state)
     {
         state.SetLevel(level);
         state.Plx = level.Stx;
         state.Ply = level.Sty;
     }
 
-    internal void FillEne(Level level, WorldState state)
+    internal static void FillEne(Level level, WorldState state)
     {
         level.Ene.Clear();
         level.Ene.Add(new PlayerEntity(F32.Zero, F32.Zero));
@@ -48,7 +48,7 @@ internal class LevelManager
         }
     }
 
-    internal virtual Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
+    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
     {
         var level = new Level(x, y, sx, sy, isUnder);
         SetLevel(level, state);
@@ -59,9 +59,8 @@ internal class LevelManager
         return level;
     }
 
-    protected virtual F32[][] CreateRndWat() => MapGenerator.InitRndWat();
-
-    internal virtual void ResetLevel(WorldState state, PcraftGame game)
+    internal static void ResetLevel(
+        WorldState state, PcraftGame game)
     {
         state.Prot  = F32.Zero;
         state.Lrot  = F32.Zero;
@@ -80,14 +79,14 @@ internal class LevelManager
 
         state.Invent.Clear();
 
-        var rndWat = CreateRndWat();
+        var rndWat = MapGenerator.InitRndWat();
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
                 state.RndWat[i][j] = rndWat[i][j];
 
         game.InitRecipes();
-        state.Cave   = CreateLevel(64, 0, 32, 32, isUnder: true,  state);
-        state.Island = CreateLevel( 0, 0, 64, 64, isUnder: false, state);
+        state.Cave   = CreateLevel(64, 0, 32, 32, true,  state);
+        state.Island = CreateLevel( 0, 0, 64, 64, false, state);
 
         var workbench = new ItemEntity(PcraftData.Workbench, state.Plx, state.Ply);
         workbench.HasCol = true;
@@ -97,7 +96,7 @@ internal class LevelManager
         state.Invent.Add(new ItemStack(PcraftData.PickupTool));
     }
 
-    internal void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
+    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
     {
         int tileX = F32.FloorToInt(hitX / F32.FromInt(16)) * 16;
         int tileY = F32.FloorToInt(hitY / F32.FromInt(16)) * 16;
@@ -109,12 +108,12 @@ internal class LevelManager
             var entity = new ItemEntity(mat, ex, ey);
             entity.GiveItem = mat;
             entity.HasCol   = true;
-            entity.Timer    = 110 + (Pico8.Rnd(20));
+            entity.Timer    = 110 + Pico8.Rnd(20);
             entities.Add(entity);
         }
     }
 
-    internal void UpGround(WorldState state)
+    internal static void UpGround(WorldState state)
     {
         int ci = F32.FloorToInt((state.Clx - F32.FromInt(64)) / F32.FromInt(16));
         int cj = F32.FloorToInt((state.Cly - F32.FromInt(64)) / F32.FromInt(16));
