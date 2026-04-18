@@ -12,8 +12,8 @@ internal static class SeededLevelManager
 
     internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
     {
-        //if (isUnder)
-        //    return base.CreateLevel(x, y, sx, sy, isUnder, state);
+        if (isUnder)
+            return LevelManager.CreateLevel(x, y, sx, sy, isUnder, state);
 
         var level = new Level(x, y, sx, sy, isUnder);
         PcraftServices.SetLevel(level, state);

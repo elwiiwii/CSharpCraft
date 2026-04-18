@@ -85,8 +85,8 @@ internal static class LevelManager
                 state.RndWat[i][j] = rndWat[i][j];
 
         game.InitRecipes();
-        state.Cave   = CreateLevel(64, 0, 32, 32, true,  state);
-        state.Island = CreateLevel( 0, 0, 64, 64, false, state);
+        state.Cave   = PcraftServices.CreateLevel(64, 0, 32, 32, true,  state);
+        state.Island = PcraftServices.CreateLevel( 0, 0, 64, 64, false, state);
 
         var workbench = new ItemEntity(PcraftData.Workbench, state.Plx, state.Ply);
         workbench.HasCol = true;
