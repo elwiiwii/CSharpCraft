@@ -68,24 +68,6 @@ public sealed class ChestMenuPureTests
 
     // --------------------------------------------------------------------------
     #endregion
-    #region Design contract — ToogleMenu removed from WorldState
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void WorldState_DoesNotHave_ToogleMenuProperty()
-    {
-        // ChestMenu absorbs tab-toggle state. ToogleMenu must be removed from WorldState
-        // in Phase 3. This test fails until that migration is complete.
-        var prop = typeof(WorldState).GetProperty(
-            "ToogleMenu",
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.NonPublic |
-            System.Reflection.BindingFlags.Public);
-        prop.Should().BeNull("ChestMenu owns tab-toggle state — WorldState should not carry ToogleMenu");
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
 }
 
 // --------------------------------------------------------------------------
@@ -148,9 +130,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new ChestMenu(
             chestItems:  new List<ItemStack> { new(PcraftData.Wood) },
             playerItems: new List<ItemStack> { new(PcraftData.Stone) });
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         menu.TabToggle.Should().Be(1);
     }
@@ -167,9 +149,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
             chestItems:  new List<ItemStack> { new(PcraftData.Wood) },
             playerItems: new List<ItemStack> { new(PcraftData.Stone) });
         menu.TabToggle = 1;
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         menu.TabToggle.Should().Be(0);
     }
@@ -186,9 +168,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
             chestItems:  new List<ItemStack> { new(PcraftData.Wood) },
             playerItems: new List<ItemStack> { new(PcraftData.Stone) });
         menu.TabToggle = 1;
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         menu.TabToggle.Should().Be(0);
     }
@@ -210,9 +192,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var chestItems  = new List<ItemStack> { wood };
         var playerItems = new List<ItemStack>();
         var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         chestItems.Should().BeEmpty("item was transferred out of chest");
         playerItems.Should().ContainSingle(i => i.Type == PcraftData.Wood, "item arrived in player inventory");
@@ -231,9 +213,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var playerItems = new List<ItemStack> { stone };
         var menu = new ChestMenu(chestItems, playerItems);
         menu.TabToggle = 1;
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         playerItems.Should().BeEmpty("item was transferred out of player inventory");
         chestItems.Should().ContainSingle(i => i.Type == PcraftData.Stone, "item arrived in chest");
@@ -250,9 +232,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var chestItems  = new List<ItemStack>();
         var playerItems = new List<ItemStack> { new(PcraftData.Wood) };
         var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0 → chest tab (empty)
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         chestItems.Should().BeEmpty();
         playerItems.Should().ContainSingle(); // unchanged
@@ -271,11 +253,11 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var menu = new ChestMenu(new List<ItemStack>(), new List<ItemStack>());
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
-        state.CurMenu.Should().BeNull();
+        player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------

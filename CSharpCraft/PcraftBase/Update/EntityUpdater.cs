@@ -5,20 +5,20 @@ namespace CSharpCraft.PcraftBase.Update;
 
 internal static class EntityUpdater
 {
-    internal static (F32 dx, F32 dy, bool canAct) Update(WorldState state, F32 dx, F32 dy)
+    internal static (F32 dx, F32 dy, bool canAct) Update(PlayerEntity player, Level level, F32 dx, F32 dy)
     {
         bool canAct = true;
 
-        int fin = state.Entities.Count;
+        int fin = level.Ent.Count;
         for (int i = fin - 1; i >= 0; i--)
         {
-            var e = state.Entities[i];
+            var e = level.Ent[i];
 
             if (e.HasCol)
             {
                 (e.Vx, e.Vy) = PcraftServices.ReflectCol(
                     e.X, e.Y, e.Vx, e.Vy,
-                    (x2, y2) => PcraftServices.IsFree(x2, y2, state),
+                    (x2, y2) => PcraftServices.IsFree(x2, y2, level),
                     F32.FromDouble(0.90));
             }
 
@@ -29,27 +29,27 @@ internal static class EntityUpdater
 
             if (e.Timer != null && e.Timer.Value < F32.One)
             {
-                state.Entities.RemoveAt(i);
+                level.Ent.RemoveAt(i);
                 continue;
             }
 
             if (e.Timer != null)
                 e.Timer = e.Timer.Value - F32.One;
 
-            var dist = F32.Max(F32.Abs(e.X - state.Plx), F32.Abs(e.Y - state.Ply));
+            var dist = F32.Max(F32.Abs(e.X - player.X), F32.Abs(e.Y - player.Y));
 
             if (e.GiveItem != null)
             {
                 if (dist < F32.FromInt(5) && (e.Timer == null || e.Timer.Value < F32.FromInt(115)))
                 {
                     var newit = new ItemStack(e.GiveItem, count: 1);
-                    PcraftServices.AddItemInList(state.Invent, newit, -1);
-                    state.Entities.RemoveAt(i);
+                    PcraftServices.AddItemInList(player.Invent, newit, -1);
+                    level.Ent.RemoveAt(i);
                     var popup = new ItemEntity(PcraftData.EText, e.X, e.Y - F32.FromInt(5), F32.Zero, -F32.One);
-                    popup.TextValue = F32.FromInt(PcraftServices.HowMany(state.Invent, newit));
+                    popup.TextValue = F32.FromInt(PcraftServices.HowMany(player.Invent, newit));
                     popup.TextColor = 11;
                     popup.Timer     = F32.FromInt(20);
-                    state.Entities.Add(popup);
+                    level.Ent.Add(popup);
                     Pico8.Sfx(18);
                 }
             }
@@ -58,21 +58,21 @@ internal static class EntityUpdater
                 if (e.HasCol)
                 {
                     (dx, dy) = PcraftServices.ReflectCol(
-                        state.Plx, state.Ply, dx, dy,
+                        player.X, player.Y, dx, dy,
                         (fx, fy) => PcraftServices.EntColFree(fx, fy, e),
                         F32.Zero);
                 }
 
-                if (dist < F32.FromInt(12) && Pico8.Btn(5) && !state.Block5 && !state.Lb5)
+                if (dist < F32.FromInt(12) && Pico8.Btn(5) && !player.Block5 && !player.Lb5)
                 {
-                    if (state.CurItem != null && state.CurItem.Type == PcraftData.PickupTool)
+                    if (player.CurItem != null && player.CurItem.Type == PcraftData.PickupTool)
                     {
                         if (e.Type == PcraftData.Chest || e.Type.BeCraft)
                         {
                             var asStack = new ItemStack(e.Type, list: e.List);
-                            PcraftServices.AddItemInList(state.Invent, asStack, 0);
-                            state.CurItem = asStack;
-                            state.Entities.RemoveAt(i);
+                            PcraftServices.AddItemInList(player.Invent, asStack, 0);
+                            player.CurItem = asStack;
+                            level.Ent.RemoveAt(i);
                         }
                         canAct = false;
                     }
@@ -81,9 +81,9 @@ internal static class EntityUpdater
                         if (e.Type == PcraftData.Chest || e.Type.BeCraft)
                         {
                             if (e.Type.BeCraft)
-                                state.CurMenu = new CraftingMenu(e.Type, e.List ?? [], state.Invent);
+                                player.CurMenu = new CraftingMenu(e.Type, e.List ?? [], player.Invent);
                             else
-                                state.CurMenu = new ChestMenu([], state.Invent);
+                                player.CurMenu = new ChestMenu([], player.Invent);
                             Pico8.Sfx(13);
                         }
                         canAct = false;

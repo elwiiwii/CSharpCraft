@@ -65,27 +65,28 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
             ])
         ], "test");
         orch.LoadSfxPacks(scene.Sfx, "test");
-        orch.Update(TimeSpan.Zero); // triggers SetSfxDictionary via onBeforeSceneCallbacks
+        orch.Update(TimeSpan.Zero);
         return orch;
     }
 
     // --------------------------------------------------------------------------
-    #region Player position — movement finalization
+    #region Player position -- movement finalization
     // --------------------------------------------------------------------------
 
     [Fact]
     public void Update_AdvancesPlayerPosition_ByDxDy()
     {
-        // dx,dy = reflectcol(plx,ply,dx,dy,isfree,0) → plx+=dx; ply+=dy
-        // With null level every tile is GrWater (passable) → reflectcol passes through unchanged.
+        // dx,dy = reflectcol(plx,ply,dx,dy,isfree,0) -> plx+=dx; ply+=dy
+        // With null level every tile is GrWater (passable) -> reflectcol passes through unchanged.
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level  = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.FromInt(3), F32.FromInt(4), canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.FromInt(3), F32.FromInt(4), canAct: false, nearEnemies: []);
 
-        state.Plx.Float.Should().BeApproximately(3f, 0.01f);
-        state.Ply.Float.Should().BeApproximately(4f, 0.01f);
+        player.X.Float.Should().BeApproximately(3f, 0.01f);
+        player.Y.Float.Should().BeApproximately(4f, 0.01f);
     }
 
     // --------------------------------------------------------------------------
@@ -99,11 +100,14 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // llife += max(-1, min(1, plife-llife))
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plife = F32.FromInt(100), Llife = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life  = F32.FromInt(100);
+        player.Llife = F32.Zero;
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Llife.Float.Should().BeApproximately(1f, 0.01f);
+        player.Llife.Float.Should().BeApproximately(1f, 0.01f);
     }
 
     [Fact]
@@ -112,11 +116,14 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // lstam += max(-1, min(1, pstam-lstam))
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Pstam = F32.FromInt(100), Lstam = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Stam  = F32.FromInt(100);
+        player.Lstam = F32.Zero;
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Lstam.Float.Should().BeApproximately(1f, 0.01f);
+        player.Lstam.Float.Should().BeApproximately(1f, 0.01f);
     }
 
     // --------------------------------------------------------------------------
@@ -130,24 +137,28 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // if pstam<100: pstam = min(100, pstam+1)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Pstam = F32.FromInt(50) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Stam = F32.FromInt(50);
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Pstam.Float.Should().BeApproximately(51f, 0.01f);
+        player.Stam.Float.Should().BeApproximately(51f, 0.01f);
     }
 
     [Fact]
     public void Update_DoesNotExceedMaxStamina()
     {
-        // pstam=100 → stays 100, no regen
+        // pstam=100 -> stays 100, no regen
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Pstam = F32.FromInt(100) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Stam = F32.FromInt(100);
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Pstam.Float.Should().BeApproximately(100f, 0.01f);
+        player.Stam.Float.Should().BeApproximately(100f, 0.01f);
     }
 
     // --------------------------------------------------------------------------
@@ -161,25 +172,29 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // if banim>0: banim -= 1
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Banim = F32.FromInt(5) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Banim = F32.FromInt(5);
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Banim.Float.Should().BeApproximately(4f, 0.01f);
+        player.Banim.Float.Should().BeApproximately(4f, 0.01f);
     }
 
     [Fact]
     public void Update_DoesNotChangeBanim_WhenAtZero()
     {
-        // banim=0 → stays 0; the btn(5) block only triggers with canAct=true and btn(5) pressed
-        var fakeInput = new FakeInputManager(); // btn(5) returns false → no attack
+        // banim=0 -> stays 0; the btn(5) block only triggers with canAct=true and btn(5) pressed
+        var fakeInput = new FakeInputManager();
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Banim = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Banim = F32.Zero;
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Banim.Float.Should().BeApproximately(0f, 0.01f);
+        player.Banim.Float.Should().BeApproximately(0f, 0.01f);
     }
 
     // --------------------------------------------------------------------------
@@ -193,11 +208,13 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // time += 1/30
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Time = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        level.Time = F32.Zero;
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
+        level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
 
     // --------------------------------------------------------------------------
@@ -213,11 +230,13 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         fakeInput.SetBtn(4, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Lb4 = false };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Lb4 = false;
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Lb4.Should().BeTrue();
+        player.Lb4.Should().BeTrue();
     }
 
     [Fact]
@@ -229,25 +248,30 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         // canAct=false prevents action block from firing; also set banim>0 to prevent attack
-        var state = new WorldState { Block5 = true, Banim = F32.FromInt(1) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Block5 = true;
+        player.Banim  = F32.FromInt(1);
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Lb5.Should().BeTrue();
+        player.Lb5.Should().BeTrue();
     }
 
     [Fact]
     public void Update_ClearsBlock5_WhenBtn5NotHeld()
     {
         // if not btn(5) then block5=false
-        var fakeInput = new FakeInputManager(); // SetBtn(5) not called → false
+        var fakeInput = new FakeInputManager();
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Block5 = true };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Block5 = true;
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.Block5.Should().BeFalse();
+        player.Block5.Should().BeFalse();
     }
 
     // --------------------------------------------------------------------------
@@ -263,12 +287,15 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         fakeInput.PressOnce(4);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Lb4 = false, Plife = F32.FromInt(10) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Lb4  = false;
+        player.Life = F32.FromInt(10);
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.CurMenu.Should().BeOfType<InventoryMenu>()
-            .Which.List.Should().BeSameAs(state.Invent);
+        player.CurMenu.Should().BeOfType<InventoryMenu>()
+            .Which.List.Should().BeSameAs(player.Invent);
     }
 
     [Fact]
@@ -279,11 +306,15 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         fakeInput.PressOnce(4);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Lb4 = true, CurMenu = null, Plife = F32.FromInt(10) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Lb4    = true;
+        player.CurMenu = null;
+        player.Life   = F32.FromInt(10);
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.CurMenu.Should().BeNull();
+        player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------
@@ -297,36 +328,37 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         // if plife<=0: curmenu=deathmenu
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plife = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life = F32.Zero;
+        var level = new Level(0, 0, 8, 8, isUnder: false);
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: false);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
-        state.CurMenu.Should().BeSameAs(PcraftData.DeathMenu);
+        player.CurMenu.Should().BeSameAs(PcraftData.DeathMenu);
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region Attack — Btn(5) with near enemies
+    #region Attack -- Btn(5) with near enemies
     // --------------------------------------------------------------------------
 
     [Fact]
     public void Update_ReducesEnemyLife_WhenBtn5PressedWithNearEnemies()
     {
-        // banim==0 and pstam>0 and canact and nearenemies>0 → e.life -= pow/#nearenemies (pow=1 by default)
+        // banim==0 and pstam>0 and canact and nearenemies>0 -> e.life -= pow/#nearenemies (pow=1 by default)
         var fakeInput = new FakeInputManager();
         fakeInput.SetBtn(5, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            Banim = F32.Zero,
-            Pstam = F32.FromInt(60)
-        };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Banim = F32.Zero;
+        player.Stam  = F32.FromInt(60);
         var zombie = new ZombieEntity(F32.Zero, F32.Zero) { Life = F32.FromInt(10) };
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
-        state.NearEnemies.Add(zombie);
+        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        level.Ene.Add(zombie);
+        var nearEnemies = new List<CharacterEntity> { zombie };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
 
         zombie.Life.Float.Should().BeLessThan(10f);
     }
@@ -334,44 +366,42 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_RemovesEnemy_FromEnemiesList_WhenKilledByAttack()
     {
-        // e.life <= 0 → del(enemies, e)
+        // e.life <= 0 -> del(enemies, e)
         var fakeInput = new FakeInputManager();
         fakeInput.SetBtn(5, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            Banim = F32.Zero,
-            Pstam = F32.FromInt(60)
-        };
-        // Life=0.5 — one unarmed hit (pow=1) kills it
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Banim = F32.Zero;
+        player.Stam  = F32.FromInt(60);
+        // Life=0.5 -- one unarmed hit (pow=1) kills it
         var zombie = new ZombieEntity(F32.Zero, F32.Zero) { Life = F32.FromFloat(0.5f) };
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
-        state.NearEnemies.Add(zombie);
+        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        level.Ene.Add(zombie);
+        var nearEnemies = new List<CharacterEntity> { zombie };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
 
-        state.Enemies.Should().NotContain(zombie);
+        level.Ene.Should().NotContain(zombie);
     }
 
     [Fact]
     public void Update_DoesNotAttack_WhenBanimAboveZero()
     {
-        // banim>0 → attack block skipped; enemy life unchanged
+        // banim>0 -> attack block skipped; enemy life unchanged
         var fakeInput = new FakeInputManager();
         fakeInput.SetBtn(5, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            Banim = F32.FromInt(3), // cooldown still active
-            Pstam = F32.FromInt(60)
-        };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Banim = F32.FromInt(3);
+        player.Stam  = F32.FromInt(60);
         var zombie = new ZombieEntity(F32.Zero, F32.Zero) { Life = F32.FromInt(10) };
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
-        state.NearEnemies.Add(zombie);
+        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        level.Ene.Add(zombie);
+        var nearEnemies = new List<CharacterEntity> { zombie };
 
-        PlayerActionUpdater.Update(state, new PcraftGame(), F32.Zero, F32.Zero, canAct: true);
+        PlayerActionUpdater.Update(player, level, new PcraftGame(), F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
 
         zombie.Life.Float.Should().BeApproximately(10f, 0.01f);
     }

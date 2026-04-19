@@ -10,17 +10,17 @@ internal static class SeededLevelManager
 
     internal static void Initialize(long seed) => _seed = seed;
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
+    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
     {
         if (isUnder)
-            return LevelManager.CreateLevel(x, y, sx, sy, isUnder, state);
+            return LevelManager.CreateLevel(x, y, sx, sy, isUnder, player);
 
         var level = new Level(x, y, sx, sy, isUnder);
-        PcraftServices.SetLevel(level, state);
-        var (holeX, holeY) = SeededMapGenerator.CreateMap(state, _seed);
-        PcraftServices.FillEne(level, state);
-        level.Stx = F32.FromInt((holeX - state.LevelX) * 16 + 8);
-        level.Sty = F32.FromInt((holeY - state.LevelY) * 16 + 8);
+        PcraftServices.SetLevel(level, player);
+        var (holeX, holeY) = SeededMapGenerator.CreateMap(level, player, _seed);
+        PcraftServices.FillEne(level, player);
+        level.Stx = F32.FromInt((holeX - level.X) * 16 + 8);
+        level.Sty = F32.FromInt((holeY - level.Y) * 16 + 8);
         return level;
     }
 }

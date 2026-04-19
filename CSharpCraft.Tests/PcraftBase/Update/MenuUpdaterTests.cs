@@ -22,10 +22,10 @@ public sealed class MenuUpdaterPureTests
     [Fact]
     public void Update_ReturnsFalse_WhenCurMenuIsNull()
     {
-        var state = new WorldState { CurMenu = null };
-        var game  = new PcraftGame();
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var game   = new PcraftGame();
 
-        var result = MenuUpdater.Update(state, game);
+        var result = MenuUpdater.Update(player, game);
 
         result.Should().BeFalse();
     }
@@ -100,9 +100,9 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { CurMenu = PcraftData.MainMenu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame()).Should().BeTrue();
+        MenuUpdater.Update(player, new PcraftGame()).Should().BeTrue();
     }
 
     [Fact]
@@ -110,11 +110,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { CurMenu = PcraftData.MainMenu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
+        player.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
     }
 
     [Fact]
@@ -125,11 +125,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.SetBtn(4, true);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState { CurMenu = PcraftData.MainMenu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.Lb4.Should().BeTrue();
+        player.Lb4.Should().BeTrue();
     }
 
     // --------------------------------------------------------------------------
@@ -145,11 +145,11 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4); // Btnp(4) fires once
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState { CurMenu = PcraftData.MainMenu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.CurMenu.Should().BeSameAs(PcraftData.IntroMenu);
+        player.CurMenu.Should().BeSameAs(PcraftData.IntroMenu);
     }
 
     [Fact]
@@ -160,13 +160,13 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState { CurMenu = PcraftData.IntroMenu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.IntroMenu };
         var game  = new PcraftGame();
         game.InitRecipes();
 
-        MenuUpdater.Update(state, game);
+        MenuUpdater.Update(player, game);
 
-        state.CurMenu.Should().BeNull();
+        player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------
@@ -179,10 +179,10 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.CurMenu = new InventoryMenu(state.Invent);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(state, new PcraftGame()).Should().BeTrue();
+        MenuUpdater.Update(player, new PcraftGame()).Should().BeTrue();
     }
 
     [Fact]
@@ -190,13 +190,13 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var menu = new InventoryMenu(state.Invent);
-        state.CurMenu = menu;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var menu = new InventoryMenu(player.Invent);
+        player.CurMenu = menu;
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.CurMenu.Should().BeSameAs(menu);
+        player.CurMenu.Should().BeSameAs(menu);
     }
 
     [Fact]
@@ -207,13 +207,13 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.SetBtn(5, true);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.CurMenu = new InventoryMenu(state.Invent);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.Lb4.Should().BeTrue();
-        state.Lb5.Should().BeTrue();
+        player.Lb4.Should().BeTrue();
+        player.Lb5.Should().BeTrue();
     }
 
     [Fact]
@@ -221,14 +221,14 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = new InventoryMenu(state.Invent);
-        state.CurMenu = menu;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
+        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        var menu = new InventoryMenu(player.Invent);
+        player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
         menu.Sel.Should().Be(0);
     }
@@ -246,12 +246,12 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.CurMenu = new InventoryMenu(state.Invent);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.CurMenu.Should().BeNull();
+        player.CurMenu.Should().BeNull();
     }
 
     [Fact]
@@ -262,14 +262,14 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(3);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = new InventoryMenu(state.Invent);
-        state.CurMenu = menu;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
+        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        var menu = new InventoryMenu(player.Invent);
+        player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
         menu.Sel.Should().Be(1);
     }
@@ -282,14 +282,14 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(2);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = new InventoryMenu(state.Invent);
-        state.CurMenu = menu;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
+        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        var menu = new InventoryMenu(player.Invent);
+        player.CurMenu = menu;
         menu.Sel = 1;
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
         menu.Sel.Should().Be(0);
     }
@@ -302,14 +302,14 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(3);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        state.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
-        var menu = new InventoryMenu(state.Invent);
-        state.CurMenu = menu;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
+        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        var menu = new InventoryMenu(player.Invent);
+        player.CurMenu = menu;
         menu.Sel = 1; // already at last (0-based, 2 items → max=1)
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
         menu.Sel.Should().Be(0); // wraps back to 0
     }
@@ -322,18 +322,18 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
         var axe = new ItemStack(PcraftData.Haxe) { Power = 1 };
-        state.Invent.Add(axe);
-        var menu = new InventoryMenu(state.Invent);
-        state.CurMenu = menu;
+        player.Invent.Add(axe);
+        var menu = new InventoryMenu(player.Invent);
+        player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(state, new PcraftGame());
+        MenuUpdater.Update(player, new PcraftGame());
 
-        state.CurItem.Should().BeSameAs(axe);
-        state.CurMenu.Should().BeNull();
-        state.Block5.Should().BeTrue();
+        player.CurItem.Should().BeSameAs(axe);
+        player.CurMenu.Should().BeNull();
+        player.Block5.Should().BeTrue();
     }
 
     [Fact]
@@ -344,19 +344,19 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var game  = new PcraftGame();
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var game   = new PcraftGame();
         game.InitRecipes();
 
         // Wood axe requires 5 wood
-        state.Invent.Add(new ItemStack(PcraftData.Wood, count: 5));
-        var craftMenu = new CraftingMenu(PcraftData.Workbench, game.WorkbenchRecipe, state.Invent);
+        player.Invent.Add(new ItemStack(PcraftData.Wood, count: 5));
+        var craftMenu = new CraftingMenu(PcraftData.Workbench, game.WorkbenchRecipe, player.Invent);
         craftMenu.Sel = 0; // first entry = wood haxe recipe
-        state.CurMenu = craftMenu;
+        player.CurMenu = craftMenu;
 
-        MenuUpdater.Update(state, game);
+        MenuUpdater.Update(player, game);
 
-        state.Invent.Should().Contain(it => it.Type == PcraftData.Haxe);
+        player.Invent.Should().Contain(it => it.Type == PcraftData.Haxe);
     }
 
     // --------------------------------------------------------------------------

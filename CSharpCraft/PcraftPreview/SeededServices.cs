@@ -15,8 +15,8 @@ internal class SeededServices : PcraftServices
         SetServices(this);
     }
 
-    protected override Level OnCreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
-        => SeededLevelManager.CreateLevel(x, y, sx, sy, isUnder, state);
+    protected override Level OnCreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
+        => SeededLevelManager.CreateLevel(x, y, sx, sy, isUnder, player);
 
     protected override F32[][] OnInitRndWat()
         => SeededMapGenerator.InitRndWat(_seed);

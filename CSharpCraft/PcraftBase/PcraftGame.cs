@@ -4,6 +4,8 @@ namespace CSharpCraft.PcraftBase;
 
 internal sealed class PcraftGame
 {
+    internal bool NeedsReset { get; set; } = false;
+
     internal List<Recipe> FurnaceRecipe    { get; } = [];
     internal List<Recipe> WorkbenchRecipe  { get; } = [];
     internal List<Recipe> StonebenchRecipe { get; } = [];

@@ -67,31 +67,6 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
     }
 
     // --------------------------------------------------------------------------
-    #region Player entity sync
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void Update_SyncsPlayerEntityPosition_ToPlxPly()
-    {
-        // if e.type == player then e.x=plx; e.y=ply
-        using var orch = BuildOrchestrator();
-        Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            Plx = F32.FromInt(80),
-            Ply = F32.FromInt(90)
-        };
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        state.Enemies = [player];
-
-        EnemyUpdater.Update(state);
-
-        player.X.Float.Should().BeApproximately(80f, 0.01f);
-        player.Y.Float.Should().BeApproximately(90f, 0.01f);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
     #region NearEnemies population
     // --------------------------------------------------------------------------
 
@@ -101,14 +76,13 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         // nearenemies={} at top of loop
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, 64, 64, false);
         var stale = new ZombieEntity(F32.FromInt(200), F32.FromInt(200));
-        state.NearEnemies.Add(stale);
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero)];
 
-        EnemyUpdater.Update(state);
+        var nearEnemies = EnemyUpdater.Update(player, level);
 
-        state.NearEnemies.Should().NotContain(stale);
+        nearEnemies.Should().NotContain(stale);
     }
 
     [Fact]
@@ -119,23 +93,20 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         // Place zombie at (plx+8+4, ply) → disten = getlen(4, 0) = 4 < 10
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            Plx  = F32.Zero,
-            Ply  = F32.Zero,
-            Prot = F32.Zero
-        };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        // player.Prot defaults to F32.Zero
+        var level = new Level(0, 0, 64, 64, false);
         var zombie = new ZombieEntity(F32.FromInt(12), F32.Zero)
         {
             Life = F32.FromInt(10),
             Dtim = F32.FromInt(10), // non-zero so AI step doesn't reset
             Step = EnStep.Wait
         };
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), zombie];
+        level.Ene.Add(zombie);
 
-        EnemyUpdater.Update(state);
+        var nearEnemies = EnemyUpdater.Update(player, level);
 
-        state.NearEnemies.Should().Contain(zombie);
+        nearEnemies.Should().Contain(zombie);
     }
 
     [Fact]
@@ -144,13 +115,16 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         // isin(e, 100) is false → skip entirely, not added to nearenemies
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero, Clx = F32.Zero, Cly = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Camera.Clx = F32.Zero;
+        player.Camera.Cly = F32.Zero;
+        var level = new Level(0, 0, 64, 64, false);
         var distantZombie = new ZombieEntity(F32.FromInt(500), F32.Zero) { Life = F32.FromInt(10) };
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero), distantZombie];
+        level.Ene.Add(distantZombie);
 
-        EnemyUpdater.Update(state);
+        var nearEnemies = EnemyUpdater.Update(player, level);
 
-        state.NearEnemies.Should().NotContain(distantZombie);
+        nearEnemies.Should().NotContain(distantZombie);
     }
 
     // --------------------------------------------------------------------------
@@ -164,16 +138,17 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         // e.dtim<=0 and step==wait → step=walk, dtim=30+rnd(60)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.FromInt(30), Ply = F32.Zero };
+        var player = new PlayerEntity(F32.FromInt(30), F32.Zero);
+        var level = new Level(0, 0, 64, 64, false);
         var zombie = new ZombieEntity(F32.FromInt(30), F32.Zero)
         {
             Life = F32.FromInt(10),
             Dtim = F32.Zero,  // expired
             Step = EnStep.Wait
         };
-        state.Enemies = [new PlayerEntity(F32.FromInt(30), F32.Zero), zombie];
+        level.Ene.Add(zombie);
 
-        EnemyUpdater.Update(state);
+        EnemyUpdater.Update(player, level);
 
         zombie.Step.Should().Be(EnStep.Walk);
         zombie.Dtim.Float.Should().BeGreaterThan(0f);
@@ -185,16 +160,17 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         // e.dtim<=0 and step==walk → step=wait, dx=dy=0, dtim=30+rnd(60)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.FromInt(30), Ply = F32.Zero };
+        var player = new PlayerEntity(F32.FromInt(30), F32.Zero);
+        var level = new Level(0, 0, 64, 64, false);
         var zombie = new ZombieEntity(F32.FromInt(30), F32.Zero)
         {
             Life = F32.FromInt(10),
             Dtim = F32.Zero,
             Step = EnStep.Walk
         };
-        state.Enemies = [new PlayerEntity(F32.FromInt(30), F32.Zero), zombie];
+        level.Ene.Add(zombie);
 
-        EnemyUpdater.Update(state);
+        EnemyUpdater.Update(player, level);
 
         zombie.Step.Should().Be(EnStep.Wait);
         zombie.Dx.Float.Should().BeApproximately(0f, 0.01f);
@@ -207,16 +183,17 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         // distp<40 and step!=chase → step=enstep_chase
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.FromInt(30), Ply = F32.Zero };
+        var player = new PlayerEntity(F32.FromInt(30), F32.Zero);
+        var level = new Level(0, 0, 64, 64, false);
         var zombie = new ZombieEntity(F32.FromInt(50), F32.Zero) // dist=20 < 40
         {
             Life = F32.FromInt(10),
             Dtim = F32.FromInt(5), // non-zero so we enter the else branch
             Step = EnStep.Wait     // becomes chase
         };
-        state.Enemies = [new PlayerEntity(F32.FromInt(30), F32.Zero), zombie];
+        level.Ene.Add(zombie);
 
-        EnemyUpdater.Update(state);
+        EnemyUpdater.Update(player, level);
 
         zombie.Step.Should().Be(EnStep.Chase);
     }

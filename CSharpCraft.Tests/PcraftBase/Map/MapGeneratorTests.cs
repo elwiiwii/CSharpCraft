@@ -247,14 +247,13 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var island = new Level(0, 0, 64, 64, isUnder: false);
-        state.SetLevel(island);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, 64, 64, isUnder: false);
 
-        MapGenerator.CreateMap(state);
+        MapGenerator.CreateMap(level, player);
 
-        state.Plx.Should().BeGreaterThan(F32.Zero, "island spawn x must be positive");
-        state.Ply.Should().BeGreaterThan(F32.Zero, "island spawn y must be positive");
+        player.X.Should().BeGreaterThan(F32.Zero, "island spawn x must be positive");
+        player.Y.Should().BeGreaterThan(F32.Zero, "island spawn y must be positive");
     }
 
     [Fact]
@@ -263,16 +262,15 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         // Lua: clx=plx, cly=ply, cmx=plx, cmy=ply after createmap
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var island = new Level(0, 0, 64, 64, isUnder: false);
-        state.SetLevel(island);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, 64, 64, isUnder: false);
 
-        MapGenerator.CreateMap(state);
+        MapGenerator.CreateMap(level, player);
 
-        state.Clx.Should().Be(state.Plx, "camera x must be initialised to player x");
-        state.Cly.Should().Be(state.Ply, "camera y must be initialised to player y");
-        state.Cmx.Should().Be(state.Plx, "map-camera x must be initialised to player x");
-        state.Cmy.Should().Be(state.Ply, "map-camera y must be initialised to player y");
+        player.Camera.Clx.Should().Be(player.X, "camera x must be initialised to player x");
+        player.Camera.Cly.Should().Be(player.Y, "camera y must be initialised to player y");
+        player.Camera.Cmx.Should().Be(player.X, "map-camera x must be initialised to player x");
+        player.Camera.Cmy.Should().Be(player.Y, "map-camera y must be initialised to player y");
     }
 
     [Fact]
@@ -282,11 +280,10 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         //      holey = levelsy/2+levely = 64/2+0 = 32
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var island = new Level(0, 0, 64, 64, isUnder: false);
-        state.SetLevel(island);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, 64, 64, isUnder: false);
 
-        var (holeX, holeY) = MapGenerator.CreateMap(state);
+        var (holeX, holeY) = MapGenerator.CreateMap(level, player);
 
         holeX.Should().Be(32);
         holeY.Should().Be(32);
@@ -302,11 +299,10 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var cave = new Level(64, 0, 32, 32, isUnder: true);
-        state.SetLevel(cave);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(64, 0, 32, 32, isUnder: true);
 
-        var act = () => MapGenerator.CreateMap(state);
+        var act = () => MapGenerator.CreateMap(level, player);
 
         act.Should().NotThrow();
     }
@@ -317,11 +313,10 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         // Lua: holex = 32/2+64 = 80,  holey = 32/2+0 = 16
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var cave = new Level(64, 0, 32, 32, isUnder: true);
-        state.SetLevel(cave);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(64, 0, 32, 32, isUnder: true);
 
-        var (holeX, holeY) = MapGenerator.CreateMap(state);
+        var (holeX, holeY) = MapGenerator.CreateMap(level, player);
 
         holeX.Should().Be(80);
         holeY.Should().Be(16);
@@ -332,14 +327,13 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        var cave = new Level(64, 0, 32, 32, isUnder: true);
-        state.SetLevel(cave);
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(64, 0, 32, 32, isUnder: true);
 
-        MapGenerator.CreateMap(state);
+        MapGenerator.CreateMap(level, player);
 
-        state.Plx.Should().BeGreaterThan(F32.Zero, "cave spawn x must be positive");
-        state.Ply.Should().BeGreaterThan(F32.Zero, "cave spawn y must be positive");
+        player.X.Should().BeGreaterThan(F32.Zero, "cave spawn x must be positive");
+        player.Y.Should().BeGreaterThan(F32.Zero, "cave spawn y must be positive");
     }
 
     // --------------------------------------------------------------------------

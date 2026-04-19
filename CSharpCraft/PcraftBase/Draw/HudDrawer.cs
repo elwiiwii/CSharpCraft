@@ -1,20 +1,22 @@
+using CSharpCraft.PcraftBase.Data;
+
 namespace CSharpCraft.PcraftBase.Draw;
 
 internal static class HudDrawer
 {
-    internal static void DrawHud(WorldState state)
+    internal static void DrawHud(PlayerEntity player)
     {
-        DrawBar(F32.FromInt(4), F32.FromInt(4), state.Plife, state.Llife, F32.FromInt(8), F32.FromInt(2));
-        DrawBar(F32.FromInt(4), F32.FromInt(9), F32.Max(F32.Zero, state.Pstam), state.Lstam, F32.FromInt(11), F32.FromInt(3));
+        DrawBar(F32.FromInt(4), F32.FromInt(4), player.Life,  player.Llife, F32.FromInt(8), F32.FromInt(2));
+        DrawBar(F32.FromInt(4), F32.FromInt(9), F32.Max(F32.Zero, player.Stam), player.Lstam, F32.FromInt(11), F32.FromInt(3));
 
-        if (state.CurItem != null)
+        if (player.CurItem != null)
         {
             const int ix = 35;
             const int iy = 3;
-            PcraftServices.ItemName(ix + 1, iy + 3, state.CurItem, 7);
-            if (state.CurItem.Count.HasValue)
+            PcraftServices.ItemName(ix + 1, iy + 3, player.CurItem, 7);
+            if (player.CurItem.Count.HasValue)
             {
-                string cnt = state.CurItem.Count.Value.ToString();
+                string cnt = player.CurItem.Count.Value.ToString();
                 Pico8.Print(cnt, ix + 88 - 16, iy + 3, 7);
             }
         }

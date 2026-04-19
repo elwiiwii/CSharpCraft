@@ -76,19 +76,18 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
     public void Update_SkipsGameLogic_WhenMenuActive()
     {
         // if curmenu → MenuUpdater returns true → PlayerActionUpdater never runs
-        // Verifiable: state.Time does NOT advance (time advance is in PlayerActionUpdater)
+        // Verifiable: level.Time does NOT advance (time advance is in PlayerActionUpdater)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            CurMenu = PcraftData.DeathMenu,   // splash menu: spr=128 → MenuUpdater returns true
-            Plife   = F32.FromInt(100),
-            Time    = F32.Zero
-        };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life = F32.FromInt(100);
+        player.CurMenu = PcraftData.DeathMenu;   // splash menu: spr=128 → MenuUpdater returns true
+        var level = new Level(0, 0, 64, 64, false);
+        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(state, new PcraftGame());
+        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
 
-        state.Time.Should().Be(F32.Zero);
+        level.Time.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -102,15 +101,14 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         // CurMenu=null → full pipeline → PlayerActionUpdater advances time by 1/30
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState
-        {
-            Plife = F32.FromInt(100),
-            Time  = F32.Zero
-        };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life = F32.FromInt(100);
+        var level = new Level(0, 0, 64, 64, false);
+        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(state, new PcraftGame());
+        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
 
-        state.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
+        level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
 
     // --------------------------------------------------------------------------
@@ -126,11 +124,14 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         fakeInput.SetBtn(0, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Plife = F32.FromInt(100) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life = F32.FromInt(100);
+        var level = new Level(0, 0, 64, 64, false);
+        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(state, new PcraftGame());
+        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
 
-        state.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
+        player.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
     }
 
     [Fact]
@@ -141,11 +142,14 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         fakeInput.SetBtn(1, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Plife = F32.FromInt(100), Panim = F32.Zero };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life = F32.FromInt(100);
+        var level = new Level(0, 0, 64, 64, false);
+        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(state, new PcraftGame());
+        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
 
-        state.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
+        player.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
     }
 
     [Fact]
@@ -154,11 +158,15 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         // no direction buttons → dx=dy=0 → panim = 0
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState { Plife = F32.FromInt(100), Panim = F32.FromInt(5) };
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        player.Life = F32.FromInt(100);
+        player.Panim = F32.FromInt(5);
+        var level = new Level(0, 0, 64, 64, false);
+        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(state, new PcraftGame());
+        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
 
-        state.Panim.Should().Be(F32.Zero);
+        player.Panim.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------

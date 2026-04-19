@@ -141,9 +141,9 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe(), MakeHaxeRecipe() };
         var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         menu.Sel.Should().Be(1);
     }
@@ -158,9 +158,9 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         var recipes = new List<Recipe> { MakeHaxeRecipe(), MakeHaxeRecipe() };
         var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
         menu.Sel = 1;
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
         menu.Sel.Should().Be(0);
     }
@@ -180,12 +180,12 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         var playerInvent = new List<ItemStack> { new(PcraftData.Wood, count: 3) };
         var recipes = new List<Recipe> { MakeHaxeRecipe() };
         var menu = new CraftingMenu(PcraftData.Stonebench, recipes, playerInvent);
-        var state = new WorldState { CurMenu = menu };
-        state.Invent.Add(new ItemStack(PcraftData.Wood, count: 3));
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        player.Invent.Add(new ItemStack(PcraftData.Wood, count: 3));
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
-        state.Invent.Should().Contain(i => i.Type == PcraftData.Haxe,
+        player.Invent.Should().Contain(i => i.Type == PcraftData.Haxe,
             "crafting should add the result to the player inventory");
     }
 
@@ -198,12 +198,12 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe() };
         var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
-        var state = new WorldState { CurMenu = menu };
-        state.Invent.Add(new ItemStack(PcraftData.Wood, count: 3));
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        player.Invent.Add(new ItemStack(PcraftData.Wood, count: 3));
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
-        state.Invent.Should().NotContain(i => i.Type == PcraftData.Wood,
+        player.Invent.Should().NotContain(i => i.Type == PcraftData.Wood,
             "all 3 wood should be consumed by the recipe");
     }
 
@@ -217,12 +217,12 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe() };
         var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
-        // state.Invent is empty — missing 3x Wood
-        var state = new WorldState { CurMenu = menu };
+        // player.Invent is empty — missing 3x Wood
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
-        state.Invent.Should().BeEmpty("no ingredients means nothing is crafted");
+        player.Invent.Should().BeEmpty("no ingredients means nothing is crafted");
     }
 
     [Fact]
@@ -233,12 +233,12 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var menu = new CraftingMenu(PcraftData.Stonebench, new List<Recipe>(), new List<ItemStack>());
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
-        state.Invent.Should().BeEmpty();
-        state.CurMenu.Should().BeSameAs(menu); // menu stays open
+        player.Invent.Should().BeEmpty();
+        player.CurMenu.Should().BeSameAs(menu); // menu stays open
     }
 
     // --------------------------------------------------------------------------
@@ -254,11 +254,11 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var menu = new CraftingMenu(PcraftData.Stonebench, new List<Recipe>(), new List<ItemStack>());
-        var state = new WorldState { CurMenu = menu };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(state, new PcraftGame());
+        menu.Update(player, new PcraftGame());
 
-        state.CurMenu.Should().BeNull();
+        player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------

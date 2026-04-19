@@ -68,7 +68,7 @@ public sealed class MapOpsPureTests
         MapOps.DirSetData(2, 3, F32.FromInt(99), state);
 
         // key = i + j * sx = 2 + 3*8 = 26
-        state.Data.Should().ContainKey(26)
+        state.Dat.Should().ContainKey(26)
             .WhoseValue.Should().Be(F32.FromInt(99));
     }
 
@@ -92,7 +92,7 @@ public sealed class MapOpsPureTests
         var result = MapOps.DirGetData(0, 0, defaultVal, state);
 
         result.Should().Be(defaultVal);
-        state.Data.Should().ContainKey(0).WhoseValue.Should().Be(defaultVal);
+        state.Dat.Should().ContainKey(0).WhoseValue.Should().Be(defaultVal);
     }
 
     // --------------------------------------------------------------------------
@@ -108,7 +108,7 @@ public sealed class MapOpsPureTests
         MapOps.SetData(F32.FromInt(16), F32.FromInt(0), F32.FromFloat(3.5f), state);
 
         // tile (1, 0), key = 1 + 0*8 = 1
-        state.Data.Should().ContainKey(1);
+        state.Dat.Should().ContainKey(1);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public sealed class MapOpsPureTests
         // negative x maps to tile -1 which is out of bounds
         MapOps.SetData(F32.FromInt(-1), F32.Zero, F32.FromInt(5), state);
 
-        state.Data.Should().BeEmpty();
+        state.Dat.Should().BeEmpty();
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public sealed class MapOpsPureTests
         // x=128 → tile 8 which is ≥ levelsx (8)
         MapOps.SetData(F32.FromInt(128), F32.Zero, F32.FromInt(5), state);
 
-        state.Data.Should().BeEmpty();
+        state.Dat.Should().BeEmpty();
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public sealed class MapOpsPureTests
 
         MapOps.ClearData(F32.FromInt(0), F32.FromInt(0), state);
 
-        state.Data.Should().BeEmpty();
+        state.Dat.Should().BeEmpty();
     }
 
     [Fact]
@@ -193,13 +193,8 @@ public sealed class MapOpsPureTests
     #endregion
     // --------------------------------------------------------------------------
 
-    private static WorldState MakeState(int sx, int sy)
-    {
-        var state = new WorldState();
-        var level = new Level(0, 0, sx, sy, false);
-        state.SetLevel(level);
-        return state;
-    }
+    private static Level MakeState(int sx, int sy)
+        => new Level(0, 0, sx, sy, false);
 }
 
 [Collection("Fna")]
@@ -459,11 +454,6 @@ public sealed class MapOpsFnaTests(FnaFixture fixture)
     #endregion
     // --------------------------------------------------------------------------
     
-    private static WorldState MakeState(int levelX, int sx, int sy)
-    {
-        var state = new WorldState();
-        var level = new Level(levelX, 0, sx, sy, false);
-        state.SetLevel(level);
-        return state;
-    }
+    private static Level MakeState(int levelX, int sx, int sy)
+        => new Level(levelX, 0, sx, sy, false);
 }

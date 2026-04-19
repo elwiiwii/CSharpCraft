@@ -1,3 +1,4 @@
+using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Draw;
 using PSharp8.Audio;
 using PSharp8.Scene;
@@ -12,17 +13,48 @@ internal abstract class PcraftSceneBase : IScene
     {
         setup.Resolution = (128, 128);
 
-        var state    = new WorldState();
+        var player   = new PlayerEntity(F32.Zero, F32.Zero);
         var game     = new PcraftGame();
-        bool initialized = false;
+        Level? cave        = null;
+        Level? island      = null;
+        Level? currentLevel = null;
+        bool switchLevel    = false;
+        bool canSwitchLevel = false;
+        bool initialized    = false;
 
         setup.RegisterUpdate(() =>
         {
-            if (!initialized) { game.Init(); PcraftServices.ResetLevel(state, game); initialized = true; }
-            PcraftServices.UpdateMain(state, game);
+            if (!initialized)
+            {
+                game.Init();
+                PcraftServices.ResetLevel(player, game, out cave, out island);
+                currentLevel = island!;
+                Pico8.Music(1);
+                initialized = true;
+            }
+
+            if (game.NeedsReset)
+            {
+                game.NeedsReset = false;
+                PcraftServices.ResetLevel(player, game, out cave, out island);
+                currentLevel = island!;
+                Pico8.Music(1);
+            }
+
+            if (switchLevel)
+            {
+                currentLevel = (currentLevel == cave) ? island! : cave!;
+                PcraftServices.SetLevel(currentLevel, player);
+                PcraftServices.FillEne(currentLevel, player);
+                switchLevel    = false;
+                canSwitchLevel = false;
+                Pico8.Music(currentLevel == cave ? 2 : 1);
+            }
+
+            PcraftServices.UpdateMain(player, currentLevel!, game, ref switchLevel, ref canSwitchLevel);
         }, fps: 30);
 
-        setup.RegisterDraw(() => PcraftDraw.Draw(state, game), fps: 30);
+        setup.RegisterDraw(() => PcraftDraw.Draw(player, currentLevel!, game), fps: 30);
     }
 
     public virtual string? SpritesPath => "pcraft_sprites";

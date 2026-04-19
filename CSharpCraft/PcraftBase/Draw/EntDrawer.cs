@@ -1,10 +1,12 @@
+using CSharpCraft.PcraftBase.Data;
+
 namespace CSharpCraft.PcraftBase.Draw;
 
 internal static class EntDrawer
 {
-    internal static void DrawEnt(WorldState state)
+    internal static void DrawEnt(Level level)
     {
-        foreach (var e in state.Entities)
+        foreach (var e in level.Ent)
         {
             Pico8.Pal();
             if (e.Type.Pal != null) PcraftServices.SetPal(e.Type.Pal);

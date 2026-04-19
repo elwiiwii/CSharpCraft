@@ -1,35 +1,36 @@
-using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
 
 namespace CSharpCraft.PcraftBase.Update;
 
 internal static class CameraUpdater
 {
-    internal static void Update(WorldState state, F32 dx, F32 dy)
+    internal static void Update(PlayerEntity player, F32 dx, F32 dy)
     {
+        var camera = player.Camera;
         var m   = F32.FromInt(16);
         var msp = F32.FromInt(4);
 
-        if (F32.Abs(state.Cmx - state.Plx) > m)
-            state.Coffx += dx * F32.FromDouble(0.4);
-        if (F32.Abs(state.Cmy - state.Ply) > m)
-            state.Coffy += dy * F32.FromDouble(0.4);
+        if (F32.Abs(camera.Cmx - player.X) > m)
+            camera.Coffx += dx * F32.FromDouble(0.4);
+        if (F32.Abs(camera.Cmy - player.Y) > m)
+            camera.Coffy += dy * F32.FromDouble(0.4);
 
-        state.Cmx = F32.Max(state.Plx - m, state.Cmx);
-        state.Cmx = F32.Min(state.Plx + m, state.Cmx);
-        state.Cmy = F32.Max(state.Ply - m, state.Cmy);
-        state.Cmy = F32.Min(state.Ply + m, state.Cmy);
+        camera.Cmx = F32.Max(player.X - m, camera.Cmx);
+        camera.Cmx = F32.Min(player.X + m, camera.Cmx);
+        camera.Cmy = F32.Max(player.Y - m, camera.Cmy);
+        camera.Cmy = F32.Min(player.Y + m, camera.Cmy);
 
-        state.Coffx *= F32.FromDouble(0.9);
-        state.Coffy *= F32.FromDouble(0.9);
-        state.Coffx = F32.Clamp(state.Coffx, -msp, msp);
-        state.Coffy = F32.Clamp(state.Coffy, -msp, msp);
+        camera.Coffx *= F32.FromDouble(0.9);
+        camera.Coffy *= F32.FromDouble(0.9);
+        camera.Coffx = F32.Clamp(camera.Coffx, -msp, msp);
+        camera.Coffy = F32.Clamp(camera.Coffy, -msp, msp);
 
-        state.Clx += state.Coffx;
-        state.Cly += state.Coffy;
+        camera.Clx += camera.Coffx;
+        camera.Cly += camera.Coffy;
 
-        state.Clx = F32.Max(state.Cmx - m, state.Clx);
-        state.Clx = F32.Min(state.Cmx + m, state.Clx);
-        state.Cly = F32.Max(state.Cmy - m, state.Cly);
-        state.Cly = F32.Min(state.Cmy + m, state.Cly);
+        camera.Clx = F32.Max(camera.Cmx - m, camera.Clx);
+        camera.Clx = F32.Min(camera.Cmx + m, camera.Clx);
+        camera.Cly = F32.Max(camera.Cmy - m, camera.Cly);
+        camera.Cly = F32.Min(camera.Cmy + m, camera.Cly);
     }
 }

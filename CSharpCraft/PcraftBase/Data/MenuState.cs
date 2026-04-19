@@ -10,25 +10,24 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
     internal string? Text { get; } = text;
     internal string? Text2 { get; } = text2;
 
-    public void Update(WorldState state, PcraftGame game)
+    public void Update(PlayerEntity player, PcraftGame game)
     {
         if (Spr <= 0) return;
-        if (Pico8.Btnp(4) && !state.Lb4)
+        if (Pico8.Btnp(4) && !player.Lb4)
         {
             if (ReferenceEquals(this, PcraftData.MainMenu))
             {
-                state.CurMenu = PcraftData.IntroMenu;
+                player.CurMenu = PcraftData.IntroMenu;
             }
             else
             {
-                PcraftServices.ResetLevel(state, game);
-                state.CurMenu = null;
-                Pico8.Music(1);
+                game.NeedsReset = true;
+                player.CurMenu = null;
             }
         }
     }
 
-    public void Draw(WorldState state)
+    public void Draw(PlayerEntity player, Level level)
     {
         if (Spr <= 0) return;
 
@@ -39,8 +38,8 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
         Pico8.Spr(Spr, 32, 14, 8, 8);
         PcraftServices.PrintC(Text ?? "", 64, 80, 6);
         PcraftServices.PrintC(Text2 ?? "", 64, 90, 6);
-        int tc = 6 + F32.FloorToInt(state.Time % 2);
+        int tc = 6 + F32.FloorToInt(level.Time % 2);
         PcraftServices.PrintC("press button 1", 64, 112, tc);
-        state.Time += F32.FromDouble(0.1);
+        level.Time += F32.FromDouble(0.1);
     }
 }

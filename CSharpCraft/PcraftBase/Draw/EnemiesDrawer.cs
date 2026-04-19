@@ -4,30 +4,39 @@ namespace CSharpCraft.PcraftBase.Draw;
 
 internal static class EnemiesDrawer
 {
-    internal static void DrawEnemies(WorldState state)
+    internal static void DrawEnemies(PlayerEntity player, Level level)
     {
-        SortY(state.Enemies);
-
-        foreach (var e in state.Enemies)
+        var camera = player.Camera;
+        // Build combined Y-sortable list: player + visible enemies
+        var drawList = new List<CharacterEntity>(level.Ene.Count + 1);
+        drawList.Add(player);
+        foreach (var e in level.Ene)
         {
-            if (e is PlayerEntity)
+            if (PcraftServices.IsIn(e, F32.FromInt(72), camera.Clx, camera.Cly))
+                drawList.Add(e);
+        }
+        SortY(drawList);
+
+        foreach (var e in drawList)
+        {
+            if (e is PlayerEntity p)
             {
                 Pico8.Pal();
-                DrawPlayer(state.Plx, state.Ply, state.Prot, state.Panim, state.Banim, isPlayer: true, state);
+                DrawPlayer(p.X, p.Y, p.Prot, p.Panim, p.Banim, isPlayer: true, p, level);
             }
-            else if (PcraftServices.IsIn(e, F32.FromInt(72), state.Clx, state.Cly))
+            else
             {
                 Pico8.Pal();
                 Pico8.Pal(15, 3);
                 Pico8.Pal(4,  1);
                 Pico8.Pal(2,  8);
                 Pico8.Pal(1,  1);
-                DrawPlayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, isPlayer: false, state);
+                DrawPlayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, isPlayer: false, player, level);
             }
         }
     }
 
-    internal static void DrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, WorldState state)
+    internal static void DrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, PlayerEntity player, Level level)
     {
         F32 cr = Pico8.Cos(rot);
         F32 sr = Pico8.Sin(rot);
@@ -38,7 +47,7 @@ internal static class EnemiesDrawer
         F32 fyF = F32.Floor(y - 4);
 
         F32 lan = Pico8.Sin(anim * 2) * F32.FromDouble(1.5);
-        var bel = PcraftServices.GetGr(x, y, state);
+        var bel = PcraftServices.GetGr(x, y, level);
 
         if (bel == PcraftData.GrWater)
         {
@@ -50,7 +59,7 @@ internal static class EnemiesDrawer
                        fyF - sv * 3 - sr * lan,
                        F32.FromInt(3), F32.FromInt(6));
 
-            F32 anc = 3 + state.Time * 3 % F32.One * 3;
+            F32 anc = 3 + level.Time * 3 % F32.One * 3;
             Pico8.Circ(fxF + cv * 3 + cr * lan,
                        fyF + sv * 3 + sr * lan,
                        anc, F32.FromInt(6));
@@ -77,18 +86,18 @@ internal static class EnemiesDrawer
         var (mx, my) = PcraftMath.Mirror(blade);
 
         int weap = 75;
-        if (isPlayer && state.CurItem != null)
+        if (isPlayer && player.CurItem != null)
         {
             Pico8.Pal();
-            weap = state.CurItem.Type.Spr;
-            if (state.CurItem.Power.HasValue)
+            weap = player.CurItem.Type.Spr;
+            if (player.CurItem.Power.HasValue)
             {
-                int pw = state.CurItem.Power.Value - 1;
+                int pw = player.CurItem.Power.Value - 1;
                 if (pw >= 0 && pw < PcraftData.PwrPal.Length)
                     PcraftServices.SetPal(PcraftData.PwrPal[pw]);
             }
-            if (state.CurItem.Type.Pal != null)
-                PcraftServices.SetPal(state.CurItem.Type.Pal);
+            if (player.CurItem.Type.Pal != null)
+                PcraftServices.SetPal(player.CurItem.Type.Pal);
         }
 
         Pico8.Spr(weap,

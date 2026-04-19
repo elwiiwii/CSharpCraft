@@ -181,13 +181,12 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
         public IReadOnlyList<SfxPack> Sfx => [];
     }
 
-    // Minimal WorldState configured for island (levelX=0, levelY=0, sx=64, sy=64).
-    private static WorldState MakeIslandState()
+    // Minimal player+level configured for island (levelX=0, levelY=0, sx=64, sy=64).
+    private static (Level level, PlayerEntity player) MakePlayerAndLevel()
     {
-        var state = new WorldState();
-        var island = new Level(0, 0, GridSx, GridSy, isUnder: false);
-        state.SetLevel(island);
-        return state;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, GridSx, GridSy, isUnder: false);
+        return (level, player);
     }
 
     // --------------------------------------------------------------------------
@@ -208,8 +207,8 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
         var classifier = new MapClassifier(cur, cur2, cur3, cur4,
             GridSx, GridSy, 0, 1, 2, 3, 4);
 
-        var state = MakeIslandState();
-        SeededMapGenerator.CreateMap(state, Seed);
+        var (level, player) = MakePlayerAndLevel();
+        SeededMapGenerator.CreateMap(level, player, Seed);
 
         // The 3×3 centre area is overwritten with the hole structure — skip those tiles.
         int holeX = GridSx / 2;
@@ -235,11 +234,11 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
 
-        var state = MakeIslandState();
-        SeededMapGenerator.CreateMap(state, Seed);
+        var (level, player) = MakePlayerAndLevel();
+        SeededMapGenerator.CreateMap(level, player, Seed);
 
-        int spawnTileX = F32.FloorToInt(state.Plx / F32.FromInt(16));
-        int spawnTileY = F32.FloorToInt(state.Ply / F32.FromInt(16));
+        int spawnTileX = F32.FloorToInt(player.X / F32.FromInt(16));
+        int spawnTileY = F32.FloorToInt(player.Y / F32.FromInt(16));
         int tileId     = Pico8.Mget(spawnTileX, spawnTileY);
 
         tileId.Should().BeOneOf(new[] { 1, 2 },
@@ -252,11 +251,11 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
 
-        var state = MakeIslandState();
-        SeededMapGenerator.CreateMap(state, Seed);
+        var (level, player) = MakePlayerAndLevel();
+        SeededMapGenerator.CreateMap(level, player, Seed);
 
-        int spawnTileX = F32.FloorToInt(state.Plx / F32.FromInt(16));
-        int spawnTileY = F32.FloorToInt(state.Ply / F32.FromInt(16));
+        int spawnTileX = F32.FloorToInt(player.X / F32.FromInt(16));
+        int spawnTileY = F32.FloorToInt(player.Y / F32.FromInt(16));
 
         var sample = PcraftWorldSampler.Sample(Seed, radius: 4);
 
@@ -272,13 +271,13 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
 
-        var state = MakeIslandState();
-        SeededMapGenerator.CreateMap(state, Seed);
+        var (level, player) = MakePlayerAndLevel();
+        SeededMapGenerator.CreateMap(level, player, Seed);
 
-        state.Clx.Should().Be(state.Plx, because: "camera X must be synced to player X after map creation");
-        state.Cly.Should().Be(state.Ply, because: "camera Y must be synced to player Y after map creation");
-        state.Cmx.Should().Be(state.Plx, because: "camera move target X must be synced to player X");
-        state.Cmy.Should().Be(state.Ply, because: "camera move target Y must be synced to player Y");
+        player.Camera.Clx.Should().Be(player.X, because: "camera X must be synced to player X after map creation");
+        player.Camera.Cly.Should().Be(player.Y, because: "camera Y must be synced to player Y after map creation");
+        player.Camera.Cmx.Should().Be(player.X, because: "camera move target X must be synced to player X");
+        player.Camera.Cmy.Should().Be(player.Y, because: "camera move target Y must be synced to player Y");
     }
 
     [Fact]
@@ -288,13 +287,13 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
 
         // Running CreateMap twice with the same seed overwrites Pico8 memory identically.
-        var state1 = MakeIslandState();
-        SeededMapGenerator.CreateMap(state1, Seed);
-        int plx1 = F32.FloorToInt(state1.Plx);
+        var (level1, player1) = MakePlayerAndLevel();
+        SeededMapGenerator.CreateMap(level1, player1, Seed);
+        int plx1 = F32.FloorToInt(player1.X);
 
-        var state2 = MakeIslandState();
-        SeededMapGenerator.CreateMap(state2, Seed);
-        int plx2 = F32.FloorToInt(state2.Plx);
+        var (level2, player2) = MakePlayerAndLevel();
+        SeededMapGenerator.CreateMap(level2, player2, Seed);
+        int plx2 = F32.FloorToInt(player2.X);
 
         plx1.Should().Be(plx2, because: "same seed must always produce the same spawn position");
 

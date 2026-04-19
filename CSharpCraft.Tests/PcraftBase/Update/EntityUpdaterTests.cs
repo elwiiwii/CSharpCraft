@@ -79,13 +79,13 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // e.x += e.vx; e.y += e.vy
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
+        var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
+        var level = new Level(0, 0, 64, 64, false);
         var e = new ItemEntity(PcraftData.Wood, x: F32.FromInt(50), y: F32.FromInt(50),
             vx: F32.FromInt(2), vy: F32.FromInt(3));
-        state.Enemies = [new PlayerEntity(F32.FromInt(100), F32.FromInt(100))];
-        state.Entities.Add(e);
+        level.Ent.Add(e);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         e.X.Float.Should().BeApproximately(52f, 0.01f);
         e.Y.Float.Should().BeApproximately(53f, 0.01f);
@@ -97,13 +97,13 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // e.vx *= 0.95; e.vy *= 0.95
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
+        var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
+        var level = new Level(0, 0, 64, 64, false);
         var e = new ItemEntity(PcraftData.Wood, x: F32.FromInt(50), y: F32.FromInt(50),
             vx: F32.FromInt(4), vy: F32.FromInt(4));
-        state.Enemies = [new PlayerEntity(F32.FromInt(100), F32.FromInt(100))];
-        state.Entities.Add(e);
+        level.Ent.Add(e);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         e.Vx.Float.Should().BeApproximately(3.8f, 0.02f);
         e.Vy.Float.Should().BeApproximately(3.8f, 0.02f);
@@ -120,17 +120,17 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // if e.timer and e.timer<1 then del(entities,e)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
+        var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
+        var level = new Level(0, 0, 64, 64, false);
         var e = new ItemEntity(PcraftData.Wood, x: F32.FromInt(10), y: F32.FromInt(10))
         {
             Timer = F32.FromFloat(0.5f)  // < 1 → remove immediately
         };
-        state.Enemies = [new PlayerEntity(F32.FromInt(100), F32.FromInt(100))];
-        state.Entities.Add(e);
+        level.Ent.Add(e);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
-        state.Entities.Should().NotContain(e);
+        level.Ent.Should().NotContain(e);
     }
 
     [Fact]
@@ -139,15 +139,15 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // if(e.timer) e.timer-=1
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
+        var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
+        var level = new Level(0, 0, 64, 64, false);
         var e = new ItemEntity(PcraftData.Wood, x: F32.FromInt(10), y: F32.FromInt(10))
         {
             Timer = F32.FromInt(10)
         };
-        state.Enemies = [new PlayerEntity(F32.FromInt(100), F32.FromInt(100))];
-        state.Entities.Add(e);
+        level.Ent.Add(e);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         e.Timer!.Value.Float.Should().BeApproximately(9f, 0.01f);
     }
@@ -163,23 +163,20 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // GiveItem entity within dist<5 and timer<115 → additeminlist(invent, ...) + remove entity
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
         var player = new PlayerEntity(F32.FromInt(50), F32.FromInt(50));
-        state.Enemies = [player];
-        state.Plx = F32.FromInt(50);
-        state.Ply = F32.FromInt(50);
+        var level = new Level(0, 0, 64, 64, false);
         // place pickup at same position (dist=0, well within 5)
         var e = new ItemEntity(PcraftData.Wood, x: F32.FromInt(50), y: F32.FromInt(50))
         {
             GiveItem = PcraftData.Wood,
             Timer    = F32.FromInt(50)  // < 115
         };
-        state.Entities.Add(e);
+        level.Ent.Add(e);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
-        state.Invent.Should().ContainSingle(it => it.Type == PcraftData.Wood);
-        state.Entities.Should().NotContain(e);
+        player.Invent.Should().ContainSingle(it => it.Type == PcraftData.Wood);
+        level.Ent.Should().NotContain(e);
     }
 
     [Fact]
@@ -188,21 +185,19 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // dist >= 5 → item stays on ground
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero)];
-        state.Plx = F32.Zero;
-        state.Ply = F32.Zero;
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, 64, 64, false);
         var e = new ItemEntity(PcraftData.Wood, x: F32.FromInt(100), y: F32.FromInt(100))
         {
             GiveItem = PcraftData.Wood,
             Timer    = F32.FromInt(50)
         };
-        state.Entities.Add(e);
+        level.Ent.Add(e);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
-        state.Invent.Should().BeEmpty();
-        state.Entities.Should().Contain(e);
+        player.Invent.Should().BeEmpty();
+        level.Ent.Should().Contain(e);
     }
 
     // --------------------------------------------------------------------------
@@ -215,10 +210,10 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var state = new WorldState();
-        state.Enemies = [new PlayerEntity(F32.Zero, F32.Zero)];
+        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        var level = new Level(0, 0, 64, 64, false);
 
-        var (_, _, canAct) = EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        var (_, _, canAct) = EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         canAct.Should().BeTrue();
     }
@@ -237,14 +232,15 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         fakeInput.SetBtn(5, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero, Block5 = false, Lb5 = false };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
+        var level = new Level(0, 0, 64, 64, false);
         var chestEntity = new ItemEntity(PcraftData.Chest, x: F32.Zero, y: F32.Zero);
-        state.Entities.Add(chestEntity);
+        level.Ent.Add(chestEntity);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
-        state.CurMenu.Should().BeOfType<ChestMenu>()
-            .Which.PlayerItems.Should().BeSameAs(state.Invent);
+        player.CurMenu.Should().BeOfType<ChestMenu>()
+            .Which.PlayerItems.Should().BeSameAs(player.Invent);
     }
 
     [Fact]
@@ -257,13 +253,14 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         fakeInput.SetBtn(5, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var state = new WorldState { Plx = F32.Zero, Ply = F32.Zero, Block5 = false, Lb5 = false };
+        var player = new PlayerEntity(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
+        var level = new Level(0, 0, 64, 64, false);
         var benchEntity = new ItemEntity(PcraftData.Workbench, x: F32.Zero, y: F32.Zero) { List = recipes };
-        state.Entities.Add(benchEntity);
+        level.Ent.Add(benchEntity);
 
-        EntityUpdater.Update(state, F32.Zero, F32.Zero);
+        EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
-        state.CurMenu.Should().BeOfType<CraftingMenu>()
+        player.CurMenu.Should().BeOfType<CraftingMenu>()
             .Which.Recipes.Should().BeSameAs(recipes);
     }
 

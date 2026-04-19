@@ -8,7 +8,7 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
     internal int Sel { get; set; } = 0;
     internal int Off { get; set; } = 0;
 
-    public void Update(WorldState state, PcraftGame game)
+    public void Update(PlayerEntity player, PcraftGame game)
     {
         if (List.Count > 0)
         {
@@ -16,22 +16,22 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
             if (Pico8.Btnp(2)) { Sel -= 1; Pico8.Sfx(18); }
             Sel = PcraftServices.Loop(Sel, List.Count);
 
-            if (Pico8.Btnp(5) && !state.Lb5)
+            if (Pico8.Btnp(5) && !player.Lb5)
             {
-                state.CurItem = List[Sel];
-                state.CurMenu = null;
-                state.Block5  = true;
+                player.CurItem = List[Sel];
+                player.CurMenu = null;
+                player.Block5  = true;
                 Pico8.Sfx(16);
                 return;
             }
         }
 
-        if (Pico8.Btnp(4) && !state.Lb4)
+        if (Pico8.Btnp(4) && !player.Lb4)
         {
-            state.CurMenu = null;
+            player.CurMenu = null;
             Pico8.Sfx(17);
         }
     }
 
-    public void Draw(WorldState state) => PcraftServices.DrawInventoryMenu(this);
+    public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawInventoryMenu(this);
 }

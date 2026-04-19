@@ -34,11 +34,11 @@ internal class PcraftServices
     #region Draw - Background
     // ---------------------------------------------------------------------------
 
-    internal static bool Comp(int i, int j, GroundType gr, WorldState state)
-        => _current.OnComp(i, j, gr, state);
+    internal static bool Comp(int i, int j, GroundType gr, Level level)
+        => _current.OnComp(i, j, gr, level);
 
-    protected virtual bool OnComp(int i, int j, GroundType gr, WorldState state)
-        => BackDrawer.Comp(i, j, gr, state);
+    protected virtual bool OnComp(int i, int j, GroundType gr, Level level)
+        => BackDrawer.Comp(i, j, gr, level);
 
     internal static int CornerOffset(bool sideH, bool sideV, bool diag, int rnd,
         int innerCorner, int hOnly, int vOnly, int outer)
@@ -48,29 +48,29 @@ internal class PcraftServices
         int innerCorner, int hOnly, int vOnly, int outer)
         => BackDrawer.CornerOffset(sideH, sideV, diag, rnd, innerCorner, hOnly, vOnly, outer);
 
-    internal static void DrawBack(WorldState state)
-        => _current.OnDrawBack(state);
+    internal static void DrawBack(Level level, PlayerEntity player)
+        => _current.OnDrawBack(level, player);
 
-    protected virtual void OnDrawBack(WorldState state)
-        => BackDrawer.DrawBack(state);
+    protected virtual void OnDrawBack(Level level, PlayerEntity player)
+        => BackDrawer.DrawBack(level, player);
 
-    internal static int RndCenter(double i, double j, WorldState state)
-        => _current.OnRndCenter(i, j, state);
+    internal static int RndCenter(double i, double j, Level level)
+        => _current.OnRndCenter(i, j, level);
 
-    protected virtual int OnRndCenter(double i, double j, WorldState state)
-        => BackDrawer.RndCenter(i, j, state);
+    protected virtual int OnRndCenter(double i, double j, Level level)
+        => BackDrawer.RndCenter(i, j, level);
 
-    internal static int RndSand(double i, double j, WorldState state)
-        => _current.OnRndSand(i, j, state);
+    internal static int RndSand(double i, double j, Level level)
+        => _current.OnRndSand(i, j, level);
 
-    protected virtual int OnRndSand(double i, double j, WorldState state)
-        => BackDrawer.RndSand(i, j, state);
+    protected virtual int OnRndSand(double i, double j, Level level)
+        => BackDrawer.RndSand(i, j, level);
 
-    internal static int RndTree(double i, double j, WorldState state)
-        => _current.OnRndTree(i, j, state);
+    internal static int RndTree(double i, double j, Level level)
+        => _current.OnRndTree(i, j, level);
 
-    protected virtual int OnRndTree(double i, double j, WorldState state)
-        => BackDrawer.RndTree(i, j, state);
+    protected virtual int OnRndTree(double i, double j, Level level)
+        => BackDrawer.RndTree(i, j, level);
 
     internal static void Spr4(double i, double j, int gi, int gj,
         int a, int b, int c, int d, int off, Func<double, double, int> f)
@@ -80,34 +80,34 @@ internal class PcraftServices
         int a, int b, int c, int d, int off, Func<double, double, int> f)
         => BackDrawer.Spr4(i, j, gi, gj, a, b, c, d, off, f);
 
-    internal static void WatAnim(double i, double j, WorldState state)
-        => _current.OnWatAnim(i, j, state);
+    internal static void WatAnim(double i, double j, Level level)
+        => _current.OnWatAnim(i, j, level);
 
-    protected virtual void OnWatAnim(double i, double j, WorldState state)
-        => BackDrawer.WatAnim(i, j, state);
+    protected virtual void OnWatAnim(double i, double j, Level level)
+        => BackDrawer.WatAnim(i, j, level);
 
-    internal static F32 WatVal(double i, double j, WorldState state)
-        => _current.OnWatVal(i, j, state);
+    internal static F32 WatVal(double i, double j, Level level)
+        => _current.OnWatVal(i, j, level);
 
-    protected virtual F32 OnWatVal(double i, double j, WorldState state)
-        => BackDrawer.WatVal(i, j, state);
+    protected virtual F32 OnWatVal(double i, double j, Level level)
+        => BackDrawer.WatVal(i, j, level);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Draw - Enemies
     // ---------------------------------------------------------------------------
 
-    internal static void DrawEnemies(WorldState state)
-        => _current.OnDrawEnemies(state);
+    internal static void DrawEnemies(PlayerEntity player, Level level)
+        => _current.OnDrawEnemies(player, level);
 
-    protected virtual void OnDrawEnemies(WorldState state)
-        => EnemiesDrawer.DrawEnemies(state);
+    protected virtual void OnDrawEnemies(PlayerEntity player, Level level)
+        => EnemiesDrawer.DrawEnemies(player, level);
 
-    internal static void DrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, WorldState state)
-        => _current.OnDrawPlayer(x, y, rot, anim, subAnim, isPlayer, state);
+    internal static void DrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, PlayerEntity player, Level level)
+        => _current.OnDrawPlayer(x, y, rot, anim, subAnim, isPlayer, player, level);
 
-    protected virtual void OnDrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, WorldState state)
-        => EnemiesDrawer.DrawPlayer(x, y, rot, anim, subAnim, isPlayer, state);
+    protected virtual void OnDrawPlayer(F32 x, F32 y, F32 rot, F32 anim, F32 subAnim, bool isPlayer, PlayerEntity player, Level level)
+        => EnemiesDrawer.DrawPlayer(x, y, rot, anim, subAnim, isPlayer, player, level);
 
     internal static void SortY(List<CharacterEntity> enemies)
         => _current.OnSortY(enemies);
@@ -120,11 +120,11 @@ internal class PcraftServices
     #region Draw - Entities
     // ---------------------------------------------------------------------------
 
-    internal static void DrawEnt(WorldState state)
-        => _current.OnDrawEnt(state);
+    internal static void DrawEnt(Level level)
+        => _current.OnDrawEnt(level);
 
-    protected virtual void OnDrawEnt(WorldState state)
-        => EntDrawer.DrawEnt(state);
+    protected virtual void OnDrawEnt(Level level)
+        => EntDrawer.DrawEnt(level);
 
     // ---------------------------------------------------------------------------
     #endregion
@@ -160,22 +160,22 @@ internal class PcraftServices
     protected virtual void OnDrawBar(F32 px, F32 py, F32 v, F32 m, F32 c, F32 c2)
         => HudDrawer.DrawBar(px, py, v, m, c, c2);
 
-    internal static void DrawHud(WorldState state)
-        => _current.OnDrawHud(state);
+    internal static void DrawHud(PlayerEntity player)
+        => _current.OnDrawHud(player);
 
-    protected virtual void OnDrawHud(WorldState state)
-        => HudDrawer.DrawHud(state);
+    protected virtual void OnDrawHud(PlayerEntity player)
+        => HudDrawer.DrawHud(player);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Draw - Main
     // ---------------------------------------------------------------------------
 
-    internal static void DrawMain(WorldState state, PcraftGame game)
-        => _current.OnDrawMain(state, game);
+    internal static void DrawMain(PlayerEntity player, Level level, PcraftGame game)
+        => _current.OnDrawMain(player, level, game);
 
-    protected virtual void OnDrawMain(WorldState state, PcraftGame game)
-        => PcraftDraw.DrawMain(state, game);
+    protected virtual void OnDrawMain(PlayerEntity player, Level level, PcraftGame game)
+        => PcraftDraw.DrawMain(player, level, game);
 
     // ---------------------------------------------------------------------------
     #endregion
@@ -188,11 +188,11 @@ internal class PcraftServices
     protected virtual void OnDrawChestPanels(ChestMenu menu)
         => MenuOverlayDrawer.DrawChestPanels(menu);
 
-    internal static void DrawCraftingPanels(CraftingMenu menu, WorldState state)
-        => _current.OnDrawCraftingPanels(menu, state);
+    internal static void DrawCraftingPanels(CraftingMenu menu, PlayerEntity player)
+        => _current.OnDrawCraftingPanels(menu, player);
 
-    protected virtual void OnDrawCraftingPanels(CraftingMenu menu, WorldState state)
-        => MenuOverlayDrawer.DrawCraftingPanels(menu, state);
+    protected virtual void OnDrawCraftingPanels(CraftingMenu menu, PlayerEntity player)
+        => MenuOverlayDrawer.DrawCraftingPanels(menu, player);
 
     internal static void DrawInventoryMenu(InventoryMenu menu)
         => _current.OnDrawInventoryMenu(menu);
@@ -228,11 +228,11 @@ internal class PcraftServices
     protected virtual void OnDrawPanel(string name, int x, int y, int sx, int sy)
         => MenuOverlayDrawer.DrawPanel(name, x, y, sx, sy);
 
-    internal static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, WorldState state)
-        => _current.OnDrawRequireList(recip, x, y, sx, sy, state);
+    internal static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, PlayerEntity player)
+        => _current.OnDrawRequireList(recip, x, y, sx, sy, player);
 
-    protected virtual void OnDrawRequireList(Recipe recip, int x, int y, int sx, int sy, WorldState state)
-        => MenuOverlayDrawer.DrawRequireList(recip, x, y, sx, sy, state);
+    protected virtual void OnDrawRequireList(Recipe recip, int x, int y, int sx, int sy, PlayerEntity player)
+        => MenuOverlayDrawer.DrawRequireList(recip, x, y, sx, sy, player);
 
     internal static void ItemName(int x, int y, ItemStack item, int col)
         => _current.OnItemName(x, y, item, col);
@@ -292,46 +292,46 @@ internal class PcraftServices
     protected virtual void OnAddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
         => LevelManager.AddItem(mat, count, hitX, hitY, entities);
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
-        => _current.OnCreateLevel(x, y, sx, sy, isUnder, state);
+    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
+        => _current.OnCreateLevel(x, y, sx, sy, isUnder, player);
 
-    protected virtual Level OnCreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
-        => LevelManager.CreateLevel(x, y, sx, sy, isUnder, state);
+    protected virtual Level OnCreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
+        => LevelManager.CreateLevel(x, y, sx, sy, isUnder, player);
 
-    internal static void FillEne(Level level, WorldState state)
-        => _current.OnFillEne(level, state);
+    internal static void FillEne(Level level, PlayerEntity player)
+        => _current.OnFillEne(level, player);
 
-    protected virtual void OnFillEne(Level level, WorldState state)
-        => LevelManager.FillEne(level, state);
+    protected virtual void OnFillEne(Level level, PlayerEntity player)
+        => LevelManager.FillEne(level, player);
 
-    internal static void ResetLevel(WorldState state, PcraftGame game)
-        => _current.OnResetLevel(state, game);
+    internal static void ResetLevel(PlayerEntity player, PcraftGame game, out Level cave, out Level island)
+        => _current.OnResetLevel(player, game, out cave, out island);
 
-    protected virtual void OnResetLevel(WorldState state, PcraftGame game)
-        => LevelManager.ResetLevel(state, game);
+    protected virtual void OnResetLevel(PlayerEntity player, PcraftGame game, out Level cave, out Level island)
+        => LevelManager.ResetLevel(player, game, out cave, out island);
 
-    internal static void SetLevel(Level level, WorldState state)
-        => _current.OnSetLevel(level, state);
+    internal static void SetLevel(Level level, PlayerEntity player)
+        => _current.OnSetLevel(level, player);
 
-    protected virtual void OnSetLevel(Level level, WorldState state)
-        => LevelManager.SetLevel(level, state);
+    protected virtual void OnSetLevel(Level level, PlayerEntity player)
+        => LevelManager.SetLevel(level, player);
 
-    internal static void UpGround(WorldState state)
-        => _current.OnUpGround(state);
+    internal static void UpGround(Level level, PlayerEntity player)
+        => _current.OnUpGround(level, player);
 
-    protected virtual void OnUpGround(WorldState state)
-        => LevelManager.UpGround(state);
+    protected virtual void OnUpGround(Level level, PlayerEntity player)
+        => LevelManager.UpGround(level, player);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Map - MapGenerator
     // ---------------------------------------------------------------------------
 
-    internal static (int holeX, int holeY) CreateMap(WorldState state)
-        => _current.OnCreateMap(state);
+    internal static (int holeX, int holeY) CreateMap(Level level, PlayerEntity player)
+        => _current.OnCreateMap(level, player);
 
-    protected virtual (int holeX, int holeY) OnCreateMap(WorldState state)
-        => MapGenerator.CreateMap(state);
+    protected virtual (int holeX, int holeY) OnCreateMap(Level level, PlayerEntity player)
+        => MapGenerator.CreateMap(level, player);
 
     internal static int[,] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
         => _current.OnCreateMapStep(sx, sy, a, b, c, d, e);
@@ -362,41 +362,41 @@ internal class PcraftServices
     #region Map - MapOps
     // ---------------------------------------------------------------------------
 
-    internal static void ClearData(F32 x, F32 y, WorldState state)
-        => _current.OnClearData(x, y, state);
+    internal static void ClearData(F32 x, F32 y, Level level)
+        => _current.OnClearData(x, y, level);
 
-    protected virtual void OnClearData(F32 x, F32 y, WorldState state)
-        => MapOps.ClearData(x, y, state);
+    protected virtual void OnClearData(F32 x, F32 y, Level level)
+        => MapOps.ClearData(x, y, level);
 
-    internal static F32 DirGetData(int i, int j, F32 def, WorldState state)
-        => _current.OnDirGetData(i, j, def, state);
+    internal static F32 DirGetData(int i, int j, F32 def, Level level)
+        => _current.OnDirGetData(i, j, def, level);
 
-    protected virtual F32 OnDirGetData(int i, int j, F32 def, WorldState state)
-        => MapOps.DirGetData(i, j, def, state);
+    protected virtual F32 OnDirGetData(int i, int j, F32 def, Level level)
+        => MapOps.DirGetData(i, j, def, level);
 
-    internal static void DirSetData(int i, int j, F32 v, WorldState state)
-        => _current.OnDirSetData(i, j, v, state);
+    internal static void DirSetData(int i, int j, F32 v, Level level)
+        => _current.OnDirSetData(i, j, v, level);
 
-    protected virtual void OnDirSetData(int i, int j, F32 v, WorldState state)
-        => MapOps.DirSetData(i, j, v, state);
+    protected virtual void OnDirSetData(int i, int j, F32 v, Level level)
+        => MapOps.DirSetData(i, j, v, level);
 
-    internal static F32 GetData(F32 x, F32 y, F32 def, WorldState state)
-        => _current.OnGetData(x, y, def, state);
+    internal static F32 GetData(F32 x, F32 y, F32 def, Level level)
+        => _current.OnGetData(x, y, def, level);
 
-    protected virtual F32 OnGetData(F32 x, F32 y, F32 def, WorldState state)
-        => MapOps.GetData(x, y, def, state);
+    protected virtual F32 OnGetData(F32 x, F32 y, F32 def, Level level)
+        => MapOps.GetData(x, y, def, level);
 
-    internal static GroundType GetDirectGr(int i, int j, WorldState state)
-        => _current.OnGetDirectGr(i, j, state);
+    internal static GroundType GetDirectGr(int i, int j, Level level)
+        => _current.OnGetDirectGr(i, j, level);
 
-    protected virtual GroundType OnGetDirectGr(int i, int j, WorldState state)
-        => MapOps.GetDirectGr(i, j, state);
+    protected virtual GroundType OnGetDirectGr(int i, int j, Level level)
+        => MapOps.GetDirectGr(i, j, level);
 
-    internal static GroundType GetGr(F32 x, F32 y, WorldState state)
-        => _current.OnGetGr(x, y, state);
+    internal static GroundType GetGr(F32 x, F32 y, Level level)
+        => _current.OnGetGr(x, y, level);
 
-    protected virtual GroundType OnGetGr(F32 x, F32 y, WorldState state)
-        => MapOps.GetGr(x, y, state);
+    protected virtual GroundType OnGetGr(F32 x, F32 y, Level level)
+        => MapOps.GetGr(x, y, level);
 
     internal static (int i, int j) GetMCoord(F32 x, F32 y)
         => _current.OnGetMCoord(x, y);
@@ -404,41 +404,41 @@ internal class PcraftServices
     protected virtual (int i, int j) OnGetMCoord(F32 x, F32 y)
         => MapOps.GetMCoord(x, y);
 
-    internal static bool IsCool(F32 x, F32 y, WorldState state)
-        => _current.OnIsCool(x, y, state);
+    internal static bool IsCool(F32 x, F32 y, Level level)
+        => _current.OnIsCool(x, y, level);
 
-    protected virtual bool OnIsCool(F32 x, F32 y, WorldState state)
-        => MapOps.IsCool(x, y, state);
+    protected virtual bool OnIsCool(F32 x, F32 y, Level level)
+        => MapOps.IsCool(x, y, level);
 
-    internal static bool IsFree(F32 x, F32 y, WorldState state)
-        => _current.OnIsFree(x, y, state);
+    internal static bool IsFree(F32 x, F32 y, Level level)
+        => _current.OnIsFree(x, y, level);
 
-    protected virtual bool OnIsFree(F32 x, F32 y, WorldState state)
-        => MapOps.IsFree(x, y, state);
+    protected virtual bool OnIsFree(F32 x, F32 y, Level level)
+        => MapOps.IsFree(x, y, level);
 
-    internal static bool IsFreeEnem(F32 x, F32 y, WorldState state)
-        => _current.OnIsFreeEnem(x, y, state);
+    internal static bool IsFreeEnem(F32 x, F32 y, Level level)
+        => _current.OnIsFreeEnem(x, y, level);
 
-    protected virtual bool OnIsFreeEnem(F32 x, F32 y, WorldState state)
-        => MapOps.IsFreeEnem(x, y, state);
+    protected virtual bool OnIsFreeEnem(F32 x, F32 y, Level level)
+        => MapOps.IsFreeEnem(x, y, level);
 
-    internal static bool OutOfBounds(int i, int j, WorldState state)
-        => _current.OnOutOfBounds(i, j, state);
+    internal static bool OutOfBounds(int i, int j, Level level)
+        => _current.OnOutOfBounds(i, j, level);
 
-    protected virtual bool OnOutOfBounds(int i, int j, WorldState state)
-        => MapOps.OutOfBounds(i, j, state);
+    protected virtual bool OnOutOfBounds(int i, int j, Level level)
+        => MapOps.OutOfBounds(i, j, level);
 
-    internal static void SetData(F32 x, F32 y, F32 v, WorldState state)
-        => _current.OnSetData(x, y, v, state);
+    internal static void SetData(F32 x, F32 y, F32 v, Level level)
+        => _current.OnSetData(x, y, v, level);
 
-    protected virtual void OnSetData(F32 x, F32 y, F32 v, WorldState state)
-        => MapOps.SetData(x, y, v, state);
+    protected virtual void OnSetData(F32 x, F32 y, F32 v, Level level)
+        => MapOps.SetData(x, y, v, level);
 
-    internal static void SetGr(F32 x, F32 y, GroundType v, WorldState state)
-        => _current.OnSetGr(x, y, v, state);
+    internal static void SetGr(F32 x, F32 y, GroundType v, Level level)
+        => _current.OnSetGr(x, y, v, level);
 
-    protected virtual void OnSetGr(F32 x, F32 y, GroundType v, WorldState state)
-        => MapOps.SetGr(x, y, v, state);
+    protected virtual void OnSetGr(F32 x, F32 y, GroundType v, Level level)
+        => MapOps.SetGr(x, y, v, level);
 
     // ---------------------------------------------------------------------------
     #endregion
@@ -470,68 +470,68 @@ internal class PcraftServices
     #region Update - Camera
     // ---------------------------------------------------------------------------
 
-    internal static void UpdateCamera(WorldState state, F32 dx, F32 dy)
-        => _current.OnUpdateCamera(state, dx, dy);
+    internal static void UpdateCamera(PlayerEntity player, F32 dx, F32 dy)
+        => _current.OnUpdateCamera(player, dx, dy);
 
-    protected virtual void OnUpdateCamera(WorldState state, F32 dx, F32 dy)
-        => CameraUpdater.Update(state, dx, dy);
+    protected virtual void OnUpdateCamera(PlayerEntity player, F32 dx, F32 dy)
+        => CameraUpdater.Update(player, dx, dy);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Update - Enemies
     // ---------------------------------------------------------------------------
 
-    internal static void UpdateEnemies(WorldState state)
-        => _current.OnUpdateEnemies(state);
+    internal static List<CharacterEntity> UpdateEnemies(PlayerEntity player, Level level)
+        => _current.OnUpdateEnemies(player, level);
 
-    protected virtual void OnUpdateEnemies(WorldState state)
-        => EnemyUpdater.Update(state);
+    protected virtual List<CharacterEntity> OnUpdateEnemies(PlayerEntity player, Level level)
+        => EnemyUpdater.Update(player, level);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Update - Entities
     // ---------------------------------------------------------------------------
 
-    internal static (F32 dx, F32 dy, bool canAct) UpdateEntities(WorldState state, F32 dx, F32 dy)
-        => _current.OnUpdateEntities(state, dx, dy);
+    internal static (F32 dx, F32 dy, bool canAct) UpdateEntities(PlayerEntity player, Level level, F32 dx, F32 dy)
+        => _current.OnUpdateEntities(player, level, dx, dy);
 
-    protected virtual (F32 dx, F32 dy, bool canAct) OnUpdateEntities(WorldState state, F32 dx, F32 dy)
-        => EntityUpdater.Update(state, dx, dy);
+    protected virtual (F32 dx, F32 dy, bool canAct) OnUpdateEntities(PlayerEntity player, Level level, F32 dx, F32 dy)
+        => EntityUpdater.Update(player, level, dx, dy);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Update - Main
     // ---------------------------------------------------------------------------
 
-    internal static void UpdateMain(WorldState state, PcraftGame game)
-        => _current.OnUpdateMain(state, game);
+    internal static void UpdateMain(PlayerEntity player, Level level, PcraftGame game, ref bool switchLevel, ref bool canSwitchLevel)
+        => _current.OnUpdateMain(player, level, game, ref switchLevel, ref canSwitchLevel);
 
-    protected virtual void OnUpdateMain(WorldState state, PcraftGame game)
-        => PcraftUpdate.Update(state, game);
+    protected virtual void OnUpdateMain(PlayerEntity player, Level level, PcraftGame game, ref bool switchLevel, ref bool canSwitchLevel)
+        => PcraftUpdate.Update(player, level, game, ref switchLevel, ref canSwitchLevel);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Update - Menu
     // ---------------------------------------------------------------------------
 
-    internal static bool UpdateMenu(WorldState state, PcraftGame game)
-        => _current.OnUpdateMenu(state, game);
+    internal static bool UpdateMenu(PlayerEntity player, PcraftGame game)
+        => _current.OnUpdateMenu(player, game);
 
-    protected virtual bool OnUpdateMenu(WorldState state, PcraftGame game)
-        => MenuUpdater.Update(state, game);
+    protected virtual bool OnUpdateMenu(PlayerEntity player, PcraftGame game)
+        => MenuUpdater.Update(player, game);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Update - Player
     // ---------------------------------------------------------------------------
 
-    internal static void UpdatePlayer(WorldState state, PcraftGame game,
-        F32 dx, F32 dy, bool canAct)
-        => _current.OnUpdatePlayer(state, game, dx, dy, canAct);
+    internal static void UpdatePlayer(PlayerEntity player, Level level, PcraftGame game,
+        F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
+        => _current.OnUpdatePlayer(player, level, game, dx, dy, canAct, nearEnemies);
 
-    protected virtual void OnUpdatePlayer(WorldState state, PcraftGame game,
-        F32 dx, F32 dy, bool canAct)
-        => PlayerActionUpdater.Update(state, game, dx, dy, canAct);
+    protected virtual void OnUpdatePlayer(PlayerEntity player, Level level, PcraftGame game,
+        F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
+        => PlayerActionUpdater.Update(player, level, game, dx, dy, canAct, nearEnemies);
 
     // ---------------------------------------------------------------------------
     #endregion

@@ -1,3 +1,5 @@
+using CSharpCraft.PcraftBase.Data;
+
 namespace CSharpCraft.PcraftBase.Map;
 
 internal static class MapGenerator
@@ -104,15 +106,15 @@ internal static class MapGenerator
         return result;
     }
 
-    internal static (int holeX, int holeY) CreateMap(WorldState state)
+    internal static (int holeX, int holeY) CreateMap(Level level, PlayerEntity player)
     {
-        int levelSx = state.LevelSx;
-        int levelSy = state.LevelSy;
-        int levelX  = state.LevelX;
-        int levelY  = state.LevelY;
-        bool isUnder = state.LevelUnder;
+        int levelSx = level.Sx;
+        int levelSy = level.Sy;
+        int levelX  = level.X;
+        int levelY  = level.Y;
+        bool isUnder = level.IsUnder;
 
-        var level = new int[levelSx + 1, levelSy + 1];
+        var tiles = new int[levelSx + 1, levelSy + 1];
         bool needMap = true;
 
         while (needMap)
@@ -123,16 +125,16 @@ internal static class MapGenerator
 
             if (isUnder)
             {
-                level = CreateMapStep(levelSx, levelSy, 3, 8, 1, 9, 10);
-                CountTypes(level, levelSx, levelSy, typecount);
+                tiles = CreateMapStep(levelSx, levelSy, 3, 8, 1, 9, 10);
+                CountTypes(tiles, levelSx, levelSy, typecount);
                 if (typecount[8]  < 30) needMap = true;
                 if (typecount[9]  < 20) needMap = true;
                 if (typecount[10] < 15) needMap = true;
             }
             else
             {
-                level = CreateMapStep(levelSx, levelSy, 0, 1, 2, 3, 4);
-                CountTypes(level, levelSx, levelSy, typecount);
+                tiles = CreateMapStep(levelSx, levelSy, 0, 1, 2, 3, 4);
+                CountTypes(tiles, levelSx, levelSy, typecount);
                 if (typecount[3] < 30) needMap = true;
                 if (typecount[4] < 30) needMap = true;
             }
@@ -146,7 +148,7 @@ internal static class MapGenerator
                     int depy = F32.FloorToInt(F32.FromDouble(levelSy / 8.0) + Pico8.Rnd(levelSy * 6.0 / 8.0));
                     if (depx >= 0 && depx <= levelSx && depy >= 0 && depy <= levelSy)
                     {
-                        int tileId = level[depx, depy];
+                        int tileId = tiles[depx, depy];
                         if (tileId == 1 || tileId == 2)
                         {
                             plxTile = depx;
@@ -159,15 +161,15 @@ internal static class MapGenerator
                     needMap = true;
                 else
                 {
-                    state.Plx = F32.FromInt(plxTile * 16 + 8);
-                    state.Ply = F32.FromInt(plyTile * 16 + 8);
+                    player.X = F32.FromInt(plxTile * 16 + 8);
+                    player.Y = F32.FromInt(plyTile * 16 + 8);
                 }
             }
         }
 
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)
-                Pico8.Mset(i + levelX, j + levelY, level[i, j]);
+                Pico8.Mset(i + levelX, j + levelY, tiles[i, j]);
 
         int holeX = levelSx / 2 + levelX;
         int holeY = levelSy / 2 + levelY;
@@ -177,10 +179,10 @@ internal static class MapGenerator
                 Pico8.Mset(holeX + i, holeY + j, surroundId);
         Pico8.Mset(holeX, holeY, 11);
 
-        state.Clx = state.Plx;
-        state.Cly = state.Ply;
-        state.Cmx = state.Plx;
-        state.Cmy = state.Ply;
+        player.Camera.Clx = player.X;
+        player.Camera.Cly = player.Y;
+        player.Camera.Cmx = player.X;
+        player.Camera.Cmy = player.Y;
 
         return (holeX, holeY);
     }

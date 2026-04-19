@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftPreview.Noise;
 
 namespace CSharpCraft.PcraftPreview;
@@ -22,12 +23,12 @@ internal static class SeededMapGenerator
         return result;
     }
 
-    internal static (int holeX, int holeY) CreateMap(WorldState state, long seed)
+    internal static (int holeX, int holeY) CreateMap(Level level, PlayerEntity player, long seed)
     {
-        int levelX  = state.LevelX;
-        int levelY  = state.LevelY;
-        int levelSx = state.LevelSx;
-        int levelSy = state.LevelSy;
+        int levelX  = level.X;
+        int levelY  = level.Y;
+        int levelSx = level.Sx;
+        int levelSy = level.Sy;
 
         var cur  = new SeededNoiseGrid(seed, GridSx, GridSy, GridSx, 0.9, 0.2, 0);
         var cur2 = new SeededNoiseGrid(seed, GridSx, GridSy,      8, 0.9, 0.4, 1);
@@ -42,12 +43,12 @@ internal static class SeededMapGenerator
         var spawn = SpawnFinder.FindSpawn(seed, classifier, GridSx, GridSy);
         int spawnX = spawn?.tileX ?? (GridSx / 2);
         int spawnY = spawn?.tileY ?? (GridSy / 2);
-        state.Plx = F32.FromInt(spawnX * 16 + 8);
-        state.Ply = F32.FromInt(spawnY * 16 + 8);
-        state.Clx = state.Plx;
-        state.Cly = state.Ply;
-        state.Cmx = state.Plx;
-        state.Cmy = state.Ply;
+        player.X    = F32.FromInt(spawnX * 16 + 8);
+        player.Y    = F32.FromInt(spawnY * 16 + 8);
+        player.Camera.Clx  = player.X;
+        player.Camera.Cly  = player.Y;
+        player.Camera.Cmx  = player.X;
+        player.Camera.Cmy  = player.Y;
 
         int holeX = levelSx / 2 + levelX;
         int holeY = levelSy / 2 + levelY;

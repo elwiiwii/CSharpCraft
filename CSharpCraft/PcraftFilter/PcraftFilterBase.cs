@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Draw;
 using PSharp8.Scene;
 
@@ -10,18 +11,6 @@ internal class PcraftFilterBase : PcraftSceneBase, IScene
 
     public override void Init(ISceneSetup setup)
     {
-        setup.Resolution = (128, 128);
-
-        var state    = new WorldState();
-        var game     = new PcraftGame();
-        bool initialized = false;
-
-        setup.RegisterUpdate(() =>
-        {
-            if (!initialized) { game.Init(); initialized = true; }
-            PcraftServices.UpdateMain(state, game);
-        }, fps: 30);
-
-        setup.RegisterDraw(() => PcraftDraw.Draw(state, game), fps: 30);
+        base.Init(setup);
     }
 }

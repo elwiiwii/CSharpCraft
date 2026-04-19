@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Map;
 using CSharpCraft.PcraftPreview;
 using CSharpCraft.Tests.Infrastructure;
@@ -61,14 +62,14 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
         new SeededServices(Seed);
         try
         {
-            var state = new WorldState();
+            var player = new PlayerEntity(F32.Zero, F32.Zero);
             var game  = new PcraftGame();
-            PcraftServices.ResetLevel(state, game);
+            PcraftServices.ResetLevel(player, game, out Level cave, out Level island);
 
             var sample = PcraftWorldSampler.Sample(Seed, Radius);
 
-            int spawnTileX = F32.FloorToInt(state.Plx / F32.FromInt(16));
-            int spawnTileY = F32.FloorToInt(state.Ply / F32.FromInt(16));
+            int spawnTileX = F32.FloorToInt(player.X / F32.FromInt(16));
+            int spawnTileY = F32.FloorToInt(player.Y / F32.FromInt(16));
 
             spawnTileX.Should().Be(sample.SpawnTileX,
                 because: "island spawn X must match PcraftWorldSampler for the same seed");
@@ -90,9 +91,9 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
         new SeededServices(Seed);
         try
         {
-            var state = new WorldState();
+            var player = new PlayerEntity(F32.Zero, F32.Zero);
             var game  = new PcraftGame();
-            PcraftServices.ResetLevel(state, game);
+            PcraftServices.ResetLevel(player, game, out Level cave, out Level island);
 
             var sample = PcraftWorldSampler.Sample(Seed, Radius);
 
@@ -132,15 +133,15 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
         new SeededServices(Seed);
         try
         {
-            var state = new WorldState();
+            var player = new PlayerEntity(F32.Zero, F32.Zero);
             var game  = new PcraftGame();
-            PcraftServices.ResetLevel(state, game);
+            PcraftServices.ResetLevel(player, game, out Level cave, out Level island);
 
             var sample = PcraftWorldSampler.Sample(Seed, Radius);
 
             for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
-                state.RndWat[i][j].Should().Be(
+                island.RndWat[i][j].Should().Be(
                     F32.FromDouble(sample.RndWat[i, j]),
                     because: $"RndWat[{i}][{j}] must match PcraftWorldSampler for seed {Seed}");
         }

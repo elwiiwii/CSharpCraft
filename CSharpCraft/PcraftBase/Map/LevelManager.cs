@@ -4,28 +4,25 @@ namespace CSharpCraft.PcraftBase.Map;
 
 internal static class LevelManager
 {
-    internal static void SetLevel(Level level, WorldState state)
+    internal static void SetLevel(Level level, PlayerEntity player)
     {
-        state.SetLevel(level);
-        state.Plx = level.Stx;
-        state.Ply = level.Sty;
+        player.X = level.Stx;
+        player.Y = level.Sty;
     }
 
-    internal static void FillEne(Level level, WorldState state)
+    internal static void FillEne(Level level, PlayerEntity player)
     {
         level.Ene.Clear();
-        level.Ene.Add(new PlayerEntity(F32.Zero, F32.Zero));
-        state.Enemies = level.Ene;
 
-        for (int i = 0; i < state.LevelSx; i++)
+        for (int i = 0; i < level.Sx; i++)
         {
-            for (int j = 0; j < state.LevelSy; j++)
+            for (int j = 0; j < level.Sy; j++)
             {
-                var c = PcraftServices.GetDirectGr(i, j, state);
+                var c = PcraftServices.GetDirectGr(i, j, level);
                 var r = Pico8.Rnd(100);
                 var ex = F32.FromInt(i * 16 + 8);
                 var ey = F32.FromInt(j * 16 + 8);
-                var dist = F32.Max(F32.Abs(ex - state.Plx), F32.Abs(ey - state.Ply));
+                var dist = F32.Max(F32.Abs(ex - player.X), F32.Abs(ey - player.Y));
                 if (r < 3 &&
                     c != PcraftData.GrWater &&
                     c != PcraftData.GrRock &&
@@ -48,52 +45,54 @@ internal static class LevelManager
         }
     }
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, WorldState state)
+    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
     {
         var level = new Level(x, y, sx, sy, isUnder);
-        PcraftServices.SetLevel(level, state);
-        var (holeX, holeY) = PcraftServices.CreateMap(state);
-        PcraftServices.FillEne(level, state);
-        level.Stx = F32.FromInt((holeX - state.LevelX) * 16 + 8);
-        level.Sty = F32.FromInt((holeY - state.LevelY) * 16 + 8);
+        PcraftServices.SetLevel(level, player);
+        var (holeX, holeY) = PcraftServices.CreateMap(level, player);
+        PcraftServices.FillEne(level, player);
+        level.Stx = F32.FromInt((holeX - level.X) * 16 + 8);
+        level.Sty = F32.FromInt((holeY - level.Y) * 16 + 8);
         return level;
     }
 
     internal static void ResetLevel(
-        WorldState state, PcraftGame game)
+        PlayerEntity player, PcraftGame game,
+        out Level cave, out Level island)
     {
-        state.Prot  = F32.Zero;
-        state.Lrot  = F32.Zero;
-        state.Panim = F32.Zero;
-        state.Pstam = F32.FromInt(100);
-        state.Lstam = state.Pstam;
-        state.Plife = F32.FromInt(100);
-        state.Llife = state.Plife;
-        state.Banim = F32.Zero;
-        state.Coffx = F32.Zero;
-        state.Coffy = F32.Zero;
-        state.Time  = F32.Zero;
-        state.SwitchLevel    = false;
-        state.CanSwitchLevel = false;
-        state.CurItem        = null;
+        player.Prot   = F32.Zero;
+        player.Lrot   = F32.Zero;
+        player.Panim  = F32.Zero;
+        player.Stam   = F32.FromInt(100);
+        player.Lstam  = player.Stam;
+        player.Life   = F32.FromInt(100);
+        player.Llife  = player.Life;
+        player.Banim  = F32.Zero;
+        player.Camera.Coffx  = F32.Zero;
+        player.Camera.Coffy  = F32.Zero;
+        player.CurItem = null;
 
-        state.Invent.Clear();
-
-        var rndWat = PcraftServices.InitRndWat();
-        for (int i = 0; i < 16; i++)
-            for (int j = 0; j < 16; j++)
-                state.RndWat[i][j] = rndWat[i][j];
+        player.Invent.Clear();
 
         game.InitRecipes();
-        state.Cave   = PcraftServices.CreateLevel(64, 0, 32, 32, true,  state);
-        state.Island = PcraftServices.CreateLevel( 0, 0, 64, 64, false, state);
+        cave   = PcraftServices.CreateLevel(64, 0, 32, 32, true,  player);
+        island = PcraftServices.CreateLevel( 0, 0, 64, 64, false, player);
 
-        var workbench = new ItemEntity(PcraftData.Workbench, state.Plx, state.Ply);
+        // Init RndWat on both levels
+        var rndWat = PcraftServices.InitRndWat();
+        foreach (var lev in new[] { cave, island })
+        {
+            for (int i = 0; i < 16; i++)
+                for (int j = 0; j < 16; j++)
+                    lev.RndWat[i][j] = rndWat[i][j];
+        }
+
+        var workbench = new ItemEntity(PcraftData.Workbench, player.X, player.Y);
         workbench.HasCol = true;
         workbench.List   = game.WorkbenchRecipe;
-        state.Invent.Add(new ItemStack(workbench.Type, list: game.WorkbenchRecipe));
+        player.Invent.Add(new ItemStack(workbench.Type, list: game.WorkbenchRecipe));
 
-        state.Invent.Add(new ItemStack(PcraftData.PickupTool));
+        player.Invent.Add(new ItemStack(PcraftData.PickupTool));
     }
 
     internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
@@ -113,21 +112,22 @@ internal static class LevelManager
         }
     }
 
-    internal static void UpGround(WorldState state)
+    internal static void UpGround(Level level, PlayerEntity player)
     {
-        int ci = F32.FloorToInt((state.Clx - F32.FromInt(64)) / F32.FromInt(16));
-        int cj = F32.FloorToInt((state.Cly - F32.FromInt(64)) / F32.FromInt(16));
+        var camera = player.Camera;
+        int ci = F32.FloorToInt((camera.Clx - F32.FromInt(64)) / F32.FromInt(16));
+        int cj = F32.FloorToInt((camera.Cly - F32.FromInt(64)) / F32.FromInt(16));
 
         for (int i = ci; i <= ci + 8; i++)
         {
             for (int j = cj; j <= cj + 8; j++)
             {
-                var gr = PcraftServices.GetDirectGr(i, j, state);
+                var gr = PcraftServices.GetDirectGr(i, j, level);
                 if (gr == PcraftData.GrFarm)
                 {
-                    var d = PcraftServices.DirGetData(i, j, F32.Zero, state);
-                    if (state.Time > d)
-                        Pico8.Mset(i + state.LevelX, j, PcraftData.GrSand.Id);
+                    var d = PcraftServices.DirGetData(i, j, F32.Zero, level);
+                    if (level.Time > d)
+                        Pico8.Mset(i + level.X, j, PcraftData.GrSand.Id);
                 }
             }
         }

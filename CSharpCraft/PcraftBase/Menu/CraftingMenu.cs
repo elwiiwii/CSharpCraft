@@ -16,7 +16,7 @@ internal sealed class CraftingMenu : IMenu
         _         = playerInvent ?? throw new ArgumentNullException(nameof(playerInvent));
     }
 
-    public void Update(WorldState state, PcraftGame game)
+    public void Update(PlayerEntity player, PcraftGame game)
     {
         if (Recipes.Count > 0)
         {
@@ -27,20 +27,20 @@ internal sealed class CraftingMenu : IMenu
             if (Pico8.Btnp(5))
             {
                 var recipe = Recipes[Sel];
-                if (PcraftServices.CanCraft(state.Invent, recipe))
+                if (PcraftServices.CanCraft(player.Invent, recipe))
                 {
-                    PcraftServices.Craft(state.Invent, recipe);
+                    PcraftServices.Craft(player.Invent, recipe);
                     Pico8.Sfx(16);
                 }
             }
         }
 
-        if (Pico8.Btnp(4) && !state.Lb4)
+        if (Pico8.Btnp(4) && !player.Lb4)
         {
-            state.CurMenu = null;
+            player.CurMenu = null;
             Pico8.Sfx(17);
         }
     }
 
-    public void Draw(WorldState state) => PcraftServices.DrawCraftingPanels(this, state);
+    public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawCraftingPanels(this, player);
 }

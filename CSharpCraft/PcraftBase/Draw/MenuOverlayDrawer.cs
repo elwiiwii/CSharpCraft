@@ -91,7 +91,7 @@ internal static class MenuOverlayDrawer
         });
     }
 
-    internal static void DrawCraftingPanels(CraftingMenu menu, WorldState state)
+    internal static void DrawCraftingPanels(CraftingMenu menu, PlayerEntity player)
     {
         Pico8.Camera();
         var recipeList = menu.Recipes;
@@ -99,9 +99,9 @@ internal static class MenuOverlayDrawer
         {
             var curGoal = recipeList[menu.Sel];
             DrawPanel("have", 71, 50, 52, 30);
-            int have = PcraftServices.HowMany(state.Invent, new ItemStack(curGoal.Type));
+            int have = PcraftServices.HowMany(player.Invent, new ItemStack(curGoal.Type));
             Pico8.Print(have.ToString(), 91, 65, 7);
-            DrawRequireList(curGoal, 4, 79, 104, 50, state);
+            DrawRequireList(curGoal, 4, 79, 104, 50, player);
         }
 
         DrawPanel(menu.BenchType.Name, 4, 16, 68, 64);
@@ -110,7 +110,7 @@ internal static class MenuOverlayDrawer
         menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 16, 68, 64, 6, recipeList.Count, (i, lx, py) =>
         {
             var it  = recipeList[i - 1];
-            int col = PcraftServices.CanCraft(state.Invent, it) ? 7 : 0;
+            int col = PcraftServices.CanCraft(player.Invent, it) ? 7 : 0;
             DrawItemVisual(lx, py, col, it.Power, it.Type);
             if (it.Count.HasValue)
             {
@@ -147,7 +147,7 @@ internal static class MenuOverlayDrawer
         return off;
     }
 
-    internal static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, WorldState state)
+    internal static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, PlayerEntity player)
     {
         DrawPanel("require", x, y, sx, sy);
         if (recip.Req.Count < 1) return;
@@ -162,7 +162,7 @@ internal static class MenuOverlayDrawer
             ItemName(lx, py, it, 7);
             if (it.Count.HasValue)
             {
-                int    h = PcraftServices.HowMany(state.Invent, it);
+                int    h = PcraftServices.HowMany(player.Invent, it);
                 string c = $"{h}/{it.Count.Value}";
                 Pico8.Print(c, lx + sx - c.Length * 4 - 10, py, h < it.Count.Value ? 8 : 7);
             }
