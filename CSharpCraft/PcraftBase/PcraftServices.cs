@@ -442,6 +442,53 @@ internal class PcraftServices
 
     // ---------------------------------------------------------------------------
     #endregion
+    #region Math
+    // ---------------------------------------------------------------------------
+
+    internal static F32 Lerp(F32 a, F32 b, F32 alpha)
+        => _current.OnLerp(a, b, alpha);
+
+    protected virtual F32 OnLerp(F32 a, F32 b, F32 alpha)
+        => PcraftMath.Lerp(a, b, alpha);
+
+    internal static F32 GetLen(F32 x, F32 y)
+        => _current.OnGetLen(x, y);
+
+    protected virtual F32 OnGetLen(F32 x, F32 y)
+        => PcraftMath.GetLen(x, y);
+
+    internal static F32 GetInvLen(F32 x, F32 y)
+        => _current.OnGetInvLen(x, y);
+
+    protected virtual F32 OnGetInvLen(F32 x, F32 y)
+        => PcraftMath.GetInvLen(x, y);
+
+    internal static F32 GetRot(F32 dx, F32 dy)
+        => _current.OnGetRot(dx, dy);
+
+    protected virtual F32 OnGetRot(F32 dx, F32 dy)
+        => PcraftMath.GetRot(dx, dy);
+
+    internal static F32 NormGetRot(F32 dx, F32 dy)
+        => _current.OnNormGetRot(dx, dy);
+
+    protected virtual F32 OnNormGetRot(F32 dx, F32 dy)
+        => PcraftMath.NormGetRot(dx, dy);
+
+    internal static F32 UpRot(F32 grot, F32 rot)
+        => _current.OnUpRot(grot, rot);
+
+    protected virtual F32 OnUpRot(F32 grot, F32 rot)
+        => PcraftMath.UpRot(grot, rot);
+
+    internal static (int flipX, int flipY) Mirror(F32 rot)
+        => _current.OnMirror(rot);
+
+    protected virtual (int flipX, int flipY) OnMirror(F32 rot)
+        => PcraftMath.Mirror(rot);
+
+    // ---------------------------------------------------------------------------
+    #endregion
     #region Physics
     // ---------------------------------------------------------------------------
 

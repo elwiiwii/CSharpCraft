@@ -16,10 +16,10 @@ internal static class EnemyUpdater
         {
             if (!PcraftServices.IsIn(e, F32.FromInt(100), camera.Clx, camera.Cly)) continue;
 
-            var distp  = PcraftMath.GetLen(e.X - player.X, e.Y - player.Y);
+            var distp  = PcraftServices.GetLen(e.X - player.X, e.Y - player.Y);
             var mspeed = F32.FromDouble(0.8);
 
-            var disten = PcraftMath.GetLen(
+            var disten = PcraftServices.GetLen(
                 e.X - player.X - ebx * F32.FromInt(8),
                 e.Y - player.Y - eby * F32.FromInt(8));
             if (disten < F32.FromInt(10))
@@ -102,7 +102,7 @@ internal static class EnemyUpdater
                 e.Dtim -= F32.One;
             }
 
-            var dl = mspeed * PcraftMath.GetInvLen(e.Dx, e.Dy);
+            var dl = mspeed * PcraftServices.GetInvLen(e.Dx, e.Dy);
             e.Dx *= dl;
             e.Dy *= dl;
 
@@ -115,7 +115,7 @@ internal static class EnemyUpdater
 
             if (F32.Abs(e.Dx) > F32.Zero || F32.Abs(e.Dy) > F32.Zero)
             {
-                e.Lrot  = PcraftMath.GetRot(e.Dx, e.Dy);
+                e.Lrot  = PcraftServices.GetRot(e.Dx, e.Dy);
                 e.Panim += F32.FromDouble(1.0 / 33.0);
             }
             else
@@ -129,7 +129,7 @@ internal static class EnemyUpdater
             e.Ox *= F32.FromDouble(0.9);
             e.Oy *= F32.FromDouble(0.9);
 
-            e.Prot = PcraftMath.UpRot(e.Lrot, e.Prot);
+            e.Prot = PcraftServices.UpRot(e.Lrot, e.Prot);
         }
 
         return nearEnemies;

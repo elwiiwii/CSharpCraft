@@ -17,7 +17,7 @@ internal static class PlayerActionUpdater
         player.X += dx;
         player.Y += dy;
 
-        player.Prot = PcraftMath.UpRot(player.Lrot, player.Prot);
+        player.Prot = PcraftServices.UpRot(player.Lrot, player.Prot);
 
         // ── Smooth bars (Llife / Lstam) ───────────────────────────────────────
         player.Llife += F32.Clamp(player.Life  - player.Llife, -F32.One, F32.One);

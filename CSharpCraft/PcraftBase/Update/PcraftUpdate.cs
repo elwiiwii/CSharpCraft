@@ -42,13 +42,13 @@ internal static class PcraftUpdate
         if (Pico8.Btn(2)) dy -= F32.One;
         if (Pico8.Btn(3)) dy += F32.One;
 
-        var dl = PcraftMath.GetInvLen(dx, dy);
+        var dl = PcraftServices.GetInvLen(dx, dy);
         dx *= dl;
         dy *= dl;
 
         if (F32.Abs(dx) > F32.Zero || F32.Abs(dy) > F32.Zero)
         {
-            player.Lrot  = PcraftMath.GetRot(dx, dy);
+            player.Lrot  = PcraftServices.GetRot(dx, dy);
             player.Panim += F32.FromDouble(1.0 / 33.0);
         }
         else

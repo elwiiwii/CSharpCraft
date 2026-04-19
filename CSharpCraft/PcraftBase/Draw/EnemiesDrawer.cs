@@ -83,7 +83,7 @@ internal static class EnemiesDrawer
 
         F32 bcr = Pico8.Cos(blade);
         F32 bsr = Pico8.Sin(blade);
-        var (mx, my) = PcraftMath.Mirror(blade);
+        var (mx, my) = PcraftServices.Mirror(blade);
 
         int weap = 75;
         if (isPlayer && player.CurItem != null)
@@ -116,7 +116,7 @@ internal static class EnemiesDrawer
                            fyF - sv * 3 - sr * lan,
                            F32.FromInt(3), F32.FromInt(2));
 
-            var (my2, mx2) = PcraftMath.Mirror((rot + F32.FromDouble(0.75)) % F32.One);
+            var (my2, mx2) = PcraftServices.Mirror((rot + F32.FromDouble(0.75)) % F32.One);
             Pico8.Spr(75,
                 fxF.Double + cv.Double * 4 + cr.Double * lan.Double - 8 + mx2 * 8 + 1,
                 fyF.Double + sv.Double * 4 + sr.Double * lan.Double + my2 * 8 - 7,
