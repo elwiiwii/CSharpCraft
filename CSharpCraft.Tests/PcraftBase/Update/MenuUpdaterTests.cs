@@ -23,11 +23,10 @@ public sealed class MenuUpdaterPureTests
     public void Update_ReturnsFalse_WhenCurMenuIsNull()
     {
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        var result = MenuUpdater.Update(player, game);
+        var result = MenuUpdater.Update(player);
 
-        result.Should().BeFalse();
+        result.consumed.Should().BeFalse();
     }
 
     // --------------------------------------------------------------------------
@@ -102,7 +101,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player, new PcraftGame()).Should().BeTrue();
+        MenuUpdater.Update(player).consumed.Should().BeTrue();
     }
 
     [Fact]
@@ -112,7 +111,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
     }
@@ -127,7 +126,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.Lb4.Should().BeTrue();
     }
@@ -147,7 +146,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.CurMenu.Should().BeSameAs(PcraftData.IntroMenu);
     }
@@ -161,10 +160,8 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.IntroMenu };
-        var game  = new PcraftGame();
-        game.InitRecipes();
 
-        MenuUpdater.Update(player, game);
+        MenuUpdater.Update(player);
 
         player.CurMenu.Should().BeNull();
     }
@@ -182,7 +179,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(player, new PcraftGame()).Should().BeTrue();
+        MenuUpdater.Update(player).consumed.Should().BeTrue();
     }
 
     [Fact]
@@ -194,7 +191,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(player.Invent);
         player.CurMenu = menu;
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.CurMenu.Should().BeSameAs(menu);
     }
@@ -210,7 +207,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.Lb4.Should().BeTrue();
         player.Lb5.Should().BeTrue();
@@ -228,7 +225,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         menu.Sel.Should().Be(0);
     }
@@ -249,7 +246,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.CurMenu.Should().BeNull();
     }
@@ -269,7 +266,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         menu.Sel.Should().Be(1);
     }
@@ -289,7 +286,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         player.CurMenu = menu;
         menu.Sel = 1;
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         menu.Sel.Should().Be(0);
     }
@@ -309,7 +306,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         player.CurMenu = menu;
         menu.Sel = 1; // already at last (0-based, 2 items → max=1)
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         menu.Sel.Should().Be(0); // wraps back to 0
     }
@@ -329,7 +326,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(player, new PcraftGame());
+        MenuUpdater.Update(player);
 
         player.CurItem.Should().BeSameAs(axe);
         player.CurMenu.Should().BeNull();
@@ -345,16 +342,14 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
-        game.InitRecipes();
 
         // Wood axe requires 5 wood
         player.Invent.Add(new ItemStack(PcraftData.Wood, count: 5));
-        var craftMenu = new CraftingMenu(PcraftData.Workbench, game.WorkbenchRecipe, player.Invent);
+        var craftMenu = new CraftingMenu(PcraftData.Workbench, player.Invent);
         craftMenu.Sel = 0; // first entry = wood haxe recipe
         player.CurMenu = craftMenu;
 
-        MenuUpdater.Update(player, game);
+        MenuUpdater.Update(player);
 
         player.Invent.Should().Contain(it => it.Type == PcraftData.Haxe);
     }

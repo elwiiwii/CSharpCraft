@@ -4,14 +4,14 @@ namespace CSharpCraft.PcraftBase.Update;
 
 internal static class MenuUpdater
 {
-    /// Returns true when a menu consumed the frame (caller should skip game logic).
-    internal static bool Update(PlayerEntity player, PcraftGame game)
+    /// Returns (consumed, needsReset). consumed=true means a menu handled the frame.
+    internal static (bool consumed, bool needsReset) Update(PlayerEntity player)
     {
-        if (player.CurMenu is null) return false;
+        if (player.CurMenu is null) return (false, false);
 
-        player.CurMenu.Update(player, game);
+        bool needsReset = player.CurMenu.Update(player);
         player.Lb4 = Pico8.Btn(4);
         player.Lb5 = Pico8.Btn(5);
-        return true;
+        return (true, needsReset);
     }
 }

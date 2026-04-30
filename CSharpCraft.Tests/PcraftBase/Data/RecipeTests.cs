@@ -18,44 +18,36 @@ public sealed class RecipeTests
     [Fact]
     public void Constructor_StoresType()
     {
-        var sut = new Recipe(IronBar, power: null, count: 1, list: null, req: []);
+        var sut = new Recipe(IronBar, power: null, count: 1, req: []);
         sut.Type.Should().BeSameAs(IronBar);
     }
 
     [Fact]
     public void Constructor_StoresPower()
     {
-        var sut = new Recipe(Sword, power: 5, count: null, list: null, req: []);
+        var sut = new Recipe(Sword, power: 5, count: null, req: []);
         sut.Power.Should().Be(5);
     }
 
     [Fact]
     public void Constructor_PowerIsNull_WhenNotProvided()
     {
-        var sut = new Recipe(IronBar, power: null, count: 1, list: null, req: []);
+        var sut = new Recipe(IronBar, power: null, count: 1, req: []);
         sut.Power.Should().BeNull();
     }
 
     [Fact]
     public void Constructor_StoresCount()
     {
-        var sut = new Recipe(IronBar, power: null, count: 1, list: null, req: []);
+        var sut = new Recipe(IronBar, power: null, count: 1, req: []);
         sut.Count.Should().Be(1);
-    }
-
-    [Fact]
-    public void Constructor_StoresList()
-    {
-        var craftingList = new List<Recipe>();
-        var sut = new Recipe(IronBar, power: null, count: null, list: craftingList, req: []);
-        sut.List.Should().BeSameAs(craftingList);
     }
 
     [Fact]
     public void Constructor_StoresReq()
     {
         var req = new List<ItemStack> { new(Iron, count: 3) };
-        var sut = new Recipe(IronBar, power: null, count: 1, list: null, req: req);
+        var sut = new Recipe(IronBar, power: null, count: 1, req: req);
         sut.Req.Should().BeSameAs(req);
     }
 
@@ -69,7 +61,7 @@ public sealed class RecipeTests
     public void IronBarRecipe_HasCorrectTypeCountAndIngredient()
     {
         var req = new List<ItemStack> { new(Iron, count: 3) };
-        var sut = new Recipe(IronBar, power: null, count: 1, list: null, req: req);
+        var sut = new Recipe(IronBar, power: null, count: 1, req: req);
 
         sut.Type.Should().BeSameAs(IronBar);
         sut.Count.Should().Be(1);
@@ -83,7 +75,7 @@ public sealed class RecipeTests
     public void GemSwordRecipe_HasPowerFiveAndTwentyOneGems()
     {
         var req = new List<ItemStack> { new(Gem, count: 21) };
-        var sut = new Recipe(Sword, power: 5, count: null, list: null, req: req);
+        var sut = new Recipe(Sword, power: 5, count: null, req: req);
 
         sut.Power.Should().Be(5);
         sut.Req[0].Type.Should().BeSameAs(Gem);

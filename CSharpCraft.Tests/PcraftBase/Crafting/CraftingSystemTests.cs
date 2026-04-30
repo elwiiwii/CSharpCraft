@@ -15,7 +15,8 @@ public sealed class CraftingSystemTests
         var req = new List<ItemStack>(reqs.Length);
         foreach (var (t, q) in reqs)
             req.Add(Stack(t, q));
-        return new Recipe(result, power, count, list: null, req);
+        return new Recipe(result, power, count,
+            req);
     }
 
     // --------------------------------------------------------------------------
@@ -90,7 +91,8 @@ public sealed class CraftingSystemTests
         var invent = new List<ItemStack> { poweredHaxe };
 
         var req = new List<ItemStack> { new(PcraftData.Haxe, count: 1) { Power = 1 } };
-        var recipe = new Recipe(PcraftData.Haxe, power: 2, count: 1, list: null, req);
+        var recipe = new Recipe(PcraftData.Haxe, power: 2, count: 1,
+            req);
 
         CraftingSystem.CanCraft(invent, recipe).Should().BeTrue();
     }
@@ -103,7 +105,8 @@ public sealed class CraftingSystemTests
         var invent = new List<ItemStack> { unpoweredHaxe };
 
         var req = new List<ItemStack> { new(PcraftData.Haxe, count: 1) { Power = 1 } };
-        var recipe = new Recipe(PcraftData.Haxe, power: 2, count: 1, list: null, req);
+        var recipe = new Recipe(PcraftData.Haxe, power: 2, count: 1,
+            req);
 
         CraftingSystem.CanCraft(invent, recipe).Should().BeFalse();
     }
@@ -112,7 +115,8 @@ public sealed class CraftingSystemTests
     public void CanCraft_ReturnsTrue_WhenRecipeHasNoIngredients()
     {
         var invent = new List<ItemStack>();
-        var recipe = new Recipe(PcraftData.Wood, power: null, count: 1, list: null, req: []);
+        var recipe = new Recipe(PcraftData.Wood, power: null, count: 1,
+            req: []);
 
         CraftingSystem.CanCraft(invent, recipe).Should().BeTrue();
     }
@@ -206,20 +210,6 @@ public sealed class CraftingSystemTests
 
         invent.Should().Contain(s => s.Type == PcraftData.Workbench)
               .Which.Power.Should().BeNull();
-    }
-
-    [Fact]
-    public void Craft_SetsRecipeList_OnResult()
-    {
-        var subList = new List<Recipe>();
-        var req = new List<ItemStack> { Stack(PcraftData.Wood, 15) };
-        var recipe = new Recipe(PcraftData.Workbench, power: null, count: null, list: subList, req);
-        var invent = new List<ItemStack> { Stack(PcraftData.Wood, 15) };
-
-        CraftingSystem.Craft(invent, recipe);
-
-        invent.Should().Contain(s => s.Type == PcraftData.Workbench)
-              .Which.List.Should().BeSameAs(subList);
     }
 
     [Fact]

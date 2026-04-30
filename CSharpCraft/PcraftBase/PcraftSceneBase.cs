@@ -14,7 +14,6 @@ internal abstract class PcraftSceneBase : IScene
         setup.Resolution = (128, 128);
 
         var player   = new PlayerEntity(F32.Zero, F32.Zero);
-        var game     = new PcraftGame();
         Level? cave        = null;
         Level? island      = null;
         Level? currentLevel = null;
@@ -26,17 +25,17 @@ internal abstract class PcraftSceneBase : IScene
         {
             if (!initialized)
             {
-                game.Init();
-                PcraftServices.ResetLevel(player, game, out cave, out island);
+                Pico8.Music(4, 10000);
+                PcraftServices.ResetLevel(player, out cave, out island);
                 currentLevel = island!;
                 Pico8.Music(1);
                 initialized = true;
             }
 
-            if (game.NeedsReset)
+            bool needsReset = PcraftServices.UpdateMain(player, currentLevel!, ref switchLevel, ref canSwitchLevel);
+            if (needsReset)
             {
-                game.NeedsReset = false;
-                PcraftServices.ResetLevel(player, game, out cave, out island);
+                PcraftServices.ResetLevel(player, out cave, out island);
                 currentLevel = island!;
                 Pico8.Music(1);
             }
@@ -50,11 +49,9 @@ internal abstract class PcraftSceneBase : IScene
                 canSwitchLevel = false;
                 Pico8.Music(currentLevel == cave ? 2 : 1);
             }
-
-            PcraftServices.UpdateMain(player, currentLevel!, game, ref switchLevel, ref canSwitchLevel);
         }, fps: 30);
 
-        setup.RegisterDraw(() => PcraftDraw.Draw(player, currentLevel!, game), fps: 30);
+        setup.RegisterDraw(() => PcraftDraw.Draw(player, currentLevel!), fps: 30);
     }
 
     public virtual string? SpritesPath => "pcraft_sprites";

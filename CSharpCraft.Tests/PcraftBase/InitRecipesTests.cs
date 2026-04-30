@@ -4,29 +4,22 @@ using Xunit;
 
 namespace CSharpCraft.Tests.PcraftBase;
 
-public sealed class InitRecipesTests
+public sealed class BenchRecipesTests
 {
-    private readonly PcraftGame _sut = new();
-
-    public InitRecipesTests()
-    {
-        _sut.InitRecipes();
-    }
-
     // --------------------------------------------------------------------------
-    #region FurnaceRecipe
+    #region Furnace.Recipes
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void FurnaceRecipe_HasFourEntries()
+    public void FurnaceRecipes_HasFourEntries()
     {
-        _sut.FurnaceRecipe.Should().HaveCount(4);
+        PcraftData.Furnace.Recipes.Should().HaveCount(4);
     }
 
     [Fact]
-    public void FurnaceRecipe_ContainsIronBarFromThreeIron()
+    public void FurnaceRecipes_ContainsIronBarFromThreeIron()
     {
-        var entry = _sut.FurnaceRecipe.First(r => r.Type == PcraftData.IronBar);
+        var entry = PcraftData.Furnace.Recipes.First(r => r.Type == PcraftData.IronBar);
         entry.Count.Should().Be(1);
         entry.Req.Should().HaveCount(1);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Iron);
@@ -34,28 +27,28 @@ public sealed class InitRecipesTests
     }
 
     [Fact]
-    public void FurnaceRecipe_ContainsBreadFromFiveWheat()
+    public void FurnaceRecipes_ContainsBreadFromFiveWheat()
     {
-        var entry = _sut.FurnaceRecipe.First(r => r.Type == PcraftData.Bread);
+        var entry = PcraftData.Furnace.Recipes.First(r => r.Type == PcraftData.Bread);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Wheat);
         entry.Req[0].Count.Should().Be(5);
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region FactoryRecipe
+    #region Factory.Recipes
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void FactoryRecipe_HasTwoEntries()
+    public void FactoryRecipes_HasTwoEntries()
     {
-        _sut.FactoryRecipe.Should().HaveCount(2);
+        PcraftData.Factory.Recipes.Should().HaveCount(2);
     }
 
     [Fact]
-    public void FactoryRecipe_ContainsSailFromThreeFabricAndOneGlue()
+    public void FactoryRecipes_ContainsSailFromThreeFabricAndOneGlue()
     {
-        var entry = _sut.FactoryRecipe.First(r => r.Type == PcraftData.Sail);
+        var entry = PcraftData.Factory.Recipes.First(r => r.Type == PcraftData.Sail);
         entry.Count.Should().Be(1);
         entry.Req.Should().HaveCount(2);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Fabric);
@@ -66,19 +59,19 @@ public sealed class InitRecipesTests
 
     // --------------------------------------------------------------------------
     #endregion
-    #region ChemRecipe
+    #region Chem.Recipes
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void ChemRecipe_HasTwoEntries()
+    public void ChemRecipes_HasTwoEntries()
     {
-        _sut.ChemRecipe.Should().HaveCount(2);
+        PcraftData.Chem.Recipes.Should().HaveCount(2);
     }
 
     [Fact]
-    public void ChemRecipe_ContainsGlueFromOneGlassAndThreeIchor()
+    public void ChemRecipes_ContainsGlueFromOneGlassAndThreeIchor()
     {
-        var entry = _sut.ChemRecipe.First(r => r.Type == PcraftData.Glue);
+        var entry = PcraftData.Chem.Recipes.First(r => r.Type == PcraftData.Glue);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Glass);
         entry.Req[0].Count.Should().Be(1);
         entry.Req[1].Type.Should().BeSameAs(PcraftData.Ichor);
@@ -87,89 +80,88 @@ public sealed class InitRecipesTests
 
     // --------------------------------------------------------------------------
     #endregion
-    #region WorkbenchRecipe
+    #region Workbench.Recipes
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void WorkbenchRecipe_HasTenEntries()
+    public void WorkbenchRecipes_HasTenEntries()
     {
-        _sut.WorkbenchRecipe.Should().HaveCount(10);
+        PcraftData.Workbench.Recipes.Should().HaveCount(10);
     }
 
     [Fact]
-    public void WorkbenchRecipe_ContainsWoodHaxe_WithPowerOneAndFiveWood()
+    public void WorkbenchRecipes_ContainsWoodHaxe_WithPowerOneAndFiveWood()
     {
-        var entry = _sut.WorkbenchRecipe.First(r => r.Type == PcraftData.Haxe && r.Power == 1);
+        var entry = PcraftData.Workbench.Recipes.First(r => r.Type == PcraftData.Haxe && r.Power == 1);
         entry.Req.Should().HaveCount(1);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Wood);
         entry.Req[0].Count.Should().Be(5);
     }
 
     [Fact]
-    public void WorkbenchRecipe_ContainsWoodSword_WithPowerOneAndSevenWood()
+    public void WorkbenchRecipes_ContainsWoodSword_WithPowerOneAndSevenWood()
     {
-        var entry = _sut.WorkbenchRecipe.First(r => r.Type == PcraftData.Sword && r.Power == 1);
+        var entry = PcraftData.Workbench.Recipes.First(r => r.Type == PcraftData.Sword && r.Power == 1);
         entry.Req[0].Count.Should().Be(7);
     }
 
     [Fact]
-    public void WorkbenchRecipe_ContainsWorkbenchCraft_WithRecipeListAndFifteenWood()
+    public void WorkbenchRecipes_ContainsWorkbenchCraft_WithFifteenWood()
     {
-        var entry = _sut.WorkbenchRecipe.First(r => r.Type == PcraftData.Workbench);
-        entry.List.Should().BeSameAs(_sut.WorkbenchRecipe);
+        var entry = PcraftData.Workbench.Recipes.First(r => r.Type == PcraftData.Workbench);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Wood);
         entry.Req[0].Count.Should().Be(15);
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region StonebenchRecipe
+    #region Stonebench.Recipes
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void StonebenchRecipe_HasSevenEntries()
+    public void StonebenchRecipes_HasSevenEntries()
     {
-        _sut.StonebenchRecipe.Should().HaveCount(7);
+        PcraftData.Stonebench.Recipes.Should().HaveCount(7);
     }
 
     [Fact]
-    public void StonebenchRecipe_ContainsStoneSword_WithPowerTwoAndSevenStone()
+    public void StonebenchRecipes_ContainsStoneSword_WithPowerTwoAndSevenStone()
     {
-        var entry = _sut.StonebenchRecipe.First(r => r.Type == PcraftData.Sword && r.Power == 2);
+        var entry = PcraftData.Stonebench.Recipes.First(r => r.Type == PcraftData.Sword && r.Power == 2);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Stone);
         entry.Req[0].Count.Should().Be(7);
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region AnvilRecipe
+    #region Anvil.Recipes
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void AnvilRecipe_HasFifteenEntries()
+    public void AnvilRecipes_HasFifteenEntries()
     {
-        _sut.AnvilRecipe.Should().HaveCount(15);
+        PcraftData.Anvil.Recipes.Should().HaveCount(15);
     }
 
     [Fact]
-    public void AnvilRecipe_ContainsGemSword_WithPowerFiveAndTwentyOneGem()
+    public void AnvilRecipes_ContainsGemSword_WithPowerFiveAndTwentyOneGem()
     {
-        var entry = _sut.AnvilRecipe.First(r => r.Type == PcraftData.Sword && r.Power == 5);
+        var entry = PcraftData.Anvil.Recipes.First(r => r.Type == PcraftData.Sword && r.Power == 5);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Gem);
         entry.Req[0].Count.Should().Be(21);
     }
 
     [Fact]
-    public void AnvilRecipe_ContainsGemHaxe_WithPowerFiveAndFifteenGem()
+    public void AnvilRecipes_ContainsGemHaxe_WithPowerFiveAndFifteenGem()
     {
-        var entry = _sut.AnvilRecipe.First(r => r.Type == PcraftData.Haxe && r.Power == 5);
+        var entry = PcraftData.Anvil.Recipes.First(r => r.Type == PcraftData.Haxe && r.Power == 5);
         entry.Req[0].Count.Should().Be(15);
     }
 
     [Fact]
-    public void AnvilRecipe_ContainsIronHaxe_WithPowerThreeAndFiveIronBar()
+    public void AnvilRecipes_ContainsIronHaxe_WithPowerThreeAndFiveIronBar()
     {
-        var entry = _sut.AnvilRecipe.First(r => r.Type == PcraftData.Haxe && r.Power == 3);
+        var entry = PcraftData.Anvil.Recipes.First(r => r.Type == PcraftData.Haxe && r.Power == 3);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.IronBar);
         entry.Req[0].Count.Should().Be(5);
     }
@@ -177,3 +169,4 @@ public sealed class InitRecipesTests
     // --------------------------------------------------------------------------
     #endregion
 }
+

@@ -10,9 +10,9 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
     internal string? Text { get; } = text;
     internal string? Text2 { get; } = text2;
 
-    public void Update(PlayerEntity player, PcraftGame game)
+    public bool Update(PlayerEntity player)
     {
-        if (Spr <= 0) return;
+        if (Spr <= 0) return false;
         if (Pico8.Btnp(4) && !player.Lb4)
         {
             if (ReferenceEquals(this, PcraftData.MainMenu))
@@ -21,10 +21,11 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
             }
             else
             {
-                game.NeedsReset = true;
                 player.CurMenu = null;
+                return true;
             }
         }
+        return false;
     }
 
     public void Draw(PlayerEntity player, Level level)

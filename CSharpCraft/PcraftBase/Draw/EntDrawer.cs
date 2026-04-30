@@ -11,9 +11,9 @@ internal static class EntDrawer
             Pico8.Pal();
             if (e.Type.Pal != null) PcraftServices.SetPal(e.Type.Pal);
 
-            if (e.Type.BigSpr != 0)
+            if (e.Type is PlaceableItemDef placeable && placeable.BigSpr != 0)
             {
-                Pico8.Spr(e.Type.BigSpr, e.X.Double - 8, e.Y.Double - 8, 2, 2);
+                Pico8.Spr(placeable.BigSpr, e.X.Double - 8, e.Y.Double - 8, 2, 2);
             }
             else if (e.Type == PcraftData.EText)
             {

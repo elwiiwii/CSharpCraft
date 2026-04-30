@@ -18,6 +18,7 @@ namespace CSharpCraft.Tests.PcraftBase.Menu;
 
 public sealed class CraftingMenuPureTests
 {
+    private static readonly BenchItemDef _testBench = new("test bench", 89);
     // --------------------------------------------------------------------------
     #region Constructor argument validation
     // --------------------------------------------------------------------------
@@ -25,25 +26,15 @@ public sealed class CraftingMenuPureTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenBenchTypeIsNull()
     {
-        var recipes     = new List<Recipe>();
         var playerInvent = new List<ItemStack>();
-        var act = () => new CraftingMenu(benchType: null!, recipes, playerInvent);
+        var act = () => new CraftingMenu(benchType: null!, playerInvent);
         act.Should().Throw<ArgumentNullException>().WithParameterName("benchType");
-    }
-
-    [Fact]
-    public void Constructor_ThrowsArgumentNullException_WhenRecipesIsNull()
-    {
-        var playerInvent = new List<ItemStack>();
-        var act = () => new CraftingMenu(PcraftData.Stonebench, recipes: null!, playerInvent);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("recipes");
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenPlayerInventIsNull()
     {
-        var recipes = new List<Recipe>();
-        var act = () => new CraftingMenu(PcraftData.Stonebench, recipes, playerInvent: null!);
+        var act = () => new CraftingMenu(_testBench, playerInvent: null!);
         act.Should().Throw<ArgumentNullException>().WithParameterName("playerInvent");
     }
 
@@ -55,22 +46,21 @@ public sealed class CraftingMenuPureTests
     [Fact]
     public void Constructor_InitializesSelToZero()
     {
-        var menu = new CraftingMenu(
-            PcraftData.Stonebench,
-            new List<Recipe>(),
-            new List<ItemStack>());
+        var menu = new CraftingMenu(_testBench, new List<ItemStack>());
         menu.Sel.Should().Be(0);
     }
 
     [Fact]
-    public void Constructor_ExposesRecipesReference()
+    public void Constructor_ExposesRecipesFromBench()
     {
+        var bench = new BenchItemDef("test", 0);
         var recipes = new List<Recipe>
         {
-            new(PcraftData.Haxe, power: null, count: 1, list: null,
+            new(PcraftData.Haxe, power: null, count: 1,
                 req: [new ItemStack(PcraftData.Wood, count: 3)])
         };
-        var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
+        bench.Recipes = recipes;
+        var menu = new CraftingMenu(bench, new List<ItemStack>());
         menu.Recipes.Should().BeSameAs(recipes);
     }
 
@@ -94,6 +84,8 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         if (_sfxDir is not null && Directory.Exists(_sfxDir))
             Directory.Delete(_sfxDir, recursive: true);
     }
+
+    private static readonly BenchItemDef _testBench = new("test bench", 89);
 
     private sealed class NullScene : IScene
     {
@@ -125,8 +117,15 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
 
     /// <summary>A minimal recipe: 3x Wood → 1x Haxe.</summary>
     private static Recipe MakeHaxeRecipe() =>
-        new(PcraftData.Haxe, power: null, count: 1, list: null,
+        new(PcraftData.Haxe, power: null, count: 1,
             req: [new ItemStack(PcraftData.Wood, count: 3)]);
+
+    private static CraftingMenu MakeBenchMenu(List<ItemStack> invent, List<Recipe>? recipes = null)
+    {
+        var bench = new BenchItemDef("test", 0);
+        bench.Recipes = recipes ?? [MakeHaxeRecipe()];
+        return new CraftingMenu(bench, invent);
+    }
 
     // --------------------------------------------------------------------------
     #region Navigation — sel movement
@@ -140,10 +139,10 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe(), MakeHaxeRecipe() };
-        var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
+        var menu = MakeBenchMenu(new List<ItemStack>(), recipes);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.Sel.Should().Be(1);
     }
@@ -156,11 +155,11 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe(), MakeHaxeRecipe() };
-        var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
+        var menu = MakeBenchMenu(new List<ItemStack>(), recipes);
         menu.Sel = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.Sel.Should().Be(0);
     }
@@ -179,11 +178,11 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var playerInvent = new List<ItemStack> { new(PcraftData.Wood, count: 3) };
         var recipes = new List<Recipe> { MakeHaxeRecipe() };
-        var menu = new CraftingMenu(PcraftData.Stonebench, recipes, playerInvent);
+        var menu = MakeBenchMenu(playerInvent, recipes);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
         player.Invent.Add(new ItemStack(PcraftData.Wood, count: 3));
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.Invent.Should().Contain(i => i.Type == PcraftData.Haxe,
             "crafting should add the result to the player inventory");
@@ -197,11 +196,11 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe() };
-        var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
+        var menu = MakeBenchMenu(new List<ItemStack>(), recipes);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
         player.Invent.Add(new ItemStack(PcraftData.Wood, count: 3));
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.Invent.Should().NotContain(i => i.Type == PcraftData.Wood,
             "all 3 wood should be consumed by the recipe");
@@ -216,11 +215,11 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var recipes = new List<Recipe> { MakeHaxeRecipe() };
-        var menu = new CraftingMenu(PcraftData.Stonebench, recipes, new List<ItemStack>());
+        var menu = MakeBenchMenu(new List<ItemStack>(), recipes);
         // player.Invent is empty — missing 3x Wood
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.Invent.Should().BeEmpty("no ingredients means nothing is crafted");
     }
@@ -232,10 +231,10 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new CraftingMenu(PcraftData.Stonebench, new List<Recipe>(), new List<ItemStack>());
+        var menu = MakeBenchMenu(new List<ItemStack>(), []);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.Invent.Should().BeEmpty();
         player.CurMenu.Should().BeSameAs(menu); // menu stays open
@@ -253,10 +252,10 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new CraftingMenu(PcraftData.Stonebench, new List<Recipe>(), new List<ItemStack>());
+        var menu = MakeBenchMenu(new List<ItemStack>(), []);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurMenu.Should().BeNull();
     }

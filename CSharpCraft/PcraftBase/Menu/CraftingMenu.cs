@@ -4,19 +4,18 @@ namespace CSharpCraft.PcraftBase.Menu;
 
 internal sealed class CraftingMenu : IMenu
 {
-    internal ItemDef     BenchType { get; }
-    internal List<Recipe> Recipes  { get; }
+    internal BenchItemDef    BenchType { get; }
+    internal IReadOnlyList<Recipe> Recipes => BenchType.Recipes;
     internal int Sel { get; set; } = 0;
     internal int Off { get; set; } = 0;
 
-    internal CraftingMenu(ItemDef benchType, List<Recipe> recipes, List<ItemStack> playerInvent)
+    internal CraftingMenu(BenchItemDef benchType, List<ItemStack> playerInvent)
     {
         BenchType = benchType    ?? throw new ArgumentNullException(nameof(benchType));
-        Recipes   = recipes      ?? throw new ArgumentNullException(nameof(recipes));
         _         = playerInvent ?? throw new ArgumentNullException(nameof(playerInvent));
     }
 
-    public void Update(PlayerEntity player, PcraftGame game)
+    public bool Update(PlayerEntity player)
     {
         if (Recipes.Count > 0)
         {
@@ -40,6 +39,7 @@ internal sealed class CraftingMenu : IMenu
             player.CurMenu = null;
             Pico8.Sfx(17);
         }
+        return false;
     }
 
     public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawCraftingPanels(this, player);

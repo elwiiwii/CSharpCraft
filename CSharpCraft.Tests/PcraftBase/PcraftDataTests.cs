@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
 using FluentAssertions;
 using Xunit;
 
@@ -67,9 +68,9 @@ public sealed class PcraftDataTests
     }
 
     [Fact]
-    public void Workbench_IsBeCraft()
+    public void Workbench_IsBenchItemDef()
     {
-        PcraftData.Workbench.BeCraft.Should().BeTrue();
+        (PcraftData.Workbench is BenchItemDef).Should().BeTrue();
     }
 
     [Fact]

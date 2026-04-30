@@ -67,9 +67,9 @@ internal static class EntityUpdater
                 {
                     if (player.CurItem != null && player.CurItem.Type == PcraftData.PickupTool)
                     {
-                        if (e.Type == PcraftData.Chest || e.Type.BeCraft)
+                        if (e.Type is PlaceableItemDef)
                         {
-                            var asStack = new ItemStack(e.Type, list: e.List);
+                            var asStack = new ItemStack(e.Type);
                             PcraftServices.AddItemInList(player.Invent, asStack, 0);
                             player.CurItem = asStack;
                             level.Ent.RemoveAt(i);
@@ -78,10 +78,10 @@ internal static class EntityUpdater
                     }
                     else
                     {
-                        if (e.Type == PcraftData.Chest || e.Type.BeCraft)
+                        if (e.Type is PlaceableItemDef)
                         {
-                            if (e.Type.BeCraft)
-                                player.CurMenu = new CraftingMenu(e.Type, e.List ?? [], player.Invent);
+                            if (e.Type is BenchItemDef bench)
+                                player.CurMenu = new CraftingMenu(bench, player.Invent);
                             else
                                 player.CurMenu = new ChestMenu([], player.Invent);
                             Pico8.Sfx(13);

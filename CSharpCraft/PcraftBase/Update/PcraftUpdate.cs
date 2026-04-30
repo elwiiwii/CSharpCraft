@@ -5,13 +5,13 @@ namespace CSharpCraft.PcraftBase.Update;
 
 internal static class PcraftUpdate
 {
-    internal static void Update(
-        PlayerEntity player, Level level, PcraftGame game,
+    internal static bool Update(
+        PlayerEntity player, Level level,
         ref bool switchLevel, ref bool canSwitchLevel)
     {
         // ── Menu guard ────────────────────────────────────────────────────────
-        if (PcraftServices.UpdateMenu(player, game))
-            return;
+        var (consumed, needsReset) = PcraftServices.UpdateMenu(player);
+        if (consumed) return needsReset;
 
         // ── Curitem validation ────────────────────────────────────────────────
         if (player.CurItem is not null && PcraftServices.HowMany(player.Invent, player.CurItem) <= 0)
@@ -62,7 +62,8 @@ internal static class PcraftUpdate
         // ── Sub-updaters ──────────────────────────────────────────────────────
         var (fdx, fdy, canAct) = PcraftServices.UpdateEntities(player, level, dx, dy);
         var nearEnemies = PcraftServices.UpdateEnemies(player, level);
-        PcraftServices.UpdatePlayer(player, level, game, fdx, fdy, canAct, nearEnemies);
+        PcraftServices.UpdatePlayer(player, level, fdx, fdy, canAct, nearEnemies);
         PcraftServices.UpdateCamera(player, fdx, fdy);
+        return false;
     }
 }

@@ -8,7 +8,7 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
     internal int Sel { get; set; } = 0;
     internal int Off { get; set; } = 0;
 
-    public void Update(PlayerEntity player, PcraftGame game)
+    public bool Update(PlayerEntity player)
     {
         if (List.Count > 0)
         {
@@ -22,7 +22,7 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
                 player.CurMenu = null;
                 player.Block5  = true;
                 Pico8.Sfx(16);
-                return;
+                return false;
             }
         }
 
@@ -31,6 +31,7 @@ internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
             player.CurMenu = null;
             Pico8.Sfx(17);
         }
+        return false;
     }
 
     public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawInventoryMenu(this);

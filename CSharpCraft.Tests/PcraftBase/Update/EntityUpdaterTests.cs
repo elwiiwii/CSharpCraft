@@ -247,15 +247,16 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
     public void Update_SetsCurMenu_ToCraftingMenu_WhenBtn5AndNearCraftBenchEntity()
     {
         // When pressing Btn5 near a crafting bench entity (without PickupTool equipped),
-        // EntityUpdater should open a CraftingMenu with the entity's recipe list.
+        // EntityUpdater should open a CraftingMenu with the bench's recipe list.
         var recipes = new List<Recipe>();
+        var testBench = new BenchItemDef("test bench", 89) { Recipes = recipes };
         var fakeInput = new FakeInputManager();
         fakeInput.SetBtn(5, true);
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
         var level = new Level(0, 0, 64, 64, false);
-        var benchEntity = new ItemEntity(PcraftData.Workbench, x: F32.Zero, y: F32.Zero) { List = recipes };
+        var benchEntity = new ItemEntity(testBench, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(benchEntity);
 
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);

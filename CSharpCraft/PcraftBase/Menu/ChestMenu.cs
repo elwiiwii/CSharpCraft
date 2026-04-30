@@ -10,7 +10,7 @@ internal sealed class ChestMenu(List<ItemStack> chestItems, List<ItemStack> play
     internal int Off       { get; set; } = 0;
     internal int TabToggle { get; set; } = 0;
 
-    public void Update(PlayerEntity player, PcraftGame game)
+    public bool Update(PlayerEntity player)
     {
         if (Pico8.Btnp(0)) { TabToggle = PcraftServices.Loop(TabToggle - 1, 2); Pico8.Sfx(18); }
         if (Pico8.Btnp(1)) { TabToggle = PcraftServices.Loop(TabToggle + 1, 2); Pico8.Sfx(18); }
@@ -31,6 +31,7 @@ internal sealed class ChestMenu(List<ItemStack> chestItems, List<ItemStack> play
             player.CurMenu = null;
             Pico8.Sfx(17);
         }
+        return false;
     }
 
     public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawChestPanels(this);

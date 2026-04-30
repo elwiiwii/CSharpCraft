@@ -6,7 +6,6 @@ internal sealed class ItemEntity : Entity
     internal ItemDef? GiveItem { get; set; }
     internal F32? Timer { get; set; }
     internal bool HasCol { get; set; }
-    internal List<Recipe>? List { get; set; }
     internal F32 TextValue { get; set; }
     internal int TextColor { get; set; }
 

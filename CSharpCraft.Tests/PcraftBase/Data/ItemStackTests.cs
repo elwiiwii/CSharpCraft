@@ -34,13 +34,6 @@ public sealed class ItemStackTests
         sut.Power.Should().BeNull();
     }
 
-    [Fact]
-    public void List_IsNull_ByDefault()
-    {
-        var sut = new ItemStack(Wood);
-        sut.List.Should().BeNull();
-    }
-
     // --------------------------------------------------------------------------
     #endregion
     #region instc() equivalent — with count
@@ -72,19 +65,6 @@ public sealed class ItemStackTests
         var sut = new ItemStack(Sword);
         sut.Power = 2;
         sut.Power.Should().Be(2);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
-    #region crafting list
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void List_IsStored_WhenProvided()
-    {
-        var recipes = new List<Recipe>();
-        var sut = new ItemStack(Wood, list: recipes);
-        sut.List.Should().BeSameAs(recipes);
     }
 
     // --------------------------------------------------------------------------

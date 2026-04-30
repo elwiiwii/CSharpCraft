@@ -113,7 +113,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.Sel.Should().Be(1);
     }
@@ -130,7 +130,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         menu.Sel = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.Sel.Should().Be(0);
     }
@@ -147,7 +147,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(list); // Sel = 0
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.Sel.Should().Be(1); // wraps to last
     }
@@ -164,7 +164,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         menu.Sel = 1; // at last (2 items, 0-based)
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.Sel.Should().Be(0); // wraps to first
     }
@@ -185,7 +185,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurMenu.Should().BeNull();
     }
@@ -202,7 +202,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu, Lb4 = true };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurMenu.Should().BeSameAs(menu);
     }
@@ -224,7 +224,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurItem.Should().BeSameAs(axe);
     }
@@ -240,7 +240,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurMenu.Should().BeNull();
     }
@@ -256,7 +256,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new InventoryMenu(new List<ItemStack>());
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurItem.Should().BeNull();
         player.CurMenu.Should().BeSameAs(menu);

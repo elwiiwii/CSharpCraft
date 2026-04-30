@@ -132,7 +132,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
             playerItems: new List<ItemStack> { new(PcraftData.Stone) });
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.TabToggle.Should().Be(1);
     }
@@ -151,7 +151,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         menu.TabToggle = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.TabToggle.Should().Be(0);
     }
@@ -170,7 +170,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         menu.TabToggle = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         menu.TabToggle.Should().Be(0);
     }
@@ -194,7 +194,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         chestItems.Should().BeEmpty("item was transferred out of chest");
         playerItems.Should().ContainSingle(i => i.Type == PcraftData.Wood, "item arrived in player inventory");
@@ -215,7 +215,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         menu.TabToggle = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         playerItems.Should().BeEmpty("item was transferred out of player inventory");
         chestItems.Should().ContainSingle(i => i.Type == PcraftData.Stone, "item arrived in chest");
@@ -234,7 +234,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0 → chest tab (empty)
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         chestItems.Should().BeEmpty();
         playerItems.Should().ContainSingle(); // unchanged
@@ -255,7 +255,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         var menu = new ChestMenu(new List<ItemStack>(), new List<ItemStack>());
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player, new PcraftGame());
+        menu.Update(player);
 
         player.CurMenu.Should().BeNull();
     }

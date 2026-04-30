@@ -4,15 +4,15 @@ namespace CSharpCraft.PcraftBase.Draw;
 
 internal static class PcraftDraw
 {
-    internal static void Draw(PlayerEntity player, Level level, PcraftGame game)
+    internal static void Draw(PlayerEntity player, Level level)
     {
         bool ownedFrame = !Pico8.IsDrawing;
         if (ownedFrame) Pico8.BeginFrame();
-        try { PcraftServices.DrawMain(player, level, game); }
+        try { PcraftServices.DrawMain(player, level); }
         finally { if (ownedFrame) Pico8.EndFrame(); }
     }
 
-    internal static void DrawMain(PlayerEntity player, Level level, PcraftGame game)
+    internal static void DrawMain(PlayerEntity player, Level level)
     {
         Pico8.Cls();
         Pico8.Camera(player.Camera.Clx - F32.FromInt(64), player.Camera.Cly - F32.FromInt(64));

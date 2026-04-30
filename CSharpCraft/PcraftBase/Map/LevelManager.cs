@@ -57,7 +57,7 @@ internal static class LevelManager
     }
 
     internal static void ResetLevel(
-        PlayerEntity player, PcraftGame game,
+        PlayerEntity player,
         out Level cave, out Level island)
     {
         player.Prot   = F32.Zero;
@@ -74,7 +74,6 @@ internal static class LevelManager
 
         player.Invent.Clear();
 
-        game.InitRecipes();
         cave   = PcraftServices.CreateLevel(64, 0, 32, 32, true,  player);
         island = PcraftServices.CreateLevel( 0, 0, 64, 64, false, player);
 
@@ -89,8 +88,7 @@ internal static class LevelManager
 
         var workbench = new ItemEntity(PcraftData.Workbench, player.X, player.Y);
         workbench.HasCol = true;
-        workbench.List   = game.WorkbenchRecipe;
-        player.Invent.Add(new ItemStack(workbench.Type, list: game.WorkbenchRecipe));
+        player.Invent.Add(new ItemStack(PcraftData.Workbench));
 
         player.Invent.Add(new ItemStack(PcraftData.PickupTool));
     }

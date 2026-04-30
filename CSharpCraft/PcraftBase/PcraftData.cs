@@ -32,7 +32,7 @@ internal static class PcraftData
     internal static readonly ItemDef Sand       = new("sand",        114, [15]);
     internal static readonly ItemDef Seed       = new("seed",        115);
     internal static readonly ItemDef Wheat      = new("wheat",       118, [4, 9, 10, 9]);
-    internal static readonly ItemDef Apple      = new("apple",       116);
+    internal static readonly HealthItemDef Apple  = new("apple",     116) { GiveLife = 20 };
     internal static readonly ItemDef Glass      = new("glass",       117);
     internal static readonly ItemDef Stone      = new("stone",       118, PStone);
     internal static readonly ItemDef Iron       = new("iron",        118, PIron);
@@ -43,10 +43,10 @@ internal static class PcraftData
     internal static readonly ItemDef Glue       = new("glue",        85, [1, 13, 12, 7]);
     internal static readonly ItemDef Boat       = new("boat",        86);
     internal static readonly ItemDef Ichor      = new("ichor",       114, [11]);
-    internal static readonly ItemDef Potion     = new("potion",      85, [1, 2, 8, 14]);
+    internal static readonly HealthItemDef Potion = new("potion",    85, [1, 2, 8, 14]) { GiveLife = 100 };
     internal static readonly ItemDef IronBar    = new("iron bar",    119, PIron);
     internal static readonly ItemDef GoldBar    = new("gold bar",    119, PGold);
-    internal static readonly ItemDef Bread      = new("bread",       119, [1, 4, 15, 7]);
+    internal static readonly HealthItemDef Bread  = new("bread",     119, [1, 4, 15, 7]) { GiveLife = 40 };
     internal static readonly ItemDef PickupTool = new("pickup tool", 73);
 
     // ------------------------------------------------------------------
@@ -54,13 +54,13 @@ internal static class PcraftData
     #region Benches
     // ------------------------------------------------------------------
 
-    internal static readonly ItemDef Workbench  = MakeBigSpr(104, new("workbench",  89, [1, 4, 9], beCraft: true));
-    internal static readonly ItemDef Stonebench = MakeBigSpr(104, new("stonebench", 89, [1, 6, 13], beCraft: true));
-    internal static readonly ItemDef Furnace    = MakeBigSpr(106, new("furnace",    90, null, beCraft: true));
-    internal static readonly ItemDef Anvil      = MakeBigSpr(108, new("anvil",      91, null, beCraft: true));
-    internal static readonly ItemDef Factory    = MakeBigSpr(71,  new("factory",    74, null, beCraft: true));
-    internal static readonly ItemDef Chem       = MakeBigSpr(78,  new("chem lab",   76, null, beCraft: true));
-    internal static readonly ItemDef Chest      = MakeBigSpr(110, new("chest",      92));
+    internal static readonly BenchItemDef Workbench;
+    internal static readonly BenchItemDef Stonebench;
+    internal static readonly BenchItemDef Furnace;
+    internal static readonly BenchItemDef Anvil;
+    internal static readonly BenchItemDef Factory;
+    internal static readonly BenchItemDef Chem;
+    internal static readonly ChestItemDef Chest = new("chest", 92) { BigSpr = 110 };
 
     // ------------------------------------------------------------------
     #endregion
@@ -69,14 +69,6 @@ internal static class PcraftData
 
     internal static readonly ItemDef Inventary  = new("inventory",   89);
     internal static readonly ItemDef EText      = new("text",        103);
-
-    // ------------------------------------------------------------------
-    #endregion
-    #region Entities
-    // ------------------------------------------------------------------
-
-    internal const int Player = 1;
-    internal const int Zombi  = 2;
 
     // ------------------------------------------------------------------
     #endregion
@@ -131,21 +123,88 @@ internal static class PcraftData
 
     // ------------------------------------------------------------------
     #endregion
-    #region Helpers
+    #region Static Constructor
     // ------------------------------------------------------------------
 
     static PcraftData()
     {
-        Apple.GiveLife  = 20;
-        Potion.GiveLife = 100;
-        Bread.GiveLife  = 40;
+        // Sub-phase A: create bench ItemDef objects (no Recipes yet)
+        Workbench  = new BenchItemDef("workbench",  89, [1, 4, 9])    { BigSpr = 104 };
+        Stonebench = new BenchItemDef("stonebench", 89, [1, 6, 13])   { BigSpr = 104 };
+        Furnace    = new BenchItemDef("furnace",    90)                { BigSpr = 106 };
+        Anvil      = new BenchItemDef("anvil",      91)                { BigSpr = 108 };
+        Factory    = new BenchItemDef("factory",    74)                { BigSpr = 71  };
+        Chem       = new BenchItemDef("chem lab",   76)                { BigSpr = 78  };
+
+        // Sub-phase B: build recipe lists
+        var furnaceRecipes = new List<Recipe>
+        {
+            MakeRecipe(IronBar, 1,    [(Iron,  3)]),
+            MakeRecipe(GoldBar, 1,    [(Gold,  3)]),
+            MakeRecipe(Glass,   1,    [(Sand,  3)]),
+            MakeRecipe(Bread,   1,    [(Wheat, 5)]),
+        };
+
+        var factoryRecipes = new List<Recipe>
+        {
+            MakeRecipe(Sail,  1,    [(Fabric, 3), (Glue,  1)]),
+            MakeRecipe(Boat,  null, [(Wood, 30),  (IronBar, 8), (Glue, 5), (Sail, 4)]),
+        };
+
+        var chemRecipes = new List<Recipe>
+        {
+            MakeRecipe(Glue,   1, [(Glass, 1), (Ichor, 3)]),
+            MakeRecipe(Potion, 1, [(Glass, 1), (Ichor, 1)]),
+        };
+
+        var anvilRecipes    = new List<Recipe>();
+        var stonebenchRecipes = new List<Recipe>();
+        var workbenchRecipes  = new List<Recipe>();
+
+        ItemDef[] toolTypes = [Haxe, Pick, Sword, Shovel, Scythe];
+        int[]     quant     = [5, 5, 7, 7, 7];
+        int[]     pows      = [1, 2, 3, 4, 5];
+        ItemDef[] materials = [Wood, Stone, IronBar, GoldBar, Gem];
+        int[]     mult      = [1, 1, 1, 1, 3];
+        List<Recipe>[] crafterTable =
+        [
+            workbenchRecipes, stonebenchRecipes,
+            anvilRecipes, anvilRecipes, anvilRecipes
+        ];
+
+        for (int j = 0; j < pows.Length; j++)
+        {
+            for (int i = 0; i < toolTypes.Length; i++)
+            {
+                var req = new List<ItemStack> { new(materials[j], count: quant[i] * mult[j]) };
+                crafterTable[j].Add(new Recipe(toolTypes[i], pows[j], count: null, req));
+            }
+        }
+
+        workbenchRecipes.Add(MakeRecipe(Workbench,  null, [(Wood,  15)]));
+        workbenchRecipes.Add(MakeRecipe(Stonebench, null, [(Stone, 15)]));
+        workbenchRecipes.Add(MakeRecipe(Factory,    null, [(Wood,  15), (Stone, 15)]));
+        workbenchRecipes.Add(MakeRecipe(Chem,       null, [(Wood,  10), (Glass, 3), (Gem, 10)]));
+        workbenchRecipes.Add(MakeRecipe(Chest,      null, [(Wood,  15), (Stone, 10)]));
+
+        stonebenchRecipes.Add(MakeRecipe(Anvil,   null, [(Iron, 25), (Wood, 10), (Stone, 25)]));
+        stonebenchRecipes.Add(MakeRecipe(Furnace, null, [(Wood, 10), (Stone, 15)]));
+
+        // Sub-phase C: assign Recipes to each bench
+        Workbench.Recipes  = workbenchRecipes;
+        Stonebench.Recipes = stonebenchRecipes;
+        Furnace.Recipes    = furnaceRecipes;
+        Anvil.Recipes      = anvilRecipes;
+        Factory.Recipes    = factoryRecipes;
+        Chem.Recipes       = chemRecipes;
     }
 
-    private static ItemDef MakeBigSpr(int spr, ItemDef def)
+    private static Recipe MakeRecipe(ItemDef type, int? count, (ItemDef def, int qty)[] reqPairs)
     {
-        def.BigSpr = spr;
-        def.Drop   = true;
-        return def;
+        var req = new List<ItemStack>(reqPairs.Length);
+        foreach (var (def, qty) in reqPairs)
+            req.Add(new ItemStack(def, count: qty));
+        return new Recipe(type, power: null, count, req);
     }
 
     // ------------------------------------------------------------------

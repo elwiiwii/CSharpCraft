@@ -85,7 +85,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var level = new Level(0, 0, 64, 64, false);
         bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
+        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
 
         level.Time.Should().Be(F32.Zero);
     }
@@ -106,7 +106,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var level = new Level(0, 0, 64, 64, false);
         bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
+        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
 
         level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
@@ -129,7 +129,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var level = new Level(0, 0, 64, 64, false);
         bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
+        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
 
         player.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
     }
@@ -147,7 +147,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var level = new Level(0, 0, 64, 64, false);
         bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
+        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
 
         player.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
     }
@@ -164,7 +164,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var level = new Level(0, 0, 64, 64, false);
         bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, new PcraftGame(), ref switchLevel, ref canSwitchLevel);
+        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
 
         player.Panim.Should().Be(F32.Zero);
     }

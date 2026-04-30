@@ -6,7 +6,7 @@ namespace CSharpCraft.PcraftBase.Update;
 internal static class PlayerActionUpdater
 {
     internal static void Update(
-        PlayerEntity player, Level level, PcraftGame game,
+        PlayerEntity player, Level level,
         F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
     {
         // ── Final collision + player advance ─────────────────────────────────
@@ -34,7 +34,7 @@ internal static class PlayerActionUpdater
             var stamcost = F32.FromInt(20);
 
             // Place bench
-            if (!player.Lb5 && player.CurItem != null && player.CurItem.Type.Drop)
+            if (!player.Lb5 && player.CurItem != null && player.CurItem.Type is PlaceableItemDef { Drop: true })
             {
                 if (hit == PcraftData.GrSand || hit == PcraftData.GrGrass)
                 {
@@ -42,8 +42,7 @@ internal static class PlayerActionUpdater
                     var tileY  = F32.Floor(hity / F32.FromInt(16)) * 16 + 8;
                     var placed = new ItemEntity(player.CurItem.Type, tileX, tileY)
                     {
-                        HasCol = true,
-                        List   = player.CurItem.List
+                        HasCol = true
                     };
                     level.Ent.Add(placed);
                     PcraftServices.RemInList(player.Invent, player.CurItem);
@@ -145,9 +144,9 @@ internal static class PlayerActionUpdater
                         if (player.CurItem.Power is not null)
                             stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (int)player.CurItem.Power * 2));
 
-                        if (player.CurItem.Type.GiveLife > 0)
+                        if (player.CurItem.Type is HealthItemDef health && health.GiveLife > 0)
                         {
-                            player.Life = F32.Min(F32.FromInt(100), player.Life + F32.FromInt(player.CurItem.Type.GiveLife));
+                            player.Life = F32.Min(F32.FromInt(100), player.Life + F32.FromInt(health.GiveLife));
                             PcraftServices.RemInList(player.Invent, new ItemStack(player.CurItem.Type, count: 1));
                             Pico8.Sfx(21);
                         }

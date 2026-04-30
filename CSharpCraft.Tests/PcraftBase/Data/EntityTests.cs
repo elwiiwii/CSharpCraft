@@ -79,12 +79,6 @@ public sealed class ItemEntityTests
     }
 
     [Fact]
-    public void List_DefaultsNull()
-    {
-        new ItemEntity(Wood, F32.Zero, F32.Zero).List.Should().BeNull();
-    }
-
-    [Fact]
     public void TextValue_DefaultsZero()
     {
         new ItemEntity(EText, F32.Zero, F32.Zero).TextValue.Should().Be(F32.Zero);

@@ -19,7 +19,7 @@ internal static class CraftingSystem
         foreach (var req in recipe.Req)
             PcraftServices.RemInList(invent, req);
 
-        var result = new ItemStack(recipe.Type, recipe.Count, recipe.List)
+        var result = new ItemStack(recipe.Type, recipe.Count)
         {
             Power = recipe.Power
         };

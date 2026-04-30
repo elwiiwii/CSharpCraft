@@ -222,9 +222,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out _, out _);
+        LevelManager.ResetLevel(player, out _, out _);
 
         player.Stam.Should().Be(F32.FromInt(100));
         player.Lstam.Should().Be(F32.FromInt(100));
@@ -244,9 +243,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         player.Banim        = F32.FromInt(2);
         player.Camera.Coffx = F32.FromInt(5);
         player.Camera.Coffy = F32.FromInt(5);
-        var game = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out _, out _);
+        LevelManager.ResetLevel(player, out _, out _);
 
         player.Prot.Should().Be(F32.Zero);
         player.Lrot.Should().Be(F32.Zero);
@@ -262,9 +260,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out _, out _);
+        LevelManager.ResetLevel(player, out _, out _);
 
         player.Invent.Should().NotBeEmpty("inventory must be seeded after reset");
         player.Invent[0].Type.Should().BeSameAs(PcraftData.Workbench,
@@ -277,9 +274,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out _, out _);
+        LevelManager.ResetLevel(player, out _, out _);
 
         player.Invent.Should().HaveCountGreaterThanOrEqualTo(2);
         player.Invent[1].Type.Should().BeSameAs(PcraftData.PickupTool,
@@ -292,9 +288,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out Level cave, out _);
+        LevelManager.ResetLevel(player, out Level cave, out _);
 
         cave.Sx.Should().Be(32);
         cave.Sy.Should().Be(32);
@@ -307,9 +302,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out _, out Level island);
+        LevelManager.ResetLevel(player, out _, out Level island);
 
         island.Sx.Should().Be(64);
         island.Sy.Should().Be(64);
@@ -322,9 +316,8 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var game   = new PcraftGame();
 
-        LevelManager.ResetLevel(player, game, out _, out Level island);
+        LevelManager.ResetLevel(player, out _, out Level island);
 
         bool anyNonZero = false;
         for (int i = 0; i < 16 && !anyNonZero; i++)
