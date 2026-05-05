@@ -4,25 +4,27 @@ namespace CSharpCraft.PcraftBase.Crafting;
 
 internal static class CraftingSystem
 {
-    internal static bool CanCraft(List<ItemStack> invent, Recipe recipe)
+    internal static bool CanCraft(List<InventorySlot> invent, Recipe recipe)
     {
         foreach (var req in recipe.Req)
         {
-            if (PcraftServices.HowMany(invent, req) < (req.Count ?? 1))
+            if (PcraftServices.HowMany(invent, req) < req.Count)
                 return false;
         }
         return true;
     }
 
-    internal static void Craft(List<ItemStack> invent, Recipe recipe)
+    internal static void Craft(List<InventorySlot> invent, Recipe recipe)
     {
         foreach (var req in recipe.Req)
             PcraftServices.RemInList(invent, req);
 
-        var result = new ItemStack(recipe.Type, recipe.Count)
-        {
-            Power = recipe.Power
-        };
+        InventorySlot result = recipe.Power.HasValue
+            ? new ToolItem(recipe.Type, recipe.Power.Value)
+            : recipe.Count.HasValue
+                ? new StackableItem(recipe.Type, recipe.Count.Value)
+                : new UnstackableItem(recipe.Type);
         PcraftServices.AddItemInList(invent, result, 0);
     }
 }
+

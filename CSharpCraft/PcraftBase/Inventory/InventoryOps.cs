@@ -4,64 +4,68 @@ namespace CSharpCraft.PcraftBase.Inventory;
 
 internal static class InventoryOps
 {
-    internal static int HowMany(List<ItemStack> list, ItemStack query)
+    // Count total Stackable units of a given material type.
+    // ToolItem and UnstackableItem slots are never counted (not stackable materials).
+    internal static int HowMany(List<InventorySlot> list, StackableItem query)
     {
-        int? queryPower = query.Power;
-        int count = 0;
+        int total = 0;
         foreach (var slot in list)
         {
-            if (slot.Type != query.Type) continue;
-            if (queryPower is not null && queryPower != slot.Power) continue;
-            count += slot.Count ?? 1;
+            if (slot is StackableItem s && s.Type == query.Type)
+                total += s.Count;
         }
-        return count;
+        return total;
     }
 
-    internal static ItemStack? IsInList(List<ItemStack> list, ItemStack query)
+    // Return the first StackableItem slot matching query.Type, or null.
+    internal static StackableItem? FindStackable(List<InventorySlot> list, StackableItem query)
     {
-        int? queryPower = query.Power;
         foreach (var slot in list)
         {
-            if (slot.Type != query.Type) continue;
-            if (queryPower is not null && queryPower != slot.Power) continue;
-            return slot;
+            if (slot is StackableItem s && s.Type == query.Type)
+                return s;
         }
         return null;
     }
 
-    internal static void RemInList(List<ItemStack> list, ItemStack elem)
+    // Remove/decrement elem from list.
+    // StackableItem: decrement by elem.Count; remove slot when count reaches zero.
+    // ToolItem / UnstackableItem: remove the first slot whose Type matches.
+    internal static void RemInList(List<InventorySlot> list, InventorySlot elem)
     {
-        var it = IsInList(list, elem);
-        if (it is null) return;
-
-        var itStack = it;
-        if (itStack?.Count is not null)
+        if (elem is StackableItem StackableElem)
         {
-            itStack.Count -= elem.Count ?? 1;
-            if (itStack.Count <= 0)
-                list.Remove(it);
+            var found = FindStackable(list, StackableElem);
+            if (found is null) return;
+            found.Count -= StackableElem.Count;
+            if (found.Count <= 0)
+                list.Remove(found);
         }
         else
         {
-            list.Remove(it);
+            var found = FindByType(list, elem.Type);
+            if (found is not null)
+                list.Remove(found);
         }
     }
 
-    internal static void AddItemInList(List<ItemStack> list, ItemStack item, int pos)
+    // Add item to list. StackableItem merges onto an existing slot of the same type;
+    // ToolItem and UnstackableItem always create a new slot.
+    internal static void AddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
     {
-        var existing = IsInList(list, item);
-        var existingStack = existing;
-        if (existing is null || existingStack?.Count is null)
+        if (item is StackableItem Stackable)
         {
-            AddPlace(list, item, pos);
+            var existing = FindStackable(list, Stackable);
+            if (existing is not null)
+            {
+                existing.Count += Stackable.Count;
+                return;
+            }
         }
-        else
-        {
-            existingStack.Count += item.Count ?? 1;
-        }
+        AddPlace(list, item, pos);
     }
 
-    internal static void AddPlace(List<ItemStack> list, ItemStack item, int pos)
+    internal static void AddPlace(List<InventorySlot> list, InventorySlot item, int pos)
     {
         if (pos >= 0 && pos < list.Count)
             list.Insert(pos, item);
@@ -70,7 +74,16 @@ internal static class InventoryOps
     }
 
     internal static int Loop(int sel, int count)
+        => ((sel % count) + count) % count;
+
+    private static InventorySlot? FindByType(List<InventorySlot> list, ItemDef type)
     {
-        return ((sel % count) + count) % count;
+        foreach (var slot in list)
+        {
+            if (slot.Type == type)
+                return slot;
+        }
+        return null;
     }
 }
+

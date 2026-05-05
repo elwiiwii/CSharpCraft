@@ -1,7 +1,6 @@
 namespace CSharpCraft.PcraftBase.Data;
 
-internal class PlaceableItemDef(string name, int spr, int[]? pal = null) : ItemDef(name, spr, pal)
+internal class PlaceableItemDef(string name, int spr, int bigSpr, int[]? pal = null) : ItemDef(name, spr, pal)
 {
-    internal int BigSpr { get; init; }
-    internal bool Drop => BigSpr != 0;
+    internal int BigSpr { get; } = bigSpr;
 }

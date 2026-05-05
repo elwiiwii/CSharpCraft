@@ -9,14 +9,14 @@ internal static class HudDrawer
         DrawBar(F32.FromInt(4), F32.FromInt(4), player.Life,  player.Llife, F32.FromInt(8), F32.FromInt(2));
         DrawBar(F32.FromInt(4), F32.FromInt(9), F32.Max(F32.Zero, player.Stam), player.Lstam, F32.FromInt(11), F32.FromInt(3));
 
-        if (player.CurItem != null)
+        if (player.CurItem is not null)
         {
             const int ix = 35;
             const int iy = 3;
             PcraftServices.ItemName(ix + 1, iy + 3, player.CurItem, 7);
-            if (player.CurItem.Count.HasValue)
+            if (player.CurItem is StackableItem curStack)
             {
-                string cnt = player.CurItem.Count.Value.ToString();
+                string cnt = curStack.Count.ToString();
                 Pico8.Print(cnt, ix + 88 - 16, iy + 3, 7);
             }
         }

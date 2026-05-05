@@ -61,10 +61,9 @@ public sealed class PcraftDataTests
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void Workbench_HasBigSpr104AndDropTrue()
+    public void Workbench_HasBigSpr104()
     {
         PcraftData.Workbench.BigSpr.Should().Be(104);
-        PcraftData.Workbench.Drop.Should().BeTrue();
     }
 
     [Fact]
@@ -77,14 +76,12 @@ public sealed class PcraftDataTests
     public void Furnace_HasBigSpr106()
     {
         PcraftData.Furnace.BigSpr.Should().Be(106);
-        PcraftData.Furnace.Drop.Should().BeTrue();
     }
 
     [Fact]
-    public void Chest_HasBigSpr110AndDropTrue()
+    public void Chest_HasBigSpr110()
     {
         PcraftData.Chest.BigSpr.Should().Be(110);
-        PcraftData.Chest.Drop.Should().BeTrue();
     }
 
     // --------------------------------------------------------------------------
@@ -148,15 +145,15 @@ public sealed class PcraftDataTests
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void MainMenu_HasSpr128AndCorrectText()
+    public void MainMenu_HasSpr128AndCorrectLines()
     {
         PcraftData.MainMenu.Spr.Should().Be(128);
-        PcraftData.MainMenu.Text.Should().Be("by nusan");
-        PcraftData.MainMenu.Text2.Should().Be("2016");
+        PcraftData.MainMenu.Lines[0].Should().Be("by nusan");
+        PcraftData.MainMenu.Lines[1].Should().Be("2016");
     }
 
     [Fact]
-    public void MainMenu_IsSplashOnly_MenuState()
+    public void MainMenu_IsSplashOnly_SplashScreen()
     {
         var type = PcraftData.MainMenu.GetType();
         type.GetProperty("Sel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
@@ -166,10 +163,10 @@ public sealed class PcraftDataTests
     }
 
     [Fact]
-    public void DeathMenu_HasCorrectText()
+    public void DeathMenu_HasCorrectLines()
     {
-        PcraftData.DeathMenu.Text.Should().Be("you died");
-        PcraftData.DeathMenu.Text2.Should().Be("alone ...");
+        PcraftData.DeathMenu.Lines[0].Should().Be("you died");
+        PcraftData.DeathMenu.Lines[1].Should().Be("alone ...");
     }
 
     [Fact]

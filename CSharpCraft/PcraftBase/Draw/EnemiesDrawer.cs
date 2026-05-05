@@ -86,17 +86,17 @@ internal static class EnemiesDrawer
         var (mx, my) = PcraftServices.Mirror(blade);
 
         int weap = 75;
-        if (isPlayer && player.CurItem != null)
+        if (isPlayer && player.CurItem is not null)
         {
             Pico8.Pal();
             weap = player.CurItem.Type.Spr;
-            if (player.CurItem.Power.HasValue)
+            if (player.CurItem is ToolItem curTool)
             {
-                int pw = player.CurItem.Power.Value - 1;
+                int pw = curTool.Power - 1;
                 if (pw >= 0 && pw < PcraftData.PwrPal.Length)
                     PcraftServices.SetPal(PcraftData.PwrPal[pw]);
             }
-            if (player.CurItem.Type.Pal != null)
+            if (player.CurItem.Type.Pal is not null)
                 PcraftServices.SetPal(player.CurItem.Type.Pal);
         }
 

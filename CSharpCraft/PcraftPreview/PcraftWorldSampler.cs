@@ -40,7 +40,7 @@ internal static class PcraftWorldSampler
     /// override). Tiles, spawn position, and water-animation table are all
     /// deterministic for a given <paramref name="masterSeed"/>.
     /// </summary>
-    /// <param name="masterSeed">World seed — uniquely determines the entire map.</param>
+    /// <param name="masterSeed">World seed — Unstackablely determines the entire map.</param>
     /// <param name="radius">
     /// Half-width of the sampled window. The result Tiles array is (2×radius+1)².
     /// </param>

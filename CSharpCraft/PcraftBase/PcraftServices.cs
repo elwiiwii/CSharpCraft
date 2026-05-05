@@ -17,16 +17,16 @@ internal class PcraftServices
     #region Crafting
     // ---------------------------------------------------------------------------
 
-    internal static bool CanCraft(List<ItemStack> invent, Recipe recipe)
+    internal static bool CanCraft(List<InventorySlot> invent, Recipe recipe)
         => _current.OnCanCraft(invent, recipe);
 
-    protected virtual bool OnCanCraft(List<ItemStack> invent, Recipe recipe)
+    protected virtual bool OnCanCraft(List<InventorySlot> invent, Recipe recipe)
         => CraftingSystem.CanCraft(invent, recipe);
 
-    internal static void Craft(List<ItemStack> invent, Recipe recipe)
+    internal static void Craft(List<InventorySlot> invent, Recipe recipe)
         => _current.OnCraft(invent, recipe);
 
-    protected virtual void OnCraft(List<ItemStack> invent, Recipe recipe)
+    protected virtual void OnCraft(List<InventorySlot> invent, Recipe recipe)
         => CraftingSystem.Craft(invent, recipe);
 
     // ---------------------------------------------------------------------------
@@ -200,11 +200,11 @@ internal class PcraftServices
     protected virtual void OnDrawInventoryMenu(InventoryMenu menu)
         => MenuOverlayDrawer.DrawInventoryMenu(menu);
 
-    internal static int DrawItemList(List<ItemStack> list, string panelName, int sel, int off,
+    internal static int DrawItemList(List<InventorySlot> list, string panelName, int sel, int off,
         int x, int y, int sx, int sy, int my)
         => _current.OnDrawItemList(list, panelName, sel, off, x, y, sx, sy, my);
 
-    protected virtual int OnDrawItemList(List<ItemStack> list, string panelName, int sel, int off,
+    protected virtual int OnDrawItemList(List<InventorySlot> list, string panelName, int sel, int off,
         int x, int y, int sx, int sy, int my)
         => MenuOverlayDrawer.DrawItemList(list, panelName, sel, off, x, y, sx, sy, my);
 
@@ -234,10 +234,10 @@ internal class PcraftServices
     protected virtual void OnDrawRequireList(Recipe recip, int x, int y, int sx, int sy, PlayerEntity player)
         => MenuOverlayDrawer.DrawRequireList(recip, x, y, sx, sy, player);
 
-    internal static void ItemName(int x, int y, ItemStack item, int col)
+    internal static void ItemName(int x, int y, InventorySlot item, int col)
         => _current.OnItemName(x, y, item, col);
 
-    protected virtual void OnItemName(int x, int y, ItemStack item, int col)
+    protected virtual void OnItemName(int x, int y, InventorySlot item, int col)
         => MenuOverlayDrawer.ItemName(x, y, item, col);
 
     // ---------------------------------------------------------------------------
@@ -245,29 +245,23 @@ internal class PcraftServices
     #region Inventory
     // ---------------------------------------------------------------------------
 
-    internal static void AddItemInList(List<ItemStack> list, ItemStack item, int pos)
+    internal static void AddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
         => _current.OnAddItemInList(list, item, pos);
 
-    protected virtual void OnAddItemInList(List<ItemStack> list, ItemStack item, int pos)
+    protected virtual void OnAddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
         => InventoryOps.AddItemInList(list, item, pos);
 
-    internal static void AddPlace(List<ItemStack> list, ItemStack item, int pos)
+    internal static void AddPlace(List<InventorySlot> list, InventorySlot item, int pos)
         => _current.OnAddPlace(list, item, pos);
 
-    protected virtual void OnAddPlace(List<ItemStack> list, ItemStack item, int pos)
+    protected virtual void OnAddPlace(List<InventorySlot> list, InventorySlot item, int pos)
         => InventoryOps.AddPlace(list, item, pos);
 
-    internal static int HowMany(List<ItemStack> list, ItemStack query)
+    internal static int HowMany(List<InventorySlot> list, StackableItem query)
         => _current.OnHowMany(list, query);
 
-    protected virtual int OnHowMany(List<ItemStack> list, ItemStack query)
+    protected virtual int OnHowMany(List<InventorySlot> list, StackableItem query)
         => InventoryOps.HowMany(list, query);
-
-    internal static ItemStack? IsInList(List<ItemStack> list, ItemStack query)
-        => _current.OnIsInList(list, query);
-
-    protected virtual ItemStack? OnIsInList(List<ItemStack> list, ItemStack query)
-        => InventoryOps.IsInList(list, query);
 
     internal static int Loop(int sel, int count)
         => _current.OnLoop(sel, count);
@@ -275,10 +269,10 @@ internal class PcraftServices
     protected virtual int OnLoop(int sel, int count)
         => InventoryOps.Loop(sel, count);
 
-    internal static void RemInList(List<ItemStack> list, ItemStack elem)
+    internal static void RemInList(List<InventorySlot> list, InventorySlot elem)
         => _current.OnRemInList(list, elem);
 
-    protected virtual void OnRemInList(List<ItemStack> list, ItemStack elem)
+    protected virtual void OnRemInList(List<InventorySlot> list, InventorySlot elem)
         => InventoryOps.RemInList(list, elem);
 
     // ---------------------------------------------------------------------------
@@ -286,10 +280,10 @@ internal class PcraftServices
     #region Map - LevelManager
     // ---------------------------------------------------------------------------
 
-    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
+    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
         => _current.OnAddItem(mat, count, hitX, hitY, entities);
 
-    protected virtual void OnAddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
+    protected virtual void OnAddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
         => LevelManager.AddItem(mat, count, hitX, hitY, entities);
 
     internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)

@@ -14,8 +14,14 @@ internal static class PcraftUpdate
         if (consumed) return needsReset;
 
         // ── Curitem validation ────────────────────────────────────────────────
-        if (player.CurItem is not null && PcraftServices.HowMany(player.Invent, player.CurItem) <= 0)
-            player.CurItem = null;
+        if (player.CurItem is not null)
+        {
+            bool stillPresent = player.CurItem is StackableItem curStackable
+                ? PcraftServices.HowMany(player.Invent, curStackable) > 0
+                : player.Invent.Contains(player.CurItem);
+            if (!stillPresent)
+                player.CurItem = null;
+        }
 
         PcraftServices.UpGround(level, player);
 

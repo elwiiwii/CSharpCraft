@@ -7,7 +7,6 @@ namespace CSharpCraft.Tests.PcraftBase.Inventory;
 
 public sealed class InventoryOpsTests
 {
-    // Shared ItemDef instances (treated as singletons, matching PcraftData pattern)
     private static readonly ItemDef Wood   = new("wood",  103);
     private static readonly ItemDef Stone  = new("stone", 118);
     private static readonly ItemDef Sword  = new("sword",  99);
@@ -19,121 +18,97 @@ public sealed class InventoryOpsTests
     [Fact]
     public void HowMany_ReturnsZero_WhenListIsEmpty()
     {
-        var list = new List<ItemStack>();
-        InventoryOps.HowMany(list, new ItemStack(Wood)).Should().Be(0);
-    }
-
-    [Fact]
-    public void HowMany_ReturnsOne_ForSingleUncountedMatchingItem()
-    {
-        // inst(wood) in Lua — no Count
-        var list = new List<ItemStack> { new ItemStack(Wood) };
-        InventoryOps.HowMany(list, new ItemStack(Wood)).Should().Be(1);
+        var list = new List<InventorySlot>();
+        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(0);
     }
 
     [Fact]
     public void HowMany_ReturnsCount_ForCountedItem()
     {
-        var list = new List<ItemStack> { new ItemStack(Wood, count: 15) };
-        InventoryOps.HowMany(list, new ItemStack(Wood)).Should().Be(15);
+        var list = new List<InventorySlot> { new StackableItem(Wood, 15) };
+        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(15);
     }
 
     [Fact]
     public void HowMany_SumsAcrossMultipleMatchingSlots()
     {
-        var list = new List<ItemStack>
+        var list = new List<InventorySlot>
         {
-            new ItemStack(Wood, count: 10),
-            new ItemStack(Wood, count: 5),
+            new StackableItem(Wood, 10),
+            new StackableItem(Wood, 5),
         };
-        InventoryOps.HowMany(list, new ItemStack(Wood)).Should().Be(15);
+        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(15);
     }
 
     [Fact]
     public void HowMany_IgnoresNonMatchingType()
     {
-        var list = new List<ItemStack> { new ItemStack(Stone, count: 10) };
-        InventoryOps.HowMany(list, new ItemStack(Wood)).Should().Be(0);
+        var list = new List<InventorySlot> { new StackableItem(Stone, 10) };
+        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(0);
     }
 
     [Fact]
-    public void HowMany_FiltersByPower_WhenQueryHasPower()
+    public void HowMany_IgnoresToolItemOfSameType()
     {
-        var sword2 = new ItemStack(Sword) { Power = 2 };
-        var sword3 = new ItemStack(Sword) { Power = 3 };
-        var list = new List<ItemStack> { sword2, sword3 };
-
-        var query = new ItemStack(Sword) { Power = 2 };
-        InventoryOps.HowMany(list, query).Should().Be(1);
+        var list = new List<InventorySlot> { new ToolItem(Sword, 1) };
+        InventoryOps.HowMany(list, new StackableItem(Sword, 1)).Should().Be(0);
     }
 
     [Fact]
-    public void HowMany_CountsAllPowers_WhenQueryHasNoPower()
+    public void HowMany_IgnoresUnstackableItemOfSameType()
     {
-        var sword1 = new ItemStack(Sword) { Power = 1 };
-        var sword3 = new ItemStack(Sword) { Power = 3 };
-        var list = new List<ItemStack> { sword1, sword3 };
-
-        var query = new ItemStack(Sword); // Power is null
-        InventoryOps.HowMany(list, query).Should().Be(2);
+        var list = new List<InventorySlot> { new UnstackableItem(Wood) };
+        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(0);
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region IsInList
+    #region FindStackable
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void IsInList_ReturnsNull_WhenListIsEmpty()
+    public void FindStackable_ReturnsNull_WhenListIsEmpty()
     {
-        var list = new List<ItemStack>();
-        InventoryOps.IsInList(list, new ItemStack(Wood)).Should().BeNull();
+        var list = new List<InventorySlot>();
+        InventoryOps.FindStackable(list, new StackableItem(Wood, 1)).Should().BeNull();
     }
 
     [Fact]
-    public void IsInList_ReturnsSlot_WhenTypeMatches()
+    public void FindStackable_ReturnsNull_WhenNoMatchingType()
     {
-        var slot = new ItemStack(Wood, count: 5);
-        var list = new List<ItemStack> { slot };
-
-        InventoryOps.IsInList(list, new ItemStack(Wood)).Should().BeSameAs(slot);
+        var list = new List<InventorySlot> { new StackableItem(Stone, 5) };
+        InventoryOps.FindStackable(list, new StackableItem(Wood, 1)).Should().BeNull();
     }
 
     [Fact]
-    public void IsInList_ReturnsNull_WhenTypeDoesNotMatch()
+    public void FindStackable_ReturnsSlot_WhenTypeMatches()
     {
-        var list = new List<ItemStack> { new ItemStack(Stone, count: 5) };
-        InventoryOps.IsInList(list, new ItemStack(Wood)).Should().BeNull();
+        var slot = new StackableItem(Wood, 5);
+        var list = new List<InventorySlot> { slot };
+        InventoryOps.FindStackable(list, new StackableItem(Wood, 1)).Should().BeSameAs(slot);
     }
 
     [Fact]
-    public void IsInList_MatchesByPower_WhenQueryHasPower()
+    public void FindStackable_IgnoresToolItemOfSameType()
     {
-        var sword1 = new ItemStack(Sword) { Power = 1 };
-        var sword2 = new ItemStack(Sword) { Power = 2 };
-        var list = new List<ItemStack> { sword1, sword2 };
-
-        var query = new ItemStack(Sword) { Power = 2 };
-        InventoryOps.IsInList(list, query).Should().BeSameAs(sword2);
+        var list = new List<InventorySlot> { new ToolItem(Sword, 1) };
+        InventoryOps.FindStackable(list, new StackableItem(Sword, 1)).Should().BeNull();
     }
 
     [Fact]
-    public void IsInList_ReturnsFirstMatch_WhenNoPowerFilter()
+    public void FindStackable_IgnoresUnstackableItemOfSameType()
     {
-        var sword1 = new ItemStack(Sword) { Power = 1 };
-        var sword2 = new ItemStack(Sword) { Power = 2 };
-        var list = new List<ItemStack> { sword1, sword2 };
-
-        var query = new ItemStack(Sword); // no power
-        InventoryOps.IsInList(list, query).Should().BeSameAs(sword1);
+        var list = new List<InventorySlot> { new UnstackableItem(Wood) };
+        InventoryOps.FindStackable(list, new StackableItem(Wood, 1)).Should().BeNull();
     }
 
     [Fact]
-    public void IsInList_ReturnsNull_WhenPowerDoesNotMatch()
+    public void FindStackable_ReturnsFirst_WhenMultipleSlotsMatch()
     {
-        var list = new List<ItemStack> { new ItemStack(Sword) { Power = 1 } };
-        var query = new ItemStack(Sword) { Power = 3 };
-        InventoryOps.IsInList(list, query).Should().BeNull();
+        var first  = new StackableItem(Wood, 5);
+        var second = new StackableItem(Wood, 3);
+        var list = new List<InventorySlot> { first, second };
+        InventoryOps.FindStackable(list, new StackableItem(Wood, 1)).Should().BeSameAs(first);
     }
 
     // --------------------------------------------------------------------------
@@ -144,18 +119,18 @@ public sealed class InventoryOpsTests
     [Fact]
     public void RemInList_DoesNothing_WhenItemNotPresent()
     {
-        var list = new List<ItemStack> { new ItemStack(Stone, count: 5) };
-        InventoryOps.RemInList(list, new ItemStack(Wood, count: 1));
+        var list = new List<InventorySlot> { new StackableItem(Stone, 5) };
+        InventoryOps.RemInList(list, new StackableItem(Wood, 1));
         list.Should().HaveCount(1);
     }
 
     [Fact]
     public void RemInList_DecrementsCount_WhenSufficientQuantity()
     {
-        var slot = new ItemStack(Wood, count: 5);
-        var list = new List<ItemStack> { slot };
+        var slot = new StackableItem(Wood, 5);
+        var list = new List<InventorySlot> { slot };
 
-        InventoryOps.RemInList(list, new ItemStack(Wood, count: 2));
+        InventoryOps.RemInList(list, new StackableItem(Wood, 2));
 
         list.Should().HaveCount(1);
         slot.Count.Should().Be(3);
@@ -164,28 +139,37 @@ public sealed class InventoryOpsTests
     [Fact]
     public void RemInList_RemovesSlot_WhenCountReachesZero()
     {
-        var list = new List<ItemStack> { new ItemStack(Wood, count: 3) };
-        InventoryOps.RemInList(list, new ItemStack(Wood, count: 3));
+        var list = new List<InventorySlot> { new StackableItem(Wood, 3) };
+        InventoryOps.RemInList(list, new StackableItem(Wood, 3));
         list.Should().BeEmpty();
     }
 
     [Fact]
     public void RemInList_RemovesSlot_WhenCountGoesNegative()
     {
-        // Lua: count -= elem.count; if count <= 0 then del
-        var list = new List<ItemStack> { new ItemStack(Wood, count: 2) };
-        InventoryOps.RemInList(list, new ItemStack(Wood, count: 5));
+        var list = new List<InventorySlot> { new StackableItem(Wood, 2) };
+        InventoryOps.RemInList(list, new StackableItem(Wood, 5));
         list.Should().BeEmpty();
     }
 
     [Fact]
-    public void RemInList_RemovesUncountedSlot()
+    public void RemInList_RemovesUnstackableItem_ByType()
     {
-        // inst(sword) — no Count
-        var slot = new ItemStack(Sword);
-        var list = new List<ItemStack> { slot };
+        var item = new UnstackableItem(Sword);
+        var list = new List<InventorySlot> { item };
 
-        InventoryOps.RemInList(list, new ItemStack(Sword));
+        InventoryOps.RemInList(list, new UnstackableItem(Sword));
+
+        list.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RemInList_RemovesToolItem_ByType()
+    {
+        var item = new ToolItem(Sword, 1);
+        var list = new List<InventorySlot> { item };
+
+        InventoryOps.RemInList(list, new ToolItem(Sword, 2));
 
         list.Should().BeEmpty();
     }
@@ -198,8 +182,8 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddItemInList_AppendsItem_WhenListIsEmpty()
     {
-        var list = new List<ItemStack>();
-        var item = new ItemStack(Wood, count: 5);
+        var list = new List<InventorySlot>();
+        var item = new StackableItem(Wood, 5);
 
         InventoryOps.AddItemInList(list, item, pos: 0);
 
@@ -209,22 +193,21 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddItemInList_StacksOntoExistingCountedItem()
     {
-        var existing = new ItemStack(Wood, count: 10);
-        var list = new List<ItemStack> { existing };
+        var existing = new StackableItem(Wood, 10);
+        var list = new List<InventorySlot> { existing };
 
-        InventoryOps.AddItemInList(list, new ItemStack(Wood, count: 5), pos: 0);
+        InventoryOps.AddItemInList(list, new StackableItem(Wood, 5), pos: 0);
 
         list.Should().HaveCount(1);
         existing.Count.Should().Be(15);
     }
 
     [Fact]
-    public void AddItemInList_InsertsSeparately_WhenMatchingSlotIsUncounted()
+    public void AddItemInList_NeverMerges_ToolItem()
     {
-        // An uncounted sword (no Count) — should not stack: insert instead
-        var existing = new ItemStack(Sword);
-        var list = new List<ItemStack> { existing };
-        var newItem = new ItemStack(Sword);
+        var existing = new ToolItem(Sword, 1);
+        var list = new List<InventorySlot> { existing };
+        var newItem = new ToolItem(Sword, 2);
 
         InventoryOps.AddItemInList(list, newItem, pos: 0);
 
@@ -232,28 +215,15 @@ public sealed class InventoryOpsTests
     }
 
     [Fact]
-    public void AddItemInList_InsertsSeparately_WhenDifferentPower()
+    public void AddItemInList_NeverMerges_UnstackableItem()
     {
-        // power=1 and power=2 swords must not stack
-        var sword1 = new ItemStack(Sword) { Power = 1 };
-        var list = new List<ItemStack> { sword1 };
-        var sword2 = new ItemStack(Sword) { Power = 2 };
+        var existing = new UnstackableItem(Sword);
+        var list = new List<InventorySlot> { existing };
+        var newItem = new UnstackableItem(Sword);
 
-        InventoryOps.AddItemInList(list, sword2, pos: 0);
+        InventoryOps.AddItemInList(list, newItem, pos: 0);
 
         list.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public void AddItemInList_StacksOntoMatchingPoweredItem()
-    {
-        var existing = new ItemStack(Wood, count: 8) { Power = 2 };
-        var list = new List<ItemStack> { existing };
-
-        InventoryOps.AddItemInList(list, new ItemStack(Wood, count: 3) { Power = 2 }, pos: 0);
-
-        list.Should().HaveCount(1);
-        existing.Count.Should().Be(11);
     }
 
     // --------------------------------------------------------------------------
@@ -264,9 +234,9 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddPlace_InsertsAtFront_WhenPosIsZero()
     {
-        var a = new ItemStack(Wood);
-        var b = new ItemStack(Stone);
-        var list = new List<ItemStack> { a };
+        var a = new StackableItem(Wood,  1);
+        var b = new StackableItem(Stone, 1);
+        var list = new List<InventorySlot> { a };
 
         InventoryOps.AddPlace(list, b, pos: 0);
 
@@ -276,9 +246,9 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddPlace_AppendsItem_WhenPosIsNegative()
     {
-        var a = new ItemStack(Wood);
-        var b = new ItemStack(Stone);
-        var list = new List<ItemStack> { a };
+        var a = new StackableItem(Wood,  1);
+        var b = new StackableItem(Stone, 1);
+        var list = new List<InventorySlot> { a };
 
         InventoryOps.AddPlace(list, b, pos: -1);
 
@@ -288,12 +258,11 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddPlace_AppendsItem_WhenPosEqualsCount()
     {
-        // pos >= list.Count → append (0-indexed: pos=1 == count=1 fails the insert condition)
-        var a = new ItemStack(Wood);
-        var b = new ItemStack(Stone);
-        var list = new List<ItemStack> { a };
+        var a = new StackableItem(Wood,  1);
+        var b = new StackableItem(Stone, 1);
+        var list = new List<InventorySlot> { a };
 
-        InventoryOps.AddPlace(list, b, pos: 1); // 1 == list.Count → append
+        InventoryOps.AddPlace(list, b, pos: 1);
 
         list.Should().Equal(a, b);
     }
@@ -301,10 +270,10 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddPlace_InsertsAtFront_WhenPosIsZeroAndListHasMultipleItems()
     {
-        var a = new ItemStack(Wood);
-        var b = new ItemStack(Stone);
-        var inserted = new ItemStack(Sword);
-        var list = new List<ItemStack> { a, b };
+        var a = new StackableItem(Wood,  1);
+        var b = new StackableItem(Stone, 1);
+        var inserted = new UnstackableItem(Sword);
+        var list = new List<InventorySlot> { a, b };
 
         InventoryOps.AddPlace(list, inserted, pos: 0);
 
@@ -314,15 +283,14 @@ public sealed class InventoryOpsTests
     [Fact]
     public void AddPlace_InsertsMidList_AtCorrectPosition()
     {
-        var a = new ItemStack(Wood);
-        var b = new ItemStack(Stone);
-        var c = new ItemStack(Sword);
-        var inserted = new ItemStack(new ItemDef("gem", 118));
-        var list = new List<ItemStack> { a, b, c };
+        var a = new StackableItem(Wood,  1);
+        var b = new StackableItem(Stone, 1);
+        var c = new UnstackableItem(Sword);
+        var inserted = new StackableItem(new ItemDef("gem", 118), 1);
+        var list = new List<InventorySlot> { a, b, c };
 
         InventoryOps.AddPlace(list, inserted, pos: 1);
 
-        // pos=1 (0-indexed) → inserts at index 1: [a, inserted, b, c]
         list.Should().Equal(a, inserted, b, c);
     }
 

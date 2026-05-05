@@ -7,7 +7,7 @@ internal sealed class Level
     internal int Sx { get; }
     internal int Sy { get; }
     internal bool IsUnder { get; }
-    internal List<ItemEntity> Ent { get; } = [];
+    internal List<Entity> Ent { get; } = [];
     internal List<CharacterEntity> Ene { get; } = [];
     internal Dictionary<int, F32> Dat { get; } = [];
     internal F32 Stx { get; set; }

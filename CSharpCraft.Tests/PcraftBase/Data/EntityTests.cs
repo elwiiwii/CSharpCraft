@@ -4,10 +4,9 @@ using Xunit;
 
 namespace CSharpCraft.Tests.PcraftBase.Data;
 
-public sealed class ItemEntityTests
+public sealed class DroppedItemEntityTests
 {
-    private static readonly ItemDef Wood  = new("wood",  103);
-    private static readonly ItemDef EText = new("text",  103);
+    private static readonly ItemDef Wood = new("wood", 103);
 
     // --------------------------------------------------------------------------
     #region Constructor
@@ -16,21 +15,29 @@ public sealed class ItemEntityTests
     [Fact]
     public void Constructor_SetsType()
     {
-        new ItemEntity(Wood, F32.FromInt(10), F32.FromInt(20)).Type.Should().BeSameAs(Wood);
+        new DroppedItemEntity(Wood, F32.Zero, F32.Zero, F32.FromInt(120)).Type.Should().BeSameAs(Wood);
     }
 
     [Fact]
     public void Constructor_SetsPosition()
     {
-        var sut = new ItemEntity(Wood, F32.FromInt(10), F32.FromInt(20));
+        var sut = new DroppedItemEntity(Wood, F32.FromInt(10), F32.FromInt(20), F32.FromInt(120));
         sut.X.Should().Be(F32.FromInt(10));
         sut.Y.Should().Be(F32.FromInt(20));
     }
 
     [Fact]
+    public void Constructor_SetsTimer()
+    {
+        var sut = new DroppedItemEntity(Wood, F32.Zero, F32.Zero, timer: F32.FromInt(115));
+        sut.Timer.Should().Be(F32.FromInt(115));
+    }
+
+    [Fact]
     public void Constructor_SetsVelocity_WhenProvided()
     {
-        var sut = new ItemEntity(Wood, F32.FromInt(10), F32.FromInt(20), vx: F32.FromInt(3), vy: F32.FromInt(-1));
+        var sut = new DroppedItemEntity(Wood, F32.FromInt(10), F32.FromInt(20), F32.FromInt(120),
+            vx: F32.FromInt(3), vy: F32.FromInt(-1));
         sut.Vx.Should().Be(F32.FromInt(3));
         sut.Vy.Should().Be(F32.FromInt(-1));
     }
@@ -38,59 +45,38 @@ public sealed class ItemEntityTests
     [Fact]
     public void Constructor_DefaultsVelocityToZero()
     {
-        var sut = new ItemEntity(Wood, F32.Zero, F32.Zero);
+        var sut = new DroppedItemEntity(Wood, F32.Zero, F32.Zero, F32.FromInt(120));
         sut.Vx.Should().Be(F32.Zero);
         sut.Vy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
     #endregion
-    #region IInventorySlot
+    #region Design contract
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void IInventorySlot_Type_ReturnsDef()
+    public void HasCol_PropertyDoesNotExist()
     {
-        ItemEntity sut = new ItemEntity(Wood, F32.Zero, F32.Zero);
-        sut.Type.Should().BeSameAs(Wood);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
-    #region Field defaults
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void HasCol_DefaultsFalse()
-    {
-        new ItemEntity(Wood, F32.Zero, F32.Zero).HasCol.Should().BeFalse();
+        var prop = typeof(DroppedItemEntity).GetProperty(
+            "HasCol",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("HasCol is replaced by entity type; DroppedItemEntity implies collision");
     }
 
     [Fact]
-    public void GiveItem_DefaultsNull()
+    public void GiveItem_PropertyDoesNotExist()
     {
-        new ItemEntity(Wood, F32.Zero, F32.Zero).GiveItem.Should().BeNull();
-    }
-
-    [Fact]
-    public void Timer_DefaultsNull()
-    {
-        new ItemEntity(Wood, F32.Zero, F32.Zero).Timer.Should().BeNull();
-    }
-
-    [Fact]
-    public void TextValue_DefaultsZero()
-    {
-        new ItemEntity(EText, F32.Zero, F32.Zero).TextValue.Should().Be(F32.Zero);
-    }
-
-    [Fact]
-    public void TextColor_DefaultsZero()
-    {
-        new ItemEntity(EText, F32.Zero, F32.Zero).TextColor.Should().Be(0);
+        var prop = typeof(DroppedItemEntity).GetProperty(
+            "GiveItem",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("GiveItem was always equal to Type; use Type directly");
     }
 
     // --------------------------------------------------------------------------
     #endregion
 }
-

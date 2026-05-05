@@ -219,8 +219,8 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
         var menu = new InventoryMenu(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 0;
@@ -260,8 +260,8 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
         var menu = new InventoryMenu(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 0;
@@ -280,8 +280,8 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
         var menu = new InventoryMenu(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 1;
@@ -300,8 +300,8 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new ItemStack(PcraftData.Wood,  count: 1));
-        player.Invent.Add(new ItemStack(PcraftData.Stone, count: 1));
+        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
         var menu = new InventoryMenu(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 1; // already at last (0-based, 2 items → max=1)
@@ -320,7 +320,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var axe = new ItemStack(PcraftData.Haxe) { Power = 1 };
+        var axe = new ToolItem(PcraftData.Haxe, 1);
         player.Invent.Add(axe);
         var menu = new InventoryMenu(player.Invent);
         player.CurMenu = menu;
@@ -344,7 +344,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
         // Wood axe requires 5 wood
-        player.Invent.Add(new ItemStack(PcraftData.Wood, count: 5));
+        player.Invent.Add(new StackableItem(PcraftData.Wood, 5));
         var craftMenu = new CraftingMenu(PcraftData.Workbench, player.Invent);
         craftMenu.Sel = 0; // first entry = wood haxe recipe
         player.CurMenu = craftMenu;

@@ -60,7 +60,7 @@ internal static class PcraftData
     internal static readonly BenchItemDef Anvil;
     internal static readonly BenchItemDef Factory;
     internal static readonly BenchItemDef Chem;
-    internal static readonly ChestItemDef Chest = new("chest", 92) { BigSpr = 110 };
+    internal static readonly ChestItemDef Chest = new("chest", 92, 110);
 
     // ------------------------------------------------------------------
     #endregion
@@ -116,10 +116,10 @@ internal static class PcraftData
     #region Menus
     // ------------------------------------------------------------------
 
-    internal static readonly MenuState MainMenu  = new(type: Inventary, spr: 128, text: "by nusan",              text2: "2016");
-    internal static readonly MenuState IntroMenu = new(type: Inventary, spr: 136, text: "a storm leaved you",    text2: "on a deserted island");
-    internal static readonly MenuState DeathMenu = new(type: Inventary, spr: 128, text: "you died",              text2: "alone ...");
-    internal static readonly MenuState WinMenu   = new(type: Inventary, spr: 136, text: "you successfully escaped", text2: "from the island");
+    internal static readonly SplashScreen MainMenu  = new(spr: 128, lines: ["by nusan",              "2016"]);
+    internal static readonly SplashScreen IntroMenu = new(spr: 136, lines: ["a storm leaved you",    "on a deserted island"]);
+    internal static readonly SplashScreen DeathMenu = new(spr: 128, lines: ["you died",              "alone ..."]);
+    internal static readonly SplashScreen WinMenu   = new(spr: 136, lines: ["you successfully escaped", "from the island"]);
 
     // ------------------------------------------------------------------
     #endregion
@@ -129,12 +129,12 @@ internal static class PcraftData
     static PcraftData()
     {
         // Sub-phase A: create bench ItemDef objects (no Recipes yet)
-        Workbench  = new BenchItemDef("workbench",  89, [1, 4, 9])    { BigSpr = 104 };
-        Stonebench = new BenchItemDef("stonebench", 89, [1, 6, 13])   { BigSpr = 104 };
-        Furnace    = new BenchItemDef("furnace",    90)                { BigSpr = 106 };
-        Anvil      = new BenchItemDef("anvil",      91)                { BigSpr = 108 };
-        Factory    = new BenchItemDef("factory",    74)                { BigSpr = 71  };
-        Chem       = new BenchItemDef("chem lab",   76)                { BigSpr = 78  };
+        Workbench  = new BenchItemDef("workbench",  89, 104, [1, 4, 9]);
+        Stonebench = new BenchItemDef("stonebench", 89, 104, [1, 6, 13]);
+        Furnace    = new BenchItemDef("furnace",    90, 106);
+        Anvil      = new BenchItemDef("anvil",      91, 108);
+        Factory    = new BenchItemDef("factory",    74, 71);
+        Chem       = new BenchItemDef("chem lab",   76, 78);
 
         // Sub-phase B: build recipe lists
         var furnaceRecipes = new List<Recipe>
@@ -176,7 +176,7 @@ internal static class PcraftData
         {
             for (int i = 0; i < toolTypes.Length; i++)
             {
-                var req = new List<ItemStack> { new(materials[j], count: quant[i] * mult[j]) };
+                var req = new List<StackableItem> { new(materials[j], quant[i] * mult[j]) };
                 crafterTable[j].Add(new Recipe(toolTypes[i], pows[j], count: null, req));
             }
         }
@@ -201,9 +201,9 @@ internal static class PcraftData
 
     private static Recipe MakeRecipe(ItemDef type, int? count, (ItemDef def, int qty)[] reqPairs)
     {
-        var req = new List<ItemStack>(reqPairs.Length);
+        var req = new List<StackableItem>(reqPairs.Length);
         foreach (var (def, qty) in reqPairs)
-            req.Add(new ItemStack(def, count: qty));
+            req.Add(new StackableItem(def, qty));
         return new Recipe(type, power: null, count, req);
     }
 

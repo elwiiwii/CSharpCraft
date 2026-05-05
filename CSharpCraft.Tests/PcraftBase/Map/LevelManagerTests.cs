@@ -63,7 +63,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<ItemEntity>();
+        var entities = new List<Entity>();
 
         LevelManager.AddItem(PcraftData.Wood, 3, F32.FromInt(32), F32.FromInt(32), entities);
 
@@ -71,27 +71,27 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
     }
 
     [Fact]
-    public void AddItem_SetsMaterial_AsGiveItem_OnEachEntity()
+    public void AddItem_SetsType_OnEachEntity()
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<ItemEntity>();
+        var entities = new List<Entity>();
 
         LevelManager.AddItem(PcraftData.Stone, 2, F32.FromInt(48), F32.FromInt(16), entities);
 
-        entities.Should().AllSatisfy(e => e.GiveItem.Should().BeSameAs(PcraftData.Stone));
+        entities.Should().AllSatisfy(e => (e as DroppedItemEntity)!.Type.Should().BeSameAs(PcraftData.Stone));
     }
 
     [Fact]
-    public void AddItem_SetsHasCol_ToTrue_OnEachEntity()
+    public void AddItem_CreatesDroppedItemEntities()
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<ItemEntity>();
+        var entities = new List<Entity>();
 
         LevelManager.AddItem(PcraftData.Wood, 2, F32.FromInt(32), F32.FromInt(32), entities);
 
-        entities.Should().AllSatisfy(e => e.HasCol.Should().BeTrue());
+        entities.Should().AllSatisfy(e => (e is DroppedItemEntity).Should().BeTrue());
     }
 
     [Fact]
@@ -100,15 +100,15 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         // Lua: timer = 110 + rnd(20)  ->  [110, 130)
-        var entities = new List<ItemEntity>();
+        var entities = new List<Entity>();
 
         LevelManager.AddItem(PcraftData.Wood, 5, F32.FromInt(32), F32.FromInt(32), entities);
 
         entities.Should().AllSatisfy(e =>
         {
-            e.Timer.Should().NotBeNull();
-            e.Timer!.Value.Should().BeGreaterThanOrEqualTo(F32.FromInt(110));
-            e.Timer!.Value.Should().BeLessThan(F32.FromInt(130));
+            var dropped = (e as DroppedItemEntity)!;
+            dropped.Timer.Should().BeGreaterThanOrEqualTo(F32.FromInt(110));
+            dropped.Timer.Should().BeLessThan(F32.FromInt(130));
         });
     }
 
@@ -117,7 +117,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<ItemEntity>();
+        var entities = new List<Entity>();
 
         LevelManager.AddItem(PcraftData.Wood, 20, F32.FromInt(32), F32.FromInt(32), entities);
 

@@ -5,8 +5,11 @@ namespace CSharpCraft.PcraftBase.Draw;
 
 internal static class MenuOverlayDrawer
 {
-    internal static void ItemName(int x, int y, ItemStack item, int col)
-        => DrawItemVisual(x, y, col, item.Power, item.Type);
+    internal static void ItemName(int x, int y, InventorySlot item, int col)
+    {
+        int? power = item is ToolItem tool ? tool.Power : (int?)null;
+        DrawItemVisual(x, y, col, power, item.Type);
+    }
 
     internal static void DrawItemVisual(int x, int y, int col, int? power, ItemDef type)
     {
@@ -24,7 +27,7 @@ internal static class MenuOverlayDrawer
                     PcraftServices.SetPal(PcraftData.PwrPal[pw]);
             }
         }
-        if (type.Pal != null) PcraftServices.SetPal(type.Pal);
+        if (type.Pal is not null) PcraftServices.SetPal(type.Pal);
         Pico8.Spr(type.Spr, x, y - 2);
         Pico8.Pal();
         Pico8.Print(type.Name, px + 10, y, col);
@@ -49,9 +52,9 @@ internal static class MenuOverlayDrawer
         {
             var it = list[i - 1];
             ItemName(lx, py, it, 7);
-            if (it.Count.HasValue)
+            if (it is StackableItem Stackable)
             {
-                string c = it.Count.Value.ToString();
+                string c = Stackable.Count.ToString();
                 Pico8.Print(c, lx + 84 - c.Length * 4 - 10, py, 7);
             }
         });
@@ -75,7 +78,7 @@ internal static class MenuOverlayDrawer
         menu.Off = off;
     }
 
-    internal static int DrawItemList(List<ItemStack> list, string panelName, int sel, int off, int x, int y, int sx, int sy, int my)
+    internal static int DrawItemList(List<InventorySlot> list, string panelName, int sel, int off, int x, int y, int sx, int sy, int my)
     {
         DrawPanel(panelName, x, y, sx, sy);
         if (list.Count < 1) return off;
@@ -83,9 +86,9 @@ internal static class MenuOverlayDrawer
         {
             var it = list[i - 1];
             ItemName(lx, py, it, 7);
-            if (it.Count.HasValue)
+            if (it is StackableItem Stackable)
             {
-                string c = it.Count.Value.ToString();
+                string c = Stackable.Count.ToString();
                 Pico8.Print(c, lx + sx - c.Length * 4 - 10, py, 7);
             }
         });
@@ -99,7 +102,7 @@ internal static class MenuOverlayDrawer
         {
             var curGoal = recipeList[menu.Sel];
             DrawPanel("have", 71, 50, 52, 30);
-            int have = PcraftServices.HowMany(player.Invent, new ItemStack(curGoal.Type));
+            int have = PcraftServices.HowMany(player.Invent, new StackableItem(curGoal.Type, 1));
             Pico8.Print(have.ToString(), 91, 65, 7);
             DrawRequireList(curGoal, 4, 79, 104, 50, player);
         }
@@ -160,11 +163,10 @@ internal static class MenuOverlayDrawer
             var    it = recip.Req[i];
             int py = ly + i * 8;
             ItemName(lx, py, it, 7);
-            if (it.Count.HasValue)
             {
                 int    h = PcraftServices.HowMany(player.Invent, it);
-                string c = $"{h}/{it.Count.Value}";
-                Pico8.Print(c, lx + sx - c.Length * 4 - 10, py, h < it.Count.Value ? 8 : 7);
+                string c = $"{h}/{it.Count}";
+                Pico8.Print(c, lx + sx - c.Length * 4 - 10, py, h < it.Count ? 8 : 7);
             }
         }
     }

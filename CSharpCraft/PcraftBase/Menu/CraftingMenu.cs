@@ -9,7 +9,7 @@ internal sealed class CraftingMenu : IMenu
     internal int Sel { get; set; } = 0;
     internal int Off { get; set; } = 0;
 
-    internal CraftingMenu(BenchItemDef benchType, List<ItemStack> playerInvent)
+    internal CraftingMenu(BenchItemDef benchType, List<InventorySlot> playerInvent)
     {
         BenchType = benchType    ?? throw new ArgumentNullException(nameof(benchType));
         _         = playerInvent ?? throw new ArgumentNullException(nameof(playerInvent));

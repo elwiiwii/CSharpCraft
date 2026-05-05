@@ -2,9 +2,9 @@ using CSharpCraft.PcraftBase.Data;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
-internal sealed class InventoryMenu(List<ItemStack> list) : IMenu
+internal sealed class InventoryMenu(List<InventorySlot> list) : IMenu
 {
-    internal List<ItemStack> List { get; } = list ?? throw new ArgumentNullException(nameof(list));
+    internal List<InventorySlot> List { get; } = list ?? throw new ArgumentNullException(nameof(list));
     internal int Sel { get; set; } = 0;
     internal int Off { get; set; } = 0;
 

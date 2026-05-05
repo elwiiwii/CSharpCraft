@@ -93,7 +93,7 @@ internal static class BackDrawer
 
                 if (gr.IsTree)
                 {
-                    if (gr.Pal != null) PcraftServices.SetPal(gr.Pal);
+                    if (gr.Pal is not null) PcraftServices.SetPal(gr.Pal);
                     PcraftServices.Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, (x, y) => PcraftServices.RndTree(x, y, level));
                     if (Pico8.Mget(i + level.X, j + 1) == 99)
                         PcraftServices.Spr4(i, j, gi, gj, 64, 65, 80, 81, 4, (x, y) => PcraftServices.RndTree(x, y, level));

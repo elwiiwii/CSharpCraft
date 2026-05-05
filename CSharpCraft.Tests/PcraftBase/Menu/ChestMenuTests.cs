@@ -24,7 +24,7 @@ public sealed class ChestMenuPureTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenChestItemsIsNull()
     {
-        var playerItems = new List<ItemStack>();
+        var playerItems = new List<InventorySlot>();
         var act = () => new ChestMenu(chestItems: null!, playerItems);
         act.Should().Throw<ArgumentNullException>().WithParameterName("chestItems");
     }
@@ -32,7 +32,7 @@ public sealed class ChestMenuPureTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenPlayerItemsIsNull()
     {
-        var chestItems = new List<ItemStack>();
+        var chestItems = new List<InventorySlot>();
         var act = () => new ChestMenu(chestItems, playerItems: null!);
         act.Should().Throw<ArgumentNullException>().WithParameterName("playerItems");
     }
@@ -45,22 +45,22 @@ public sealed class ChestMenuPureTests
     [Fact]
     public void Constructor_InitializesTabToggleToZero()
     {
-        var menu = new ChestMenu(new List<ItemStack>(), new List<ItemStack>());
+        var menu = new ChestMenu(new List<InventorySlot>(), new List<InventorySlot>());
         menu.TabToggle.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_InitializesSelToZero()
     {
-        var menu = new ChestMenu(new List<ItemStack>(), new List<ItemStack>());
+        var menu = new ChestMenu(new List<InventorySlot>(), new List<InventorySlot>());
         menu.Sel.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_ExposesChestItemsAndPlayerItemsReferences()
     {
-        var chestItems  = new List<ItemStack> { new(PcraftData.Wood) };
-        var playerItems = new List<ItemStack> { new(PcraftData.Stone) };
+        var chestItems  = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
+        var playerItems = new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) };
         var menu = new ChestMenu(chestItems, playerItems);
         menu.ChestItems.Should().BeSameAs(chestItems);
         menu.PlayerItems.Should().BeSameAs(playerItems);
@@ -128,8 +128,8 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var menu = new ChestMenu(
-            chestItems:  new List<ItemStack> { new(PcraftData.Wood) },
-            playerItems: new List<ItemStack> { new(PcraftData.Stone) });
+            chestItems:  new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) },
+            playerItems: new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) });
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
         menu.Update(player);
@@ -146,8 +146,8 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var menu = new ChestMenu(
-            chestItems:  new List<ItemStack> { new(PcraftData.Wood) },
-            playerItems: new List<ItemStack> { new(PcraftData.Stone) });
+            chestItems:  new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) },
+            playerItems: new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) });
         menu.TabToggle = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -165,8 +165,8 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         var menu = new ChestMenu(
-            chestItems:  new List<ItemStack> { new(PcraftData.Wood) },
-            playerItems: new List<ItemStack> { new(PcraftData.Stone) });
+            chestItems:  new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) },
+            playerItems: new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) });
         menu.TabToggle = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -188,9 +188,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var wood        = new ItemStack(PcraftData.Wood);
-        var chestItems  = new List<ItemStack> { wood };
-        var playerItems = new List<ItemStack>();
+        var wood        = new StackableItem(PcraftData.Wood, 1);
+        var chestItems  = new List<InventorySlot> { wood };
+        var playerItems = new List<InventorySlot>();
         var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -208,9 +208,9 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var stone       = new ItemStack(PcraftData.Stone);
-        var chestItems  = new List<ItemStack>();
-        var playerItems = new List<ItemStack> { stone };
+        var stone       = new StackableItem(PcraftData.Stone, 1);
+        var chestItems  = new List<InventorySlot>();
+        var playerItems = new List<InventorySlot> { stone };
         var menu = new ChestMenu(chestItems, playerItems);
         menu.TabToggle = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
@@ -229,8 +229,8 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var chestItems  = new List<ItemStack>();
-        var playerItems = new List<ItemStack> { new(PcraftData.Wood) };
+        var chestItems  = new List<InventorySlot>();
+        var playerItems = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
         var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0 → chest tab (empty)
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -252,7 +252,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new ChestMenu(new List<ItemStack>(), new List<ItemStack>());
+        var menu = new ChestMenu(new List<InventorySlot>(), new List<InventorySlot>());
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
         menu.Update(player);

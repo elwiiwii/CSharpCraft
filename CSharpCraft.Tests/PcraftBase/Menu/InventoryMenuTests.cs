@@ -36,7 +36,7 @@ public sealed class InventoryMenuPureTests
     [Fact]
     public void Constructor_InitializesSelToZero()
     {
-        var list = new List<ItemStack> { new(PcraftData.Wood) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
         var menu = new InventoryMenu(list);
         menu.Sel.Should().Be(0);
     }
@@ -44,7 +44,7 @@ public sealed class InventoryMenuPureTests
     [Fact]
     public void Constructor_ExposesListReference()
     {
-        var list = new List<ItemStack> { new(PcraftData.Wood) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
         var menu = new InventoryMenu(list);
         menu.List.Should().BeSameAs(list);
     }
@@ -109,7 +109,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(3);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Wood), new(PcraftData.Stone) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -125,7 +125,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(2);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Wood), new(PcraftData.Stone) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
         var menu = new InventoryMenu(list);
         menu.Sel = 1;
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
@@ -143,7 +143,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(2);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Wood), new(PcraftData.Stone) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
         var menu = new InventoryMenu(list); // Sel = 0
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -159,7 +159,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(3);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Wood), new(PcraftData.Stone) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
         var menu = new InventoryMenu(list);
         menu.Sel = 1; // at last (2 items, 0-based)
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
@@ -181,7 +181,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Wood) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -198,7 +198,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(4);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Wood) };
+        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu, Lb4 = true };
 
@@ -219,8 +219,8 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var axe = new ItemStack(PcraftData.Haxe);
-        var list = new List<ItemStack> { axe };
+        var axe = new UnstackableItem(PcraftData.Haxe);
+        var list = new List<InventorySlot> { axe };
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -236,7 +236,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<ItemStack> { new(PcraftData.Haxe) };
+        var list = new List<InventorySlot> { new UnstackableItem(PcraftData.Haxe) };
         var menu = new InventoryMenu(list);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
@@ -253,7 +253,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         fake.PressOnce(5);
         using var orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new InventoryMenu(new List<ItemStack>());
+        var menu = new InventoryMenu(new List<InventorySlot>());
         var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
 
         menu.Update(player);

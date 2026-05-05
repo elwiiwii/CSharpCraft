@@ -2,13 +2,11 @@ using CSharpCraft.PcraftBase.Menu;
 
 namespace CSharpCraft.PcraftBase.Data;
 
-internal sealed class MenuState(ItemDef type, int spr, string? text, string? text2)
+internal sealed class SplashScreen(int spr, IReadOnlyList<string> lines)
     : IMenu
 {
-    internal ItemDef Type { get; } = type;
     internal int Spr { get; } = spr;
-    internal string? Text { get; } = text;
-    internal string? Text2 { get; } = text2;
+    internal IReadOnlyList<string> Lines { get; } = lines;
 
     public bool Update(PlayerEntity player)
     {
@@ -37,8 +35,8 @@ internal sealed class MenuState(ItemDef type, int spr, string? text, string? tex
         Pico8.Rectfill(0, 0, 128, 46, 12);
         Pico8.Rectfill(0, 46, 128, 128, 1);
         Pico8.Spr(Spr, 32, 14, 8, 8);
-        PcraftServices.PrintC(Text ?? "", 64, 80, 6);
-        PcraftServices.PrintC(Text2 ?? "", 64, 90, 6);
+        for (int i = 0; i < Lines.Count; i++)
+            PcraftServices.PrintC(Lines[i], 64, 80 + i * 10, 6);
         int tc = 6 + F32.FloorToInt(level.Time % 2);
         PcraftServices.PrintC("press button 1", 64, 112, tc);
         level.Time += F32.FromDouble(0.1);

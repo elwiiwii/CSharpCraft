@@ -2,10 +2,10 @@ using CSharpCraft.PcraftBase.Data;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
-internal sealed class ChestMenu(List<ItemStack> chestItems, List<ItemStack> playerItems) : IMenu
+internal sealed class ChestMenu(List<InventorySlot> chestItems, List<InventorySlot> playerItems) : IMenu
 {
-    internal List<ItemStack> ChestItems  { get; } = chestItems  ?? throw new ArgumentNullException(nameof(chestItems));
-    internal List<ItemStack> PlayerItems { get; } = playerItems ?? throw new ArgumentNullException(nameof(playerItems));
+    internal List<InventorySlot> ChestItems  { get; } = chestItems  ?? throw new ArgumentNullException(nameof(chestItems));
+    internal List<InventorySlot> PlayerItems { get; } = playerItems ?? throw new ArgumentNullException(nameof(playerItems));
     internal int Sel       { get; set; } = 0;
     internal int Off       { get; set; } = 0;
     internal int TabToggle { get; set; } = 0;

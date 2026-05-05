@@ -34,16 +34,13 @@ internal static class PlayerActionUpdater
             var stamcost = F32.FromInt(20);
 
             // Place bench
-            if (!player.Lb5 && player.CurItem != null && player.CurItem.Type is PlaceableItemDef { Drop: true })
+            if (!player.Lb5 && player.CurItem is not null && player.CurItem.Type is PlaceableItemDef def)
             {
                 if (hit == PcraftData.GrSand || hit == PcraftData.GrGrass)
                 {
                     var tileX  = F32.Floor(hitx / F32.FromInt(16)) * 16 + 8;
                     var tileY  = F32.Floor(hity / F32.FromInt(16)) * 16 + 8;
-                    var placed = new ItemEntity(player.CurItem.Type, tileX, tileY)
-                    {
-                        HasCol = true
-                    };
+                    var placed = new PlacedItemEntity(def, tileX, tileY);
                     level.Ent.Add(placed);
                     PcraftServices.RemInList(player.Invent, player.CurItem);
                     canAct = false;
@@ -59,9 +56,9 @@ internal static class PlayerActionUpdater
                     // ── Attack near enemies ───────────────────────────────────
                     Pico8.Sfx(19);
                     var pow = F32.One;
-                    if (player.CurItem != null && player.CurItem.Type == PcraftData.Sword)
+                    if (player.CurItem is not null && player.CurItem.Type == PcraftData.Sword)
                     {
-                        var p = player.CurItem.Power ?? 0;
+                        var p = player.CurItem is ToolItem swordTool ? swordTool.Power : 0;
                         pow = F32.One + p + Pico8.Rnd(p * p);
                         stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
                         pow = F32.FromInt(F32.FloorToInt(pow));
@@ -80,23 +77,18 @@ internal static class PlayerActionUpdater
                             PcraftServices.AddItem(PcraftData.Ichor,  F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
                             PcraftServices.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
                         }
-                        var popup = new ItemEntity(PcraftData.EText, e.X, e.Y - F32.FromInt(10), F32.Zero, -F32.One)
-                        {
-                            TextValue = pow,
-                            TextColor = 9,
-                            Timer     = F32.FromInt(20)
-                        };
+                        var popup = new TextPopupEntity(pow, 9, e.X, e.Y - F32.FromInt(10), -F32.One);
                         level.Ent.Add(popup);
                     }
                 }
-                else if (hit.Mat != null)
+                else if (hit.Mat is not null)
                 {
                     // ── Harvest tile ──────────────────────────────────────────
                     Pico8.Sfx(15);
                     var pow = F32.One;
-                    if (player.CurItem != null)
+                    if (player.CurItem is not null)
                     {
-                        var p = player.CurItem.Power ?? 0;
+                        var p = player.CurItem is ToolItem harvestTool ? harvestTool.Power : 0;
                         if (hit == PcraftData.GrRock || hit.IsTree)
                         {
                             if (hit == PcraftData.GrTree && player.CurItem.Type == PcraftData.Haxe)
@@ -127,27 +119,22 @@ internal static class PlayerActionUpdater
                     {
                         PcraftServices.SetData(hitx, hity, d - pow, level);
                     }
-                    var popup2 = new ItemEntity(PcraftData.EText, hitx, hity, F32.Zero, -F32.One)
-                    {
-                        TextValue = pow,
-                        TextColor = 10,
-                        Timer     = F32.FromInt(20)
-                    };
+                    var popup2 = new TextPopupEntity(pow, 10, hitx, hity, -F32.One);
                     level.Ent.Add(popup2);
                 }
                 else
                 {
                     // ── Other item use ────────────────────────────────────────
                     Pico8.Sfx(19);
-                    if (player.CurItem != null)
+                    if (player.CurItem is not null)
                     {
-                        if (player.CurItem.Power is not null)
-                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (int)player.CurItem.Power * 2));
+                        if (player.CurItem is ToolItem toolForStam)
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - toolForStam.Power * 2));
 
                         if (player.CurItem.Type is HealthItemDef health && health.GiveLife > 0)
                         {
                             player.Life = F32.Min(F32.FromInt(100), player.Life + F32.FromInt(health.GiveLife));
-                            PcraftServices.RemInList(player.Invent, new ItemStack(player.CurItem.Type, count: 1));
+                            PcraftServices.RemInList(player.Invent, new StackableItem(player.CurItem.Type, 1));
                             Pico8.Sfx(21);
                         }
                         if (hit == PcraftData.GrGrass && player.CurItem.Type == PcraftData.Scythe)
@@ -158,7 +145,7 @@ internal static class PlayerActionUpdater
                         }
                         if (hit == PcraftData.GrSand && player.CurItem.Type == PcraftData.Shovel)
                         {
-                            if ((player.CurItem.Power ?? 0) > 3)
+                            if (player.CurItem is ToolItem shovelTool && shovelTool.Power > 3)
                             {
                                 PcraftServices.SetGr(hitx, hity, PcraftData.GrWater, level);
                                 PcraftServices.AddItem(PcraftData.Sand, 2, hitx, hity, level.Ent);
@@ -173,7 +160,7 @@ internal static class PlayerActionUpdater
                         if (hit == PcraftData.GrWater && player.CurItem.Type == PcraftData.Sand)
                         {
                             PcraftServices.SetGr(hitx, hity, PcraftData.GrSand, level);
-                            PcraftServices.RemInList(player.Invent, new ItemStack(PcraftData.Sand, count: 1));
+                            PcraftServices.RemInList(player.Invent, new StackableItem(PcraftData.Sand, 1));
                         }
                         if (hit == PcraftData.GrWater && player.CurItem.Type == PcraftData.Boat)
                         {
@@ -186,7 +173,7 @@ internal static class PlayerActionUpdater
                         {
                             PcraftServices.SetGr(hitx, hity, PcraftData.GrWheat, level);
                             PcraftServices.SetData(hitx, hity, level.Time + 15 + Pico8.Rnd(5), level);
-                            PcraftServices.RemInList(player.Invent, new ItemStack(PcraftData.Seed, count: 1));
+                            PcraftServices.RemInList(player.Invent, new StackableItem(PcraftData.Seed, 1));
                         }
                         if (hit == PcraftData.GrWheat && player.CurItem.Type == PcraftData.Scythe)
                         {

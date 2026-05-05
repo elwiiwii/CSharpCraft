@@ -7,33 +7,23 @@ namespace CSharpCraft.Tests.PcraftBase.Data;
 public sealed class PlaceableItemDefTests
 {
     [Fact]
-    public void BigSpr_DefaultsToZero()
+    public void BigSpr_StoredFromConstructor()
     {
-        var sut = new PlaceableItemDefStub("chest", 92);
-        sut.BigSpr.Should().Be(0);
-    }
-
-    [Fact]
-    public void BigSpr_StoredViaInit()
-    {
-        var sut = new PlaceableItemDefStub("chest", 92) { BigSpr = 110 };
+        var sut = new PlaceableItemDefStub("chest", 92, 110);
         sut.BigSpr.Should().Be(110);
     }
 
     [Fact]
-    public void Drop_IsFalse_WhenBigSprIsZero()
+    public void Drop_PropertyDoesNotExist()
     {
-        var sut = new PlaceableItemDefStub("chest", 92);
-        sut.Drop.Should().BeFalse();
-    }
-
-    [Fact]
-    public void Drop_IsTrue_WhenBigSprIsNonZero()
-    {
-        var sut = new PlaceableItemDefStub("chest", 92) { BigSpr = 110 };
-        sut.Drop.Should().BeTrue();
+        var prop = typeof(PlaceableItemDef).GetProperty(
+            "Drop",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Public);
+        prop.Should().BeNull("Drop was removed; PlaceableItemDef instances are always placeable by definition");
     }
 
     // Concrete subclass for testing the abstract parent
-    private sealed class PlaceableItemDefStub(string name, int spr) : PlaceableItemDef(name, spr);
+    private sealed class PlaceableItemDefStub(string name, int spr, int bigSpr) : PlaceableItemDef(name, spr, bigSpr);
 }

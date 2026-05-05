@@ -29,16 +29,18 @@ internal static class LevelManager
                     !c.IsTree &&
                     dist > F32.FromInt(50))
                 {
-                    var zombie = new ZombieEntity(ex, ey);
-                    zombie.Life  = F32.FromInt(10);
-                    zombie.Prot  = F32.Zero;
-                    zombie.Lrot  = F32.Zero;
-                    zombie.Panim = F32.Zero;
-                    zombie.Banim = F32.Zero;
-                    zombie.Dtim  = F32.Zero;
-                    zombie.Step  = 0;
-                    zombie.Ox    = F32.Zero;
-                    zombie.Oy    = F32.Zero;
+                    var zombie = new ZombieEntity(ex, ey)
+                    {
+                        Life = F32.FromInt(10),
+                        Prot = F32.Zero,
+                        Lrot = F32.Zero,
+                        Panim = F32.Zero,
+                        Banim = F32.Zero,
+                        Dtim = F32.Zero,
+                        Step = 0,
+                        Ox = F32.Zero,
+                        Oy = F32.Zero
+                    };
                     level.Ene.Add(zombie);
                 }
             }
@@ -85,15 +87,13 @@ internal static class LevelManager
                 for (int j = 0; j < 16; j++)
                     lev.RndWat[i][j] = rndWat[i][j];
         }
+        
+        player.Invent.Add(new UnstackableItem(PcraftData.Workbench));
 
-        var workbench = new ItemEntity(PcraftData.Workbench, player.X, player.Y);
-        workbench.HasCol = true;
-        player.Invent.Add(new ItemStack(PcraftData.Workbench));
-
-        player.Invent.Add(new ItemStack(PcraftData.PickupTool));
+        player.Invent.Add(new UnstackableItem(PcraftData.PickupTool));
     }
 
-    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<ItemEntity> entities)
+    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
     {
         int tileX = F32.FloorToInt(hitX / F32.FromInt(16)) * 16;
         int tileY = F32.FloorToInt(hitY / F32.FromInt(16)) * 16;
@@ -102,10 +102,7 @@ internal static class LevelManager
         {
             var ex = tileX + Pico8.Rnd(14) + 1;
             var ey = tileY + Pico8.Rnd(14) + 1;
-            var entity = new ItemEntity(mat, ex, ey);
-            entity.GiveItem = mat;
-            entity.HasCol   = true;
-            entity.Timer    = 110 + Pico8.Rnd(20);
+            var entity = new DroppedItemEntity(mat, ex, ey, timer: 110 + Pico8.Rnd(20));
             entities.Add(entity);
         }
     }

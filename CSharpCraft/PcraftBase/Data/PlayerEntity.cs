@@ -11,8 +11,8 @@ internal sealed class PlayerEntity : CharacterEntity
     internal bool            Lb4        { get; set; } = false;
     internal bool            Lb5        { get; set; } = false;
     internal bool            Block5     { get; set; } = false;
-    internal List<ItemStack> Invent     { get; } = [];
-    internal ItemStack?      CurItem    { get; set; } = null;
+    internal List<InventorySlot> Invent     { get; } = [];
+    internal InventorySlot?       CurItem    { get; set; } = null;
     internal GroundType      LastGround { get; set; } = PcraftData.GrSand;
     internal IMenu?          CurMenu    { get; set; } = null;
     internal CameraState     Camera     { get; } = new();

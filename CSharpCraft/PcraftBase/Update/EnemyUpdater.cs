@@ -72,13 +72,7 @@ internal static class EnemyUpdater
                         if (e.Banim == F32.FromInt(4))
                         {
                             player.Life -= pow;
-                            var popup = new ItemEntity(
-                                PcraftData.EText,
-                                player.X, player.Y - F32.FromInt(10),
-                                F32.Zero, -F32.One);
-                            popup.TextValue = pow;
-                            popup.TextColor = 8;
-                            popup.Timer     = F32.FromInt(20);
+                            var popup = new TextPopupEntity(pow, 8, player.X, player.Y - F32.FromInt(10), -F32.One);
                             level.Ent.Add(popup);
                             Pico8.Sfx(14 + Pico8.Rnd(2).Float);
                         }

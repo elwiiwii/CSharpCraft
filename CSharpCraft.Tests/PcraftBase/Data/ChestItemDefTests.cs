@@ -9,7 +9,7 @@ public sealed class ChestItemDefTests
     [Fact]
     public void Constructor_InheritsNameSprBigSpr()
     {
-        var sut = new ChestItemDef("chest", 92) { BigSpr = 110 };
+        var sut = new ChestItemDef("chest", 92, 110);
         sut.Name.Should().Be("chest");
         sut.Spr.Should().Be(92);
         sut.BigSpr.Should().Be(110);
@@ -18,21 +18,21 @@ public sealed class ChestItemDefTests
     [Fact]
     public void IsChestItemDef_IsTrue_ForChest()
     {
-        ItemDef sut = new ChestItemDef("chest", 92);
+        ItemDef sut = new ChestItemDef("chest", 92, 110);
         (sut is ChestItemDef).Should().BeTrue();
     }
 
     [Fact]
     public void IsPlaceableItemDef_IsTrue_ForChest()
     {
-        ItemDef sut = new ChestItemDef("chest", 92);
+        ItemDef sut = new ChestItemDef("chest", 92, 110);
         (sut is PlaceableItemDef).Should().BeTrue();
     }
 
     [Fact]
     public void IsBenchItemDef_IsFalse_ForChest()
     {
-        ItemDef sut = new ChestItemDef("chest", 92);
+        ItemDef sut = new ChestItemDef("chest", 92, 110);
         (sut is BenchItemDef).Should().BeFalse();
     }
 }

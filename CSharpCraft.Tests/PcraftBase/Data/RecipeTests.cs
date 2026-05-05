@@ -46,7 +46,7 @@ public sealed class RecipeTests
     [Fact]
     public void Constructor_StoresReq()
     {
-        var req = new List<ItemStack> { new(Iron, count: 3) };
+        var req = new List<StackableItem> { new(Iron, 3) };
         var sut = new Recipe(IronBar, power: null, count: 1, req: req);
         sut.Req.Should().BeSameAs(req);
     }
@@ -60,7 +60,7 @@ public sealed class RecipeTests
     [Fact]
     public void IronBarRecipe_HasCorrectTypeCountAndIngredient()
     {
-        var req = new List<ItemStack> { new(Iron, count: 3) };
+        var req = new List<StackableItem> { new(Iron, 3) };
         var sut = new Recipe(IronBar, power: null, count: 1, req: req);
 
         sut.Type.Should().BeSameAs(IronBar);
@@ -74,7 +74,7 @@ public sealed class RecipeTests
     [Fact]
     public void GemSwordRecipe_HasPowerFiveAndTwentyOneGems()
     {
-        var req = new List<ItemStack> { new(Gem, count: 21) };
+        var req = new List<StackableItem> { new(Gem, 21) };
         var sut = new Recipe(Sword, power: 5, count: null, req: req);
 
         sut.Power.Should().Be(5);
