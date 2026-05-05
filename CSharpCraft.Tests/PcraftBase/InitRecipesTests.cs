@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
 using FluentAssertions;
 using Xunit;
 
@@ -19,8 +20,8 @@ public sealed class BenchRecipesTests
     [Fact]
     public void FurnaceRecipes_ContainsIronBarFromThreeIron()
     {
-        var entry = PcraftData.Furnace.Recipes.First(r => r.Type == PcraftData.IronBar);
-        entry.Count.Should().Be(1);
+        var entry = PcraftData.Furnace.Recipes.First(r => r.Output.Type == PcraftData.IronBar);
+        entry.Output.Should().BeOfType<StackableItem>().Which.Count.Should().Be(1);
         entry.Req.Should().HaveCount(1);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Iron);
         entry.Req[0].Count.Should().Be(3);
@@ -29,7 +30,7 @@ public sealed class BenchRecipesTests
     [Fact]
     public void FurnaceRecipes_ContainsBreadFromFiveWheat()
     {
-        var entry = PcraftData.Furnace.Recipes.First(r => r.Type == PcraftData.Bread);
+        var entry = PcraftData.Furnace.Recipes.First(r => r.Output.Type == PcraftData.Bread);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Wheat);
         entry.Req[0].Count.Should().Be(5);
     }
@@ -48,8 +49,8 @@ public sealed class BenchRecipesTests
     [Fact]
     public void FactoryRecipes_ContainsSailFromThreeFabricAndOneGlue()
     {
-        var entry = PcraftData.Factory.Recipes.First(r => r.Type == PcraftData.Sail);
-        entry.Count.Should().Be(1);
+        var entry = PcraftData.Factory.Recipes.First(r => r.Output.Type == PcraftData.Sail);
+        entry.Output.Should().BeOfType<StackableItem>().Which.Count.Should().Be(1);
         entry.Req.Should().HaveCount(2);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Fabric);
         entry.Req[0].Count.Should().Be(3);
@@ -71,7 +72,7 @@ public sealed class BenchRecipesTests
     [Fact]
     public void ChemRecipes_ContainsGlueFromOneGlassAndThreeIchor()
     {
-        var entry = PcraftData.Chem.Recipes.First(r => r.Type == PcraftData.Glue);
+        var entry = PcraftData.Chem.Recipes.First(r => r.Output.Type == PcraftData.Glue);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Glass);
         entry.Req[0].Count.Should().Be(1);
         entry.Req[1].Type.Should().BeSameAs(PcraftData.Ichor);
@@ -92,7 +93,8 @@ public sealed class BenchRecipesTests
     [Fact]
     public void WorkbenchRecipes_ContainsWoodHaxe_WithPowerOneAndFiveWood()
     {
-        var entry = PcraftData.Workbench.Recipes.First(r => r.Type == PcraftData.Haxe && r.Power == 1);
+        var entry = PcraftData.Workbench.Recipes.First(r =>
+            r.Output.Type == PcraftData.Haxe && (r.Output as ToolItem)?.Power == 1);
         entry.Req.Should().HaveCount(1);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Wood);
         entry.Req[0].Count.Should().Be(5);
@@ -101,14 +103,15 @@ public sealed class BenchRecipesTests
     [Fact]
     public void WorkbenchRecipes_ContainsWoodSword_WithPowerOneAndSevenWood()
     {
-        var entry = PcraftData.Workbench.Recipes.First(r => r.Type == PcraftData.Sword && r.Power == 1);
+        var entry = PcraftData.Workbench.Recipes.First(r =>
+            r.Output.Type == PcraftData.Sword && (r.Output as ToolItem)?.Power == 1);
         entry.Req[0].Count.Should().Be(7);
     }
 
     [Fact]
     public void WorkbenchRecipes_ContainsWorkbenchCraft_WithFifteenWood()
     {
-        var entry = PcraftData.Workbench.Recipes.First(r => r.Type == PcraftData.Workbench);
+        var entry = PcraftData.Workbench.Recipes.First(r => r.Output.Type == PcraftData.Workbench);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Wood);
         entry.Req[0].Count.Should().Be(15);
     }
@@ -127,7 +130,8 @@ public sealed class BenchRecipesTests
     [Fact]
     public void StonebenchRecipes_ContainsStoneSword_WithPowerTwoAndSevenStone()
     {
-        var entry = PcraftData.Stonebench.Recipes.First(r => r.Type == PcraftData.Sword && r.Power == 2);
+        var entry = PcraftData.Stonebench.Recipes.First(r =>
+            r.Output.Type == PcraftData.Sword && (r.Output as ToolItem)?.Power == 2);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Stone);
         entry.Req[0].Count.Should().Be(7);
     }
@@ -146,7 +150,8 @@ public sealed class BenchRecipesTests
     [Fact]
     public void AnvilRecipes_ContainsGemSword_WithPowerFiveAndTwentyOneGem()
     {
-        var entry = PcraftData.Anvil.Recipes.First(r => r.Type == PcraftData.Sword && r.Power == 5);
+        var entry = PcraftData.Anvil.Recipes.First(r =>
+            r.Output.Type == PcraftData.Sword && (r.Output as ToolItem)?.Power == 5);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.Gem);
         entry.Req[0].Count.Should().Be(21);
     }
@@ -154,14 +159,16 @@ public sealed class BenchRecipesTests
     [Fact]
     public void AnvilRecipes_ContainsGemHaxe_WithPowerFiveAndFifteenGem()
     {
-        var entry = PcraftData.Anvil.Recipes.First(r => r.Type == PcraftData.Haxe && r.Power == 5);
+        var entry = PcraftData.Anvil.Recipes.First(r =>
+            r.Output.Type == PcraftData.Haxe && (r.Output as ToolItem)?.Power == 5);
         entry.Req[0].Count.Should().Be(15);
     }
 
     [Fact]
     public void AnvilRecipes_ContainsIronHaxe_WithPowerThreeAndFiveIronBar()
     {
-        var entry = PcraftData.Anvil.Recipes.First(r => r.Type == PcraftData.Haxe && r.Power == 3);
+        var entry = PcraftData.Anvil.Recipes.First(r =>
+            r.Output.Type == PcraftData.Haxe && (r.Output as ToolItem)?.Power == 3);
         entry.Req[0].Type.Should().BeSameAs(PcraftData.IronBar);
         entry.Req[0].Count.Should().Be(5);
     }

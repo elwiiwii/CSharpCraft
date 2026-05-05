@@ -177,7 +177,7 @@ internal static class PcraftData
             for (int i = 0; i < toolTypes.Length; i++)
             {
                 var req = new List<StackableItem> { new(materials[j], quant[i] * mult[j]) };
-                crafterTable[j].Add(new Recipe(toolTypes[i], pows[j], count: null, req));
+                crafterTable[j].Add(new Recipe(new ToolItem(toolTypes[i], pows[j]), req));
             }
         }
 
@@ -204,7 +204,10 @@ internal static class PcraftData
         var req = new List<StackableItem>(reqPairs.Length);
         foreach (var (def, qty) in reqPairs)
             req.Add(new StackableItem(def, qty));
-        return new Recipe(type, power: null, count, req);
+        InventorySlot output = count.HasValue
+            ? new StackableItem(type, count.Value)
+            : new UnstackableItem(type);
+        return new Recipe(output, req);
     }
 
     // ------------------------------------------------------------------

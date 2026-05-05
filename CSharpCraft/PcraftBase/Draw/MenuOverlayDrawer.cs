@@ -102,7 +102,9 @@ internal static class MenuOverlayDrawer
         {
             var curGoal = recipeList[menu.Sel];
             DrawPanel("have", 71, 50, 52, 30);
-            int have = PcraftServices.HowMany(player.Invent, new StackableItem(curGoal.Type, 1));
+            int have = curGoal.Output is StackableItem haveQuery
+                ? PcraftServices.HowMany(player.Invent, haveQuery)
+                : 0;
             Pico8.Print(have.ToString(), 91, 65, 7);
             DrawRequireList(curGoal, 4, 79, 104, 50, player);
         }
@@ -114,10 +116,11 @@ internal static class MenuOverlayDrawer
         {
             var it  = recipeList[i - 1];
             int col = PcraftServices.CanCraft(player.Invent, it) ? 7 : 0;
-            DrawItemVisual(lx, py, col, it.Power, it.Type);
-            if (it.Count.HasValue)
+            int? power = it.Output is ToolItem toolOut ? toolOut.Power : (int?)null;
+            DrawItemVisual(lx, py, col, power, it.Output.Type);
+            if (it.Output is StackableItem countedOut)
             {
-                string c = it.Count.Value.ToString();
+                string c = countedOut.Count.ToString();
                 Pico8.Print(c, lx + 68 - c.Length * 4 - 10, py, col);
             }
         });

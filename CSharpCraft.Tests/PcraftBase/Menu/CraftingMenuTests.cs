@@ -56,8 +56,8 @@ public sealed class CraftingMenuPureTests
         var bench = new BenchItemDef("test", 0, 0);
         var recipes = new List<Recipe>
         {
-            new(PcraftData.Haxe, power: null, count: 1,
-                req: [new StackableItem(PcraftData.Wood, 3)])
+            new Recipe(new StackableItem(PcraftData.Haxe, 1),
+                [new StackableItem(PcraftData.Wood, 3)])
         };
         bench.Recipes = recipes;
         var menu = new CraftingMenu(bench, new List<InventorySlot>());
@@ -117,8 +117,8 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
 
     /// <summary>A minimal recipe: 3x Wood → 1x Haxe.</summary>
     private static Recipe MakeHaxeRecipe() =>
-        new(PcraftData.Haxe, power: null, count: 1,
-            req: [new StackableItem(PcraftData.Wood, 3)]);
+        new Recipe(new StackableItem(PcraftData.Haxe, 1),
+            [new StackableItem(PcraftData.Wood, 3)]);
 
     private static CraftingMenu MakeBenchMenu(List<InventorySlot> invent, List<Recipe>? recipes = null)
     {

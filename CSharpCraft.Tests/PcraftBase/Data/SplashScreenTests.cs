@@ -153,7 +153,7 @@ public sealed class SplashScreenTests
     public void AllStaticInstances_AreDistinct()
     {
         var all = new[] { PcraftData.MainMenu, PcraftData.IntroMenu, PcraftData.DeathMenu, PcraftData.WinMenu };
-        all.Should().OnlyHaveUnstackableItems(because: "each screen represents a distinct game state");
+        all.Should().OnlyHaveUniqueItems(because: "each screen represents a distinct game state");
     }
 
     // --------------------------------------------------------------------------

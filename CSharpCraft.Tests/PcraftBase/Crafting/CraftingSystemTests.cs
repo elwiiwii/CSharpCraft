@@ -14,7 +14,12 @@ public sealed class CraftingSystemTests
         var req = new List<StackableItem>(reqs.Length);
         foreach (var (t, q) in reqs)
             req.Add(new StackableItem(t, q));
-        return new Recipe(result, power, count, req);
+        InventorySlot output = power.HasValue
+            ? new ToolItem(result, power.Value)
+            : count.HasValue
+                ? new StackableItem(result, count.Value)
+                : new UnstackableItem(result);
+        return new Recipe(output, req);
     }
 
     // --------------------------------------------------------------------------
@@ -85,7 +90,7 @@ public sealed class CraftingSystemTests
     public void CanCraft_ReturnsTrue_WhenRecipeHasNoIngredients()
     {
         var invent = new List<InventorySlot>();
-        var recipe = new Recipe(PcraftData.Wood, power: null, count: 1, req: []);
+        var recipe = new Recipe(new StackableItem(PcraftData.Wood, 1), []);
 
         CraftingSystem.CanCraft(invent, recipe).Should().BeTrue();
     }
