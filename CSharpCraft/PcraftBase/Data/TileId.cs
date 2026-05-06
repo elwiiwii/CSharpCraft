@@ -9,7 +9,7 @@ internal enum TileId
     Tree  = 4,
     Farm  = 5,
     Wheat = 6,
-    Plant = 7,
+    
     Iron  = 8,
     Gold  = 9,
     Gem   = 10,

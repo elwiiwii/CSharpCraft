@@ -75,37 +75,49 @@ internal static class PcraftData
     #region Tile Types
     // ------------------------------------------------------------------
 
-    // Floor singletons
-    internal static readonly FloorType FtWater = new(TileId.Water, gr: 0);
-    internal static readonly FloorType FtSand  = new(TileId.Sand,  gr: 1);
-    internal static readonly FloorType FtGrass = new(TileId.Grass, gr: 2);
-    internal static readonly FloorType FtFarm  = new(TileId.Farm,  gr: 1);
-    internal static readonly FloorType FtWheat = new(TileId.Wheat, gr: 1);
-    internal static readonly FloorType FtHole  = new(TileId.Hole,  gr: 1);
+    internal static readonly TileType     TileWater = new(BlendGroup.Water);
+    internal static readonly TileType     TileSand  = new(BlendGroup.Sand);
+    internal static readonly TileType     TileGrass = new(BlendGroup.Grass);
+    internal static readonly TileType     TileFarm  = new(BlendGroup.Sand);
+    internal static readonly TileType     TileWheat = new(BlendGroup.Sand);
+    internal static readonly TileType     TileHole  = new(BlendGroup.Sand);
+    internal static readonly WallTileType TileRock  = new(BlendGroup.Rock,  spritePal: null, Stone, TileSand,  life: 15);
+    internal static readonly WallTileType TileTree  = new(BlendGroup.Grass, [1, 5, 3,  11],  Wood,  TileGrass, life: 8);
+    internal static readonly WallTileType TileIron  = new(BlendGroup.Sand,  [1, 1, 13, 6],   Iron,  TileSand,  life: 45);
+    internal static readonly WallTileType TileGold  = new(BlendGroup.Sand,  [1, 2, 9,  10],  Gold,  TileSand,  life: 80);
+    internal static readonly WallTileType TileGem   = new(BlendGroup.Sand,  [1, 2, 14, 12],  Gem,   TileSand,  life: 160);
+    
+    internal static Tile TileFor(TileId id) => id switch
+    {
+        TileId.Water => new Tile(TileWater),
+        TileId.Sand  => new Tile(TileSand),
+        TileId.Grass => new Tile(TileGrass),
+        TileId.Rock  => new Tile(TileRock),
+        TileId.Tree  => new Tile(TileTree),
+        TileId.Farm  => new Tile(TileFarm),
+        TileId.Wheat => new Tile(TileWheat),
+        TileId.Iron  => new Tile(TileIron),
+        TileId.Gold  => new Tile(TileGold),
+        TileId.Gem   => new Tile(TileGem),
+        TileId.Hole  => new Tile(TileHole),
+        _            => new Tile(TileWater),
+    };
 
-    // Surface singletons
-    internal static readonly SurfaceType    StRock = new(TileId.Rock, gr: 3, Stone, FtSand,  life: 15);
-    internal static readonly OverlaySurface StTree = new(TileId.Tree, gr: 2, Wood,  FtGrass, life: 8,   pal: [1, 5, 3, 11]);
-    internal static readonly OverlaySurface StIron = new(TileId.Iron, gr: 1, Iron,  FtSand,  life: 45,  pal: [1, 1, 13, 6]);
-    internal static readonly OverlaySurface StGold = new(TileId.Gold, gr: 1, Gold,  FtSand,  life: 80,  pal: [1, 2,  9, 10]);
-    internal static readonly OverlaySurface StGem  = new(TileId.Gem,  gr: 1, Gem,   FtSand,  life: 160, pal: [1, 2, 14, 12]);
-
-    // Canonical tile lookup — indexed by (int)TileId
-    internal static readonly Tile[] TilePrototypes =
-    [
-        new Tile(FtWater),           // TileId.Water  = 0
-        new Tile(FtSand),            // TileId.Sand   = 1
-        new Tile(FtGrass),           // TileId.Grass  = 2
-        new Tile(FtSand,  StRock),   // TileId.Rock   = 3
-        new Tile(FtGrass, StTree),   // TileId.Tree   = 4
-        new Tile(FtFarm),            // TileId.Farm   = 5
-        new Tile(FtWheat),           // TileId.Wheat  = 6
-        new Tile(FtSand),            // TileId.Plant  = 7 (unused, maps to Sand)
-        new Tile(FtSand,  StIron),   // TileId.Iron   = 8
-        new Tile(FtSand,  StGold),   // TileId.Gold   = 9
-        new Tile(FtSand,  StGem),    // TileId.Gem    = 10
-        new Tile(FtHole),            // TileId.Hole   = 11
-    ];
+    internal static int TileIdFor(TileType type)
+    {
+        if (type == TileWater) return (int)TileId.Water;
+        if (type == TileSand)  return (int)TileId.Sand;
+        if (type == TileGrass) return (int)TileId.Grass;
+        if (type == TileRock)  return (int)TileId.Rock;
+        if (type == TileTree)  return (int)TileId.Tree;
+        if (type == TileFarm)  return (int)TileId.Farm;
+        if (type == TileWheat) return (int)TileId.Wheat;
+        if (type == TileIron)  return (int)TileId.Iron;
+        if (type == TileGold)  return (int)TileId.Gold;
+        if (type == TileGem)   return (int)TileId.Gem;
+        if (type == TileHole)  return (int)TileId.Hole;
+        return -1;
+    }
 
     // ------------------------------------------------------------------
     #endregion

@@ -168,7 +168,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
-                level.Map[i, j] = PcraftData.TilePrototypes[(int)TileId.Grass];
+                level.Map[i, j] = PcraftData.TileFor(TileId.Grass);
 
         PcraftServices.FillEne(level, player);
 
@@ -343,12 +343,12 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         player.Camera.Clx = F32.FromInt(64);
         player.Camera.Cly = F32.FromInt(64);
 
-        level.Map[0, 0] = PcraftData.TilePrototypes[(int)TileId.Farm] with { GrowthTimer = F32.FromInt(1) };
+        level.Map[0, 0] = PcraftData.TileFor(TileId.Farm) with { GrowthTimer = F32.FromInt(1) };
         level.Time = F32.FromInt(2);
 
         PcraftServices.UpGround(level, player);
 
-        level.Map[0, 0].Floor.Should().BeSameAs(PcraftData.FtSand,
+        level.Map[0, 0].Type.Should().BeSameAs(PcraftData.TileSand,
             "expired farm tile must be replaced with sand");
     }
 
@@ -363,12 +363,12 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         player.Camera.Clx = F32.FromInt(64);
         player.Camera.Cly = F32.FromInt(64);
 
-        level.Map[0, 0] = PcraftData.TilePrototypes[(int)TileId.Farm] with { GrowthTimer = F32.FromInt(100) };
+        level.Map[0, 0] = PcraftData.TileFor(TileId.Farm) with { GrowthTimer = F32.FromInt(100) };
         level.Time = F32.FromInt(1);
 
         PcraftServices.UpGround(level, player);
 
-        level.Map[0, 0].Floor.Should().BeSameAs(PcraftData.FtFarm, "tile must stay farm when time has not expired");
+        level.Map[0, 0].Type.Should().BeSameAs(PcraftData.TileFarm, "tile must stay farm when time has not expired");
     }
 
     // --------------------------------------------------------------------------

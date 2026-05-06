@@ -86,57 +86,57 @@ public sealed class PcraftDataTests
 
     // --------------------------------------------------------------------------
     #endregion
-    #region Surface types
+    #region Tile types
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void StRock_HasCorrectIdAndLife()
+    public void TileRock_HasCorrectBlendGroupAndLife()
     {
-        PcraftData.StRock.Id.Should().Be(TileId.Rock);
-        PcraftData.StRock.Life.Should().Be(15);
+        PcraftData.TileRock.BlendGroup.Should().Be(BlendGroup.Rock);
+        PcraftData.TileRock.Life.Should().Be(15);
     }
 
     [Fact]
-    public void StRock_MatIsStone()
+    public void TileRock_MatIsStone()
     {
-        PcraftData.StRock.Mat.Should().BeSameAs(PcraftData.Stone);
+        PcraftData.TileRock.Mat.Should().BeSameAs(PcraftData.Stone);
     }
 
     [Fact]
-    public void StRock_UnderlyingFloorIsFtSand()
+    public void TileRock_UnderlyingTypeIsTileSand()
     {
-        PcraftData.StRock.UnderlyingFloor.Should().BeSameAs(PcraftData.FtSand);
+        PcraftData.TileRock.UnderlyingType.Should().BeSameAs(PcraftData.TileSand);
     }
 
     [Fact]
-    public void StTree_IsOverlaySurfaceWithPal()
+    public void TileTree_IsWallTileTypeWithSpritePal()
     {
-        PcraftData.StTree.Should().BeOfType<OverlaySurface>();
-        PcraftData.StTree.Pal.Should().Equal(1, 5, 3, 11);
+        PcraftData.TileTree.Should().BeOfType<WallTileType>();
+        PcraftData.TileTree.SpritePal.Should().Equal(1, 5, 3, 11);
     }
 
     [Fact]
-    public void StGem_HasLife160()
+    public void TileGem_HasLife160()
     {
-        PcraftData.StGem.Life.Should().Be(160);
+        PcraftData.TileGem.Life.Should().Be(160);
     }
 
     [Fact]
-    public void TilePrototypes_HasTwelveEntries()
+    public void TileFor_Water_ReturnsTileWater()
     {
-        PcraftData.TilePrototypes.Should().HaveCount(12);
+        PcraftData.TileFor(TileId.Water).Type.Should().BeSameAs(PcraftData.TileWater);
     }
 
     [Fact]
-    public void TilePrototypes_FirstHasFtWaterFloor()
+    public void TileFor_Hole_ReturnsTileHole()
     {
-        PcraftData.TilePrototypes[0].Floor.Should().BeSameAs(PcraftData.FtWater);
+        PcraftData.TileFor(TileId.Hole).Type.Should().BeSameAs(PcraftData.TileHole);
     }
 
     [Fact]
-    public void TilePrototypes_LastHasFtHoleFloor()
+    public void TileFor_GapId7_FallsBackToWater()
     {
-        PcraftData.TilePrototypes[11].Floor.Should().BeSameAs(PcraftData.FtHole);
+        PcraftData.TileFor((TileId)7).Type.Should().BeSameAs(PcraftData.TileWater);
     }
 
     // --------------------------------------------------------------------------

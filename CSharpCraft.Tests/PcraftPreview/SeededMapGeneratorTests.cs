@@ -221,7 +221,7 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
                 if (isHoleArea) continue;
 
                 int expected = classifier.ClassifyTile(i, j);
-                int actual   = (int)(level.Map[i, j].Surface?.Id ?? level.Map[i, j].Floor.Id);
+                int actual   = PcraftData.TileIdFor(level.Map[i, j].Type);
                 actual.Should().Be(expected,
                     because: $"tile ({i},{j}) must match MapClassifier output");
             }
@@ -239,7 +239,7 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
 
         int spawnTileX = F32.FloorToInt(player.X / F32.FromInt(16));
         int spawnTileY = F32.FloorToInt(player.Y / F32.FromInt(16));
-        int tileId     = (int)(level.Map[spawnTileX, spawnTileY].Surface?.Id ?? level.Map[spawnTileX, spawnTileY].Floor.Id);
+        int tileId = PcraftData.TileIdFor(level.Map[spawnTileX, spawnTileY].Type);
 
         tileId.Should().BeOneOf(new[] { 1, 2 },
             because: "player spawn must be on a sand (1) or rare (2) tile");
@@ -299,7 +299,7 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
 
         for (int i = 0; i < GridSx; i++)
             for (int j = 0; j < GridSy; j++)
-                level1.Map[i, j].Floor.Should().BeSameAs(level2.Map[i, j].Floor,
+                level1.Map[i, j].Type.Should().BeSameAs(level2.Map[i, j].Type,
                     because: $"tile ({i},{j}) must be identical for same seed");
     }
 

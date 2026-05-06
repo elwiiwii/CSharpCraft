@@ -169,7 +169,7 @@ internal static class MapGenerator
 
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)
-                level.SetTile(i, j, PcraftData.TilePrototypes[(int)tiles[i, j]]);
+                level.SetTile(i, j, PcraftData.TileFor(tiles[i, j]));
 
         int localHoleX = levelSx / 2;
         int localHoleY = levelSy / 2;
@@ -178,8 +178,8 @@ internal static class MapGenerator
         TileId surroundId = isUnder ? TileId.Sand : TileId.Rock;
         for (int i = -1; i <= 1; i++)
             for (int j = -1; j <= 1; j++)
-                level.SetTile(localHoleX + i, localHoleY + j, PcraftData.TilePrototypes[(int)surroundId]);
-        level.SetTile(localHoleX, localHoleY, PcraftData.TilePrototypes[(int)TileId.Hole]);
+                level.SetTile(localHoleX + i, localHoleY + j, PcraftData.TileFor(surroundId));
+        level.SetTile(localHoleX, localHoleY, PcraftData.TileFor(TileId.Hole));
 
         player.Camera.Clx = player.X;
         player.Camera.Cly = player.Y;

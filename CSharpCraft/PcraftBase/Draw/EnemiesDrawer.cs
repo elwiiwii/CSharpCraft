@@ -53,7 +53,7 @@ internal static class EnemiesDrawer
         F32 lan = Pico8.Sin(anim * 2) * F32.FromDouble(1.5);
         var belTile = PcraftServices.GetTile(x, y, level);
 
-        if (belTile.Floor == PcraftData.FtWater)
+        if (belTile.Type == PcraftData.TileWater)
         {
             fyF += 4;
             Pico8.Circ(fxF + cv * 3 + cr * lan,
@@ -111,7 +111,7 @@ internal static class EnemiesDrawer
 
         if (isPlayer) Pico8.Pal();
 
-        if (belTile.Floor != PcraftData.FtWater)
+        if (belTile.Type != PcraftData.TileWater)
         {
             Pico8.Circfill(fxF + cv * 3 + cr * lan,
                            fyF + sv * 3 + sr * lan,

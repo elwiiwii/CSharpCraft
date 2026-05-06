@@ -24,8 +24,8 @@ internal static class LevelManager
                 var ey = F32.FromInt(j * 16 + 8);
                 var dist = F32.Max(F32.Abs(ex - player.X), F32.Abs(ey - player.Y));
                 if (r < 3 &&
-                    tile.Surface is null &&
-                    tile.Floor != PcraftData.FtWater &&
+                    tile.Type is not WallTileType &&
+                    tile.Type != PcraftData.TileWater &&
                     dist > F32.FromInt(50))
                 {
                     var zombie = new ZombieEntity(ex, ey)
@@ -118,8 +118,8 @@ internal static class LevelManager
             {
                 if (MapOps.OutOfBounds(i, j, level)) continue;
                 var tile = level.Map[i, j];
-                if (tile.Floor == PcraftData.FtFarm && tile.GrowthTimer.HasValue && level.Time > tile.GrowthTimer.Value)
-                    level.SetTile(i, j, new Tile(PcraftData.FtSand));
+                if (tile.Type == PcraftData.TileFarm && tile.GrowthTimer.HasValue && level.Time > tile.GrowthTimer.Value)
+                    level.SetTile(i, j, new Tile(PcraftData.TileSand));
             }
         }
     }

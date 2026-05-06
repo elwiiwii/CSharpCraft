@@ -38,7 +38,7 @@ internal static class SeededMapGenerator
 
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)
-                level.SetTile(i, j, PcraftData.TilePrototypes[classifier.ClassifyTile(i, j)]);
+                level.SetTile(i, j, PcraftData.TileFor((TileId)classifier.ClassifyTile(i, j)));
 
         var spawn = SpawnFinder.FindSpawn(seed, classifier, GridSx, GridSy);
         int spawnX = spawn?.tileX ?? (GridSx / 2);
@@ -56,8 +56,8 @@ internal static class SeededMapGenerator
         int holeY = localHoleY + levelY;
         for (int i = -1; i <= 1; i++)
             for (int j = -1; j <= 1; j++)
-                level.SetTile(localHoleX + i, localHoleY + j, PcraftData.TilePrototypes[(int)TileId.Rock]);
-        level.SetTile(localHoleX, localHoleY, PcraftData.TilePrototypes[(int)TileId.Hole]);
+                level.SetTile(localHoleX + i, localHoleY + j, PcraftData.TileFor(TileId.Rock));
+        level.SetTile(localHoleX, localHoleY, PcraftData.TileFor(TileId.Hole));
 
         return (holeX, holeY);
     }

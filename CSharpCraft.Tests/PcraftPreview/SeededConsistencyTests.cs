@@ -111,7 +111,7 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
                 if (isHoleArea) continue;
 
                 int expected = sample.Tiles[i, j];
-                int actual   = (int)(island.Map[tileX, tileY].Surface?.Id ?? island.Map[tileX, tileY].Floor.Id);
+                int actual   = PcraftData.TileIdFor(island.Map[tileX, tileY].Type);
                 actual.Should().Be(expected,
                     because: $"tile ({tileX},{tileY}) must match PcraftWorldSampler output for seed {Seed}");
             }

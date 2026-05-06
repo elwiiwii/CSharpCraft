@@ -100,7 +100,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
 
         var result = MapOps.GetDirectTile(-1, 0, state);
 
-        result.Floor.Should().BeSameAs(PcraftData.FtWater);
+        result.Type.Should().BeSameAs(PcraftData.TileWater);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
 
         var result = MapOps.GetDirectTile(0, -1, state);
 
-        result.Floor.Should().BeSameAs(PcraftData.FtWater);
+        result.Type.Should().BeSameAs(PcraftData.TileWater);
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
 
         var result = MapOps.GetDirectTile(8, 0, state);
 
-        result.Floor.Should().BeSameAs(PcraftData.FtWater);
+        result.Type.Should().BeSameAs(PcraftData.TileWater);
     }
 
     [Fact]
@@ -133,11 +133,11 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[(int)TileId.Sand];
+        state.Map[0, 0] = PcraftData.TileFor(TileId.Sand);
 
         var result = MapOps.GetDirectTile(0, 0, state);
 
-        result.Floor.Should().BeSameAs(PcraftData.FtSand);
+        result.Type.Should().BeSameAs(PcraftData.TileSand);
     }
 
     // --------------------------------------------------------------------------
@@ -146,18 +146,18 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
     // --------------------------------------------------------------------------
 
     [Theory]
-    [InlineData(0)]  // Water  — no surface → free
-    [InlineData(1)]  // Sand   — no surface → free
-    [InlineData(2)]  // Grass  — no surface → free
-    [InlineData(5)]  // Farm   — no surface → free
-    [InlineData(6)]  // Wheat  — no surface → free
-    [InlineData(11)] // Hole   — no surface → free
+    [InlineData(0)]  // Water  — not wall -> free
+    [InlineData(1)]  // Sand   — not wall -> free
+    [InlineData(2)]  // Grass  — not wall -> free
+    [InlineData(5)]  // Farm   — not wall -> free
+    [InlineData(6)]  // Wheat  — not wall -> free
+    [InlineData(11)] // Hole   — not wall -> free
     public void IsFree_ReturnsTrue_ForFloorOnlyTile(int tileId)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[tileId];
+        state.Map[0, 0] = PcraftData.TileFor((TileId)tileId);
 
         var result = MapOps.IsFree(F32.Zero, F32.Zero, state);
 
@@ -165,17 +165,17 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
     }
 
     [Theory]
-    [InlineData(3)]  // Rock  — has surface → blocked
-    [InlineData(4)]  // Tree  — has surface → blocked
-    [InlineData(8)]  // Iron  — has surface → blocked
-    [InlineData(9)]  // Gold  — has surface → blocked
-    [InlineData(10)] // Gem   — has surface → blocked
+    [InlineData(3)]  // Rock  — WallTileType -> blocked
+    [InlineData(4)]  // Tree  — WallTileType -> blocked
+    [InlineData(8)]  // Iron  — WallTileType -> blocked
+    [InlineData(9)]  // Gold  — WallTileType -> blocked
+    [InlineData(10)] // Gem   — WallTileType -> blocked
     public void IsFree_ReturnsFalse_ForSurfaceTile(int tileId)
     {
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[tileId];
+        state.Map[0, 0] = PcraftData.TileFor((TileId)tileId);
 
         var result = MapOps.IsFree(F32.Zero, F32.Zero, state);
 
@@ -190,7 +190,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[tileId];
+        state.Map[0, 0] = PcraftData.TileFor((TileId)tileId);
 
         var result = MapOps.IsFreeEnem(F32.Zero, F32.Zero, state);
 
@@ -206,7 +206,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[tileId];
+        state.Map[0, 0] = PcraftData.TileFor((TileId)tileId);
 
         var result = MapOps.IsFreeEnem(F32.Zero, F32.Zero, state);
 
@@ -221,7 +221,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[tileId];
+        state.Map[0, 0] = PcraftData.TileFor((TileId)tileId);
 
         var result = MapOps.IsCool(F32.Zero, F32.Zero, state);
 
@@ -234,7 +234,7 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TilePrototypes[(int)TileId.Grass];
+        state.Map[0, 0] = PcraftData.TileFor(TileId.Grass);
 
         var result = MapOps.IsCool(F32.Zero, F32.Zero, state);
 

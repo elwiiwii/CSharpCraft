@@ -27,17 +27,17 @@ internal static class PcraftUpdate
 
         // ── Speed multiplier (water or no stamina → 1, otherwise 2) ──────────
         var playTile = PcraftServices.GetTile(player.X, player.Y, level);
-        if (playTile.Floor != player.LastFloor && playTile.Floor == PcraftData.FtWater)
+        if (playTile.Type != player.LastGround && playTile.Type == PcraftData.TileWater)
             Pico8.Sfx(11);
-        var s = (playTile.Floor == PcraftData.FtWater || player.Stam <= F32.Zero)
+        var s = (playTile.Type == PcraftData.TileWater || player.Stam <= F32.Zero)
             ? F32.One
             : F32.FromInt(2);
-        if (playTile.Floor == PcraftData.FtHole)
+        if (playTile.Type == PcraftData.TileHole)
             switchLevel = switchLevel || canSwitchLevel;
         else
             canSwitchLevel = true;
 
-        player.LastFloor = playTile.Floor;
+        player.LastGround = playTile.Type;
 
         // ── Input → dx/dy ─────────────────────────────────────────────────────
         var dx = F32.Zero;

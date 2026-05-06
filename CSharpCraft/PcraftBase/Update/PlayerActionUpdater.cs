@@ -36,7 +36,7 @@ internal static class PlayerActionUpdater
             // Place bench
             if (!player.Lb5 && player.CurItem is not null && player.CurItem.Type is PlaceableItemDef def)
             {
-                if (hitTile.Surface is null && (hitTile.Floor == PcraftData.FtSand || hitTile.Floor == PcraftData.FtGrass))
+                if (hitTile.Type is not WallTileType && (hitTile.Type == PcraftData.TileSand || hitTile.Type == PcraftData.TileGrass))
                 {
                     var tileX  = F32.Floor(hitx / F32.FromInt(16)) * 16 + 8;
                     var tileY  = F32.Floor(hity / F32.FromInt(16)) * 16 + 8;
@@ -81,7 +81,7 @@ internal static class PlayerActionUpdater
                         level.Ent.Add(popup);
                     }
                 }
-                else if (hitTile.Surface is not null)
+                else if (hitTile.Type is WallTileType wall)
                 {
                     // ── Harvest tile ──────────────────────────────────────────
                     var pow = F32.One;
@@ -89,32 +89,29 @@ internal static class PlayerActionUpdater
                     if (player.CurItem is not null)
                     {
                         var p = player.CurItem is ToolItem harvestTool ? harvestTool.Power : 0;
-                        if (hitTile.Surface is not null)
+                        if (hitTile.Type == PcraftData.TileTree && player.CurItem.Type == PcraftData.Haxe)
                         {
-                            if (hitTile.Surface == PcraftData.StTree && player.CurItem.Type == PcraftData.Haxe)
-                            {
-                                pow = F32.One + p + Pico8.Rnd(p * p);
-                                stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
-                                Pico8.Sfx(12);
-                                toolSoundPlayed = true;
-                            }
-                            else if (player.CurItem.Type == PcraftData.Pick)
-                            {
-                                pow = F32.One + p * 2 + Pico8.Rnd(p * p);
-                                stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
-                                Pico8.Sfx(12);
-                                toolSoundPlayed = true;
-                            }
+                            pow = F32.One + p + Pico8.Rnd(p * p);
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
+                            Pico8.Sfx(12);
+                            toolSoundPlayed = true;
+                        }
+                        else if (player.CurItem.Type == PcraftData.Pick)
+                        {
+                            pow = F32.One + p * 2 + Pico8.Rnd(p * p);
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
+                            Pico8.Sfx(12);
+                            toolSoundPlayed = true;
                         }
                     }
                     if (!toolSoundPlayed) Pico8.Sfx(15);
                     pow = F32.Floor(pow);
-                    var harvestLife = hitTile.HarvestLife ?? F32.FromInt(hitTile.Surface!.Life);
+                    var harvestLife = hitTile.HarvestLife ?? F32.FromInt(wall.Life);
                     if (harvestLife - pow <= F32.Zero)
                     {
-                        PcraftServices.SetTile(hitx, hity, new Tile(hitTile.Surface!.UnderlyingFloor), level);
-                        PcraftServices.AddItem(hitTile.Surface!.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, level.Ent);
-                        if (hitTile.Surface == PcraftData.StTree && Pico8.Rnd(1) > F32.FromDouble(0.7))
+                        PcraftServices.SetTile(hitx, hity, new Tile(wall.UnderlyingType), level);
+                        PcraftServices.AddItem(wall.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, level.Ent);
+                        if (hitTile.Type == PcraftData.TileTree && Pico8.Rnd(1) > F32.FromDouble(0.7))
                             PcraftServices.AddItem(PcraftData.Apple, 1, hitx, hity, level.Ent);
                     }
                     else
@@ -139,45 +136,45 @@ internal static class PlayerActionUpdater
                             PcraftServices.RemInList(player.Invent, new StackableItem(player.CurItem.Type, 1));
                             Pico8.Sfx(21);
                         }
-                        if (hitTile.Floor == PcraftData.FtGrass && hitTile.Surface is null && player.CurItem.Type == PcraftData.Scythe)
+                        if (hitTile.Type == PcraftData.TileGrass && player.CurItem.Type == PcraftData.Scythe)
                         {
-                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.FtSand), level);
+                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
                             if (Pico8.Rnd(1) > F32.FromDouble(0.4))
                                 PcraftServices.AddItem(PcraftData.Seed, 1, hitx, hity, level.Ent);
                         }
-                        if (hitTile.Floor == PcraftData.FtSand && hitTile.Surface is null && player.CurItem.Type == PcraftData.Shovel)
+                        if (hitTile.Type == PcraftData.TileSand && player.CurItem.Type == PcraftData.Shovel)
                         {
                             if (player.CurItem is ToolItem shovelTool && shovelTool.Power > 3)
                             {
-                                PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.FtWater), level);
+                                PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileWater), level);
                                 PcraftServices.AddItem(PcraftData.Sand, 2, hitx, hity, level.Ent);
                             }
                             else
                             {
-                                PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.FtFarm, GrowthTimer: level.Time + 15 + Pico8.Rnd(5)), level);
+                                PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileFarm, GrowthTimer: level.Time + 15 + Pico8.Rnd(5)), level);
                                 PcraftServices.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2)), hitx, hity, level.Ent);
                             }
                         }
-                        if (hitTile.Floor == PcraftData.FtWater && hitTile.Surface is null && player.CurItem.Type == PcraftData.Sand)
+                        if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Sand)
                         {
-                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.FtSand), level);
+                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
                             PcraftServices.RemInList(player.Invent, new StackableItem(PcraftData.Sand, 1));
                         }
-                        if (hitTile.Floor == PcraftData.FtWater && hitTile.Surface is null && player.CurItem.Type == PcraftData.Boat)
+                        if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Boat)
                         {
                             Pico8.Reload();
                             Pico8.MapToSpritesheet1D();
                             player.CurMenu = PcraftData.WinMenu;
                             Pico8.Music(4);
                         }
-                        if (hitTile.Floor == PcraftData.FtFarm && player.CurItem.Type == PcraftData.Seed)
+                        if (hitTile.Type == PcraftData.TileFarm && player.CurItem.Type == PcraftData.Seed)
                         {
-                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.FtWheat, GrowthTimer: level.Time + 15 + Pico8.Rnd(5)), level);
+                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileWheat, GrowthTimer: level.Time + 15 + Pico8.Rnd(5)), level);
                             PcraftServices.RemInList(player.Invent, new StackableItem(PcraftData.Seed, 1));
                         }
-                        if (hitTile.Floor == PcraftData.FtWheat && player.CurItem.Type == PcraftData.Scythe)
+                        if (hitTile.Type == PcraftData.TileWheat && player.CurItem.Type == PcraftData.Scythe)
                         {
-                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.FtSand), level);
+                            PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
                             var dw = F32.Clamp(F32.FromInt(4) - (hitTile.GrowthTimer.GetValueOrDefault(F32.Zero) - level.Time),
                                 F32.Zero,
                                 F32.FromInt(4));

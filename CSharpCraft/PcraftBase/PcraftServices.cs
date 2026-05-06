@@ -34,11 +34,11 @@ internal class PcraftServices
     #region Draw - Background
     // ---------------------------------------------------------------------------
 
-    internal static bool Comp(int i, int j, int renderGr, Level level)
-        => _current.OnComp(i, j, renderGr, level);
+    internal static bool Comp(int i, int j, BlendGroup blendGroup, Level level)
+        => _current.OnComp(i, j, blendGroup, level);
 
-    protected virtual bool OnComp(int i, int j, int renderGr, Level level)
-        => BackDrawer.Comp(i, j, renderGr, level);
+    protected virtual bool OnComp(int i, int j, BlendGroup blendGroup, Level level)
+        => BackDrawer.Comp(i, j, blendGroup, level);
 
     internal static int CornerOffset(bool sideH, bool sideV, bool diag, int rnd,
         int innerCorner, int hOnly, int vOnly, int outer)

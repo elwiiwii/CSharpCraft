@@ -11,9 +11,9 @@ internal static class MapOps
     internal static Tile GetDirectTile(int i, int j, Level level)
     {
         if (OutOfBounds(i, j, level))
-            return PcraftData.TilePrototypes[(int)TileId.Water];
+            return new Tile(PcraftData.TileWater);
         var tile = level.Map[i, j];
-        return tile.Floor is null ? PcraftData.TilePrototypes[(int)TileId.Water] : tile;
+        return tile.Type is null ? new Tile(PcraftData.TileWater) : tile;
     }
 
     internal static Tile GetTile(F32 x, F32 y, Level level)
@@ -35,13 +35,13 @@ internal static class MapOps
     internal static bool IsFree(F32 x, F32 y, Level level)
     {
         var tile = GetTile(x, y, level);
-        return tile.Surface is null;
+        return tile.Type is not WallTileType;
     }
 
     internal static bool IsFreeEnem(F32 x, F32 y, Level level)
     {
         var tile = GetTile(x, y, level);
-        return tile.Surface is null && tile.Floor != PcraftData.FtWater;
+        return tile.Type is not WallTileType && tile.Type.BlendGroup != BlendGroup.Water;
     }
 
     internal static bool IsCool(F32 x, F32 y, Level level)

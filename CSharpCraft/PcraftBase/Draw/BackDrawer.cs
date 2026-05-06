@@ -5,9 +5,6 @@ namespace CSharpCraft.PcraftBase.Draw;
 
 internal static class BackDrawer
 {
-    internal static int RenderGr(Tile tile)
-        => (tile.Surface is not null and not OverlaySurface) ? tile.Surface.Gr : tile.Floor.Gr;
-
     internal static void DrawBack(Level level, PlayerEntity player)
     {
         var camera = player.Camera;
@@ -20,13 +17,13 @@ internal static class BackDrawer
             for (int j = cj; j <= cj + 8; j++)
             {
                 var tile = PcraftServices.GetDirectTile(i, j, level);
-                int renderGr = RenderGr(tile);
+                var blendGroup = tile.Type.BlendGroup;
                 int gi = (i - ci) * 2 + 64;
                 int gj = (j - cj) * 2 + 32;
 
-                if (renderGr == 1)
+                if (blendGroup == BlendGroup.Sand)
                 {
-                    int sv = (tile.Floor == PcraftData.FtFarm || tile.Floor == PcraftData.FtWheat) ? 3 : 0;
+                    int sv = (tile.Type == PcraftData.TileFarm || tile.Type == PcraftData.TileWheat) ? 3 : 0;
                     Pico8.Mset(gi,     gj,     PcraftServices.RndSand(i,       j,       level) + sv);
                     Pico8.Mset(gi + 1, gj,     PcraftServices.RndSand(i + 0.5, j,       level) + sv);
                     Pico8.Mset(gi,     gj + 1, PcraftServices.RndSand(i,       j + 0.5, level) + sv);
@@ -34,19 +31,19 @@ internal static class BackDrawer
                 }
                 else
                 {
-                    bool u = PcraftServices.Comp(i,     j - 1, renderGr, level);
-                    bool d = PcraftServices.Comp(i,     j + 1, renderGr, level);
-                    bool l = PcraftServices.Comp(i - 1, j,     renderGr, level);
-                    bool r = PcraftServices.Comp(i + 1, j,     renderGr, level);
+                    bool u = PcraftServices.Comp(i,     j - 1, blendGroup, level);
+                    bool d = PcraftServices.Comp(i,     j + 1, blendGroup, level);
+                    bool l = PcraftServices.Comp(i - 1, j,     blendGroup, level);
+                    bool r = PcraftServices.Comp(i + 1, j,     blendGroup, level);
 
-                    int b = (tile.Surface == PcraftData.StRock) ? 21
-                          : (tile.Floor   == PcraftData.FtWater) ? 26
+                    int b = (tile.Type == PcraftData.TileRock)  ? 21
+                          : (tile.Type == PcraftData.TileWater) ? 26
                           : 16;
 
-                    int tl = PcraftServices.CornerOffset(l, u, PcraftServices.Comp(i - 1, j - 1, renderGr, level), PcraftServices.RndCenter(i,       j,       level), innerCorner: 20, hOnly:  1, vOnly: 16, outer:  0);
-                    int tr = PcraftServices.CornerOffset(r, u, PcraftServices.Comp(i + 1, j - 1, renderGr, level), PcraftServices.RndCenter(i + 0.5, j,       level), innerCorner: 19, hOnly:  1, vOnly: 18, outer:  2);
-                    int bl = PcraftServices.CornerOffset(l, d, PcraftServices.Comp(i - 1, j + 1, renderGr, level), PcraftServices.RndCenter(i,       j + 0.5, level), innerCorner:  4, hOnly: 33, vOnly: 16, outer: 32);
-                    int br = PcraftServices.CornerOffset(r, d, PcraftServices.Comp(i + 1, j + 1, renderGr, level), PcraftServices.RndCenter(i + 0.5, j + 0.5, level), innerCorner:  3, hOnly: 33, vOnly: 18, outer: 34);
+                    int tl = PcraftServices.CornerOffset(l, u, PcraftServices.Comp(i - 1, j - 1, blendGroup, level), PcraftServices.RndCenter(i,       j,       level), innerCorner: 20, hOnly:  1, vOnly: 16, outer:  0);
+                    int tr = PcraftServices.CornerOffset(r, u, PcraftServices.Comp(i + 1, j - 1, blendGroup, level), PcraftServices.RndCenter(i + 0.5, j,       level), innerCorner: 19, hOnly:  1, vOnly: 18, outer:  2);
+                    int bl = PcraftServices.CornerOffset(l, d, PcraftServices.Comp(i - 1, j + 1, blendGroup, level), PcraftServices.RndCenter(i,       j + 0.5, level), innerCorner:  4, hOnly: 33, vOnly: 16, outer: 32);
+                    int br = PcraftServices.CornerOffset(r, d, PcraftServices.Comp(i + 1, j + 1, blendGroup, level), PcraftServices.RndCenter(i + 0.5, j + 0.5, level), innerCorner:  3, hOnly: 33, vOnly: 18, outer: 34);
 
                     Pico8.Mset(gi,     gj,     b + tl);
                     Pico8.Mset(gi + 1, gj,     b + tr);
@@ -75,7 +72,7 @@ internal static class BackDrawer
 
                 Pico8.Pal();
 
-                if (tile.Floor == PcraftData.FtWater)
+                if (tile.Type == PcraftData.TileWater)
                 {
                     PcraftServices.WatAnim(i,       j,       level);
                     PcraftServices.WatAnim(i + 0.5, j,       level);
@@ -83,7 +80,7 @@ internal static class BackDrawer
                     PcraftServices.WatAnim(i + 0.5, j + 0.5, level);
                 }
 
-                if (tile.Floor == PcraftData.FtWheat)
+                if (tile.Type == PcraftData.TileWheat)
                 {
                     F32 dd = tile.GrowthTimer.GetValueOrDefault(F32.Zero) - level.Time;
                     for (int pp = 2; pp <= 4; pp++)
@@ -96,13 +93,13 @@ internal static class BackDrawer
                     PcraftServices.Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, (x, y) => PcraftServices.RndSand(x, y, level));
                 }
 
-                if (tile.Surface is OverlaySurface os)
+                if (tile.Type.SpritePal is { } pal)
                 {
-                    PcraftServices.SetPal(os.Pal);
+                    PcraftServices.SetPal(pal);
                     PcraftServices.Spr4(i, j, gi, gj, 64, 65, 80, 81, 0, (x, y) => PcraftServices.RndTree(x, y, level));
                 }
 
-                if (tile.Floor == PcraftData.FtHole)
+                if (tile.Type == PcraftData.TileHole)
                 {
                     Pico8.Pal();
                     if (level.Theme == LevelTheme.Surface)
@@ -118,10 +115,10 @@ internal static class BackDrawer
         }
     }
 
-    internal static bool Comp(int i, int j, int renderGr, Level level)
+    internal static bool Comp(int i, int j, BlendGroup blendGroup, Level level)
     {
         var tile2 = PcraftServices.GetDirectTile(i, j, level);
-        return renderGr == RenderGr(tile2);
+        return blendGroup == tile2.Type.BlendGroup;
     }
 
     internal static int CornerOffset(
