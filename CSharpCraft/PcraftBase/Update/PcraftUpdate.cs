@@ -5,13 +5,36 @@ namespace CSharpCraft.PcraftBase.Update;
 
 internal static class PcraftUpdate
 {
-    internal static bool Update(
-        PlayerEntity player, Level level,
-        ref bool switchLevel, ref bool canSwitchLevel)
+    internal static void Update(PlayerEntity player)
     {
+        var session = PcraftSession.Current;
+        var level   = player.CurrentLevel!;
+
+        // ── Level switch (top of frame — matches Lua _update() order) ─────────
+        if (player.SwitchLevel)
+        {
+            player.CurrentLevel = (player.CurrentLevel == session.Cave)
+                ? session.Island!
+                : session.Cave!;
+            level = player.CurrentLevel;
+            PcraftServices.SetLevel(level, player);
+            PcraftServices.FillEne(level, player);
+            player.SwitchLevel    = false;
+            player.CanSwitchLevel = false;
+            Pico8.Music(player.CurrentLevel == session.Cave ? 2 : 1);
+        }
+
         // ── Menu guard ────────────────────────────────────────────────────────
         var (consumed, needsReset) = PcraftServices.UpdateMenu(player);
-        if (consumed) return needsReset;
+        if (consumed)
+        {
+            if (needsReset)
+            {
+                PcraftServices.ResetLevel(player);
+                Pico8.Music(1);
+            }
+            return;
+        }
 
         // ── Curitem validation ────────────────────────────────────────────────
         if (player.CurItem is not null)
@@ -33,9 +56,9 @@ internal static class PcraftUpdate
             ? F32.One
             : F32.FromInt(2);
         if (playTile.Type == PcraftData.TileHole)
-            switchLevel = switchLevel || canSwitchLevel;
+            player.SwitchLevel = player.SwitchLevel || player.CanSwitchLevel;
         else
-            canSwitchLevel = true;
+            player.CanSwitchLevel = true;
 
         player.LastGround = playTile.Type;
 
@@ -68,8 +91,7 @@ internal static class PcraftUpdate
         // ── Sub-updaters ──────────────────────────────────────────────────────
         var (fdx, fdy, canAct) = PcraftServices.UpdateEntities(player, level, dx, dy);
         var nearEnemies = PcraftServices.UpdateEnemies(player, level);
-        PcraftServices.UpdatePlayer(player, level, fdx, fdy, canAct, nearEnemies);
+        PcraftServices.UpdatePlayer(player, fdx, fdy, canAct, nearEnemies);
         PcraftServices.UpdateCamera(player, fdx, fdy);
-        return false;
     }
 }

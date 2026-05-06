@@ -251,16 +251,10 @@ internal class PcraftServices
     protected virtual void OnAddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
         => InventoryOps.AddItemInList(list, item, pos);
 
-    internal static void AddPlace(List<InventorySlot> list, InventorySlot item, int pos)
-        => _current.OnAddPlace(list, item, pos);
-
-    protected virtual void OnAddPlace(List<InventorySlot> list, InventorySlot item, int pos)
-        => InventoryOps.AddPlace(list, item, pos);
-
-    internal static int HowMany(List<InventorySlot> list, StackableItem query)
+    internal static int HowMany(List<InventorySlot> list, InventorySlot query)
         => _current.OnHowMany(list, query);
 
-    protected virtual int OnHowMany(List<InventorySlot> list, StackableItem query)
+    protected virtual int OnHowMany(List<InventorySlot> list, InventorySlot query)
         => InventoryOps.HowMany(list, query);
 
     internal static int Loop(int sel, int count)
@@ -298,11 +292,11 @@ internal class PcraftServices
     protected virtual void OnFillEne(Level level, PlayerEntity player)
         => LevelManager.FillEne(level, player);
 
-    internal static void ResetLevel(PlayerEntity player, out Level cave, out Level island)
-        => _current.OnResetLevel(player, out cave, out island);
+    internal static void ResetLevel(PlayerEntity player)
+        => _current.OnResetLevel(player);
 
-    protected virtual void OnResetLevel(PlayerEntity player, out Level cave, out Level island)
-        => LevelManager.ResetLevel(player, out cave, out island);
+    protected virtual void OnResetLevel(PlayerEntity player)
+        => LevelManager.ResetLevel(player);
 
     internal static void SetLevel(Level level, PlayerEntity player)
         => _current.OnSetLevel(level, player);
@@ -522,11 +516,11 @@ internal class PcraftServices
     #region Update - Main
     // ---------------------------------------------------------------------------
 
-    internal static bool UpdateMain(PlayerEntity player, Level level, ref bool switchLevel, ref bool canSwitchLevel)
-        => _current.OnUpdateMain(player, level, ref switchLevel, ref canSwitchLevel);
+    internal static void UpdateMain(PlayerEntity player)
+        => _current.OnUpdateMain(player);
 
-    protected virtual bool OnUpdateMain(PlayerEntity player, Level level, ref bool switchLevel, ref bool canSwitchLevel)
-        => PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
+    protected virtual void OnUpdateMain(PlayerEntity player)
+        => PcraftUpdate.Update(player);
 
     // ---------------------------------------------------------------------------
     #endregion
@@ -544,13 +538,13 @@ internal class PcraftServices
     #region Update - Player
     // ---------------------------------------------------------------------------
 
-    internal static void UpdatePlayer(PlayerEntity player, Level level,
+    internal static void UpdatePlayer(PlayerEntity player,
         F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
-        => _current.OnUpdatePlayer(player, level, dx, dy, canAct, nearEnemies);
+        => _current.OnUpdatePlayer(player, dx, dy, canAct, nearEnemies);
 
-    protected virtual void OnUpdatePlayer(PlayerEntity player, Level level,
+    protected virtual void OnUpdatePlayer(PlayerEntity player,
         F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
-        => PlayerActionUpdater.Update(player, level, dx, dy, canAct, nearEnemies);
+        => PlayerActionUpdater.Update(player, dx, dy, canAct, nearEnemies);
 
     // ---------------------------------------------------------------------------
     #endregion

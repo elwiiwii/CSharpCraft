@@ -124,7 +124,7 @@ public sealed class CraftingSystemTests
     }
 
     [Fact]
-    public void Craft_AddsResult_AtFrontOfInventory()
+    public void Craft_AddsResult_AtEndOfInventory()
     {
         var invent = new List<InventorySlot>
         {
@@ -135,7 +135,7 @@ public sealed class CraftingSystemTests
 
         CraftingSystem.Craft(invent, recipe);
 
-        invent[0].Type.Should().Be(PcraftData.Haxe);
+        invent[^1].Type.Should().Be(PcraftData.Haxe);
     }
 
     [Fact]

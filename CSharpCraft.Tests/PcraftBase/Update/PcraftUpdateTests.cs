@@ -83,9 +83,11 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         player.Life = F32.FromInt(100);
         player.CurMenu = PcraftData.DeathMenu;   // splash menu: spr=128 → MenuUpdater returns true
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
-        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
+        player.CurrentLevel = level;
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        PcraftUpdate.Update(player);
 
         level.Time.Should().Be(F32.Zero);
     }
@@ -104,9 +106,11 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
-        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
+        player.CurrentLevel = level;
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        PcraftUpdate.Update(player);
 
         level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
@@ -127,9 +131,11 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
-        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
+        player.CurrentLevel = level;
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        PcraftUpdate.Update(player);
 
         player.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
     }
@@ -145,9 +151,11 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
-        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
+        player.CurrentLevel = level;
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        PcraftUpdate.Update(player);
 
         player.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
     }
@@ -162,9 +170,11 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         player.Life = F32.FromInt(100);
         player.Panim = F32.FromInt(5);
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
-        bool switchLevel = false, canSwitchLevel = false;
 
-        PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
+        player.CurrentLevel = level;
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        PcraftUpdate.Update(player);
 
         player.Panim.Should().Be(F32.Zero);
     }

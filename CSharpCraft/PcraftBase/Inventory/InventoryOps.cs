@@ -6,13 +6,13 @@ internal static class InventoryOps
 {
     // Count total Stackable units of a given material type.
     // ToolItem and UnstackableItem slots are never counted (not stackable materials).
-    internal static int HowMany(List<InventorySlot> list, StackableItem query)
+    internal static int HowMany(List<InventorySlot> list, InventorySlot query)
     {
         int total = 0;
         foreach (var slot in list)
         {
-            if (slot is StackableItem s && s.Type == query.Type)
-                total += s.Count;
+            if (slot.Type == query.Type)
+                total += slot is StackableItem s ? s.Count : 1;
         }
         return total;
     }
@@ -62,15 +62,7 @@ internal static class InventoryOps
                 return;
             }
         }
-        AddPlace(list, item, pos);
-    }
-
-    internal static void AddPlace(List<InventorySlot> list, InventorySlot item, int pos)
-    {
-        if (pos >= 0 && pos < list.Count)
-            list.Insert(pos, item);
-        else
-            list.Add(item);
+        list.Insert(pos, item);
     }
 
     internal static int Loop(int sel, int count)

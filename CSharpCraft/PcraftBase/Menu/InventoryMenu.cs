@@ -19,6 +19,8 @@ internal sealed class InventoryMenu(List<InventorySlot> list) : IMenu
             if (Pico8.Btnp(5) && !player.Lb5)
             {
                 player.CurItem = List[Sel];
+                List.RemoveAt(Sel);
+                PcraftServices.AddItemInList(player.Invent, player.CurItem, 0);
                 player.CurMenu = null;
                 player.Block5  = true;
                 Pico8.Sfx(16);

@@ -102,9 +102,7 @@ internal static class MenuOverlayDrawer
         {
             var curGoal = recipeList[menu.Sel];
             DrawPanel("have", 71, 50, 52, 30);
-            int have = curGoal.Output is StackableItem haveQuery
-                ? PcraftServices.HowMany(player.Invent, haveQuery)
-                : 0;
+            int have = PcraftServices.HowMany(player.Invent, curGoal.Output);
             Pico8.Print(have.ToString(), 91, 65, 7);
             DrawRequireList(curGoal, 4, 79, 104, 50, player);
         }

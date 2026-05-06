@@ -223,7 +223,9 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        LevelManager.ResetLevel(player, out _, out _);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
 
         player.Stam.Should().Be(F32.FromInt(100));
         player.Lstam.Should().Be(F32.FromInt(100));
@@ -244,7 +246,9 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         player.Camera.Coffx = F32.FromInt(5);
         player.Camera.Coffy = F32.FromInt(5);
 
-        LevelManager.ResetLevel(player, out _, out _);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
 
         player.Prot.Should().Be(F32.Zero);
         player.Lrot.Should().Be(F32.Zero);
@@ -261,7 +265,9 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        LevelManager.ResetLevel(player, out _, out _);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
 
         player.Invent.Should().NotBeEmpty("inventory must be seeded after reset");
         player.Invent[0].Type.Should().BeSameAs(PcraftData.Workbench,
@@ -275,7 +281,9 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        LevelManager.ResetLevel(player, out _, out _);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
 
         player.Invent.Should().HaveCountGreaterThanOrEqualTo(2);
         player.Invent[1].Type.Should().BeSameAs(PcraftData.PickupTool,
@@ -289,7 +297,10 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        LevelManager.ResetLevel(player, out Level cave, out _);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
+        var cave = PcraftSession.Current.Cave!;
 
         cave.Sx.Should().Be(32);
         cave.Sy.Should().Be(32);
@@ -303,7 +314,10 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        LevelManager.ResetLevel(player, out _, out Level island);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
+        var island = PcraftSession.Current.Island!;
 
         island.Sx.Should().Be(64);
         island.Sy.Should().Be(64);
@@ -317,7 +331,10 @@ public sealed class LevelManagerFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        LevelManager.ResetLevel(player, out _, out Level island);
+        PcraftSession.SetCurrent(new PcraftSession(player));
+
+        LevelManager.ResetLevel(player);
+        var island = PcraftSession.Current.Island!;
 
         bool anyNonZero = false;
         for (int i = 0; i < 16 && !anyNonZero; i++)

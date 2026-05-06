@@ -48,17 +48,17 @@ public sealed class InventoryOpsTests
     }
 
     [Fact]
-    public void HowMany_IgnoresToolItemOfSameType()
+    public void HowMany_CountsToolItemOfSameType_AsOne()
     {
         var list = new List<InventorySlot> { new ToolItem(Sword, 1) };
-        InventoryOps.HowMany(list, new StackableItem(Sword, 1)).Should().Be(0);
+        InventoryOps.HowMany(list, new StackableItem(Sword, 1)).Should().Be(1);
     }
 
     [Fact]
-    public void HowMany_IgnoresUnstackableItemOfSameType()
+    public void HowMany_CountsUnstackableItemOfSameType_AsOne()
     {
         var list = new List<InventorySlot> { new UnstackableItem(Wood) };
-        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(0);
+        InventoryOps.HowMany(list, new StackableItem(Wood, 1)).Should().Be(1);
     }
 
     // --------------------------------------------------------------------------
@@ -224,74 +224,6 @@ public sealed class InventoryOpsTests
         InventoryOps.AddItemInList(list, newItem, pos: 0);
 
         list.Should().HaveCount(2);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
-    #region AddPlace
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void AddPlace_InsertsAtFront_WhenPosIsZero()
-    {
-        var a = new StackableItem(Wood,  1);
-        var b = new StackableItem(Stone, 1);
-        var list = new List<InventorySlot> { a };
-
-        InventoryOps.AddPlace(list, b, pos: 0);
-
-        list.Should().Equal(b, a);
-    }
-
-    [Fact]
-    public void AddPlace_AppendsItem_WhenPosIsNegative()
-    {
-        var a = new StackableItem(Wood,  1);
-        var b = new StackableItem(Stone, 1);
-        var list = new List<InventorySlot> { a };
-
-        InventoryOps.AddPlace(list, b, pos: -1);
-
-        list.Should().Equal(a, b);
-    }
-
-    [Fact]
-    public void AddPlace_AppendsItem_WhenPosEqualsCount()
-    {
-        var a = new StackableItem(Wood,  1);
-        var b = new StackableItem(Stone, 1);
-        var list = new List<InventorySlot> { a };
-
-        InventoryOps.AddPlace(list, b, pos: 1);
-
-        list.Should().Equal(a, b);
-    }
-
-    [Fact]
-    public void AddPlace_InsertsAtFront_WhenPosIsZeroAndListHasMultipleItems()
-    {
-        var a = new StackableItem(Wood,  1);
-        var b = new StackableItem(Stone, 1);
-        var inserted = new UnstackableItem(Sword);
-        var list = new List<InventorySlot> { a, b };
-
-        InventoryOps.AddPlace(list, inserted, pos: 0);
-
-        list.Should().Equal(inserted, a, b);
-    }
-
-    [Fact]
-    public void AddPlace_InsertsMidList_AtCorrectPosition()
-    {
-        var a = new StackableItem(Wood,  1);
-        var b = new StackableItem(Stone, 1);
-        var c = new UnstackableItem(Sword);
-        var inserted = new StackableItem(new ItemDef("gem", 118), 1);
-        var list = new List<InventorySlot> { a, b, c };
-
-        InventoryOps.AddPlace(list, inserted, pos: 1);
-
-        list.Should().Equal(a, inserted, b, c);
     }
 
     // --------------------------------------------------------------------------

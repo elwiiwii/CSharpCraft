@@ -6,9 +6,10 @@ namespace CSharpCraft.PcraftBase.Update;
 internal static class PlayerActionUpdater
 {
     internal static void Update(
-        PlayerEntity player, Level level,
+        PlayerEntity player,
         F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
     {
+        var level = player.CurrentLevel!;
         // ── Final collision + player advance ─────────────────────────────────
         (dx, dy) = PcraftServices.ReflectCol(
             player.X, player.Y, dx, dy,

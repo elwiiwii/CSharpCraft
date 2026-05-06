@@ -13,46 +13,30 @@ internal abstract class PcraftSceneBase : IScene
     {
         setup.Resolution = (128, 128);
 
-        var player   = new PlayerEntity(F32.Zero, F32.Zero);
-        Level? cave        = null;
-        Level? island      = null;
-        Level? currentLevel = null;
-        bool switchLevel    = false;
-        bool canSwitchLevel = false;
-        bool initialized    = false;
+        var session = CreateSession();
+        PcraftSession.SetCurrent(session);
+        var player = session.Player;
+
+        bool initialized = false;
 
         setup.RegisterUpdate(() =>
         {
             if (!initialized)
             {
                 Pico8.Music(4, 10000);
-                PcraftServices.ResetLevel(player, out cave, out island);
-                currentLevel = island!;
+                PcraftServices.ResetLevel(player);
                 Pico8.Music(1);
                 initialized = true;
             }
 
-            bool needsReset = PcraftServices.UpdateMain(player, currentLevel!, ref switchLevel, ref canSwitchLevel);
-            if (needsReset)
-            {
-                PcraftServices.ResetLevel(player, out cave, out island);
-                currentLevel = island!;
-                Pico8.Music(1);
-            }
-
-            if (switchLevel)
-            {
-                currentLevel = (currentLevel == cave) ? island! : cave!;
-                PcraftServices.SetLevel(currentLevel, player);
-                PcraftServices.FillEne(currentLevel, player);
-                switchLevel    = false;
-                canSwitchLevel = false;
-                Pico8.Music(currentLevel == cave ? 2 : 1);
-            }
+            PcraftServices.UpdateMain(player);
         }, fps: 30);
 
-        setup.RegisterDraw(() => PcraftDraw.Draw(player, currentLevel!), fps: 30);
+        setup.RegisterDraw(() => PcraftDraw.Draw(player, player.CurrentLevel!), fps: 30);
     }
+
+    protected virtual PcraftSession CreateSession()
+        => new PcraftSession(new PlayerEntity(F32.Zero, F32.Zero));
 
     public virtual string? SpritesPath => "pcraft_sprites";
 

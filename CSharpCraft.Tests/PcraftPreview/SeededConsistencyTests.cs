@@ -63,7 +63,8 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
         try
         {
             var player = new PlayerEntity(F32.Zero, F32.Zero);
-            PcraftServices.ResetLevel(player, out Level cave, out Level island);
+            PcraftSession.SetCurrent(new PcraftSession(player));
+            PcraftServices.ResetLevel(player);
 
             var sample = PcraftWorldSampler.Sample(Seed, Radius);
 
@@ -91,7 +92,9 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
         try
         {
             var player = new PlayerEntity(F32.Zero, F32.Zero);
-            PcraftServices.ResetLevel(player, out Level cave, out Level island);
+            PcraftSession.SetCurrent(new PcraftSession(player));
+            PcraftServices.ResetLevel(player);
+            var island = PcraftSession.Current.Island!;
 
             var sample = PcraftWorldSampler.Sample(Seed, Radius);
 
@@ -132,7 +135,9 @@ public sealed class SeededConsistencyTests(FnaFixture fixture)
         try
         {
             var player = new PlayerEntity(F32.Zero, F32.Zero);
-            PcraftServices.ResetLevel(player, out Level cave, out Level island);
+            PcraftSession.SetCurrent(new PcraftSession(player));
+            PcraftServices.ResetLevel(player);
+            var island = PcraftSession.Current.Island!;
 
             var sample = PcraftWorldSampler.Sample(Seed, Radius);
 

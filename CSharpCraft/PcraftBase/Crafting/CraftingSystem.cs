@@ -19,7 +19,7 @@ internal static class CraftingSystem
         foreach (var req in recipe.Req)
             PcraftServices.RemInList(invent, req);
 
-        PcraftServices.AddItemInList(invent, recipe.Output, 0);
+        PcraftServices.AddItemInList(invent, recipe.Output, invent.Count);
     }
 }
 

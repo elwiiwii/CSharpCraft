@@ -83,7 +83,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.FromInt(3), F32.FromInt(4), canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.FromInt(3), F32.FromInt(4), canAct: false, nearEnemies: []);
 
         player.X.Float.Should().BeApproximately(3f, 0.01f);
         player.Y.Float.Should().BeApproximately(4f, 0.01f);
@@ -105,7 +106,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Llife = F32.Zero;
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Llife.Float.Should().BeApproximately(1f, 0.01f);
     }
@@ -121,7 +123,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Lstam = F32.Zero;
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Lstam.Float.Should().BeApproximately(1f, 0.01f);
     }
@@ -141,7 +144,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Stam = F32.FromInt(50);
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Stam.Float.Should().BeApproximately(51f, 0.01f);
     }
@@ -156,7 +160,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Stam = F32.FromInt(100);
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Stam.Float.Should().BeApproximately(100f, 0.01f);
     }
@@ -176,7 +181,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Banim = F32.FromInt(5);
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Banim.Float.Should().BeApproximately(4f, 0.01f);
     }
@@ -192,7 +198,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Banim = F32.Zero;
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Banim.Float.Should().BeApproximately(0f, 0.01f);
     }
@@ -212,7 +219,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
         level.Time = F32.Zero;
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
@@ -234,7 +242,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Lb4 = false;
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Lb4.Should().BeTrue();
     }
@@ -253,7 +262,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Banim  = F32.FromInt(1);
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Lb5.Should().BeTrue();
     }
@@ -269,7 +279,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Block5 = true;
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.Block5.Should().BeFalse();
     }
@@ -292,7 +303,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Life = F32.FromInt(10);
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.CurMenu.Should().BeOfType<InventoryMenu>()
             .Which.List.Should().BeSameAs(player.Invent);
@@ -312,7 +324,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Life   = F32.FromInt(10);
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.CurMenu.Should().BeNull();
     }
@@ -332,7 +345,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Life = F32.Zero;
         var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
         player.CurMenu.Should().BeSameAs(PcraftData.DeathMenu);
     }
@@ -358,7 +372,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         level.Ene.Add(zombie);
         var nearEnemies = new List<CharacterEntity> { zombie };
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
 
         zombie.Life.Float.Should().BeLessThan(10f);
     }
@@ -380,7 +395,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         level.Ene.Add(zombie);
         var nearEnemies = new List<CharacterEntity> { zombie };
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
 
         level.Ene.Should().NotContain(zombie);
     }
@@ -401,7 +417,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         level.Ene.Add(zombie);
         var nearEnemies = new List<CharacterEntity> { zombie };
 
-        PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
+        player.CurrentLevel = level;
+        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: true, nearEnemies: nearEnemies);
 
         zombie.Life.Float.Should().BeApproximately(10f, 0.01f);
     }

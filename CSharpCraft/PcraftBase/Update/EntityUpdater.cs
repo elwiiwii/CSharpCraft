@@ -45,7 +45,7 @@ internal static class EntityUpdater
                 if (dist < F32.FromInt(5) && dropped.Timer < F32.FromInt(115))
                 {
                     var newit = new StackableItem(dropped.Type, 1);
-                    PcraftServices.AddItemInList(player.Invent, newit, -1);
+                    PcraftServices.AddItemInList(player.Invent, newit, player.Invent.Count);
                     level.Ent.RemoveAt(i);
                     var popup = new TextPopupEntity(
                         F32.FromInt(PcraftServices.HowMany(player.Invent, newit)),

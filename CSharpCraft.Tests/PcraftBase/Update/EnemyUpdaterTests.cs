@@ -80,6 +80,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var stale = new ZombieEntity(F32.FromInt(200), F32.FromInt(200));
 
+        player.CurrentLevel = level;
         var nearEnemies = EnemyUpdater.Update(player, level);
 
         nearEnemies.Should().NotContain(stale);
@@ -104,6 +105,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         };
         level.Ene.Add(zombie);
 
+        player.CurrentLevel = level;
         var nearEnemies = EnemyUpdater.Update(player, level);
 
         nearEnemies.Should().Contain(zombie);
@@ -122,6 +124,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         var distantZombie = new ZombieEntity(F32.FromInt(500), F32.Zero) { Life = F32.FromInt(10) };
         level.Ene.Add(distantZombie);
 
+        player.CurrentLevel = level;
         var nearEnemies = EnemyUpdater.Update(player, level);
 
         nearEnemies.Should().NotContain(distantZombie);
@@ -148,6 +151,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         };
         level.Ene.Add(zombie);
 
+        player.CurrentLevel = level;
         EnemyUpdater.Update(player, level);
 
         zombie.Step.Should().Be(EnStep.Walk);
@@ -170,6 +174,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         };
         level.Ene.Add(zombie);
 
+        player.CurrentLevel = level;
         EnemyUpdater.Update(player, level);
 
         zombie.Step.Should().Be(EnStep.Wait);
@@ -193,6 +198,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         };
         level.Ene.Add(zombie);
 
+        player.CurrentLevel = level;
         EnemyUpdater.Update(player, level);
 
         zombie.Step.Should().Be(EnStep.Chase);

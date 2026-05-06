@@ -57,9 +57,7 @@ internal static class LevelManager
         return level;
     }
 
-    internal static void ResetLevel(
-        PlayerEntity player,
-        out Level cave, out Level island)
+    internal static void ResetLevel(PlayerEntity player)
     {
         player.Prot   = F32.Zero;
         player.Lrot   = F32.Zero;
@@ -75,21 +73,25 @@ internal static class LevelManager
 
         player.Invent.Clear();
 
-        cave   = PcraftServices.CreateLevel(64, 0, 32, 32, LevelTheme.Cave, player);
-        island = PcraftServices.CreateLevel( 0, 0, 64, 64, LevelTheme.Surface,     player);
+        var session = PcraftSession.Current;
+        session.Cave   = PcraftServices.CreateLevel(64, 0, 32, 32, LevelTheme.Cave,    player);
+        session.Island = PcraftServices.CreateLevel( 0, 0, 64, 64, LevelTheme.Surface, player);
 
         // Init RndWat on both levels
         var rndWat = PcraftServices.InitRndWat();
-        foreach (var lev in new[] { cave, island })
+        foreach (var lev in new[] { session.Cave, session.Island })
         {
             for (int i = 0; i < 16; i++)
                 for (int j = 0; j < 16; j++)
                     lev.RndWat[i][j] = rndWat[i][j];
         }
-        
-        player.Invent.Add(new UnstackableItem(PcraftData.Workbench));
 
+        player.Invent.Add(new UnstackableItem(PcraftData.Workbench));
         player.Invent.Add(new UnstackableItem(PcraftData.PickupTool));
+
+        player.CurrentLevel   = session.Island;
+        player.SwitchLevel    = false;
+        player.CanSwitchLevel = false;
     }
 
     internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)

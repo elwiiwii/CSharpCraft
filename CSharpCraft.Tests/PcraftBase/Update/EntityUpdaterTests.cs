@@ -85,6 +85,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
             timer: F32.FromInt(120), vx: F32.FromInt(2), vy: F32.FromInt(3));
         level.Ent.Add(e);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         e.X.Float.Should().BeApproximately(52f, 0.01f);
@@ -103,6 +104,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
             timer: F32.FromInt(120), vx: F32.FromInt(4), vy: F32.FromInt(4));
         level.Ent.Add(e);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         e.Vx.Float.Should().BeApproximately(3.8f, 0.02f);
@@ -126,6 +128,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
             timer: F32.FromFloat(0.5f));  // < 1 → remove immediately
         level.Ent.Add(e);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         level.Ent.Should().NotContain(e);
@@ -143,6 +146,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
             timer: F32.FromInt(10));
         level.Ent.Add(e);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         e.Timer.Float.Should().BeApproximately(9f, 0.01f);
@@ -166,6 +170,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
             timer: F32.FromInt(50));  // < 115
         level.Ent.Add(e);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         player.Invent.Should().ContainSingle(it => it.Type == PcraftData.Wood);
@@ -184,6 +189,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
             timer: F32.FromInt(50));
         level.Ent.Add(e);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         player.Invent.Should().BeEmpty();
@@ -203,6 +209,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
 
+        player.CurrentLevel = level;
         var (_, _, canAct) = EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         canAct.Should().BeTrue();
@@ -227,6 +234,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         var chestEntity = new PlacedItemEntity(PcraftData.Chest, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(chestEntity);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         player.CurMenu.Should().BeOfType<ChestMenu>()
@@ -249,6 +257,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         var benchEntity = new PlacedItemEntity(testBench, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(benchEntity);
 
+        player.CurrentLevel = level;
         EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
         player.CurMenu.Should().BeOfType<CraftingMenu>()
