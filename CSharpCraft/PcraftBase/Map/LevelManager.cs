@@ -101,7 +101,9 @@ internal static class LevelManager
         {
             var ex = tileX + Pico8.Rnd(14) + 1;
             var ey = tileY + Pico8.Rnd(14) + 1;
-            var entity = new DroppedItemEntity(mat, ex, ey, timer: 110 + Pico8.Rnd(20));
+            var vx = Pico8.Rnd(3) - F32.FromDouble(1.5);
+            var vy = Pico8.Rnd(3) - F32.FromDouble(1.5);
+            var entity = new DroppedItemEntity(mat, ex, ey, timer: 110 + Pico8.Rnd(20), vx: vx, vy: vy);
             entities.Add(entity);
         }
     }
