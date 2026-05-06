@@ -86,57 +86,57 @@ public sealed class PcraftDataTests
 
     // --------------------------------------------------------------------------
     #endregion
-    #region Ground types
+    #region Surface types
     // --------------------------------------------------------------------------
 
     [Fact]
-    public void GrRock_HasCorrectIdAndLife()
+    public void StRock_HasCorrectIdAndLife()
     {
-        PcraftData.GrRock.Id.Should().Be(3);
-        PcraftData.GrRock.Life.Should().Be(15);
+        PcraftData.StRock.Id.Should().Be(TileId.Rock);
+        PcraftData.StRock.Life.Should().Be(15);
     }
 
     [Fact]
-    public void GrRock_MatIsStone()
+    public void StRock_MatIsStone()
     {
-        PcraftData.GrRock.Mat.Should().BeSameAs(PcraftData.Stone);
+        PcraftData.StRock.Mat.Should().BeSameAs(PcraftData.Stone);
     }
 
     [Fact]
-    public void GrRock_TileIsGrSand()
+    public void StRock_UnderlyingFloorIsFtSand()
     {
-        PcraftData.GrRock.Tile.Should().BeSameAs(PcraftData.GrSand);
+        PcraftData.StRock.UnderlyingFloor.Should().BeSameAs(PcraftData.FtSand);
     }
 
     [Fact]
-    public void GrTree_IsTreeIsTrueAndPalIsCorrect()
+    public void StTree_IsOverlaySurfaceWithPal()
     {
-        PcraftData.GrTree.IsTree.Should().BeTrue();
-        PcraftData.GrTree.Pal.Should().Equal(1, 5, 3, 11);
+        PcraftData.StTree.Should().BeOfType<OverlaySurface>();
+        PcraftData.StTree.Pal.Should().Equal(1, 5, 3, 11);
     }
 
     [Fact]
-    public void GrGem_HasLife160()
+    public void StGem_HasLife160()
     {
-        PcraftData.GrGem.Life.Should().Be(160);
+        PcraftData.StGem.Life.Should().Be(160);
     }
 
     [Fact]
-    public void Grounds_HasTwelveEntries()
+    public void TilePrototypes_HasTwelveEntries()
     {
-        PcraftData.Grounds.Should().HaveCount(12);
+        PcraftData.TilePrototypes.Should().HaveCount(12);
     }
 
     [Fact]
-    public void Grounds_FirstIsGrWater()
+    public void TilePrototypes_FirstHasFtWaterFloor()
     {
-        PcraftData.Grounds[0].Should().BeSameAs(PcraftData.GrWater);
+        PcraftData.TilePrototypes[0].Floor.Should().BeSameAs(PcraftData.FtWater);
     }
 
     [Fact]
-    public void Grounds_LastIsGrHole()
+    public void TilePrototypes_LastHasFtHoleFloor()
     {
-        PcraftData.Grounds[11].Should().BeSameAs(PcraftData.GrHole);
+        PcraftData.TilePrototypes[11].Floor.Should().BeSameAs(PcraftData.FtHole);
     }
 
     // --------------------------------------------------------------------------

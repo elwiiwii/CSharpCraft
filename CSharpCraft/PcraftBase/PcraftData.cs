@@ -72,27 +72,39 @@ internal static class PcraftData
 
     // ------------------------------------------------------------------
     #endregion
-    #region Ground Types
+    #region Tile Types
     // ------------------------------------------------------------------
 
-    internal static readonly GroundType GrWater = new(0, 0);
-    internal static readonly GroundType GrSand  = new(1, 1);
-    internal static readonly GroundType GrGrass = new(2, 2);
-    internal static readonly GroundType GrRock  = new(3, 3) { Mat = Stone,  Tile = GrSand,  Life = 15 };
-    internal static readonly GroundType GrTree  = new(4, 2) { Mat = Wood,   Tile = GrGrass, Life = 8, IsTree = true, Pal = [1, 5, 3, 11] };
-    internal static readonly GroundType GrFarm  = new(5, 1);
-    internal static readonly GroundType GrWheat = new(6, 1);
-    internal static readonly GroundType GrPlant = new(7, 2);
-    internal static readonly GroundType GrIron  = new(8, 1) { Mat = Iron,   Tile = GrSand,  Life = 45, IsTree = true, Pal = [1, 1, 13, 6] };
-    internal static readonly GroundType GrGold  = new(9, 1) { Mat = Gold,   Tile = GrSand,  Life = 80, IsTree = true, Pal = [1, 2, 9, 10] };
-    internal static readonly GroundType GrGem   = new(10, 1){ Mat = Gem,    Tile = GrSand,  Life = 160, IsTree = true, Pal = [1, 2, 14, 12] };
-    internal static readonly GroundType GrHole  = new(11, 1);
+    // Floor singletons
+    internal static readonly FloorType FtWater = new(TileId.Water, gr: 0);
+    internal static readonly FloorType FtSand  = new(TileId.Sand,  gr: 1);
+    internal static readonly FloorType FtGrass = new(TileId.Grass, gr: 2);
+    internal static readonly FloorType FtFarm  = new(TileId.Farm,  gr: 1);
+    internal static readonly FloorType FtWheat = new(TileId.Wheat, gr: 1);
+    internal static readonly FloorType FtHole  = new(TileId.Hole,  gr: 1);
 
-    internal static readonly GroundType[] Grounds =
+    // Surface singletons
+    internal static readonly SurfaceType    StRock = new(TileId.Rock, gr: 3, Stone, FtSand,  life: 15);
+    internal static readonly OverlaySurface StTree = new(TileId.Tree, gr: 2, Wood,  FtGrass, life: 8,   pal: [1, 5, 3, 11]);
+    internal static readonly OverlaySurface StIron = new(TileId.Iron, gr: 1, Iron,  FtSand,  life: 45,  pal: [1, 1, 13, 6]);
+    internal static readonly OverlaySurface StGold = new(TileId.Gold, gr: 1, Gold,  FtSand,  life: 80,  pal: [1, 2,  9, 10]);
+    internal static readonly OverlaySurface StGem  = new(TileId.Gem,  gr: 1, Gem,   FtSand,  life: 160, pal: [1, 2, 14, 12]);
+
+    // Canonical tile lookup — indexed by (int)TileId
+    internal static readonly Tile[] TilePrototypes =
     [
-        GrWater, GrSand, GrGrass, GrRock, GrTree,
-        GrFarm,  GrWheat, GrPlant, GrIron, GrGold,
-        GrGem,   GrHole
+        new Tile(FtWater),           // TileId.Water  = 0
+        new Tile(FtSand),            // TileId.Sand   = 1
+        new Tile(FtGrass),           // TileId.Grass  = 2
+        new Tile(FtSand,  StRock),   // TileId.Rock   = 3
+        new Tile(FtGrass, StTree),   // TileId.Tree   = 4
+        new Tile(FtFarm),            // TileId.Farm   = 5
+        new Tile(FtWheat),           // TileId.Wheat  = 6
+        new Tile(FtSand),            // TileId.Plant  = 7 (unused, maps to Sand)
+        new Tile(FtSand,  StIron),   // TileId.Iron   = 8
+        new Tile(FtSand,  StGold),   // TileId.Gold   = 9
+        new Tile(FtSand,  StGem),    // TileId.Gem    = 10
+        new Tile(FtHole),            // TileId.Hole   = 11
     ];
 
     // ------------------------------------------------------------------

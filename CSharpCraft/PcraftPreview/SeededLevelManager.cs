@@ -10,12 +10,12 @@ internal static class SeededLevelManager
 
     internal static void Initialize(long seed) => _seed = seed;
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
+    internal static Level CreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
     {
-        if (isUnder)
-            return LevelManager.CreateLevel(x, y, sx, sy, isUnder, player);
+        if (theme == LevelTheme.Cave)
+            return LevelManager.CreateLevel(x, y, sx, sy, theme, player);
 
-        var level = new Level(x, y, sx, sy, isUnder);
+        var level = new Level(x, y, sx, sy, theme);
         PcraftServices.SetLevel(level, player);
         var (holeX, holeY) = SeededMapGenerator.CreateMap(level, player, _seed);
         PcraftServices.FillEne(level, player);

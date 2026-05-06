@@ -14,7 +14,7 @@ namespace CSharpCraft.Tests.PcraftPreview;
 
 // --------------------------------------------------------------------------
 // SeededMapGenerator — no graphics needed for InitRndWat / spawn consistency.
-// Tests that verify Pico8.Mset writes are in [Collection("Fna")].
+// Tests that verify level.Map writes are in [Collection("Fna")].
 // --------------------------------------------------------------------------
 
 public sealed class SeededMapGeneratorTests
@@ -150,7 +150,7 @@ public sealed class SeededMapGeneratorTests
 }
 
 // --------------------------------------------------------------------------
-// Fna-collection tests — require graphics device to call Pico8.Mset/Mget.
+// Fna-collection tests — require graphics device for SeededMapGenerator.
 // --------------------------------------------------------------------------
 
 [Collection("Fna")]
@@ -185,7 +185,7 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
     private static (Level level, PlayerEntity player) MakePlayerAndLevel()
     {
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, GridSx, GridSy, isUnder: false);
+        var level = new Level(0, 0, GridSx, GridSy, LevelTheme.Surface);
         return (level, player);
     }
 
@@ -221,7 +221,7 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
                 if (isHoleArea) continue;
 
                 int expected = classifier.ClassifyTile(i, j);
-                int actual   = Pico8.Mget(i, j);
+                int actual   = (int)(level.Map[i, j].Surface?.Id ?? level.Map[i, j].Floor.Id);
                 actual.Should().Be(expected,
                     because: $"tile ({i},{j}) must match MapClassifier output");
             }
@@ -239,7 +239,7 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
 
         int spawnTileX = F32.FloorToInt(player.X / F32.FromInt(16));
         int spawnTileY = F32.FloorToInt(player.Y / F32.FromInt(16));
-        int tileId     = Pico8.Mget(spawnTileX, spawnTileY);
+        int tileId     = (int)(level.Map[spawnTileX, spawnTileY].Surface?.Id ?? level.Map[spawnTileX, spawnTileY].Floor.Id);
 
         tileId.Should().BeOneOf(new[] { 1, 2 },
             because: "player spawn must be on a sand (1) or rare (2) tile");
@@ -299,9 +299,8 @@ public sealed class SeededMapGeneratorFnaTests(FnaFixture fixture)
 
         for (int i = 0; i < GridSx; i++)
             for (int j = 0; j < GridSy; j++)
-                Pico8.Mget(i, j).Should().Be(
-                    Pico8.Mget(i, j), // reading same memory — just verify no crash
-                    because: $"tile ({i},{j}) must be stable after two runs");
+                level1.Map[i, j].Floor.Should().BeSameAs(level2.Map[i, j].Floor,
+                    because: $"tile ({i},{j}) must be identical for same seed");
     }
 
     // --------------------------------------------------------------------------

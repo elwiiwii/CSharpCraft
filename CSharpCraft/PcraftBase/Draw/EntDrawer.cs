@@ -17,7 +17,7 @@ internal static class EntDrawer
             else if (e is TextPopupEntity popup)
             {
                 Pico8.Pal();
-                PcraftServices.PrintB(popup.TextValue.Double.ToString("0"), e.X.Double - 2, e.Y.Double - 4, popup.TextColor);
+                PcraftServices.PrintB(popup.TextValue.Double.ToString("0"), e.X.Double - 2, e.Y.Double - 4, popup.TextColor, 1);
             }
             else if (e is DroppedItemEntity dropped)
             {
@@ -25,8 +25,8 @@ internal static class EntDrawer
                 if (dropped.Type.Pal is not null) PcraftServices.SetPal(dropped.Type.Pal);
                 if (dropped.Timer < 45 && dropped.Timer % 4 > 2)
                 {
-                    for (int k = 0; k <= 15; k++)
-                        Pico8.Palt(k, true);
+                    for (int i = 0; i <= 15; i++)
+                        Pico8.Palt(i, true);
                 }
                 Pico8.Spr(dropped.Type.Spr, e.X.Double - 4, e.Y.Double - 4);
             }

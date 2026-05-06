@@ -16,8 +16,8 @@ internal static class HudDrawer
             PcraftServices.ItemName(ix + 1, iy + 3, player.CurItem, 7);
             if (player.CurItem is StackableItem curStack)
             {
-                string cnt = curStack.Count.ToString();
-                Pico8.Print(cnt, ix + 88 - 16, iy + 3, 7);
+                string count = curStack.Count.ToString();
+                Pico8.Print(count, ix + 88 - 16, iy + 3, 7);
             }
         }
     }

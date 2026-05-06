@@ -80,7 +80,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var e = new DroppedItemEntity(PcraftData.Wood, x: F32.FromInt(50), y: F32.FromInt(50),
             timer: F32.FromInt(120), vx: F32.FromInt(2), vy: F32.FromInt(3));
         level.Ent.Add(e);
@@ -98,7 +98,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var e = new DroppedItemEntity(PcraftData.Wood, x: F32.FromInt(50), y: F32.FromInt(50),
             timer: F32.FromInt(120), vx: F32.FromInt(4), vy: F32.FromInt(4));
         level.Ent.Add(e);
@@ -121,7 +121,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var e = new DroppedItemEntity(PcraftData.Wood, x: F32.FromInt(10), y: F32.FromInt(10),
             timer: F32.FromFloat(0.5f));  // < 1 → remove immediately
         level.Ent.Add(e);
@@ -138,7 +138,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(100), F32.FromInt(100));
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var e = new DroppedItemEntity(PcraftData.Wood, x: F32.FromInt(10), y: F32.FromInt(10),
             timer: F32.FromInt(10));
         level.Ent.Add(e);
@@ -160,7 +160,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(50), F32.FromInt(50));
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         // place pickup at same position (dist=0, well within 5)
         var e = new DroppedItemEntity(PcraftData.Wood, x: F32.FromInt(50), y: F32.FromInt(50),
             timer: F32.FromInt(50));  // < 115
@@ -179,7 +179,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var e = new DroppedItemEntity(PcraftData.Wood, x: F32.FromInt(100), y: F32.FromInt(100),
             timer: F32.FromInt(50));
         level.Ent.Add(e);
@@ -201,7 +201,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
 
         var (_, _, canAct) = EntityUpdater.Update(player, level, F32.Zero, F32.Zero);
 
@@ -223,7 +223,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var chestEntity = new PlacedItemEntity(PcraftData.Chest, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(chestEntity);
 
@@ -245,7 +245,7 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var benchEntity = new PlacedItemEntity(testBench, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(benchEntity);
 

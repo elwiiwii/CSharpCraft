@@ -77,7 +77,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var stale = new ZombieEntity(F32.FromInt(200), F32.FromInt(200));
 
         var nearEnemies = EnemyUpdater.Update(player, level);
@@ -95,7 +95,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         // player.Prot defaults to F32.Zero
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var zombie = new ZombieEntity(F32.FromInt(12), F32.Zero)
         {
             Life = F32.FromInt(10),
@@ -118,7 +118,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Camera.Clx = F32.Zero;
         player.Camera.Cly = F32.Zero;
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var distantZombie = new ZombieEntity(F32.FromInt(500), F32.Zero) { Life = F32.FromInt(10) };
         level.Ene.Add(distantZombie);
 
@@ -139,7 +139,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(30), F32.Zero);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var zombie = new ZombieEntity(F32.FromInt(30), F32.Zero)
         {
             Life = F32.FromInt(10),
@@ -161,7 +161,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(30), F32.Zero);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var zombie = new ZombieEntity(F32.FromInt(30), F32.Zero)
         {
             Life = F32.FromInt(10),
@@ -184,7 +184,7 @@ public sealed class EnemyUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.FromInt(30), F32.Zero);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         var zombie = new ZombieEntity(F32.FromInt(50), F32.Zero) // dist=20 < 40
         {
             Life = F32.FromInt(10),

@@ -82,7 +82,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
         player.CurMenu = PcraftData.DeathMenu;   // splash menu: spr=128 → MenuUpdater returns true
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         bool switchLevel = false, canSwitchLevel = false;
 
         PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
@@ -103,7 +103,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         bool switchLevel = false, canSwitchLevel = false;
 
         PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
@@ -126,7 +126,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         bool switchLevel = false, canSwitchLevel = false;
 
         PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
@@ -144,7 +144,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         bool switchLevel = false, canSwitchLevel = false;
 
         PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);
@@ -161,7 +161,7 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.FromInt(100);
         player.Panim = F32.FromInt(5);
-        var level = new Level(0, 0, 64, 64, false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
         bool switchLevel = false, canSwitchLevel = false;
 
         PcraftUpdate.Update(player, level, ref switchLevel, ref canSwitchLevel);

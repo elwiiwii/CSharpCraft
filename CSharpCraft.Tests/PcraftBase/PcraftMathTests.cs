@@ -9,29 +9,6 @@ public sealed class PcraftMathTests
     private const float Eps = 0.0001f;
 
     // --------------------------------------------------------------------------
-    #region Lerp
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void Lerp_ReturnsA_WhenAlphaZero()
-    {
-        PcraftMath.Lerp(F32.FromInt(2), F32.FromInt(8), F32.Zero).Float.Should().BeApproximately(2f, Eps);
-    }
-
-    [Fact]
-    public void Lerp_ReturnsB_WhenAlphaOne()
-    {
-        PcraftMath.Lerp(F32.FromInt(2), F32.FromInt(8), F32.One).Float.Should().BeApproximately(8f, Eps);
-    }
-
-    [Fact]
-    public void Lerp_ReturnsMidpoint_WhenAlphaHalf()
-    {
-        PcraftMath.Lerp(F32.Zero, F32.FromInt(10), F32.FromFloat(0.5f)).Float.Should().BeApproximately(5f, Eps);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
     #region GetLen
     // --------------------------------------------------------------------------
 

@@ -81,7 +81,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.FromInt(3), F32.FromInt(4), canAct: false, nearEnemies: []);
 
@@ -103,7 +103,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life  = F32.FromInt(100);
         player.Llife = F32.Zero;
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -119,7 +119,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Stam  = F32.FromInt(100);
         player.Lstam = F32.Zero;
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -139,7 +139,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Stam = F32.FromInt(50);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -154,7 +154,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Stam = F32.FromInt(100);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -174,7 +174,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Banim = F32.FromInt(5);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -190,7 +190,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Banim = F32.Zero;
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -209,7 +209,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
         level.Time = F32.Zero;
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
@@ -232,7 +232,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Lb4 = false;
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -251,7 +251,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Block5 = true;
         player.Banim  = F32.FromInt(1);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -267,7 +267,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Block5 = true;
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -290,7 +290,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Lb4  = false;
         player.Life = F32.FromInt(10);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -310,7 +310,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Lb4    = true;
         player.CurMenu = null;
         player.Life   = F32.FromInt(10);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -330,7 +330,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
         player.Life = F32.Zero;
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         PlayerActionUpdater.Update(player, level, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
 
@@ -354,7 +354,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Banim = F32.Zero;
         player.Stam  = F32.FromInt(60);
         var zombie = new ZombieEntity(F32.Zero, F32.Zero) { Life = F32.FromInt(10) };
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
         level.Ene.Add(zombie);
         var nearEnemies = new List<CharacterEntity> { zombie };
 
@@ -376,7 +376,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Stam  = F32.FromInt(60);
         // Life=0.5 -- one unarmed hit (pow=1) kills it
         var zombie = new ZombieEntity(F32.Zero, F32.Zero) { Life = F32.FromFloat(0.5f) };
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
         level.Ene.Add(zombie);
         var nearEnemies = new List<CharacterEntity> { zombie };
 
@@ -397,7 +397,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
         player.Banim = F32.FromInt(3);
         player.Stam  = F32.FromInt(60);
         var zombie = new ZombieEntity(F32.Zero, F32.Zero) { Life = F32.FromInt(10) };
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
         level.Ene.Add(zombie);
         var nearEnemies = new List<CharacterEntity> { zombie };
 

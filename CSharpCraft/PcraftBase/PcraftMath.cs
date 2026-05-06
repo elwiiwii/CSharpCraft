@@ -2,9 +2,6 @@ namespace CSharpCraft.PcraftBase;
 
 internal static class PcraftMath
 {
-    internal static F32 Lerp(F32 a, F32 b, F32 alpha) =>
-        F32.Lerp(a, b, alpha);
-
     internal static F32 GetLen(F32 x, F32 y) =>
         F32.Sqrt(x * x + y * y + F32.FromFloat(0.001f));
 

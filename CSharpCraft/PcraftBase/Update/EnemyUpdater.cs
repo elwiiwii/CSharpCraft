@@ -67,7 +67,7 @@ internal static class EnemyUpdater
                         e.Dx    = F32.Zero;
                         e.Dy    = F32.Zero;
                         e.Banim -= F32.One;
-                        e.Banim %= F32.FromInt(8);
+                        e.Banim = Pico8.Mod(e.Banim, F32.FromInt(8));
                         var pow = F32.FromInt(10);
                         if (e.Banim == F32.FromInt(4))
                         {

@@ -8,13 +8,17 @@ internal static class EnemiesDrawer
     {
         var camera = player.Camera;
         // Build combined Y-sortable list: player + visible enemies
-        var drawList = new List<CharacterEntity>(level.Ene.Count + 1);
-        drawList.Add(player);
+        var drawList = new List<CharacterEntity>(level.Ene.Count + 1)
+        {
+            player
+        };
+
         foreach (var e in level.Ene)
         {
             if (PcraftServices.IsIn(e, F32.FromInt(72), camera.Clx, camera.Cly))
                 drawList.Add(e);
         }
+        
         SortY(drawList);
 
         foreach (var e in drawList)
@@ -47,9 +51,9 @@ internal static class EnemiesDrawer
         F32 fyF = F32.Floor(y - 4);
 
         F32 lan = Pico8.Sin(anim * 2) * F32.FromDouble(1.5);
-        var bel = PcraftServices.GetGr(x, y, level);
+        var belTile = PcraftServices.GetTile(x, y, level);
 
-        if (bel == PcraftData.GrWater)
+        if (belTile.Floor == PcraftData.FtWater)
         {
             fyF += 4;
             Pico8.Circ(fxF + cv * 3 + cr * lan,
@@ -107,7 +111,7 @@ internal static class EnemiesDrawer
 
         if (isPlayer) Pico8.Pal();
 
-        if (bel != PcraftData.GrWater)
+        if (belTile.Floor != PcraftData.FtWater)
         {
             Pico8.Circfill(fxF + cv * 3 + cr * lan,
                            fyF + sv * 3 + sr * lan,

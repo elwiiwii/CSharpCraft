@@ -42,7 +42,7 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
     public void SetLevel_SetsPlayerPosition_FromLevelSpawn()
     {
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 8, 8, isUnder: false);
+        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
         level.Stx = F32.FromInt(72);
         level.Sty = F32.FromInt(88);
 
@@ -164,11 +164,11 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 16, 16, isUnder: false);
+        var level = new Level(0, 0, 16, 16, LevelTheme.Surface);
 
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
-                Pico8.Mset(i, j, 2);
+                level.Map[i, j] = PcraftData.TilePrototypes[(int)TileId.Grass];
 
         PcraftServices.FillEne(level, player);
 
@@ -187,13 +187,13 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        var level = PcraftServices.CreateLevel(0, 0, 64, 64, isUnder: false, player);
+        var level = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
 
         level.X.Should().Be(0);
         level.Y.Should().Be(0);
         level.Sx.Should().Be(64);
         level.Sy.Should().Be(64);
-        level.IsUnder.Should().BeFalse();
+        level.Theme.Should().Be(LevelTheme.Surface);
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
 
-        var level = PcraftServices.CreateLevel(0, 0, 64, 64, isUnder: false, player);
+        var level = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
 
         level.Stx.Should().BeGreaterThan(F32.Zero, "spawn x must be positive");
         level.Sty.Should().BeGreaterThan(F32.Zero, "spawn y must be positive");
@@ -291,7 +291,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         cave.Sx.Should().Be(32);
         cave.Sy.Should().Be(32);
-        cave.IsUnder.Should().BeTrue();
+        cave.Theme.Should().Be(LevelTheme.Cave);
     }
 
     [Fact]
@@ -305,7 +305,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         island.Sx.Should().Be(64);
         island.Sy.Should().Be(64);
-        island.IsUnder.Should().BeFalse();
+        island.Theme.Should().Be(LevelTheme.Surface);
     }
 
     [Fact]
@@ -337,19 +337,18 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         // Camera at (64,64) -> ci=0, cj=0; tile (0,0) scanned
         player.Camera.Clx = F32.FromInt(64);
         player.Camera.Cly = F32.FromInt(64);
 
-        Pico8.Mset(0, 0, PcraftData.GrFarm.Id);
-        CSharpCraft.PcraftBase.Map.MapOps.DirSetData(0, 0, F32.FromInt(1), level);
+        level.Map[0, 0] = PcraftData.TilePrototypes[(int)TileId.Farm] with { GrowthTimer = F32.FromInt(1) };
         level.Time = F32.FromInt(2);
 
         PcraftServices.UpGround(level, player);
 
-        Pico8.Mget(0, 0).Should().Be(PcraftData.GrSand.Id,
+        level.Map[0, 0].Floor.Should().BeSameAs(PcraftData.FtSand,
             "expired farm tile must be replaced with sand");
     }
 
@@ -359,18 +358,17 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level  = new Level(0, 0, 8, 8, isUnder: false);
+        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
 
         player.Camera.Clx = F32.FromInt(64);
         player.Camera.Cly = F32.FromInt(64);
 
-        Pico8.Mset(0, 0, PcraftData.GrFarm.Id);
-        CSharpCraft.PcraftBase.Map.MapOps.DirSetData(0, 0, F32.FromInt(100), level);
+        level.Map[0, 0] = PcraftData.TilePrototypes[(int)TileId.Farm] with { GrowthTimer = F32.FromInt(100) };
         level.Time = F32.FromInt(1);
 
         PcraftServices.UpGround(level, player);
 
-        Pico8.Mget(0, 0).Should().Be(PcraftData.GrFarm.Id, "tile must stay farm when time has not expired");
+        level.Map[0, 0].Floor.Should().BeSameAs(PcraftData.FtFarm, "tile must stay farm when time has not expired");
     }
 
     // --------------------------------------------------------------------------

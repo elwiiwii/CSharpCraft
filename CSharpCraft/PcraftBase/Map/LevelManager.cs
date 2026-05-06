@@ -18,15 +18,14 @@ internal static class LevelManager
         {
             for (int j = 0; j < level.Sy; j++)
             {
-                var c = PcraftServices.GetDirectGr(i, j, level);
+                var tile = PcraftServices.GetDirectTile(i, j, level);
                 var r = Pico8.Rnd(100);
                 var ex = F32.FromInt(i * 16 + 8);
                 var ey = F32.FromInt(j * 16 + 8);
                 var dist = F32.Max(F32.Abs(ex - player.X), F32.Abs(ey - player.Y));
                 if (r < 3 &&
-                    c != PcraftData.GrWater &&
-                    c != PcraftData.GrRock &&
-                    !c.IsTree &&
+                    tile.Surface is null &&
+                    tile.Floor != PcraftData.FtWater &&
                     dist > F32.FromInt(50))
                 {
                     var zombie = new ZombieEntity(ex, ey)
@@ -47,9 +46,9 @@ internal static class LevelManager
         }
     }
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
+    internal static Level CreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
     {
-        var level = new Level(x, y, sx, sy, isUnder);
+        var level = new Level(x, y, sx, sy, theme);
         PcraftServices.SetLevel(level, player);
         var (holeX, holeY) = PcraftServices.CreateMap(level, player);
         PcraftServices.FillEne(level, player);
@@ -76,8 +75,8 @@ internal static class LevelManager
 
         player.Invent.Clear();
 
-        cave   = PcraftServices.CreateLevel(64, 0, 32, 32, true,  player);
-        island = PcraftServices.CreateLevel( 0, 0, 64, 64, false, player);
+        cave   = PcraftServices.CreateLevel(64, 0, 32, 32, LevelTheme.Cave, player);
+        island = PcraftServices.CreateLevel( 0, 0, 64, 64, LevelTheme.Surface,     player);
 
         // Init RndWat on both levels
         var rndWat = PcraftServices.InitRndWat();
@@ -117,13 +116,10 @@ internal static class LevelManager
         {
             for (int j = cj; j <= cj + 8; j++)
             {
-                var gr = PcraftServices.GetDirectGr(i, j, level);
-                if (gr == PcraftData.GrFarm)
-                {
-                    var d = PcraftServices.DirGetData(i, j, F32.Zero, level);
-                    if (level.Time > d)
-                        Pico8.Mset(i + level.X, j, PcraftData.GrSand.Id);
-                }
+                if (MapOps.OutOfBounds(i, j, level)) continue;
+                var tile = level.Map[i, j];
+                if (tile.Floor == PcraftData.FtFarm && tile.GrowthTimer.HasValue && level.Time > tile.GrowthTimer.Value)
+                    level.SetTile(i, j, new Tile(PcraftData.FtSand));
             }
         }
     }

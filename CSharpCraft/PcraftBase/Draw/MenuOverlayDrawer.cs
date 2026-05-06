@@ -7,7 +7,7 @@ internal static class MenuOverlayDrawer
 {
     internal static void ItemName(int x, int y, InventorySlot item, int col)
     {
-        int? power = item is ToolItem tool ? tool.Power : (int?)null;
+        int? power = item is ToolItem tool ? tool.Power : null;
         DrawItemVisual(x, y, col, power, item.Type);
     }
 
@@ -116,7 +116,7 @@ internal static class MenuOverlayDrawer
         {
             var it  = recipeList[i - 1];
             int col = PcraftServices.CanCraft(player.Invent, it) ? 7 : 0;
-            int? power = it.Output is ToolItem toolOut ? toolOut.Power : (int?)null;
+            int? power = it.Output is ToolItem toolOut ? toolOut.Power : null;
             DrawItemVisual(lx, py, col, power, it.Output.Type);
             if (it.Output is StackableItem countedOut)
             {

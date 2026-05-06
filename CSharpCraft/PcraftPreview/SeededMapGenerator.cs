@@ -38,7 +38,7 @@ internal static class SeededMapGenerator
 
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)
-                Pico8.Mset(i + levelX, j + levelY, classifier.ClassifyTile(i, j));
+                level.SetTile(i, j, PcraftData.TilePrototypes[classifier.ClassifyTile(i, j)]);
 
         var spawn = SpawnFinder.FindSpawn(seed, classifier, GridSx, GridSy);
         int spawnX = spawn?.tileX ?? (GridSx / 2);
@@ -50,12 +50,14 @@ internal static class SeededMapGenerator
         player.Camera.Cmx  = player.X;
         player.Camera.Cmy  = player.Y;
 
-        int holeX = levelSx / 2 + levelX;
-        int holeY = levelSy / 2 + levelY;
+        int localHoleX = levelSx / 2;
+        int localHoleY = levelSy / 2;
+        int holeX = localHoleX + levelX;
+        int holeY = localHoleY + levelY;
         for (int i = -1; i <= 1; i++)
             for (int j = -1; j <= 1; j++)
-                Pico8.Mset(holeX + i, holeY + j, 3);
-        Pico8.Mset(holeX, holeY, 11);
+                level.SetTile(localHoleX + i, localHoleY + j, PcraftData.TilePrototypes[(int)TileId.Rock]);
+        level.SetTile(localHoleX, localHoleY, PcraftData.TilePrototypes[(int)TileId.Hole]);
 
         return (holeX, holeY);
     }

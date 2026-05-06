@@ -34,11 +34,11 @@ internal class PcraftServices
     #region Draw - Background
     // ---------------------------------------------------------------------------
 
-    internal static bool Comp(int i, int j, GroundType gr, Level level)
-        => _current.OnComp(i, j, gr, level);
+    internal static bool Comp(int i, int j, int renderGr, Level level)
+        => _current.OnComp(i, j, renderGr, level);
 
-    protected virtual bool OnComp(int i, int j, GroundType gr, Level level)
-        => BackDrawer.Comp(i, j, gr, level);
+    protected virtual bool OnComp(int i, int j, int renderGr, Level level)
+        => BackDrawer.Comp(i, j, renderGr, level);
 
     internal static int CornerOffset(bool sideH, bool sideV, bool diag, int rnd,
         int innerCorner, int hOnly, int vOnly, int outer)
@@ -137,11 +137,11 @@ internal class PcraftServices
     protected virtual void OnSetPal(int[] l)
         => DrawHelpers.SetPal(l);
 
-    internal static void PrintB(string t, double x, double y, double c)
-        => _current.OnPrintB(t, x, y, c);
+    internal static void PrintB(string t, double x, double y, double inCol, double outCol)
+        => _current.OnPrintB(t, x, y, inCol, outCol);
 
-    protected virtual void OnPrintB(string t, double x, double y, double c)
-        => DrawHelpers.PrintB(t, x, y, c);
+    protected virtual void OnPrintB(string t, double x, double y, double inCol, double outCol)
+        => DrawHelpers.PrintB(t, x, y, inCol, outCol);
 
     internal static void PrintC(string t, int x, int y, int c)
         => _current.OnPrintC(t, x, y, c);
@@ -286,11 +286,11 @@ internal class PcraftServices
     protected virtual void OnAddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
         => LevelManager.AddItem(mat, count, hitX, hitY, entities);
 
-    internal static Level CreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
-        => _current.OnCreateLevel(x, y, sx, sy, isUnder, player);
+    internal static Level CreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
+        => _current.OnCreateLevel(x, y, sx, sy, theme, player);
 
-    protected virtual Level OnCreateLevel(int x, int y, int sx, int sy, bool isUnder, PlayerEntity player)
-        => LevelManager.CreateLevel(x, y, sx, sy, isUnder, player);
+    protected virtual Level OnCreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
+        => LevelManager.CreateLevel(x, y, sx, sy, theme, player);
 
     internal static void FillEne(Level level, PlayerEntity player)
         => _current.OnFillEne(level, player);
@@ -327,16 +327,16 @@ internal class PcraftServices
     protected virtual (int holeX, int holeY) OnCreateMap(Level level, PlayerEntity player)
         => MapGenerator.CreateMap(level, player);
 
-    internal static int[,] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
+    internal static TileId[,] CreateMapStep(int sx, int sy, TileId a, TileId b, TileId c, TileId d, TileId e)
         => _current.OnCreateMapStep(sx, sy, a, b, c, d, e);
 
-    protected virtual int[,] OnCreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
+    protected virtual TileId[,] OnCreateMapStep(int sx, int sy, TileId a, TileId b, TileId c, TileId d, TileId e)
         => MapGenerator.CreateMapStep(sx, sy, a, b, c, d, e);
 
-    internal static void CountTypes(int[,] tiles, int sx, int sy, int[] typecount)
+    internal static void CountTypes(TileId[,] tiles, int sx, int sy, int[] typecount)
         => _current.OnCountTypes(tiles, sx, sy, typecount);
 
-    protected virtual void OnCountTypes(int[,] tiles, int sx, int sy, int[] typecount)
+    protected virtual void OnCountTypes(TileId[,] tiles, int sx, int sy, int[] typecount)
         => MapGenerator.CountTypes(tiles, sx, sy, typecount);
 
     internal static F32[][] InitRndWat()
@@ -356,41 +356,31 @@ internal class PcraftServices
     #region Map - MapOps
     // ---------------------------------------------------------------------------
 
-    internal static void ClearData(F32 x, F32 y, Level level)
-        => _current.OnClearData(x, y, level);
-
-    protected virtual void OnClearData(F32 x, F32 y, Level level)
-        => MapOps.ClearData(x, y, level);
-
     internal static F32 DirGetData(int i, int j, F32 def, Level level)
-        => _current.OnDirGetData(i, j, def, level);
-
-    protected virtual F32 OnDirGetData(int i, int j, F32 def, Level level)
-        => MapOps.DirGetData(i, j, def, level);
-
-    internal static void DirSetData(int i, int j, F32 v, Level level)
-        => _current.OnDirSetData(i, j, v, level);
-
-    protected virtual void OnDirSetData(int i, int j, F32 v, Level level)
-        => MapOps.DirSetData(i, j, v, level);
+    {
+        if (MapOps.OutOfBounds(i, j, level)) return def;
+        var tile = level.Map[i, j];
+        return tile.GrowthTimer ?? tile.HarvestLife ?? def;
+    }
 
     internal static F32 GetData(F32 x, F32 y, F32 def, Level level)
-        => _current.OnGetData(x, y, def, level);
+    {
+        var (i, j) = MapOps.GetMCoord(x, y);
+        if (MapOps.OutOfBounds(i, j, level)) return def;
+        return DirGetData(i, j, def, level);
+    }
 
-    protected virtual F32 OnGetData(F32 x, F32 y, F32 def, Level level)
-        => MapOps.GetData(x, y, def, level);
+    internal static Tile GetDirectTile(int i, int j, Level level)
+        => _current.OnGetDirectTile(i, j, level);
 
-    internal static GroundType GetDirectGr(int i, int j, Level level)
-        => _current.OnGetDirectGr(i, j, level);
+    protected virtual Tile OnGetDirectTile(int i, int j, Level level)
+        => MapOps.GetDirectTile(i, j, level);
 
-    protected virtual GroundType OnGetDirectGr(int i, int j, Level level)
-        => MapOps.GetDirectGr(i, j, level);
+    internal static Tile GetTile(F32 x, F32 y, Level level)
+        => _current.OnGetTile(x, y, level);
 
-    internal static GroundType GetGr(F32 x, F32 y, Level level)
-        => _current.OnGetGr(x, y, level);
-
-    protected virtual GroundType OnGetGr(F32 x, F32 y, Level level)
-        => MapOps.GetGr(x, y, level);
+    protected virtual Tile OnGetTile(F32 x, F32 y, Level level)
+        => MapOps.GetTile(x, y, level);
 
     internal static (int i, int j) GetMCoord(F32 x, F32 y)
         => _current.OnGetMCoord(x, y);
@@ -422,28 +412,16 @@ internal class PcraftServices
     protected virtual bool OnOutOfBounds(int i, int j, Level level)
         => MapOps.OutOfBounds(i, j, level);
 
-    internal static void SetData(F32 x, F32 y, F32 v, Level level)
-        => _current.OnSetData(x, y, v, level);
+    internal static void SetTile(F32 x, F32 y, Tile tile, Level level)
+        => _current.OnSetTile(x, y, tile, level);
 
-    protected virtual void OnSetData(F32 x, F32 y, F32 v, Level level)
-        => MapOps.SetData(x, y, v, level);
-
-    internal static void SetGr(F32 x, F32 y, GroundType v, Level level)
-        => _current.OnSetGr(x, y, v, level);
-
-    protected virtual void OnSetGr(F32 x, F32 y, GroundType v, Level level)
-        => MapOps.SetGr(x, y, v, level);
+    protected virtual void OnSetTile(F32 x, F32 y, Tile tile, Level level)
+        => MapOps.SetTile(x, y, tile, level);
 
     // ---------------------------------------------------------------------------
     #endregion
     #region Math
     // ---------------------------------------------------------------------------
-
-    internal static F32 Lerp(F32 a, F32 b, F32 alpha)
-        => _current.OnLerp(a, b, alpha);
-
-    protected virtual F32 OnLerp(F32 a, F32 b, F32 alpha)
-        => PcraftMath.Lerp(a, b, alpha);
 
     internal static F32 GetLen(F32 x, F32 y)
         => _current.OnGetLen(x, y);

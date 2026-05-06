@@ -57,14 +57,14 @@ internal static class MapGenerator
         return n;
     }
 
-    internal static int[,] CreateMapStep(int sx, int sy, int a, int b, int c, int d, int e)
+    internal static TileId[,] CreateMapStep(int sx, int sy, TileId a, TileId b, TileId c, TileId d, TileId e)
     {
         var cur  = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
         var cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
         var cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
         var cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
 
-        var result = new int[sx + 1, sy + 1];
+        var result = new TileId[sx + 1, sy + 1];
 
         for (int i = 0; i <= sx; i++)
         {
@@ -81,7 +81,7 @@ internal static class MapGenerator
 
                 var coast = v * F32.FromInt(4) - dist * F32.FromInt(4);
 
-                int id = a;
+                TileId id = a;
                 if (coast > F32.FromDouble(0.3)) id = b;
                 if (coast > F32.FromDouble(0.6)) id = c;
                 if (coast > F32.FromDouble(0.3) && v2 > F32.FromDouble(0.5)) id = d;
@@ -112,9 +112,9 @@ internal static class MapGenerator
         int levelSy = level.Sy;
         int levelX  = level.X;
         int levelY  = level.Y;
-        bool isUnder = level.IsUnder;
+        bool isUnder = level.Theme == LevelTheme.Cave;
 
-        var tiles = new int[levelSx + 1, levelSy + 1];
+        var tiles = new TileId[levelSx + 1, levelSy + 1];
         bool needMap = true;
 
         while (needMap)
@@ -125,7 +125,7 @@ internal static class MapGenerator
 
             if (isUnder)
             {
-                tiles = CreateMapStep(levelSx, levelSy, 3, 8, 1, 9, 10);
+                tiles = CreateMapStep(levelSx, levelSy, TileId.Rock, TileId.Iron, TileId.Sand, TileId.Gold, TileId.Gem);
                 CountTypes(tiles, levelSx, levelSy, typecount);
                 if (typecount[8]  < 30) needMap = true;
                 if (typecount[9]  < 20) needMap = true;
@@ -133,7 +133,7 @@ internal static class MapGenerator
             }
             else
             {
-                tiles = CreateMapStep(levelSx, levelSy, 0, 1, 2, 3, 4);
+                tiles = CreateMapStep(levelSx, levelSy, TileId.Water, TileId.Sand, TileId.Grass, TileId.Rock, TileId.Tree);
                 CountTypes(tiles, levelSx, levelSy, typecount);
                 if (typecount[3] < 30) needMap = true;
                 if (typecount[4] < 30) needMap = true;
@@ -148,7 +148,7 @@ internal static class MapGenerator
                     int depy = F32.FloorToInt(F32.FromDouble(levelSy / 8.0) + Pico8.Rnd(levelSy * 6.0 / 8.0));
                     if (depx >= 0 && depx <= levelSx && depy >= 0 && depy <= levelSy)
                     {
-                        int tileId = tiles[depx, depy];
+                        int tileId = (int)tiles[depx, depy];
                         if (tileId == 1 || tileId == 2)
                         {
                             plxTile = depx;
@@ -169,15 +169,17 @@ internal static class MapGenerator
 
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)
-                Pico8.Mset(i + levelX, j + levelY, tiles[i, j]);
+                level.SetTile(i, j, PcraftData.TilePrototypes[(int)tiles[i, j]]);
 
-        int holeX = levelSx / 2 + levelX;
-        int holeY = levelSy / 2 + levelY;
-        int surroundId = isUnder ? 1 : 3;
+        int localHoleX = levelSx / 2;
+        int localHoleY = levelSy / 2;
+        int holeX = localHoleX + levelX;
+        int holeY = localHoleY + levelY;
+        TileId surroundId = isUnder ? TileId.Sand : TileId.Rock;
         for (int i = -1; i <= 1; i++)
             for (int j = -1; j <= 1; j++)
-                Pico8.Mset(holeX + i, holeY + j, surroundId);
-        Pico8.Mset(holeX, holeY, 11);
+                level.SetTile(localHoleX + i, localHoleY + j, PcraftData.TilePrototypes[(int)surroundId]);
+        level.SetTile(localHoleX, localHoleY, PcraftData.TilePrototypes[(int)TileId.Hole]);
 
         player.Camera.Clx = player.X;
         player.Camera.Cly = player.Y;
@@ -187,10 +189,10 @@ internal static class MapGenerator
         return (holeX, holeY);
     }
 
-    internal static void CountTypes(int[,] tiles, int sx, int sy, int[] typecount)
+    internal static void CountTypes(TileId[,] tiles, int sx, int sy, int[] typecount)
     {
         for (int i = 0; i <= sx; i++)
             for (int j = 0; j <= sy; j++)
-                typecount[tiles[i, j]]++;
+                typecount[(int)tiles[i, j]]++;
     }
 }

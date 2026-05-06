@@ -110,7 +110,7 @@ public sealed class MapGeneratorPureTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         // Returns an (sx+1) × (sy+1) array (same size as the noise arrays it uses internally)
-        var result = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4);
+        var result = MapGenerator.CreateMapStep(4, 4, TileId.Water, TileId.Sand, TileId.Grass, TileId.Rock, TileId.Tree);
 
         result.GetLength(0).Should().Be(5);   // sx+1
         result.GetLength(1).Should().Be(5);   // sy+1
@@ -123,10 +123,10 @@ public sealed class MapGeneratorPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         // Lua assigns one of the 5 provided ground IDs (a..e) per tile.
         // No other values should appear in the result.
-        int a = 0, b = 1, c = 2, d = 3, e = 4;
+        TileId a = TileId.Water, b = TileId.Sand, c = TileId.Grass, d = TileId.Rock, e = TileId.Tree;
         var result = MapGenerator.CreateMapStep(4, 4, a, b, c, d, e);
 
-        int[] allowed = [a, b, c, d, e];
+        TileId[] allowed = [a, b, c, d, e];
         for (int i = 0; i <= 4; i++)
         for (int j = 0; j <= 4; j++)
             allowed.Should().Contain(result[i, j], because: $"tile [{i},{j}] must be one of {a},{b},{c},{d},{e}");
@@ -138,10 +138,10 @@ public sealed class MapGeneratorPureTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         // The cave variant uses different IDs: a=3,b=8,c=1,d=9,e=10
-        int a = 3, b = 8, c = 1, d = 9, e = 10;
+        TileId a = TileId.Rock, b = TileId.Iron, c = TileId.Sand, d = TileId.Gold, e = TileId.Gem;
         var result = MapGenerator.CreateMapStep(4, 4, a, b, c, d, e);
 
-        int[] allowed = [a, b, c, d, e];
+        TileId[] allowed = [a, b, c, d, e];
         for (int i = 0; i <= 4; i++)
         for (int j = 0; j <= 4; j++)
             allowed.Should().Contain(result[i, j], because: $"cave tile [{i},{j}] must be one of {a},{b},{c},{d},{e}");
@@ -153,9 +153,9 @@ public sealed class MapGeneratorPureTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         Pico8.Srand(42);
-        var result1 = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4);
+        var result1 = MapGenerator.CreateMapStep(4, 4, TileId.Water, TileId.Sand, TileId.Grass, TileId.Rock, TileId.Tree);
         Pico8.Srand(42);
-        var result2 = MapGenerator.CreateMapStep(4, 4, 0, 1, 2, 3, 4);
+        var result2 = MapGenerator.CreateMapStep(4, 4, TileId.Water, TileId.Sand, TileId.Grass, TileId.Rock, TileId.Tree);
 
         for (int i = 0; i <= 4; i++)
         for (int j = 0; j <= 4; j++)
@@ -248,7 +248,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 64, 64, isUnder: false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
 
         MapGenerator.CreateMap(level, player);
 
@@ -263,7 +263,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 64, 64, isUnder: false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
 
         MapGenerator.CreateMap(level, player);
 
@@ -281,7 +281,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 64, 64, isUnder: false);
+        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
 
         var (holeX, holeY) = MapGenerator.CreateMap(level, player);
 
@@ -300,7 +300,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(64, 0, 32, 32, isUnder: true);
+        var level = new Level(64, 0, 32, 32, LevelTheme.Cave);
 
         var act = () => MapGenerator.CreateMap(level, player);
 
@@ -314,7 +314,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(64, 0, 32, 32, isUnder: true);
+        var level = new Level(64, 0, 32, 32, LevelTheme.Cave);
 
         var (holeX, holeY) = MapGenerator.CreateMap(level, player);
 
@@ -328,7 +328,7 @@ public sealed class MapGeneratorFnaTests(FnaFixture fixture)
         using var orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(64, 0, 32, 32, isUnder: true);
+        var level = new Level(64, 0, 32, 32, LevelTheme.Cave);
 
         MapGenerator.CreateMap(level, player);
 
