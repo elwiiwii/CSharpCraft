@@ -1,6 +1,4 @@
 using CSharpCraft.PcraftBase;
-using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Draw;
 using PSharp8.Scene;
 
 namespace CSharpCraft.PcraftFilter;

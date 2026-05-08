@@ -1,6 +1,6 @@
 namespace CSharpCraft.PcraftPreview.Noise;
 
-internal sealed class MapClassifier
+internal class MapClassifier
 {
     private readonly SeededNoiseGrid _cur;
     private readonly SeededNoiseGrid _cur2;
@@ -36,7 +36,13 @@ internal sealed class MapClassifier
         _e = e;
     }
 
-    internal int ClassifyTile(int i, int j)
+    internal virtual int ClassifyTile(int i, int j)
+    {
+        var (coast, v2, v3) = ComputeIntermediate(i, j);
+        return ClassifyFromValues(coast, v2, v3);
+    }
+
+    protected (double coast, double v2, double v3) ComputeIntermediate(int i, int j)
     {
         double vCur  = _cur.GetValue(i, j);
         double vCur2 = _cur2.GetValue(i, j);
@@ -53,6 +59,11 @@ internal sealed class MapClassifier
 
         double coast = v * 4.0 - dist * 4.0;
 
+        return (coast, v2, v3);
+    }
+
+    protected int ClassifyFromValues(double coast, double v2, double v3)
+    {
         int id = _a;
 
         if (coast > 0.3)
