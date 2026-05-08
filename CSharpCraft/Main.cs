@@ -1,6 +1,8 @@
 ﻿using CSharpCraft.Input;
 using CSharpCraft.PcraftFilter;
+using CSharpCraft.PcraftPreview;
 using CSharpCraft.Settings;
+using Microsoft.Xna.Framework;
 using PSharp8.Input;
 
 namespace CSharpCraft;
@@ -50,7 +52,7 @@ internal class FNAGame : Game
 
         _inputProvider = new PollingInputProvider(InputBindings.Default);
 
-        //var scene = new PcraftPreviewScene();
+        //PcraftPreviewScene scene = new();
         PcraftFilterBase scene = new();
         _orchestrator = new GameOrchestrator(
             musicDirectory: _musicFolderPath,

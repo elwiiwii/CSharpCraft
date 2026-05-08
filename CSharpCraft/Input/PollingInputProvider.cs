@@ -1,3 +1,5 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using PSharp8.Input;
 
 namespace CSharpCraft.Input;

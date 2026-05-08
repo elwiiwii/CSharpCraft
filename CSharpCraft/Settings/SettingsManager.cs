@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework;
 using PSharp8.Settings;
 
 namespace CSharpCraft.Settings;
