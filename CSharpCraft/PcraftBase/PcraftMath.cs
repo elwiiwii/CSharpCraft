@@ -2,16 +2,22 @@ namespace CSharpCraft.PcraftBase;
 
 internal static class PcraftMath
 {
-    internal static F32 GetLen(F32 x, F32 y) =>
-        F32.Sqrt(x * x + y * y + F32.FromFloat(0.001f));
+    internal static F32 GetLen(F32 x, F32 y)
+    {
+        return F32.Sqrt((x * x) + (y * y) + F32.FromFloat(0.001f));
+    }
 
-    internal static F32 GetInvLen(F32 x, F32 y) =>
-        F32.One / GetLen(x, y);
+    internal static F32 GetInvLen(F32 x, F32 y)
+    {
+        return F32.One / GetLen(x, y);
+    }
 
-    internal static F32 GetRot(F32 dx, F32 dy) =>
-        dy >= F32.Zero
+    internal static F32 GetRot(F32 dx, F32 dy)
+    {
+        return dy >= F32.Zero
             ? (dx + F32.FromInt(3)) * F32.FromFloat(0.25f)
             : (F32.One - dx) * F32.FromFloat(0.25f);
+    }
 
     internal static F32 NormGetRot(F32 dx, F32 dy)
     {

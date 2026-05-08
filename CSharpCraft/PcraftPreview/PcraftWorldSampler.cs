@@ -55,38 +55,38 @@ internal static class PcraftWorldSampler
         int? forceCenterY = null)
     {
         // --- Noise layers (matching MapGenerator.CreateMapStep params) ---
-        var cur  = new SeededNoiseGrid(masterSeed, GridSx, GridSy, GridSx, 0.9, 0.2, 0);
-        var cur2 = new SeededNoiseGrid(masterSeed, GridSx, GridSy,      8, 0.9, 0.4, 1);
-        var cur3 = new SeededNoiseGrid(masterSeed, GridSx, GridSy,      8, 0.9, 0.3, 2);
-        var cur4 = new SeededNoiseGrid(masterSeed, GridSx, GridSy,      4, 0.8, 1.1, 3);
+        SeededNoiseGrid cur = new(masterSeed, GridSx, GridSy, GridSx, 0.9, 0.2, 0);
+        SeededNoiseGrid cur2 = new(masterSeed, GridSx, GridSy, 8, 0.9, 0.4, 1);
+        SeededNoiseGrid cur3 = new(masterSeed, GridSx, GridSy, 8, 0.9, 0.3, 2);
+        SeededNoiseGrid cur4 = new(masterSeed, GridSx, GridSy, 4, 0.8, 1.1, 3);
 
-        var classifier = new MapClassifier(cur, cur2, cur3, cur4,
+        MapClassifier classifier = new(cur, cur2, cur3, cur4,
             GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4, generateHole: true);
 
         // --- Spawn detection ---
-        var spawn = SpawnFinder.FindSpawn(masterSeed, classifier, GridSx, GridSy);
+        (int tileX, int tileY)? spawn = SpawnFinder.FindSpawn(masterSeed, classifier, GridSx, GridSy);
         int spawnX = spawn?.tileX ?? -1;
         int spawnY = spawn?.tileY ?? -1;
 
         // --- Window centre ---
-        int centerX = forceCenterX ?? (spawn?.tileX ?? GridSx / 2);
-        int centerY = forceCenterY ?? (spawn?.tileY ?? GridSy / 2);
+        int centerX = forceCenterX ?? spawn?.tileX ?? (GridSx / 2);
+        int centerY = forceCenterY ?? spawn?.tileY ?? (GridSy / 2);
 
         // --- Tile slice ---
-        int side = 2 * radius + 1;
-        var tiles = new int[side, side];
+        int side = (2 * radius) + 1;
+        int[,] tiles = new int[side, side];
         for (int i = 0; i < side; i++)
-        for (int j = 0; j < side; j++)
-            tiles[i, j] = classifier.ClassifyTile(centerX - radius + i, centerY - radius + j);
+            for (int j = 0; j < side; j++)
+                tiles[i, j] = classifier.ClassifyTile(centerX - radius + i, centerY - radius + j);
 
         // --- Water animation table ---
         int rndWatHash = "rndwat".GetHashCode();
-        var rndWat = new double[16, 16];
+        double[,] rndWat = new double[16, 16];
         for (int i = 0; i < 16; i++)
-        for (int j = 0; j < 16; j++)
-            rndWat[i, j] = new Random(
-                HashCode.Combine(masterSeed.GetHashCode(), i, j, rndWatHash))
-                .NextDouble() * 100.0;
+            for (int j = 0; j < 16; j++)
+                rndWat[i, j] = new Random(
+                    HashCode.Combine(masterSeed.GetHashCode(), i, j, rndWatHash))
+                    .NextDouble() * 100.0;
 
         return new SampleResult(tiles, spawnX, spawnY, centerX, centerY, rndWat);
     }

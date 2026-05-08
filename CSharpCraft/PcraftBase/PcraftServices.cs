@@ -11,7 +11,7 @@ namespace CSharpCraft.PcraftBase;
 
 internal class PcraftServices
 {
-    private static PcraftServices _current = new PcraftServices();
+    private static PcraftServices _current = new();
     internal static void SetServices(PcraftServices s) => _current = s;
 
     #region Crafting
@@ -349,20 +349,6 @@ internal class PcraftServices
     #endregion
     #region Map - MapOps
     // ---------------------------------------------------------------------------
-
-    internal static F32 DirGetData(int i, int j, F32 def, Level level)
-    {
-        if (MapOps.OutOfBounds(i, j, level)) return def;
-        var tile = level.Map[i, j];
-        return tile.GrowthTimer ?? tile.HarvestLife ?? def;
-    }
-
-    internal static F32 GetData(F32 x, F32 y, F32 def, Level level)
-    {
-        var (i, j) = MapOps.GetMCoord(x, y);
-        if (MapOps.OutOfBounds(i, j, level)) return def;
-        return DirGetData(i, j, def, level);
-    }
 
     internal static Tile GetDirectTile(int i, int j, Level level)
         => _current.OnGetDirectTile(i, j, level);

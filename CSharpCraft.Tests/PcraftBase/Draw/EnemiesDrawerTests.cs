@@ -15,27 +15,27 @@ public sealed class EnemiesDrawerTests
     public void SortY_SwapsAdjacent_WhenFirstHasLargerY()
     {
         // bubble-sort pass: if enemies[i].Y > enemies[i+1].Y → swap
-        var a = new PlayerEntity(F32.Zero, F32.FromInt(10));
-        var b = new ZombieEntity(F32.Zero, F32.FromInt(5));
-        var list = new List<CharacterEntity> { a, b };
+        PlayerEntity a = new(F32.Zero, F32.FromInt(10));
+        ZombieEntity b = new(F32.Zero, F32.FromInt(5));
+        List<CharacterEntity> list = [a, b];
 
         EnemiesDrawer.SortY(list);
 
-        list[0].Y.Should().Be(F32.FromInt(5));
-        list[1].Y.Should().Be(F32.FromInt(10));
+        _ = list[0].Y.Should().Be(F32.FromInt(5));
+        _ = list[1].Y.Should().Be(F32.FromInt(10));
     }
 
     [Fact]
     public void SortY_PreservesOrder_WhenAlreadySorted()
     {
-        var a = new PlayerEntity(F32.Zero, F32.FromInt(3));
-        var b = new ZombieEntity(F32.Zero, F32.FromInt(7));
-        var list = new List<CharacterEntity> { a, b };
+        PlayerEntity a = new(F32.Zero, F32.FromInt(3));
+        ZombieEntity b = new(F32.Zero, F32.FromInt(7));
+        List<CharacterEntity> list = [a, b];
 
         EnemiesDrawer.SortY(list);
 
-        list[0].Should().BeSameAs(a);
-        list[1].Should().BeSameAs(b);
+        _ = list[0].Should().BeSameAs(a);
+        _ = list[1].Should().BeSameAs(b);
     }
 
     // --------------------------------------------------------------------------

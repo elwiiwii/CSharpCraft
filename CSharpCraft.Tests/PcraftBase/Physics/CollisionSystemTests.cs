@@ -15,66 +15,66 @@ public sealed class CollisionSystemTests
     public void EntColFree_ReturnsTrue_WhenChebyshevDistanceIsGreaterThan8()
     {
         // entity at (0,0), check point at (9,0) → max(9,0)=9 > 8 → free
-        var e = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity e = new(F32.Zero, F32.Zero);
 
-        var result = CollisionSystem.EntColFree(F32.FromInt(9), F32.Zero, e);
+        bool result = CollisionSystem.EntColFree(F32.FromInt(9), F32.Zero, e);
 
-        result.Should().BeTrue();
+        _ = result.Should().BeTrue();
     }
 
     [Fact]
     public void EntColFree_ReturnsFalse_WhenChebyshevDistanceIsExactly8()
     {
         // entity at (0,0), check point at (8,3) → max(8,3)=8 — NOT >8 → not free
-        var e = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity e = new(F32.Zero, F32.Zero);
 
-        var result = CollisionSystem.EntColFree(F32.FromInt(8), F32.FromInt(3), e);
+        bool result = CollisionSystem.EntColFree(F32.FromInt(8), F32.FromInt(3), e);
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void EntColFree_ReturnsFalse_WhenEntitiesCoincide()
     {
         // same position → max=0 ≤ 8
-        var e = new PlayerEntity(F32.FromInt(5), F32.FromInt(5));
+        PlayerEntity e = new(F32.FromInt(5), F32.FromInt(5));
 
-        var result = CollisionSystem.EntColFree(F32.FromInt(5), F32.FromInt(5), e);
+        bool result = CollisionSystem.EntColFree(F32.FromInt(5), F32.FromInt(5), e);
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void EntColFree_UsesChebyshevDistance_NotEuclidean()
     {
         // entity at (0,0), point at (7,7) → Euclidean≈9.9 (>8) but Chebyshev=7 (≤8) → not free
-        var e = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity e = new(F32.Zero, F32.Zero);
 
-        var result = CollisionSystem.EntColFree(F32.FromInt(7), F32.FromInt(7), e);
+        bool result = CollisionSystem.EntColFree(F32.FromInt(7), F32.FromInt(7), e);
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void EntColFree_UsesAbsoluteValue_ForNegativeXOffset()
     {
         // entity at (10,10), check at (1,10) → max(9,0)=9 > 8 → free
-        var e = new PlayerEntity(F32.FromInt(10), F32.FromInt(10));
+        PlayerEntity e = new(F32.FromInt(10), F32.FromInt(10));
 
-        var result = CollisionSystem.EntColFree(F32.FromInt(1), F32.FromInt(10), e);
+        bool result = CollisionSystem.EntColFree(F32.FromInt(1), F32.FromInt(10), e);
 
-        result.Should().BeTrue();
+        _ = result.Should().BeTrue();
     }
 
     [Fact]
     public void EntColFree_ReturnsFalse_WhenInsideBox_LessThan8OnBothAxes()
     {
         // entity at (0,0), check at (5,6) → max(5,6)=6 ≤ 8
-        var e = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity e = new(F32.Zero, F32.Zero);
 
-        var result = CollisionSystem.EntColFree(F32.FromInt(5), F32.FromInt(6), e);
+        bool result = CollisionSystem.EntColFree(F32.FromInt(5), F32.FromInt(6), e);
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     // --------------------------------------------------------------------------
@@ -88,14 +88,14 @@ public sealed class CollisionSystemTests
         // ccur=false → reflection logic skipped entirely, velocity returned as-is
         F32 dx = F32.FromInt(2), dy = F32.FromInt(3);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             F32.Zero, F32.Zero,
             dx, dy,
             check: (_, _) => false,   // everything blocked including current pos
             dp: F32.FromInt(1));
 
-        rdx.Should().Be(dx);
-        rdy.Should().Be(dy);
+        _ = rdx.Should().Be(dx);
+        _ = rdy.Should().Be(dy);
     }
 
     [Fact]
@@ -104,14 +104,14 @@ public sealed class CollisionSystemTests
         // ccur=true, ctotal=true → move is unobstructed, nothing to reflect
         F32 dx = F32.FromInt(2), dy = F32.FromInt(3);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             F32.Zero, F32.Zero,
             dx, dy,
             check: (_, _) => true,    // everything free
             dp: F32.FromInt(1));
 
-        rdx.Should().Be(dx);
-        rdy.Should().Be(dy);
+        _ = rdx.Should().Be(dx);
+        _ = rdy.Should().Be(dy);
     }
 
     [Fact]
@@ -123,15 +123,15 @@ public sealed class CollisionSystemTests
         F32 x = F32.Zero, y = F32.Zero;
         F32 dx = F32.FromInt(2), dy = F32.FromInt(3);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             x, y, dx, dy,
             check: (cx, cy) =>
-                (cx == F32.Zero       && cy == F32.Zero)  ||  // ccur
+                (cx == F32.Zero && cy == F32.Zero) ||  // ccur
                 (cx == F32.FromInt(2) && cy == F32.Zero),     // chor only
             dp: F32.FromInt(1));
 
-        rdx.Should().Be(dx);            // dx unchanged
-        rdy.Should().Be(-dy);           // dy flipped (dp=1 → -dy*1 = -dy)
+        _ = rdx.Should().Be(dx);            // dx unchanged
+        _ = rdy.Should().Be(-dy);           // dy flipped (dp=1 → -dy*1 = -dy)
     }
 
     [Fact]
@@ -143,15 +143,15 @@ public sealed class CollisionSystemTests
         F32 x = F32.Zero, y = F32.Zero;
         F32 dx = F32.FromInt(2), dy = F32.FromInt(3);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             x, y, dx, dy,
             check: (cx, cy) =>
-                (cx == F32.Zero       && cy == F32.Zero)  ||  // ccur
-                (cx == F32.Zero       && cy == F32.FromInt(3)), // cver only
+                (cx == F32.Zero && cy == F32.Zero) ||  // ccur
+                (cx == F32.Zero && cy == F32.FromInt(3)), // cver only
             dp: F32.FromInt(1));
 
-        rdx.Should().Be(-dx);           // dx flipped
-        rdy.Should().Be(dy);            // dy unchanged
+        _ = rdx.Should().Be(-dx);           // dx flipped
+        _ = rdy.Should().Be(dy);            // dy unchanged
     }
 
     [Fact]
@@ -163,14 +163,14 @@ public sealed class CollisionSystemTests
         F32 x = F32.Zero, y = F32.Zero;
         F32 dx = F32.FromInt(2), dy = F32.FromInt(3);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             x, y, dx, dy,
             check: (cx, cy) =>
                 cx == F32.Zero && cy == F32.Zero,   // only ccur is free
             dp: F32.FromInt(1));
 
-        rdx.Should().Be(-dx);
-        rdy.Should().Be(-dy);
+        _ = rdx.Should().Be(-dx);
+        _ = rdy.Should().Be(-dy);
     }
 
     [Fact]
@@ -182,15 +182,15 @@ public sealed class CollisionSystemTests
         F32 dx = F32.FromInt(2), dy = F32.FromInt(4);
         F32 dp = F32.FromFloat(0.5f);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             x, y, dx, dy,
             check: (cx, cy) =>
-                (cx == F32.Zero       && cy == F32.Zero)  ||  // ccur
+                (cx == F32.Zero && cy == F32.Zero) ||  // ccur
                 (cx == F32.FromInt(2) && cy == F32.Zero),     // chor only
             dp: dp);
 
-        rdx.Should().Be(dx);
-        rdy.Should().Be(F32.FromInt(-2));   // -4 * 0.5 = -2
+        _ = rdx.Should().Be(dx);
+        _ = rdy.Should().Be(F32.FromInt(-2));   // -4 * 0.5 = -2
     }
 
     [Fact]
@@ -201,15 +201,15 @@ public sealed class CollisionSystemTests
         F32 x = F32.Zero, y = F32.Zero;
         F32 dx = F32.FromInt(2), dy = F32.FromInt(3);
 
-        var (rdx, rdy) = CollisionSystem.ReflectCol(
+        (F32 rdx, F32 rdy) = CollisionSystem.ReflectCol(
             x, y, dx, dy,
             check: (cx, cy) =>
-                (cx == F32.Zero       && cy == F32.Zero)  ||
+                (cx == F32.Zero && cy == F32.Zero) ||
                 (cx == F32.FromInt(2) && cy == F32.Zero),
             dp: F32.Zero);
 
-        rdx.Should().Be(dx);
-        rdy.Should().Be(F32.Zero);
+        _ = rdx.Should().Be(dx);
+        _ = rdy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -221,77 +221,77 @@ public sealed class CollisionSystemTests
     public void IsIn_ReturnsTrue_WhenEntityIsAtCenter()
     {
         // clx=64, cly=64, size=100 → box (−36..164) × (−36..164); entity at (64,64) → strictly inside
-        var e = new PlayerEntity(F32.FromInt(64), F32.FromInt(64));
+        PlayerEntity e = new(F32.FromInt(64), F32.FromInt(64));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeTrue();
+        _ = result.Should().BeTrue();
     }
 
     [Fact]
     public void IsIn_ReturnsFalse_WhenEntityIsToTheRight()
     {
         // entity.x = clx+size → NOT strictly less than clx+size
-        var e = new PlayerEntity(F32.FromInt(164), F32.FromInt(64));
+        PlayerEntity e = new(F32.FromInt(164), F32.FromInt(64));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void IsIn_ReturnsFalse_WhenEntityIsBelow()
     {
         // entity.y = clx+size → NOT strictly less than cly+size
-        var e = new PlayerEntity(F32.FromInt(64), F32.FromInt(164));
+        PlayerEntity e = new(F32.FromInt(64), F32.FromInt(164));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void IsIn_ReturnsFalse_WhenEntityIsToTheLeft()
     {
         // entity.x = clx-size → NOT strictly greater than clx-size
-        var e = new PlayerEntity(F32.FromInt(-36), F32.FromInt(64));
+        PlayerEntity e = new(F32.FromInt(-36), F32.FromInt(64));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void IsIn_ReturnsFalse_WhenEntityIsAbove()
     {
         // entity.y = cly-size → NOT strictly greater than cly-size
-        var e = new PlayerEntity(F32.FromInt(64), F32.FromInt(-36));
+        PlayerEntity e = new(F32.FromInt(64), F32.FromInt(-36));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     [Fact]
     public void IsIn_ReturnsTrue_WhenEntityIsJustInsideBoundary()
     {
         // entity at clx+size-1, cly+size-1 → just inside the exclusive bounds
-        var e = new PlayerEntity(F32.FromInt(163), F32.FromInt(163));
+        PlayerEntity e = new(F32.FromInt(163), F32.FromInt(163));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeTrue();
+        _ = result.Should().BeTrue();
     }
 
     [Fact]
     public void IsIn_ReturnsFalse_WhenEntityIsFarOutside()
     {
         // entity far away from camera
-        var e = new PlayerEntity(F32.FromInt(500), F32.FromInt(500));
+        PlayerEntity e = new(F32.FromInt(500), F32.FromInt(500));
 
-        var result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
+        bool result = CollisionSystem.IsIn(e, F32.FromInt(100), F32.FromInt(64), F32.FromInt(64));
 
-        result.Should().BeFalse();
+        _ = result.Should().BeFalse();
     }
 
     // --------------------------------------------------------------------------

@@ -1,5 +1,3 @@
-using Microsoft.Xna.Framework;
-using PSharp8.Input;
 using PSharp8.Settings;
 
 namespace CSharpCraft.Settings;
@@ -22,7 +20,7 @@ public class SettingsManager : IDisposable
         _orchestrator = orchestrator;
         _gdm = graphicsDeviceManager;
 
-        Directory.CreateDirectory(configDirectory);
+        _ = Directory.CreateDirectory(configDirectory);
         _general = new HotReloadableSettings<GeneralSettings>(
             Path.Combine(configDirectory, "general.json"));
 
@@ -37,7 +35,7 @@ public class SettingsManager : IDisposable
     /// </summary>
     public void Update()
     {
-        var previousGeneral = _general.Current;
+        GeneralSettings previousGeneral = _general.Current;
         _general.FlushPending();
 
         if (!ReferenceEquals(_general.Current, previousGeneral))

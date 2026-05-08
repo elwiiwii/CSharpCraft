@@ -1,5 +1,4 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Map;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -7,8 +6,8 @@ internal static class PcraftUpdate
 {
     internal static void Update(PlayerEntity player)
     {
-        var session = PcraftSession.Current;
-        var level   = player.CurrentLevel!;
+        PcraftSession session = PcraftSession.Current;
+        Level level = player.CurrentLevel!;
 
         // ── Level switch (top of frame — matches Lua _update() order) ─────────
         if (player.SwitchLevel)
@@ -19,13 +18,13 @@ internal static class PcraftUpdate
             level = player.CurrentLevel;
             PcraftServices.SetLevel(level, player);
             PcraftServices.FillEne(level, player);
-            player.SwitchLevel    = false;
+            player.SwitchLevel = false;
             player.CanSwitchLevel = false;
             Pico8.Music(player.CurrentLevel == session.Cave ? 2 : 1);
         }
 
         // ── Menu guard ────────────────────────────────────────────────────────
-        var (consumed, needsReset) = PcraftServices.UpdateMenu(player);
+        (bool consumed, bool needsReset) = PcraftServices.UpdateMenu(player);
         if (consumed)
         {
             if (needsReset)
@@ -49,10 +48,10 @@ internal static class PcraftUpdate
         PcraftServices.UpGround(level, player);
 
         // ── Speed multiplier (water or no stamina → 1, otherwise 2) ──────────
-        var playTile = PcraftServices.GetTile(player.X, player.Y, level);
+        Tile playTile = PcraftServices.GetTile(player.X, player.Y, level);
         if (playTile.Type != player.LastGround && playTile.Type == PcraftData.TileWater)
             Pico8.Sfx(11);
-        var s = (playTile.Type == PcraftData.TileWater || player.Stam <= F32.Zero)
+        F32 s = (playTile.Type == PcraftData.TileWater || player.Stam <= F32.Zero)
             ? F32.One
             : F32.FromInt(2);
         if (playTile.Type == PcraftData.TileHole)
@@ -63,21 +62,21 @@ internal static class PcraftUpdate
         player.LastGround = playTile.Type;
 
         // ── Input → dx/dy ─────────────────────────────────────────────────────
-        var dx = F32.Zero;
-        var dy = F32.Zero;
+        F32 dx = F32.Zero;
+        F32 dy = F32.Zero;
 
         if (Pico8.Btn(0)) dx -= F32.One;
         if (Pico8.Btn(1)) dx += F32.One;
         if (Pico8.Btn(2)) dy -= F32.One;
         if (Pico8.Btn(3)) dy += F32.One;
 
-        var dl = PcraftServices.GetInvLen(dx, dy);
+        F32 dl = PcraftServices.GetInvLen(dx, dy);
         dx *= dl;
         dy *= dl;
 
         if (F32.Abs(dx) > F32.Zero || F32.Abs(dy) > F32.Zero)
         {
-            player.Lrot  = PcraftServices.GetRot(dx, dy);
+            player.Lrot = PcraftServices.GetRot(dx, dy);
             player.Panim += F32.FromDouble(1.0 / 33.0);
         }
         else
@@ -89,8 +88,8 @@ internal static class PcraftUpdate
         dy *= s;
 
         // ── Sub-updaters ──────────────────────────────────────────────────────
-        var (fdx, fdy, canAct) = PcraftServices.UpdateEntities(player, level, dx, dy);
-        var nearEnemies = PcraftServices.UpdateEnemies(player, level);
+        (F32 fdx, F32 fdy, bool canAct) = PcraftServices.UpdateEntities(player, level, dx, dy);
+        List<CharacterEntity> nearEnemies = PcraftServices.UpdateEnemies(player, level);
         PcraftServices.UpdatePlayer(player, fdx, fdy, canAct, nearEnemies);
         PcraftServices.UpdateCamera(player, fdx, fdy);
     }

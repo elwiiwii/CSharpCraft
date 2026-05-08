@@ -1,5 +1,3 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using PSharp8.Input;
 
 namespace CSharpCraft.Input;
@@ -27,10 +25,10 @@ internal sealed class PollingInputProvider : IInputProvider
         Func<GamePadState> getGamePad,
         Func<MouseState> getMouse)
     {
-        _bindings   = bindings    ?? throw new ArgumentNullException(nameof(bindings));
+        _bindings = bindings ?? throw new ArgumentNullException(nameof(bindings));
         _getKeyboard = getKeyboard ?? throw new ArgumentNullException(nameof(getKeyboard));
-        _getGamePad  = getGamePad  ?? throw new ArgumentNullException(nameof(getGamePad));
-        _getMouse    = getMouse    ?? throw new ArgumentNullException(nameof(getMouse));
+        _getGamePad = getGamePad ?? throw new ArgumentNullException(nameof(getGamePad));
+        _getMouse = getMouse ?? throw new ArgumentNullException(nameof(getMouse));
     }
 
     public void SetBindings(InputBindings bindings)
@@ -41,10 +39,10 @@ internal sealed class PollingInputProvider : IInputProvider
     public bool[] GetHeldButtons()
     {
         KeyboardState keyboard = _getKeyboard();
-        GamePadState  gamepad  = _getGamePad();
-        MouseState    mouse    = _getMouse();
+        GamePadState gamepad = _getGamePad();
+        MouseState mouse = _getMouse();
 
-        var held = new bool[7];
+        bool[] held = new bool[7];
         foreach (PicoButton button in Enum.GetValues<PicoButton>())
         {
             int i = (int)button;
@@ -65,22 +63,26 @@ internal sealed class PollingInputProvider : IInputProvider
         KeyboardState keyboard,
         GamePadState gamepad,
         MouseState mouse)
-        => source switch
+    {
+        return source switch
         {
             KeyboardSource ks => keyboard.IsKeyDown(ks.Key),
-            GamePadSource  gs => gamepad.IsButtonDown(gs.Button),
-            MouseSource    ms => IsMouseButtonDown(mouse, ms.Button),
-            _                 => false,
+            GamePadSource gs => gamepad.IsButtonDown(gs.Button),
+            MouseSource ms => IsMouseButtonDown(mouse, ms.Button),
+            _ => false,
         };
+    }
 
     private static bool IsMouseButtonDown(MouseState state, MouseButton button)
-        => button switch
+    {
+        return button switch
         {
-            MouseButton.Left   => state.LeftButton   == ButtonState.Pressed,
-            MouseButton.Right  => state.RightButton  == ButtonState.Pressed,
+            MouseButton.Left => state.LeftButton == ButtonState.Pressed,
+            MouseButton.Right => state.RightButton == ButtonState.Pressed,
             MouseButton.Middle => state.MiddleButton == ButtonState.Pressed,
-            MouseButton.X1     => state.XButton1     == ButtonState.Pressed,
-            MouseButton.X2     => state.XButton2     == ButtonState.Pressed,
-            _                  => false,
+            MouseButton.X1 => state.XButton1 == ButtonState.Pressed,
+            MouseButton.X2 => state.XButton2 == ButtonState.Pressed,
+            _ => false,
         };
+    }
 }

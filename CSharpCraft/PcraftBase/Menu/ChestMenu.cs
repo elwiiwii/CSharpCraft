@@ -4,10 +4,10 @@ namespace CSharpCraft.PcraftBase.Menu;
 
 internal sealed class ChestMenu(List<InventorySlot> chestItems, List<InventorySlot> playerItems) : IMenu
 {
-    internal List<InventorySlot> ChestItems  { get; } = chestItems  ?? throw new ArgumentNullException(nameof(chestItems));
+    internal List<InventorySlot> ChestItems { get; } = chestItems ?? throw new ArgumentNullException(nameof(chestItems));
     internal List<InventorySlot> PlayerItems { get; } = playerItems ?? throw new ArgumentNullException(nameof(playerItems));
-    internal int Sel       { get; set; } = 0;
-    internal int Off       { get; set; } = 0;
+    internal int Sel { get; set; } = 0;
+    internal int Off { get; set; } = 0;
     internal int TabToggle { get; set; } = 0;
 
     public bool Update(PlayerEntity player)
@@ -15,12 +15,12 @@ internal sealed class ChestMenu(List<InventorySlot> chestItems, List<InventorySl
         if (Pico8.Btnp(0)) { TabToggle = PcraftServices.Loop(TabToggle - 1, 2); Pico8.Sfx(18); }
         if (Pico8.Btnp(1)) { TabToggle = PcraftServices.Loop(TabToggle + 1, 2); Pico8.Sfx(18); }
 
-        var activeList = TabToggle == 0 ? ChestItems : PlayerItems;
-        var otherList  = TabToggle == 0 ? PlayerItems : ChestItems;
+        List<InventorySlot> activeList = TabToggle == 0 ? ChestItems : PlayerItems;
+        List<InventorySlot> otherList = TabToggle == 0 ? PlayerItems : ChestItems;
 
         if (activeList.Count > 0 && Pico8.Btnp(5))
         {
-            var item = activeList[Sel];
+            InventorySlot item = activeList[Sel];
             activeList.RemoveAt(Sel);
             otherList.Add(item);
             Pico8.Sfx(16);
@@ -34,5 +34,8 @@ internal sealed class ChestMenu(List<InventorySlot> chestItems, List<InventorySl
         return false;
     }
 
-    public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawChestPanels(this);
+    public void Draw(PlayerEntity player, Level level)
+    {
+        PcraftServices.DrawChestPanels(this);
+    }
 }

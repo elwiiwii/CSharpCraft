@@ -9,7 +9,7 @@ internal static class PlayerActionUpdater
         PlayerEntity player,
         F32 dx, F32 dy, bool canAct, List<CharacterEntity> nearEnemies)
     {
-        var level = player.CurrentLevel!;
+        Level level = player.CurrentLevel!;
         // ── Final collision + player advance ─────────────────────────────────
         (dx, dy) = PcraftServices.ReflectCol(
             player.X, player.Y, dx, dy,
@@ -21,17 +21,17 @@ internal static class PlayerActionUpdater
         player.Prot = PcraftServices.UpRot(player.Lrot, player.Prot);
 
         // ── Smooth bars (Llife / Lstam) ───────────────────────────────────────
-        player.Llife += F32.Clamp(player.Life  - player.Llife, -F32.One, F32.One);
-        player.Lstam += F32.Clamp(player.Stam  - player.Lstam, -F32.One, F32.One);
+        player.Llife += F32.Clamp(player.Life - player.Llife, -F32.One, F32.One);
+        player.Lstam += F32.Clamp(player.Stam - player.Lstam, -F32.One, F32.One);
 
         // ── Btn(5) action block ───────────────────────────────────────────────
         if (Pico8.Btn(5) && !player.Block5 && canAct)
         {
-            var bx       = Pico8.Cos(player.Prot);
-            var by       = Pico8.Sin(player.Prot);
-            var hitx     = player.X + bx * F32.FromInt(8);
-            var hity     = player.Y + by * F32.FromInt(8);
-            var hitTile   = PcraftServices.GetTile(hitx, hity, level);
+            F32 bx = Pico8.Cos(player.Prot);
+            F32 by = Pico8.Sin(player.Prot);
+            F32 hitx = player.X + (bx * F32.FromInt(8));
+            F32 hity = player.Y + (by * F32.FromInt(8));
+            Tile hitTile = PcraftServices.GetTile(hitx, hity, level);
             var stamcost = F32.FromInt(20);
 
             // Place bench
@@ -39,9 +39,9 @@ internal static class PlayerActionUpdater
             {
                 if (hitTile.Type is not WallTileType && (hitTile.Type == PcraftData.TileSand || hitTile.Type == PcraftData.TileGrass))
                 {
-                    var tileX  = F32.Floor(hitx / F32.FromInt(16)) * 16 + 8;
-                    var tileY  = F32.Floor(hity / F32.FromInt(16)) * 16 + 8;
-                    var placed = new PlacedItemEntity(def, tileX, tileY);
+                    F32 tileX = (F32.Floor(hitx / F32.FromInt(16)) * 16) + 8;
+                    F32 tileY = (F32.Floor(hity / F32.FromInt(16)) * 16) + 8;
+                    PlacedItemEntity placed = new(def, tileX, tileY);
                     level.Ent.Add(placed);
                     PcraftServices.RemInList(player.Invent, player.CurItem);
                     canAct = false;
@@ -56,58 +56,58 @@ internal static class PlayerActionUpdater
                 {
                     // ── Attack near enemies ───────────────────────────────────
                     Pico8.Sfx(19);
-                    var pow = F32.One;
+                    F32 pow = F32.One;
                     if (player.CurItem is not null && player.CurItem.Type == PcraftData.Sword)
                     {
-                        var p = player.CurItem is ToolItem swordTool ? swordTool.Power : 0;
+                        int p = player.CurItem is ToolItem swordTool ? swordTool.Power : 0;
                         pow = F32.One + p + Pico8.Rnd(p * p);
-                        stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
+                        stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (p * 2)));
                         pow = F32.FromInt(F32.FloorToInt(pow));
                         Pico8.Sfx(14 + Pico8.Rnd(2).Double);
                     }
                     var count = F32.FromInt(nearEnemies.Count);
-                    foreach (var e in nearEnemies)
+                    foreach (CharacterEntity e in nearEnemies)
                     {
                         e.Life -= pow / count;
-                        var push = (pow - F32.One) * F32.FromDouble(0.5);
+                        F32 push = (pow - F32.One) * F32.FromDouble(0.5);
                         e.Ox += F32.Clamp(e.X - player.X, -push, push);
                         e.Oy += F32.Clamp(e.Y - player.Y, -push, push);
                         if (e.Life <= F32.Zero)
                         {
-                            level.Ene.Remove(e);
-                            PcraftServices.AddItem(PcraftData.Ichor,  F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
+                            _ = level.Ene.Remove(e);
+                            PcraftServices.AddItem(PcraftData.Ichor, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
                             PcraftServices.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
                         }
-                        var popup = new TextPopupEntity(pow, 9, e.X, e.Y - F32.FromInt(10), -F32.One);
+                        TextPopupEntity popup = new(pow, 9, e.X, e.Y - F32.FromInt(10), -F32.One);
                         level.Ent.Add(popup);
                     }
                 }
                 else if (hitTile.Type is WallTileType wall)
                 {
                     // ── Harvest tile ──────────────────────────────────────────
-                    var pow = F32.One;
+                    F32 pow = F32.One;
                     bool toolSoundPlayed = false;
                     if (player.CurItem is not null)
                     {
-                        var p = player.CurItem is ToolItem harvestTool ? harvestTool.Power : 0;
+                        int p = player.CurItem is ToolItem harvestTool ? harvestTool.Power : 0;
                         if (hitTile.Type == PcraftData.TileTree && player.CurItem.Type == PcraftData.Haxe)
                         {
                             pow = F32.One + p + Pico8.Rnd(p * p);
-                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (p * 2)));
                             Pico8.Sfx(12);
                             toolSoundPlayed = true;
                         }
                         else if (player.CurItem.Type == PcraftData.Pick)
                         {
-                            pow = F32.One + p * 2 + Pico8.Rnd(p * p);
-                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - p * 2));
+                            pow = F32.One + (p * 2) + Pico8.Rnd(p * p);
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (p * 2)));
                             Pico8.Sfx(12);
                             toolSoundPlayed = true;
                         }
                     }
                     if (!toolSoundPlayed) Pico8.Sfx(15);
                     pow = F32.Floor(pow);
-                    var harvestLife = hitTile.HarvestLife ?? F32.FromInt(wall.Life);
+                    F32 harvestLife = hitTile.HarvestLife ?? F32.FromInt(wall.Life);
                     if (harvestLife - pow <= F32.Zero)
                     {
                         PcraftServices.SetTile(hitx, hity, new Tile(wall.UnderlyingType), level);
@@ -119,7 +119,7 @@ internal static class PlayerActionUpdater
                     {
                         PcraftServices.SetTile(hitx, hity, hitTile with { HarvestLife = harvestLife - pow }, level);
                     }
-                    var popup2 = new TextPopupEntity(pow, 10, hitx, hity, -F32.One);
+                    TextPopupEntity popup2 = new(pow, 10, hitx, hity, -F32.One);
                     level.Ent.Add(popup2);
                 }
                 else
@@ -129,7 +129,7 @@ internal static class PlayerActionUpdater
                     if (player.CurItem is not null)
                     {
                         if (player.CurItem is ToolItem toolForStam)
-                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - toolForStam.Power * 2));
+                            stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (toolForStam.Power * 2)));
 
                         if (player.CurItem.Type is HealthItemDef health && health.GiveLife > 0)
                         {
@@ -180,7 +180,7 @@ internal static class PlayerActionUpdater
                                 F32.Zero,
                                 F32.FromInt(4));
                             PcraftServices.AddItem(PcraftData.Wheat,
-                                F32.FloorToInt(dw / F32.FromInt(2) + Pico8.Rnd(dw / F32.FromInt(2))),
+                                F32.FloorToInt((dw / F32.FromInt(2)) + Pico8.Rnd(dw / F32.FromInt(2))),
                                 hitx, hity, level.Ent);
                             PcraftServices.AddItem(PcraftData.Seed, 1, hitx, hity, level.Ent);
                         }

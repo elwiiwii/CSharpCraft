@@ -1,6 +1,5 @@
 using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Map;
 using CSharpCraft.PcraftBase.Menu;
 using CSharpCraft.PcraftBase.Update;
 using CSharpCraft.Tests.Infrastructure;
@@ -22,11 +21,11 @@ public sealed class MenuUpdaterPureTests
     [Fact]
     public void Update_ReturnsFalse_WhenCurMenuIsNull()
     {
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
-        var result = MenuUpdater.Update(player);
+        (bool consumed, bool needsReset) result = MenuUpdater.Update(player);
 
-        result.consumed.Should().BeFalse();
+        _ = result.consumed.Should().BeFalse();
     }
 
     // --------------------------------------------------------------------------
@@ -65,8 +64,8 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
             "pcraft_og_12", "pcraft_og_13", "pcraft_og_14", "pcraft_og_15",
             "pcraft_og_16", "pcraft_og_17", "pcraft_og_18", "pcraft_og_19", "pcraft_og_21");
 
-        var scene = new NullScene();
-        var orch = new GameOrchestrator(
+        NullScene scene = new();
+        GameOrchestrator orch = new(
             _musicDir.Path,
             _sfxDir,
             ".",
@@ -97,38 +96,38 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_ReturnsTrue_WhenSplashMenuActive()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player).consumed.Should().BeTrue();
+        _ = MenuUpdater.Update(player).consumed.Should().BeTrue();
     }
 
     [Fact]
     public void Update_DoesNotChangeCurMenu_WhenSplashAndNoBtnp4()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
+        _ = player.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
     }
 
     [Fact]
     public void Update_SetsLb4_AfterSplash()
     {
         // Btn(4) held → lb4 becomes true; released → false
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.SetBtn(4, true);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.Lb4.Should().BeTrue();
+        _ = player.Lb4.Should().BeTrue();
     }
 
     // --------------------------------------------------------------------------
@@ -140,30 +139,30 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     public void Update_AdvancesToIntroMenu_WhenMainMenuAndBtnp4()
     {
         // Lua: if curmenu==mainmenu then curmenu=intromenu
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4); // Btnp(4) fires once
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.CurMenu.Should().BeSameAs(PcraftData.IntroMenu);
+        _ = player.CurMenu.Should().BeSameAs(PcraftData.IntroMenu);
     }
 
     [Fact]
     public void Update_StartsGame_WhenNonMainSplashAndBtnp4()
     {
         // Lua: else resetlevel() ; curmenu=nil ; music(1)
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = PcraftData.IntroMenu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.IntroMenu };
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.CurMenu.Should().BeNull();
+        _ = player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------
@@ -174,60 +173,60 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_ReturnsTrue_WhenInteractiveMenuActive()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
         player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(player).consumed.Should().BeTrue();
+        _ = MenuUpdater.Update(player).consumed.Should().BeTrue();
     }
 
     [Fact]
     public void Update_DoesNotCloseCurMenu_WhenNoBtnp4()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var menu = new InventoryMenu(player.Invent);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        InventoryMenu menu = new(player.Invent);
         player.CurMenu = menu;
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.CurMenu.Should().BeSameAs(menu);
+        _ = player.CurMenu.Should().BeSameAs(menu);
     }
 
     [Fact]
     public void Update_SetsLb4AndLb5_AfterInteractive()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.SetBtn(4, true);
         fake.SetBtn(5, true);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
         player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.Lb4.Should().BeTrue();
-        player.Lb5.Should().BeTrue();
+        _ = player.Lb4.Should().BeTrue();
+        _ = player.Lb5.Should().BeTrue();
     }
 
     [Fact]
     public void Update_DoesNotMoveSel_WhenNoNavButtons()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        player.Invent.Add(new StackableItem(PcraftData.Wood, 1));
         player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
-        var menu = new InventoryMenu(player.Invent);
+        InventoryMenu menu = new(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        menu.Sel.Should().Be(0);
+        _ = menu.Sel.Should().Be(0);
     }
 
     // --------------------------------------------------------------------------
@@ -239,119 +238,121 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     public void Update_ClosesCurMenu_WhenBtnp4()
     {
         // Lua: if btnp(4) and not lb4 then curmenu=nil
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
         player.CurMenu = new InventoryMenu(player.Invent);
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.CurMenu.Should().BeNull();
+        _ = player.CurMenu.Should().BeNull();
     }
 
     [Fact]
     public void Update_IncrementsSel_WhenBtnp3()
     {
         // Lua: if(btnp(3)) intmenu.sel+=1
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(3);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        player.Invent.Add(new StackableItem(PcraftData.Wood, 1));
         player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
-        var menu = new InventoryMenu(player.Invent);
+        InventoryMenu menu = new(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        menu.Sel.Should().Be(1);
+        _ = menu.Sel.Should().Be(1);
     }
 
     [Fact]
     public void Update_DecrementsSel_WhenBtnp2()
     {
         // Lua: if(btnp(2)) intmenu.sel-=1
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(2);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        player.Invent.Add(new StackableItem(PcraftData.Wood, 1));
         player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
-        var menu = new InventoryMenu(player.Invent);
+        InventoryMenu menu = new(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 1;
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        menu.Sel.Should().Be(0);
+        _ = menu.Sel.Should().Be(0);
     }
 
     [Fact]
     public void Update_WrapsSel_WhenBtnp3AtLastItem()
     {
         // Lua: intmenu.sel = loop(intmenu.sel, intmenu.list) — wraps 0-based
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(3);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Invent.Add(new StackableItem(PcraftData.Wood,  1));
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        player.Invent.Add(new StackableItem(PcraftData.Wood, 1));
         player.Invent.Add(new StackableItem(PcraftData.Stone, 1));
-        var menu = new InventoryMenu(player.Invent);
+        InventoryMenu menu = new(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 1; // already at last (0-based, 2 items → max=1)
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        menu.Sel.Should().Be(0); // wraps back to 0
+        _ = menu.Sel.Should().Be(0); // wraps back to 0
     }
 
     [Fact]
     public void Update_EquipsItem_WhenBtnp5_OnInventoryMenu()
     {
         // Lua: curitem = curmenu.list[curmenu.sel] ; curmenu=nil ; block5=true
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var axe = new ToolItem(PcraftData.Haxe, 1);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        ToolItem axe = new(PcraftData.Haxe, 1);
         player.Invent.Add(axe);
-        var menu = new InventoryMenu(player.Invent);
+        InventoryMenu menu = new(player.Invent);
         player.CurMenu = menu;
         menu.Sel = 0;
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.CurItem.Should().BeSameAs(axe);
-        player.CurMenu.Should().BeNull();
-        player.Block5.Should().BeTrue();
+        _ = player.CurItem.Should().BeSameAs(axe);
+        _ = player.CurMenu.Should().BeNull();
+        _ = player.Block5.Should().BeTrue();
     }
 
     [Fact]
     public void Update_CraftsItem_WhenBtnp5_OnCraftingMenu_WithIngredients()
     {
         // Lua: if cancraft(rec) then craft(rec)
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         // Wood axe requires 5 wood
         player.Invent.Add(new StackableItem(PcraftData.Wood, 5));
-        var craftMenu = new CraftingMenu(PcraftData.Workbench, player.Invent);
-        craftMenu.Sel = 0; // first entry = wood haxe recipe
+        CraftingMenu craftMenu = new(PcraftData.Workbench, player.Invent)
+        {
+            Sel = 0 // first entry = wood haxe recipe
+        };
         player.CurMenu = craftMenu;
 
-        MenuUpdater.Update(player);
+        _ = MenuUpdater.Update(player);
 
-        player.Invent.Should().Contain(it => it.Type == PcraftData.Haxe);
+        _ = player.Invent.Should().Contain(it => it.Type == PcraftData.Haxe);
     }
 
     // --------------------------------------------------------------------------

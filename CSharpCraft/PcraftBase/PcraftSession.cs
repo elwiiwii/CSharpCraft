@@ -4,16 +4,16 @@ namespace CSharpCraft.PcraftBase;
 
 internal class PcraftSession
 {
-    private static PcraftSession? _current;
+    internal static PcraftSession Current { get => field ?? throw new InvalidOperationException("No active PcraftSession."); private set; }
 
-    internal static PcraftSession Current
-        => _current ?? throw new InvalidOperationException("No active PcraftSession.");
-
-    internal static void SetCurrent(PcraftSession session) => _current = session;
+    internal static void SetCurrent(PcraftSession session)
+    {
+        Current = session;
+    }
 
     internal PlayerEntity Player { get; }
-    internal Level?       Cave   { get; set; }
-    internal Level?       Island { get; set; }
+    internal Level? Cave { get; set; }
+    internal Level? Island { get; set; }
 
     internal PcraftSession(PlayerEntity player)
     {

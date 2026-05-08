@@ -27,9 +27,9 @@ internal static class FilterBiasComputer
         if (filterSet is null) throw new ArgumentNullException(nameof(filterSet));
         if (baseClassifier is null) throw new ArgumentNullException(nameof(baseClassifier));
 
-        var biases = new BiasLayers();
+        BiasLayers biases = new();
 
-        foreach (var filter in filterSet.Filters)
+        foreach (MapFilter filter in filterSet.Filters)
         {
             switch (filter)
             {
@@ -60,8 +60,8 @@ internal static class FilterBiasComputer
         int gridSy,
         IFilterDiagnosticSink? sink)
     {
-        var biased = new BiasApplier(baseClassifier, biases);
-        var cells = filter.Zone is null
+        BiasApplier biased = new(baseClassifier, biases);
+        IEnumerable<(int x, int y)> cells = filter.Zone is null
             ? AllCells(gridSx, gridSy)
             : filter.Zone.Cells(gridSx, gridSy);
 
@@ -74,7 +74,7 @@ internal static class FilterBiasComputer
         // target tile (biased cells already matching are not candidates — they're
         // already counted above). Cells committed to a DIFFERENT tile by a prior
         // filter (HasAnyBias) are also excluded to avoid conflicts.
-        var candidates = (filter.Zone is null ? AllCells(gridSx, gridSy) : filter.Zone.Cells(gridSx, gridSy))
+        List<(int x, int y, double dCoast, double dV2, double dV3, double cost)> candidates = (filter.Zone is null ? AllCells(gridSx, gridSy) : filter.Zone.Cells(gridSx, gridSy))
             .Where(c => biased.ClassifyTile(c.x, c.y) != filter.TileId
                      && !biases.HasAnyBias(c.x, c.y)
                      && !baseClassifier.IsFixedTile(c.x, c.y))
@@ -83,7 +83,7 @@ internal static class FilterBiasComputer
             .ToList();
 
         int resolved = 0;
-        foreach (var (x, y, dCoast, dV2, dV3, _) in candidates)
+        foreach ((int x, int y, double dCoast, double dV2, double dV3, double _) in candidates)
         {
             if (resolved >= deficit) break;
             biases.AddCoast(x, y, dCoast);
@@ -108,17 +108,17 @@ internal static class FilterBiasComputer
         int gridSy,
         IFilterDiagnosticSink? sink)
     {
-        var biased = new BiasApplier(baseClassifier, biases);
+        BiasApplier biased = new(baseClassifier, biases);
 
         // Find the largest existing cluster of the target tile in the zone
-        var cluster = FindLargestCluster(biased, filter.Zone, filter.TileId, gridSx, gridSy);
+        HashSet<(int x, int y)> cluster = FindLargestCluster(biased, filter.Zone, filter.TileId, gridSx, gridSy);
 
         if (cluster.Count >= filter.MinClusterSize) return;
 
         // If no cells of the target type exist yet, seed with the cheapest zone cell
         if (cluster.Count == 0)
         {
-            var seed = filter.Zone.Cells(gridSx, gridSy)
+            (int x, int y, double dCoast, double dV2, double dV3, double cost) seed = filter.Zone.Cells(gridSx, gridSy)
                 .Where(c => !biases.HasAnyBias(c.x, c.y) && !baseClassifier.IsFixedTile(c.x, c.y))
                 .Select(c => ScoreCell(baseClassifier, biases, c.x, c.y, filter.TileId))
                 .OrderBy(c => c.cost)
@@ -131,7 +131,7 @@ internal static class FilterBiasComputer
             biases.AddV3(seed.x, seed.y, seed.dV3);
 
             // Re-classify to rebuild the cluster
-            biased  = new BiasApplier(baseClassifier, biases);
+            biased = new BiasApplier(baseClassifier, biases);
             cluster = FindLargestCluster(biased, filter.Zone, filter.TileId, gridSx, gridSy);
         }
 
@@ -140,7 +140,7 @@ internal static class FilterBiasComputer
         for (int iter = 0; iter < maxIter && cluster.Count < filter.MinClusterSize; iter++)
         {
             // Frontier: zone cells 4-adjacent to the cluster that are not yet the target tile
-            var frontier = cluster
+            List<(int x, int y, double dCoast, double dV2, double dV3, double cost)> frontier = cluster
                 .SelectMany(c => Neighbours4(c.x, c.y))
                 .Where(n => filter.Zone.Contains(n.x, n.y)
                             && !cluster.Contains(n)
@@ -158,13 +158,13 @@ internal static class FilterBiasComputer
                 return;
             }
 
-            var best = frontier[0];
+            (int x, int y, double dCoast, double dV2, double dV3, double cost) best = frontier[0];
             biases.AddCoast(best.x, best.y, best.dCoast);
             biases.AddV2(best.x, best.y, best.dV2);
             biases.AddV3(best.x, best.y, best.dV3);
 
             // Recalculate classifier and cluster after each step
-            biased  = new BiasApplier(baseClassifier, biases);
+            biased = new BiasApplier(baseClassifier, biases);
             cluster = FindLargestCluster(biased, filter.Zone, filter.TileId, gridSx, gridSy);
         }
 
@@ -189,26 +189,26 @@ internal static class FilterBiasComputer
             // Sand (b=1): coast ∈ (0.3, 0.6], v2 ≤ 0.5
             1 => (
                 dCoast: Math.Max(0, 0.3 + Epsilon - coast) - Math.Max(0, coast - 0.6 + Epsilon),
-                dV2:    -Math.Max(0, v2 - 0.5 + Epsilon),
-                dV3:    0),
+                dV2: -Math.Max(0, v2 - 0.5 + Epsilon),
+                dV3: 0),
 
             // Grass (c=2): coast > 0.6, v2 ≤ 0.5, v3 ≤ 0.5
             2 => (
                 dCoast: Math.Max(0, 0.6 + Epsilon - coast),
-                dV2:    -Math.Max(0, v2 - 0.5 + Epsilon),
-                dV3:    -Math.Max(0, v3 - 0.5 + Epsilon)),
+                dV2: -Math.Max(0, v2 - 0.5 + Epsilon),
+                dV3: -Math.Max(0, v3 - 0.5 + Epsilon)),
 
             // Rock (d=3): coast > 0.3, v2 > 0.5
             3 => (
                 dCoast: Math.Max(0, 0.3 + Epsilon - coast),
-                dV2:    Math.Max(0, 0.5 + Epsilon - v2),
-                dV3:    0),
+                dV2: Math.Max(0, 0.5 + Epsilon - v2),
+                dV3: 0),
 
             // Tree (e=4): coast > 0.6, v2 ≤ 0.5, v3 > 0.5
             4 => (
                 dCoast: Math.Max(0, 0.6 + Epsilon - coast),
-                dV2:    -Math.Max(0, v2 - 0.5 + Epsilon),
-                dV3:    Math.Max(0, 0.5 + Epsilon - v3)),
+                dV2: -Math.Max(0, v2 - 0.5 + Epsilon),
+                dV3: Math.Max(0, 0.5 + Epsilon - v3)),
 
             // Water (a=0) or any other: no bias needed
             _ => (0, 0, 0)
@@ -226,25 +226,25 @@ internal static class FilterBiasComputer
         int gridSx,
         int gridSy)
     {
-        var cells = zone.Cells(gridSx, gridSy)
+        HashSet<(int x, int y)> cells = zone.Cells(gridSx, gridSy)
             .Where(c => classifier.ClassifyTile(c.x, c.y) == tileId)
             .ToHashSet();
 
         HashSet<(int x, int y)> best = [];
-        var visited = new HashSet<(int, int)>();
+        HashSet<(int, int)> visited = [];
 
-        foreach (var seed in cells)
+        foreach ((int x, int y) seed in cells)
         {
             if (visited.Contains(seed)) continue;
-            var cluster = new HashSet<(int x, int y)>();
-            var queue = new Queue<(int x, int y)>();
+            HashSet<(int x, int y)> cluster = [];
+            Queue<(int x, int y)> queue = new();
             queue.Enqueue(seed);
-            visited.Add(seed);
+            _ = visited.Add(seed);
             while (queue.Count > 0)
             {
-                var cur = queue.Dequeue();
-                cluster.Add(cur);
-                foreach (var n in Neighbours4(cur.x, cur.y))
+                (int x, int y) cur = queue.Dequeue();
+                _ = cluster.Add(cur);
+                foreach ((int x, int y) n in Neighbours4(cur.x, cur.y))
                 {
                     if (cells.Contains(n) && visited.Add(n))
                         queue.Enqueue(n);
@@ -276,11 +276,11 @@ internal static class FilterBiasComputer
     private static (int x, int y, double dCoast, double dV2, double dV3, double cost) ScoreCell(
         MapClassifier baseClassifier, BiasLayers biases, int x, int y, int tileId)
     {
-        var (coast, v2, v3) = baseClassifier.GetIntermediate(x, y);
+        (double coast, double v2, double v3) = baseClassifier.GetIntermediate(x, y);
         coast += biases.GetCoast(x, y);
-        v2    += biases.GetV2(x, y);
-        v3    += biases.GetV3(x, y);
-        var (dCoast, dV2, dV3) = CostToConvert(tileId, coast, v2, v3);
+        v2 += biases.GetV2(x, y);
+        v3 += biases.GetV3(x, y);
+        (double dCoast, double dV2, double dV3) = CostToConvert(tileId, coast, v2, v3);
         double cost = Math.Abs(dCoast) + Math.Abs(dV2) + Math.Abs(dV3);
         return (x, y, dCoast, dV2, dV3, cost);
     }
@@ -290,7 +290,7 @@ internal static class FilterBiasComputer
     private sealed class BiasApplier : MapClassifier
     {
         private readonly MapClassifier _base;
-        private readonly BiasLayers    _biases;
+        private readonly BiasLayers _biases;
 
         internal BiasApplier(MapClassifier baseClassifier, BiasLayers biases)
             : base(new NullGrid(), new NullGrid(), new NullGrid(), new NullGrid(),
@@ -299,17 +299,17 @@ internal static class FilterBiasComputer
                    baseClassifier.TileD, baseClassifier.TileE,
                    baseClassifier.GenerateHole)
         {
-            _base   = baseClassifier;
+            _base = baseClassifier;
             _biases = biases;
         }
 
         internal override int ClassifyTile(int i, int j)
         {
             if (FixedTileAt(i, j) is { } f) return f;
-            var (coast, v2, v3) = _base.GetIntermediate(i, j);
+            (double coast, double v2, double v3) = _base.GetIntermediate(i, j);
             coast += _biases.GetCoast(i, j);
-            v2    += _biases.GetV2(i, j);
-            v3    += _biases.GetV3(i, j);
+            v2 += _biases.GetV2(i, j);
+            v3 += _biases.GetV3(i, j);
             return ClassifyFromValues(coast, v2, v3);
         }
     }
@@ -317,6 +317,9 @@ internal static class FilterBiasComputer
     private sealed class NullGrid : SeededNoiseGrid
     {
         internal NullGrid() : base(0L, 64, 64, 64, 0.0, 0.0, 0) { }
-        internal override double GetValue(int x, int y) => 0.5;
+        internal override double GetValue(int x, int y)
+        {
+            return 0.5;
+        }
     }
 }

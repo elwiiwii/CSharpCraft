@@ -13,30 +13,30 @@ public sealed class ItemDefTests
     [Fact]
     public void Constructor_StoresName()
     {
-        var sut = new ItemDef("wood", 103);
-        sut.Name.Should().Be("wood");
+        ItemDef sut = new("wood", 103);
+        _ = sut.Name.Should().Be("wood");
     }
 
     [Fact]
     public void Constructor_StoresSpr()
     {
-        var sut = new ItemDef("wood", 103);
-        sut.Spr.Should().Be(103);
+        ItemDef sut = new("wood", 103);
+        _ = sut.Spr.Should().Be(103);
     }
 
     [Fact]
     public void Constructor_StoresPal_WhenProvided()
     {
-        var pal = new[] { 1, 5, 3, 11 };
-        var sut = new ItemDef("tree", 4, pal);
-        sut.Pal.Should().BeSameAs(pal);
+        int[] pal = new[] { 1, 5, 3, 11 };
+        ItemDef sut = new("tree", 4, pal);
+        _ = sut.Pal.Should().BeSameAs(pal);
     }
 
     [Fact]
     public void Constructor_PalIsNull_WhenNotProvided()
     {
-        var sut = new ItemDef("wood", 103);
-        sut.Pal.Should().BeNull();
+        ItemDef sut = new("wood", 103);
+        _ = sut.Pal.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------

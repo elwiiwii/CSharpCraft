@@ -9,24 +9,24 @@ public sealed class HealthItemDefTests
     [Fact]
     public void Constructor_InheritsNameSprPal()
     {
-        var pal = new[] { 1, 2, 8, 14 };
-        var sut = new HealthItemDef("potion", 85, pal);
-        sut.Name.Should().Be("potion");
-        sut.Spr.Should().Be(85);
-        sut.Pal.Should().BeSameAs(pal);
+        int[] pal = new[] { 1, 2, 8, 14 };
+        HealthItemDef sut = new("potion", 85, pal);
+        _ = sut.Name.Should().Be("potion");
+        _ = sut.Spr.Should().Be(85);
+        _ = sut.Pal.Should().BeSameAs(pal);
     }
 
     [Fact]
     public void GiveLife_DefaultsToZero()
     {
-        var sut = new HealthItemDef("apple", 116);
-        sut.GiveLife.Should().Be(0);
+        HealthItemDef sut = new("apple", 116);
+        _ = sut.GiveLife.Should().Be(0);
     }
 
     [Fact]
     public void GiveLife_StoredViaInit()
     {
-        var sut = new HealthItemDef("apple", 116) { GiveLife = 20 };
-        sut.GiveLife.Should().Be(20);
+        HealthItemDef sut = new("apple", 116) { GiveLife = 20 };
+        _ = sut.GiveLife.Should().Be(20);
     }
 }

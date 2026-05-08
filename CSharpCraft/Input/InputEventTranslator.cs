@@ -1,4 +1,3 @@
-using Microsoft.Xna.Framework.Input;
 using PSharp8.Input;
 
 namespace CSharpCraft.Input;
@@ -44,7 +43,7 @@ internal static class InputEventTranslator
         [0x00000037u] = Keys.D7,
         [0x00000038u] = Keys.D8,
         [0x00000039u] = Keys.D9,
-        
+
         [0x40000059u] = Keys.NumPad1,
         [0x4000005au] = Keys.NumPad2,
         [0x4000005bu] = Keys.NumPad3,
@@ -110,7 +109,7 @@ internal static class InputEventTranslator
         [0x400000e5u] = Keys.RightShift,
         [0x40000065u] = Keys.Apps,        // APPLICATION
         [0x40000076u] = Keys.Apps,        // MENU
-        
+
         [0x00000020u] = Keys.Space,
         [0x00000008u] = Keys.Back,        // BACKSPACE
         [0x0000000du] = Keys.Enter,       // RETURN
@@ -124,7 +123,7 @@ internal static class InputEventTranslator
         [0x40000102u] = Keys.Sleep,
         [0x40000080u] = Keys.VolumeUp,
         [0x40000081u] = Keys.VolumeDown,
-        
+
         [0x00000027u] = Keys.OemQuotes,       // APOSTROPHE
         [0x0000002cu] = Keys.OemComma,        // COMMA
         [0x0000002du] = Keys.OemMinus,        // MINUS
@@ -151,16 +150,16 @@ internal static class InputEventTranslator
     // SDL_GamepadButton byte to XNA Buttons
     private static readonly Dictionary<byte, Buttons> GamepadButtonMap = new()
     {
-        [0]  = Buttons.A,
-        [1]  = Buttons.B,
-        [2]  = Buttons.X,
-        [3]  = Buttons.Y,
-        [4]  = Buttons.Back,
-        [5]  = Buttons.BigButton,
-        [6]  = Buttons.Start,
-        [7]  = Buttons.LeftStick,
-        [8]  = Buttons.RightStick,
-        [9]  = Buttons.LeftShoulder,
+        [0] = Buttons.A,
+        [1] = Buttons.B,
+        [2] = Buttons.X,
+        [3] = Buttons.Y,
+        [4] = Buttons.Back,
+        [5] = Buttons.BigButton,
+        [6] = Buttons.Start,
+        [7] = Buttons.LeftStick,
+        [8] = Buttons.RightStick,
+        [9] = Buttons.LeftShoulder,
         [10] = Buttons.RightShoulder,
         [11] = Buttons.DPadUp,
         [12] = Buttons.DPadDown,
@@ -170,22 +169,20 @@ internal static class InputEventTranslator
 
     internal static InputEvent? TranslateKeyboard(uint keycode, bool isDown, ulong timestampNs)
     {
-        if (!KeycodeMap.TryGetValue(keycode, out Keys key))
-            return null;
-        return new InputEvent(new KeyboardSource(key), isDown, timestampNs);
+        return !KeycodeMap.TryGetValue(keycode, out Keys key) ? null : new InputEvent(new KeyboardSource(key), isDown, timestampNs);
     }
 
     internal static InputEvent? TranslateMouse(byte sdlButton, bool isDown, ulong timestampNs)
     {
-        if (!MouseButtonMap.TryGetValue(sdlButton, out MouseButton button))
-            return null;
-        return new InputEvent(new MouseSource(button), isDown, timestampNs);
+        return !MouseButtonMap.TryGetValue(sdlButton, out MouseButton button)
+            ? null
+            : new InputEvent(new MouseSource(button), isDown, timestampNs);
     }
 
     internal static InputEvent? TranslateGamepad(byte sdlButton, bool isDown, ulong timestampNs)
     {
-        if (!GamepadButtonMap.TryGetValue(sdlButton, out Buttons button))
-            return null;
-        return new InputEvent(new GamePadSource(button), isDown, timestampNs);
+        return !GamepadButtonMap.TryGetValue(sdlButton, out Buttons button)
+            ? null
+            : new InputEvent(new GamePadSource(button), isDown, timestampNs);
     }
 }

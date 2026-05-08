@@ -20,20 +20,20 @@ public sealed class PcraftPreviewBaseTests
         internal (int X, int Y)? OverrideCenter { get; init; }
         internal bool Water { get; init; } = true;
 
-        protected override long PreviewSeed    => Seed;
-        protected override int  PreviewRadius  => Radius;
-        public    override (int X, int Y)? CenterOverride => OverrideCenter;
-        public    override bool AnimateWater  => Water;
+        protected override long PreviewSeed => Seed;
+        protected override int PreviewRadius => Radius;
+        public override (int X, int Y)? CenterOverride => OverrideCenter;
+        public override bool AnimateWater => Water;
     }
 
     // Creates a mock ISceneSetup whose RegisterUpdate/RegisterDraw return a no-op handle.
     private static Mock<ISceneSetup> MakeSetup()
     {
-        var mock = new Mock<ISceneSetup>();
-        var handle = new Mock<IFunctionHandle>();
-        mock.Setup(s => s.RegisterUpdate(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
+        Mock<ISceneSetup> mock = new();
+        Mock<IFunctionHandle> handle = new();
+        _ = mock.Setup(s => s.RegisterUpdate(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
             .Returns(handle.Object);
-        mock.Setup(s => s.RegisterDraw(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
+        _ = mock.Setup(s => s.RegisterDraw(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
             .Returns(handle.Object);
         return mock;
     }
@@ -49,9 +49,9 @@ public sealed class PcraftPreviewBaseTests
     {
         // The default implementation of CenterOverride must return null so that
         // PcraftWorldSampler uses the spawn tile as center.
-        var sut = new StubPreview { Seed = 0, Radius = 4 };
+        StubPreview sut = new() { Seed = 0, Radius = 4 };
 
-        sut.CenterOverride.Should().BeNull(
+        _ = sut.CenterOverride.Should().BeNull(
             because: "CenterOverride must default to null so spawn tile is used as center");
     }
 
@@ -59,9 +59,9 @@ public sealed class PcraftPreviewBaseTests
     public void AnimateWater_DefaultsToTrue()
     {
         // AnimateWater defaults to true — the RegisterUpdate time-counter is added by default.
-        var sut = new StubPreview { Seed = 0, Radius = 4 };
+        StubPreview sut = new() { Seed = 0, Radius = 4 };
 
-        sut.AnimateWater.Should().BeTrue(
+        _ = sut.AnimateWater.Should().BeTrue(
             because: "AnimateWater must default to true");
     }
 
@@ -77,9 +77,9 @@ public sealed class PcraftPreviewBaseTests
     [InlineData(4)]   // side = 8
     public void Init_SetsResolution_To16TimesSquareSide(int radius)
     {
-        var setup = MakeSetup();
-        var sut   = new StubPreview { Seed = 1, Radius = radius };
-        int side  = 2 * radius;
+        Mock<ISceneSetup> setup = MakeSetup();
+        StubPreview sut = new() { Seed = 1, Radius = radius };
+        int side = 2 * radius;
 
         sut.Init(setup.Object);
 
@@ -96,8 +96,8 @@ public sealed class PcraftPreviewBaseTests
     [Fact]
     public void Init_RegistersDraw_ExactlyOnce()
     {
-        var setup = MakeSetup();
-        var sut   = new StubPreview { Seed = 1, Radius = 4 };
+        Mock<ISceneSetup> setup = MakeSetup();
+        StubPreview sut = new() { Seed = 1, Radius = 4 };
 
         sut.Init(setup.Object);
 
@@ -108,8 +108,8 @@ public sealed class PcraftPreviewBaseTests
     [Fact]
     public void Init_RegistersDraw_At30Fps()
     {
-        var setup = MakeSetup();
-        var sut   = new StubPreview { Seed = 1, Radius = 4 };
+        Mock<ISceneSetup> setup = MakeSetup();
+        StubPreview sut = new() { Seed = 1, Radius = 4 };
 
         sut.Init(setup.Object);
 
@@ -126,8 +126,8 @@ public sealed class PcraftPreviewBaseTests
     [Fact]
     public void Init_RegistersUpdate_WhenAnimateWaterIsTrue()
     {
-        var setup = MakeSetup();
-        var sut   = new StubPreview { Seed = 1, Radius = 4, Water = true };
+        Mock<ISceneSetup> setup = MakeSetup();
+        StubPreview sut = new() { Seed = 1, Radius = 4, Water = true };
 
         sut.Init(setup.Object);
 
@@ -138,8 +138,8 @@ public sealed class PcraftPreviewBaseTests
     [Fact]
     public void Init_DoesNotRegisterUpdate_WhenAnimateWaterIsFalse()
     {
-        var setup = MakeSetup();
-        var sut   = new StubPreview { Seed = 1, Radius = 4, Water = false };
+        Mock<ISceneSetup> setup = MakeSetup();
+        StubPreview sut = new() { Seed = 1, Radius = 4, Water = false };
 
         sut.Init(setup.Object);
 
@@ -150,8 +150,8 @@ public sealed class PcraftPreviewBaseTests
     [Fact]
     public void Init_RegistersUpdate_At30Fps_WhenAnimateWaterIsTrue()
     {
-        var setup = MakeSetup();
-        var sut   = new StubPreview { Seed = 1, Radius = 4, Water = true };
+        Mock<ISceneSetup> setup = MakeSetup();
+        StubPreview sut = new() { Seed = 1, Radius = 4, Water = true };
 
         sut.Init(setup.Object);
 
@@ -171,20 +171,20 @@ public sealed class PcraftPreviewBaseTests
         // Captures the update callback and invokes it multiple times to verify
         // the time counter increments without error.
         Action? capturedUpdate = null;
-        var setup = new Mock<ISceneSetup>();
-        var handle = new Mock<IFunctionHandle>();
-        setup.Setup(s => s.RegisterUpdate(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
+        Mock<ISceneSetup> setup = new();
+        Mock<IFunctionHandle> handle = new();
+        _ = setup.Setup(s => s.RegisterUpdate(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
             .Callback<Action, double, PauseBehavior>((cb, _, _) => capturedUpdate = cb)
             .Returns(handle.Object);
-        setup.Setup(s => s.RegisterDraw(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
+        _ = setup.Setup(s => s.RegisterDraw(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
             .Returns(handle.Object);
 
-        var sut = new StubPreview { Seed = 1, Radius = 2, Water = true };
+        StubPreview sut = new() { Seed = 1, Radius = 2, Water = true };
         sut.Init(setup.Object);
 
-        capturedUpdate.Should().NotBeNull();
-        var act = () => { for (int i = 0; i < 90; i++) capturedUpdate!(); };
-        act.Should().NotThrow(because: "the time counter must increment 90 ticks without error");
+        _ = capturedUpdate.Should().NotBeNull();
+        Action act = () => { for (int i = 0; i < 90; i++) capturedUpdate!(); };
+        _ = act.Should().NotThrow(because: "the time counter must increment 90 ticks without error");
     }
 
     // --------------------------------------------------------------------------

@@ -9,7 +9,7 @@ internal class PcraftPreviewScene : PcraftPreviewBase
         base.Init(setup);
 
         bool launched = false;
-        setup.RegisterUpdate(() =>
+        _ = setup.RegisterUpdate(() =>
         {
             if (!launched && AnyButton())
             {
@@ -20,9 +20,13 @@ internal class PcraftPreviewScene : PcraftPreviewBase
     }
 
     protected virtual void LaunchGame()
-        => Pico8.ScheduleScene(() => new PcraftGameScene(PreviewSeed));
+    {
+        Pico8.ScheduleScene(() => new PcraftGameScene(PreviewSeed));
+    }
 
     protected virtual bool AnyButton()
-        => Pico8.Btn(0) || Pico8.Btn(1) || Pico8.Btn(2)
-        || Pico8.Btn(3) || Pico8.Btn(4) || Pico8.Btn(5);
+    {
+        return Pico8.Btn(0) || Pico8.Btn(1) || Pico8.Btn(2)
+            || Pico8.Btn(3) || Pico8.Btn(4) || Pico8.Btn(5);
+    }
 }

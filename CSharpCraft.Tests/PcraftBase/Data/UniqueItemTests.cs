@@ -11,14 +11,14 @@ public sealed class UnstackableItemTests
     [Fact]
     public void Constructor_StoresType()
     {
-        var sut = new UnstackableItem(Workbench);
-        sut.Type.Should().BeSameAs(Workbench);
+        UnstackableItem sut = new(Workbench);
+        _ = sut.Type.Should().BeSameAs(Workbench);
     }
 
     [Fact]
     public void IsSubclassOfInventorySlot()
     {
-        var sut = new UnstackableItem(Workbench);
-        sut.Should().BeAssignableTo<InventorySlot>();
+        UnstackableItem sut = new(Workbench);
+        _ = sut.Should().BeAssignableTo<InventorySlot>();
     }
 }

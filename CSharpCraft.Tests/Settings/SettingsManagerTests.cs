@@ -15,21 +15,21 @@ public sealed class SettingsManagerTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenConfigDirectoryIsNull()
     {
-        var act = () => new SettingsManager(
+        Func<SettingsManager> act = () => new SettingsManager(
             configDirectory: null!,
             orchestrator: null!,
             graphicsDeviceManager: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("configDirectory");
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("configDirectory");
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenOrchestratorIsNull()
     {
-        var act = () => new SettingsManager(
+        Func<SettingsManager> act = () => new SettingsManager(
             configDirectory: ".",
             orchestrator: null!,
             graphicsDeviceManager: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("orchestrator");
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("orchestrator");
     }
 
     // --------------------------------------------------------------------------
@@ -66,22 +66,22 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenGraphicsDeviceManagerIsNull()
     {
-        var act = () =>
+        Action act = () =>
         {
-            using var orch = new GameOrchestrator(
+            using GameOrchestrator orch = new(
                 ".", ".", ".", new EmptyScene(),
                 fixture.GraphicsDevice, fixture.GraphicsDeviceManager, fixture.Window);
             _ = new SettingsManager(".", orch, graphicsDeviceManager: null!);
         };
-        act.Should().Throw<ArgumentNullException>().WithParameterName("graphicsDeviceManager");
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("graphicsDeviceManager");
     }
 
     [Fact]
     public void Constructor_CreatesGeneralJson_WhenFileDoesNotExist()
     {
-        using var sut = CreateSut();
+        using SettingsManager sut = CreateSut();
 
-        File.Exists(Path.Combine(_tempDir, "general.json")).Should().BeTrue();
+        _ = File.Exists(Path.Combine(_tempDir, "general.json")).Should().BeTrue();
     }
 
     // --------------------------------------------------------------------------
@@ -91,29 +91,29 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void GeneralSettings_ReturnsDefaults_WhenCreatedFromEmptyDirectory()
     {
-        using var sut = CreateSut();
+        using SettingsManager sut = CreateSut();
 
-        sut.GeneralSettings.MusicVolume.Should().Be(100);
-        sut.GeneralSettings.SfxVolume.Should().Be(100);
-        sut.GeneralSettings.WindowWidth.Should().Be(512);
-        sut.GeneralSettings.WindowHeight.Should().Be(512);
-        sut.GeneralSettings.Fullscreen.Should().BeFalse();
+        _ = sut.GeneralSettings.MusicVolume.Should().Be(100);
+        _ = sut.GeneralSettings.SfxVolume.Should().Be(100);
+        _ = sut.GeneralSettings.WindowWidth.Should().Be(512);
+        _ = sut.GeneralSettings.WindowHeight.Should().Be(512);
+        _ = sut.GeneralSettings.Fullscreen.Should().BeFalse();
     }
 
     [Fact]
     public void Constructor_LoadsExistingGeneralJson_AndExposesSettings()
     {
-        Directory.CreateDirectory(_tempDir);
+        _ = Directory.CreateDirectory(_tempDir);
         File.WriteAllText(
             Path.Combine(_tempDir, "general.json"),
             """{"MusicVolume":60,"SfxVolume":40,"WindowWidth":1024,"WindowHeight":768,"Fullscreen":false}""");
 
-        using var sut = CreateSut();
+        using SettingsManager sut = CreateSut();
 
-        sut.GeneralSettings.MusicVolume.Should().Be(60);
-        sut.GeneralSettings.SfxVolume.Should().Be(40);
-        sut.GeneralSettings.WindowWidth.Should().Be(1024);
-        sut.GeneralSettings.WindowHeight.Should().Be(768);
+        _ = sut.GeneralSettings.MusicVolume.Should().Be(60);
+        _ = sut.GeneralSettings.SfxVolume.Should().Be(40);
+        _ = sut.GeneralSettings.WindowWidth.Should().Be(1024);
+        _ = sut.GeneralSettings.WindowHeight.Should().Be(768);
     }
 
     // --------------------------------------------------------------------------
@@ -124,27 +124,27 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Constructor_AppliesWindowWidth_ToGraphicsDeviceManager()
     {
-        Directory.CreateDirectory(_tempDir);
+        _ = Directory.CreateDirectory(_tempDir);
         File.WriteAllText(
             Path.Combine(_tempDir, "general.json"),
             """{"MusicVolume":100,"SfxVolume":100,"WindowWidth":800,"WindowHeight":600,"Fullscreen":false}""");
 
-        using var sut = CreateSut();
+        using SettingsManager sut = CreateSut();
 
-        fixture.GraphicsDeviceManager.PreferredBackBufferWidth.Should().Be(800);
+        _ = fixture.GraphicsDeviceManager.PreferredBackBufferWidth.Should().Be(800);
     }
 
     [Fact]
     public void Constructor_AppliesWindowHeight_ToGraphicsDeviceManager()
     {
-        Directory.CreateDirectory(_tempDir);
+        _ = Directory.CreateDirectory(_tempDir);
         File.WriteAllText(
             Path.Combine(_tempDir, "general.json"),
             """{"MusicVolume":100,"SfxVolume":100,"WindowWidth":800,"WindowHeight":600,"Fullscreen":false}""");
 
-        using var sut = CreateSut();
+        using SettingsManager sut = CreateSut();
 
-        fixture.GraphicsDeviceManager.PreferredBackBufferHeight.Should().Be(600);
+        _ = fixture.GraphicsDeviceManager.PreferredBackBufferHeight.Should().Be(600);
     }
 
     // --------------------------------------------------------------------------
@@ -155,7 +155,7 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public async Task Update_AppliesNewWindowWidth_AfterFileChange()
     {
-        using var sut = CreateSut();
+        using SettingsManager sut = CreateSut();
 
         File.WriteAllText(
             Path.Combine(_tempDir, "general.json"),
@@ -164,7 +164,7 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
 
         sut.Update();
 
-        fixture.GraphicsDeviceManager.PreferredBackBufferWidth.Should().Be(640);
+        _ = fixture.GraphicsDeviceManager.PreferredBackBufferWidth.Should().Be(640);
     }
 
     // --------------------------------------------------------------------------
@@ -175,11 +175,11 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Dispose_DoesNotThrow()
     {
-        var sut = CreateSut();
-        var act = () => sut.Dispose();
-        act.Should().NotThrow();
+        SettingsManager sut = CreateSut();
+        Action act = () => sut.Dispose();
+        _ = act.Should().NotThrow();
     }
-    
+
     // --------------------------------------------------------------------------
     #endregion
     // --------------------------------------------------------------------------

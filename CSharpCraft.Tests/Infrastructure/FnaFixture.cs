@@ -1,5 +1,3 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using SDL3;
 
 namespace CSharpCraft.Tests.Infrastructure;
@@ -25,7 +23,10 @@ public sealed class FnaFixture : IDisposable
     public GraphicsDeviceManager GraphicsDeviceManager => _game.GraphicsDeviceManager;
     public GameWindow Window => _game.Window;
 
-    public void Dispose() => _game.Dispose();
+    public void Dispose()
+    {
+        _game.Dispose();
+    }
 
     /// <summary>
     /// Creates a temporary directory containing a minimal silent WAV file for each base name.
@@ -33,8 +34,8 @@ public sealed class FnaFixture : IDisposable
     /// </summary>
     public static string CreateTempSfxDirectory(params string[] sfxBaseNames)
     {
-        var dir = Directory.CreateTempSubdirectory("cscraft_test_sfx_").FullName;
-        foreach (var name in sfxBaseNames)
+        string dir = Directory.CreateTempSubdirectory("cscraft_test_sfx_").FullName;
+        foreach (string name in sfxBaseNames)
             CreateSilentWavFile(Path.Combine(dir, name + ".wav"));
         return dir;
     }
@@ -45,7 +46,7 @@ public sealed class FnaFixture : IDisposable
         const int sampleRate = 44100;
         const int sampleCount = 4410;
         const int dataSize = sampleCount * 2;
-        using var bw = new System.IO.BinaryWriter(File.Create(path));
+        using BinaryWriter bw = new(File.Create(path));
         bw.Write(new byte[] { 0x52, 0x49, 0x46, 0x46 }); // "RIFF"
         bw.Write(36 + dataSize);                           // ChunkSize
         bw.Write(new byte[] { 0x57, 0x41, 0x56, 0x45 }); // "WAVE"
@@ -68,10 +69,10 @@ public sealed class FnaFixture : IDisposable
     /// </summary>
     public static TempMusicDirectory CreateTempMusicDirectory(params string[] filenames)
     {
-        var dir = Directory.CreateTempSubdirectory("cscraft_test_music_").FullName;
-        var silentOgg = Path.Combine(AppContext.BaseDirectory, "TestAssets", "silent.ogg");
+        string dir = Directory.CreateTempSubdirectory("cscraft_test_music_").FullName;
+        string silentOgg = Path.Combine(AppContext.BaseDirectory, "TestAssets", "silent.ogg");
 
-        foreach (var filename in filenames)
+        foreach (string filename in filenames)
             File.Copy(silentOgg, Path.Combine(dir, filename), overwrite: true);
 
         return new TempMusicDirectory(dir);
@@ -84,10 +85,10 @@ public sealed class FnaFixture : IDisposable
         Environment.SetEnvironmentVariable("FNA3D_FORCE_DRIVER", "SDLGPU");
         Environment.SetEnvironmentVariable("SDL_GPU_DRIVER", "vulkan");
 
-        SDL.SDL_SetHintWithPriority("FNA_PLATFORM_BACKEND",     "SDL3",   SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
-        SDL.SDL_SetHintWithPriority("FNA_NO_OPENGL_INTERCEPTION", "1",    SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
-        SDL.SDL_SetHintWithPriority("FNA3D_FORCE_DRIVER",        "SDLGPU",SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
-        SDL.SDL_SetHintWithPriority("SDL_GPU_DRIVER",            "vulkan", SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        _ = SDL.SDL_SetHintWithPriority("FNA_PLATFORM_BACKEND", "SDL3", SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        _ = SDL.SDL_SetHintWithPriority("FNA_NO_OPENGL_INTERCEPTION", "1", SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        _ = SDL.SDL_SetHintWithPriority("FNA3D_FORCE_DRIVER", "SDLGPU", SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
+        _ = SDL.SDL_SetHintWithPriority("SDL_GPU_DRIVER", "vulkan", SDL.SDL_HintPriority.SDL_HINT_OVERRIDE);
     }
 
     private sealed class TestGame : Game
@@ -111,7 +112,10 @@ public sealed class TempMusicDirectory : IDisposable
 {
     public string Path { get; }
 
-    internal TempMusicDirectory(string path) => Path = path;
+    internal TempMusicDirectory(string path)
+    {
+        Path = path;
+    }
 
     public void Dispose()
     {

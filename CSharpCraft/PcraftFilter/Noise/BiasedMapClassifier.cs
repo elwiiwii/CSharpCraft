@@ -30,10 +30,10 @@ internal sealed class BiasedMapClassifier : MapClassifier
     internal override int ClassifyTile(int i, int j)
     {
         if (FixedTileAt(i, j) is { } f) return f;
-        var (coast, v2, v3) = ComputeIntermediate(i, j);
+        (double coast, double v2, double v3) = ComputeIntermediate(i, j);
         coast += _biasLayers.GetCoast(i, j);
-        v2    += _biasLayers.GetV2(i, j);
-        v3    += _biasLayers.GetV3(i, j);
+        v2 += _biasLayers.GetV2(i, j);
+        v3 += _biasLayers.GetV3(i, j);
         return ClassifyFromValues(coast, v2, v3);
     }
 }

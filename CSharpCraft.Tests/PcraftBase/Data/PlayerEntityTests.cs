@@ -13,17 +13,17 @@ public sealed class PlayerEntityTests
     [Fact]
     public void Constructor_SetsPosition()
     {
-        var sut = new PlayerEntity(F32.FromInt(32), F32.FromInt(48));
-        sut.X.Should().Be(F32.FromInt(32));
-        sut.Y.Should().Be(F32.FromInt(48));
+        PlayerEntity sut = new(F32.FromInt(32), F32.FromInt(48));
+        _ = sut.X.Should().Be(F32.FromInt(32));
+        _ = sut.Y.Should().Be(F32.FromInt(48));
     }
 
     [Fact]
     public void Constructor_DefaultsVelocityToZero()
     {
-        var sut = new PlayerEntity(F32.Zero, F32.Zero);
-        sut.Vx.Should().Be(F32.Zero);
-        sut.Vy.Should().Be(F32.Zero);
+        PlayerEntity sut = new(F32.Zero, F32.Zero);
+        _ = sut.Vx.Should().Be(F32.Zero);
+        _ = sut.Vy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -34,7 +34,7 @@ public sealed class PlayerEntityTests
     [Fact]
     public void IsCharacterEntity()
     {
-        new PlayerEntity(F32.Zero, F32.Zero).Should().BeAssignableTo<CharacterEntity>();
+        _ = new PlayerEntity(F32.Zero, F32.Zero).Should().BeAssignableTo<CharacterEntity>();
     }
 
     // --------------------------------------------------------------------------
@@ -45,18 +45,18 @@ public sealed class PlayerEntityTests
     [Fact]
     public void AiFields_DefaultToZero()
     {
-        var sut = new PlayerEntity(F32.Zero, F32.Zero);
-        sut.Life.Should().Be(F32.Zero);
-        sut.Prot.Should().Be(F32.Zero);
-        sut.Lrot.Should().Be(F32.Zero);
-        sut.Panim.Should().Be(F32.Zero);
-        sut.Banim.Should().Be(F32.Zero);
-        sut.Step.Should().Be(0);
-        sut.Dtim.Should().Be(F32.Zero);
-        sut.Dx.Should().Be(F32.Zero);
-        sut.Dy.Should().Be(F32.Zero);
-        sut.Ox.Should().Be(F32.Zero);
-        sut.Oy.Should().Be(F32.Zero);
+        PlayerEntity sut = new(F32.Zero, F32.Zero);
+        _ = sut.Life.Should().Be(F32.Zero);
+        _ = sut.Prot.Should().Be(F32.Zero);
+        _ = sut.Lrot.Should().Be(F32.Zero);
+        _ = sut.Panim.Should().Be(F32.Zero);
+        _ = sut.Banim.Should().Be(F32.Zero);
+        _ = sut.Step.Should().Be(0);
+        _ = sut.Dtim.Should().Be(F32.Zero);
+        _ = sut.Dx.Should().Be(F32.Zero);
+        _ = sut.Dy.Should().Be(F32.Zero);
+        _ = sut.Ox.Should().Be(F32.Zero);
+        _ = sut.Oy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------

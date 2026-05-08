@@ -43,8 +43,8 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
             "pcraft_og_11", "pcraft_og_12", "pcraft_og_13", "pcraft_og_14", "pcraft_og_15",
             "pcraft_og_16", "pcraft_og_17", "pcraft_og_18", "pcraft_og_19", "pcraft_og_21");
 
-        var scene = new NullScene();
-        var orch = new GameOrchestrator(
+        NullScene scene = new();
+        GameOrchestrator orch = new(
             _musicDir.Path,
             _sfxDir,
             ".",
@@ -77,19 +77,21 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
     {
         // if curmenu → MenuUpdater returns true → PlayerActionUpdater never runs
         // Verifiable: level.Time does NOT advance (time advance is in PlayerActionUpdater)
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Life = F32.FromInt(100);
-        player.CurMenu = PcraftData.DeathMenu;   // splash menu: spr=128 → MenuUpdater returns true
-        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero)
+        {
+            Life = F32.FromInt(100),
+            CurMenu = PcraftData.DeathMenu   // splash menu: spr=128 → MenuUpdater returns true
+        };
+        Level level = new(0, 0, 64, 64, LevelTheme.Surface);
 
         player.CurrentLevel = level;
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftUpdate.Update(player);
 
-        level.Time.Should().Be(F32.Zero);
+        _ = level.Time.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -101,18 +103,20 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
     public void Update_AdvancesTime_WhenNoMenuActive()
     {
         // CurMenu=null → full pipeline → PlayerActionUpdater advances time by 1/30
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Life = F32.FromInt(100);
-        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero)
+        {
+            Life = F32.FromInt(100)
+        };
+        Level level = new(0, 0, 64, 64, LevelTheme.Surface);
 
         player.CurrentLevel = level;
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftUpdate.Update(player);
 
-        level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
+        _ = level.Time.Float.Should().BeApproximately(1f / 30f, 0.005f);
     }
 
     // --------------------------------------------------------------------------
@@ -124,59 +128,65 @@ public sealed class PcraftUpdateTests(FnaFixture fixture) : IDisposable
     public void Update_SetsLrot_WhenLeftButtonPressed()
     {
         // btn(0) pressed → dx=-1; GetInvLen normalises; GetRot(-1,0) → lrot ≈ 0.5
-        var fakeInput = new FakeInputManager();
+        FakeInputManager fakeInput = new();
         fakeInput.SetBtn(0, true);
-        using var orch = BuildOrchestrator(fakeInput);
+        using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Life = F32.FromInt(100);
-        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero)
+        {
+            Life = F32.FromInt(100)
+        };
+        Level level = new(0, 0, 64, 64, LevelTheme.Surface);
 
         player.CurrentLevel = level;
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftUpdate.Update(player);
 
-        player.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
+        _ = player.Lrot.Float.Should().BeApproximately(0.5f, 0.01f);
     }
 
     [Fact]
     public void Update_IncrementsPanim_WhenMoving()
     {
         // btn(1) pressed → dx=1, abs(dx)>0 → panim += 1/33
-        var fakeInput = new FakeInputManager();
+        FakeInputManager fakeInput = new();
         fakeInput.SetBtn(1, true);
-        using var orch = BuildOrchestrator(fakeInput);
+        using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Life = F32.FromInt(100);
-        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero)
+        {
+            Life = F32.FromInt(100)
+        };
+        Level level = new(0, 0, 64, 64, LevelTheme.Surface);
 
         player.CurrentLevel = level;
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftUpdate.Update(player);
 
-        player.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
+        _ = player.Panim.Float.Should().BeApproximately(1f / 33f, 0.003f);
     }
 
     [Fact]
     public void Update_ResetsPanim_WhenNotMoving()
     {
         // no direction buttons → dx=dy=0 → panim = 0
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Life = F32.FromInt(100);
-        player.Panim = F32.FromInt(5);
-        var level = new Level(0, 0, 64, 64, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero)
+        {
+            Life = F32.FromInt(100),
+            Panim = F32.FromInt(5)
+        };
+        Level level = new(0, 0, 64, 64, LevelTheme.Surface);
 
         player.CurrentLevel = level;
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftUpdate.Update(player);
 
-        player.Panim.Should().Be(F32.Zero);
+        _ = player.Panim.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------

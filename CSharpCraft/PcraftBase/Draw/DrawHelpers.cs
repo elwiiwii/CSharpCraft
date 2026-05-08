@@ -18,5 +18,7 @@ internal static class DrawHelpers
     }
 
     internal static void PrintC(string t, int x, int y, int c)
-        => Pico8.Print(t, x - t.Length * 2, y, c);
+    {
+        Pico8.Print(t, x - (t.Length * 2), y, c);
+    }
 }

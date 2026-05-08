@@ -1,3 +1,4 @@
+using System.Reflection;
 using CSharpCraft.PcraftBase.Data;
 using FluentAssertions;
 using Xunit;
@@ -16,24 +17,24 @@ public sealed class PlacedItemEntityTests
     [Fact]
     public void Constructor_SetsType()
     {
-        var sut = new PlacedItemEntity(Workbench, F32.Zero, F32.Zero);
-        sut.Type.Should().BeSameAs(Workbench);
+        PlacedItemEntity sut = new(Workbench, F32.Zero, F32.Zero);
+        _ = sut.Type.Should().BeSameAs(Workbench);
     }
 
     [Fact]
     public void Constructor_SetsPosition()
     {
-        var sut = new PlacedItemEntity(Workbench, F32.FromInt(10), F32.FromInt(20));
-        sut.X.Should().Be(F32.FromInt(10));
-        sut.Y.Should().Be(F32.FromInt(20));
+        PlacedItemEntity sut = new(Workbench, F32.FromInt(10), F32.FromInt(20));
+        _ = sut.X.Should().Be(F32.FromInt(10));
+        _ = sut.Y.Should().Be(F32.FromInt(20));
     }
 
     [Fact]
     public void Constructor_DefaultsVelocityToZero()
     {
-        var sut = new PlacedItemEntity(Workbench, F32.Zero, F32.Zero);
-        sut.Vx.Should().Be(F32.Zero);
-        sut.Vy.Should().Be(F32.Zero);
+        PlacedItemEntity sut = new(Workbench, F32.Zero, F32.Zero);
+        _ = sut.Vx.Should().Be(F32.Zero);
+        _ = sut.Vy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -44,19 +45,19 @@ public sealed class PlacedItemEntityTests
     [Fact]
     public void Timer_PropertyDoesNotExist()
     {
-        var prop = typeof(PlacedItemEntity).GetProperty(
+        PropertyInfo? prop = typeof(PlacedItemEntity).GetProperty(
             "Timer",
             System.Reflection.BindingFlags.Instance |
             System.Reflection.BindingFlags.NonPublic |
             System.Reflection.BindingFlags.Public);
-        prop.Should().BeNull("placed items do not decay; they persist until picked up");
+        _ = prop.Should().BeNull("placed items do not decay; they persist until picked up");
     }
 
     [Fact]
     public void Type_IsPlaceableItemDef()
     {
-        var sut = new PlacedItemEntity(Workbench, F32.Zero, F32.Zero);
-        (sut.Type is PlaceableItemDef).Should().BeTrue();
+        PlacedItemEntity sut = new(Workbench, F32.Zero, F32.Zero);
+        _ = (sut.Type is not null).Should().BeTrue();
     }
 
     // --------------------------------------------------------------------------

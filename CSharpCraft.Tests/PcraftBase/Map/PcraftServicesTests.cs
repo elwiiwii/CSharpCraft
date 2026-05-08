@@ -1,6 +1,5 @@
 using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftBase.Map;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;
 using PSharp8;
@@ -14,14 +13,16 @@ namespace CSharpCraft.Tests.PcraftBase.Map;
 public sealed class PcraftServicesPureTests(FnaFixture fixture)
 {
     private GameOrchestrator BuildOrchestrator()
-        => new(
-            ".",
-            ".",
-            ".",
-            new NullScene(),
-            fixture.GraphicsDevice,
-            fixture.GraphicsDeviceManager,
-            fixture.Window);
+    {
+        return new(
+                ".",
+                ".",
+                ".",
+                new NullScene(),
+                fixture.GraphicsDevice,
+                fixture.GraphicsDeviceManager,
+                fixture.Window);
+    }
 
     private sealed class NullScene : IScene
     {
@@ -41,15 +42,17 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
     [Fact]
     public void SetLevel_SetsPlayerPosition_FromLevelSpawn()
     {
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 8, 8, LevelTheme.Surface);
-        level.Stx = F32.FromInt(72);
-        level.Sty = F32.FromInt(88);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        Level level = new(0, 0, 8, 8, LevelTheme.Surface)
+        {
+            Stx = F32.FromInt(72),
+            Sty = F32.FromInt(88)
+        };
 
         PcraftServices.SetLevel(level, player);
 
-        player.X.Should().Be(F32.FromInt(72));
-        player.Y.Should().Be(F32.FromInt(88));
+        _ = player.X.Should().Be(F32.FromInt(72));
+        _ = player.Y.Should().Be(F32.FromInt(88));
     }
 
     // --------------------------------------------------------------------------
@@ -60,69 +63,69 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
     [Fact]
     public void AddItem_AddsExactly_CountEntities_ToList()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<Entity>();
+        List<Entity> entities = [];
 
         PcraftServices.AddItem(PcraftData.Wood, 3, F32.FromInt(32), F32.FromInt(32), entities);
 
-        entities.Should().HaveCount(3);
+        _ = entities.Should().HaveCount(3);
     }
 
     [Fact]
     public void AddItem_SetsType_OnEachEntity()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<Entity>();
+        List<Entity> entities = [];
 
         PcraftServices.AddItem(PcraftData.Stone, 2, F32.FromInt(48), F32.FromInt(16), entities);
 
-        entities.Should().AllSatisfy(e => (e as DroppedItemEntity)!.Type.Should().BeSameAs(PcraftData.Stone));
+        _ = entities.Should().AllSatisfy(e => (e as DroppedItemEntity)!.Type.Should().BeSameAs(PcraftData.Stone));
     }
 
     [Fact]
     public void AddItem_CreatesDroppedItemEntities()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<Entity>();
+        List<Entity> entities = [];
 
         PcraftServices.AddItem(PcraftData.Wood, 2, F32.FromInt(32), F32.FromInt(32), entities);
 
-        entities.Should().AllSatisfy(e => (e is DroppedItemEntity).Should().BeTrue());
+        _ = entities.Should().AllSatisfy(e => (e is DroppedItemEntity).Should().BeTrue());
     }
 
     [Fact]
     public void AddItem_SetsTimer_InExpectedRange_OnEachEntity()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<Entity>();
+        List<Entity> entities = [];
 
         PcraftServices.AddItem(PcraftData.Wood, 5, F32.FromInt(32), F32.FromInt(32), entities);
 
-        entities.Should().AllSatisfy(e =>
+        _ = entities.Should().AllSatisfy(e =>
         {
-            var dropped = (e as DroppedItemEntity)!;
-            dropped.Timer.Should().BeGreaterThanOrEqualTo(F32.FromInt(110));
-            dropped.Timer.Should().BeLessThan(F32.FromInt(130));
+            DroppedItemEntity dropped = (e as DroppedItemEntity)!;
+            _ = dropped.Timer.Should().BeGreaterThanOrEqualTo(F32.FromInt(110));
+            _ = dropped.Timer.Should().BeLessThan(F32.FromInt(130));
         });
     }
 
     [Fact]
     public void AddItem_SpawnsWithinTileContainingHitPoint()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var entities = new List<Entity>();
+        List<Entity> entities = [];
 
         PcraftServices.AddItem(PcraftData.Wood, 20, F32.FromInt(32), F32.FromInt(32), entities);
 
-        entities.Should().AllSatisfy(e =>
+        _ = entities.Should().AllSatisfy(e =>
         {
-            e.X.Should().BeGreaterThanOrEqualTo(F32.FromInt(33));
-            e.X.Should().BeLessThanOrEqualTo(F32.FromInt(47));
+            _ = e.X.Should().BeGreaterThanOrEqualTo(F32.FromInt(33));
+            _ = e.X.Should().BeLessThanOrEqualTo(F32.FromInt(47));
         });
     }
 
@@ -134,14 +137,16 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
 public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 {
     private GameOrchestrator BuildOrchestrator()
-        => new(
-            ".",
-            ".",
-            ".",
-            new NullScene(),
-            fixture.GraphicsDevice,
-            fixture.GraphicsDeviceManager,
-            fixture.Window);
+    {
+        return new(
+                ".",
+                ".",
+                ".",
+                new NullScene(),
+                fixture.GraphicsDevice,
+                fixture.GraphicsDeviceManager,
+                fixture.Window);
+    }
 
     private sealed class NullScene : IScene
     {
@@ -161,10 +166,10 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void FillEne_PopulatesEnemies_WithZombies_OnSuitableTiles()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level = new Level(0, 0, 16, 16, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        Level level = new(0, 0, 16, 16, LevelTheme.Surface);
 
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
@@ -172,7 +177,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         PcraftServices.FillEne(level, player);
 
-        level.Ene.Count.Should().BeGreaterThan(0, "zombies should spawn on a large grass field");
+        _ = level.Ene.Count.Should().BeGreaterThan(0, "zombies should spawn on a large grass field");
     }
 
     // --------------------------------------------------------------------------
@@ -183,30 +188,30 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void CreateLevel_ReturnsLevel_WithCorrectDimensions()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
-        var level = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
+        Level level = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
 
-        level.X.Should().Be(0);
-        level.Y.Should().Be(0);
-        level.Sx.Should().Be(64);
-        level.Sy.Should().Be(64);
-        level.Theme.Should().Be(LevelTheme.Surface);
+        _ = level.X.Should().Be(0);
+        _ = level.Y.Should().Be(0);
+        _ = level.Sx.Should().Be(64);
+        _ = level.Sy.Should().Be(64);
+        _ = level.Theme.Should().Be(LevelTheme.Surface);
     }
 
     [Fact]
     public void CreateLevel_SetsSpawnPositionOnLevel()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
-        var level = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
+        Level level = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
 
-        level.Stx.Should().BeGreaterThan(F32.Zero, "spawn x must be positive");
-        level.Sty.Should().BeGreaterThan(F32.Zero, "spawn y must be positive");
+        _ = level.Stx.Should().BeGreaterThan(F32.Zero, "spawn x must be positive");
+        _ = level.Sty.Should().BeGreaterThan(F32.Zero, "spawn y must be positive");
     }
 
     // --------------------------------------------------------------------------
@@ -217,30 +222,32 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_SetsPlayerStats_ToInitialValues()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftServices.ResetLevel(player);
 
-        player.Stam.Should().Be(F32.FromInt(100));
-        player.Lstam.Should().Be(F32.FromInt(100));
-        player.Life.Should().Be(F32.FromInt(100));
-        player.Llife.Should().Be(F32.FromInt(100));
+        _ = player.Stam.Should().Be(F32.FromInt(100));
+        _ = player.Lstam.Should().Be(F32.FromInt(100));
+        _ = player.Life.Should().Be(F32.FromInt(100));
+        _ = player.Llife.Should().Be(F32.FromInt(100));
     }
 
     [Fact]
     public void ResetLevel_ResetsMovementStats()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        player.Prot         = F32.FromFloat(0.5f);
-        player.Lrot         = F32.FromFloat(0.5f);
-        player.Panim        = F32.FromInt(3);
-        player.Banim        = F32.FromInt(2);
+        PlayerEntity player = new(F32.Zero, F32.Zero)
+        {
+            Prot = F32.FromFloat(0.5f),
+            Lrot = F32.FromFloat(0.5f),
+            Panim = F32.FromInt(3),
+            Banim = F32.FromInt(2)
+        };
         player.Camera.Coffx = F32.FromInt(5);
         player.Camera.Coffy = F32.FromInt(5);
 
@@ -248,91 +255,91 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         PcraftServices.ResetLevel(player);
 
-        player.Prot.Should().Be(F32.Zero);
-        player.Lrot.Should().Be(F32.Zero);
-        player.Panim.Should().Be(F32.Zero);
-        player.Banim.Should().Be(F32.Zero);
-        player.Camera.Coffx.Should().Be(F32.Zero);
-        player.Camera.Coffy.Should().Be(F32.Zero);
+        _ = player.Prot.Should().Be(F32.Zero);
+        _ = player.Lrot.Should().Be(F32.Zero);
+        _ = player.Panim.Should().Be(F32.Zero);
+        _ = player.Banim.Should().Be(F32.Zero);
+        _ = player.Camera.Coffx.Should().Be(F32.Zero);
+        _ = player.Camera.Coffy.Should().Be(F32.Zero);
     }
 
     [Fact]
     public void ResetLevel_InventoryContainsWorkbench_AsFirstItem()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftServices.ResetLevel(player);
 
-        player.Invent.Should().NotBeEmpty("inventory must be seeded after reset");
-        player.Invent[0].Type.Should().BeSameAs(PcraftData.Workbench,
+        _ = player.Invent.Should().NotBeEmpty("inventory must be seeded after reset");
+        _ = player.Invent[0].Type.Should().BeSameAs(PcraftData.Workbench,
             "first inventory item must be a workbench");
     }
 
     [Fact]
     public void ResetLevel_InventoryContainsPickupTool_AsSecondItem()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftServices.ResetLevel(player);
 
-        player.Invent.Should().HaveCountGreaterThanOrEqualTo(2);
-        player.Invent[1].Type.Should().BeSameAs(PcraftData.PickupTool,
+        _ = player.Invent.Should().HaveCountGreaterThanOrEqualTo(2);
+        _ = player.Invent[1].Type.Should().BeSameAs(PcraftData.PickupTool,
             "second inventory item must be the pickup tool");
     }
 
     [Fact]
     public void ResetLevel_CreatesCaveLevel()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftServices.ResetLevel(player);
-        var cave = PcraftSession.Current.Cave!;
+        Level cave = PcraftSession.Current.Cave!;
 
-        cave.Sx.Should().Be(32);
-        cave.Sy.Should().Be(32);
-        cave.Theme.Should().Be(LevelTheme.Cave);
+        _ = cave.Sx.Should().Be(32);
+        _ = cave.Sy.Should().Be(32);
+        _ = cave.Theme.Should().Be(LevelTheme.Cave);
     }
 
     [Fact]
     public void ResetLevel_CreatesIslandLevel()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftServices.ResetLevel(player);
-        var island = PcraftSession.Current.Island!;
+        Level island = PcraftSession.Current.Island!;
 
-        island.Sx.Should().Be(64);
-        island.Sy.Should().Be(64);
-        island.Theme.Should().Be(LevelTheme.Surface);
+        _ = island.Sx.Should().Be(64);
+        _ = island.Sy.Should().Be(64);
+        _ = island.Theme.Should().Be(LevelTheme.Surface);
     }
 
     [Fact]
     public void ResetLevel_InitialisesRndWat_WithNonZeroValues()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
 
         PcraftSession.SetCurrent(new PcraftSession(player));
 
         PcraftServices.ResetLevel(player);
-        var island = PcraftSession.Current.Island!;
+        Level island = PcraftSession.Current.Island!;
 
         bool anyNonZero = false;
         for (int i = 0; i < 16 && !anyNonZero; i++)
@@ -340,7 +347,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
                 if (island.RndWat[i][j] != F32.Zero)
                     anyNonZero = true;
 
-        anyNonZero.Should().BeTrue("rndwat values are random and not all zero after reset");
+        _ = anyNonZero.Should().BeTrue("rndwat values are random and not all zero after reset");
     }
 
     // --------------------------------------------------------------------------
@@ -351,10 +358,10 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void UpGround_ConvertsFarmTile_ToSandId_WhenTimeExceedsStoredValue()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        Level level = new(0, 0, 8, 8, LevelTheme.Surface);
 
         // Camera at (64,64) -> ci=0, cj=0; tile (0,0) scanned
         player.Camera.Clx = F32.FromInt(64);
@@ -365,17 +372,17 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         PcraftServices.UpGround(level, player);
 
-        level.Map[0, 0].Type.Should().BeSameAs(PcraftData.TileSand,
+        _ = level.Map[0, 0].Type.Should().BeSameAs(PcraftData.TileSand,
             "expired farm tile must be replaced with sand");
     }
 
     [Fact]
     public void UpGround_DoesNotConvertFarmTile_WhenTimeHasNotExpired()
     {
-        using var orch = BuildOrchestrator();
+        using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
-        var player = new PlayerEntity(F32.Zero, F32.Zero);
-        var level  = new Level(0, 0, 8, 8, LevelTheme.Surface);
+        PlayerEntity player = new(F32.Zero, F32.Zero);
+        Level level = new(0, 0, 8, 8, LevelTheme.Surface);
 
         player.Camera.Clx = F32.FromInt(64);
         player.Camera.Cly = F32.FromInt(64);
@@ -385,7 +392,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
 
         PcraftServices.UpGround(level, player);
 
-        level.Map[0, 0].Type.Should().BeSameAs(PcraftData.TileFarm, "tile must stay farm when time has not expired");
+        _ = level.Map[0, 0].Type.Should().BeSameAs(PcraftData.TileFarm, "tile must stay farm when time has not expired");
     }
 
     // --------------------------------------------------------------------------

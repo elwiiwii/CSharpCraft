@@ -13,36 +13,36 @@ public sealed class LevelTests
     [Fact]
     public void Constructor_SetsX()
     {
-        new Level(x: 64, y: 0, sx: 32, sy: 32, LevelTheme.Cave).X.Should().Be(64);
+        _ = new Level(x: 64, y: 0, sx: 32, sy: 32, LevelTheme.Cave).X.Should().Be(64);
     }
 
     [Fact]
     public void Constructor_SetsY()
     {
-        new Level(x: 0, y: 0, sx: 64, sy: 64, LevelTheme.Surface).Y.Should().Be(0);
+        _ = new Level(x: 0, y: 0, sx: 64, sy: 64, LevelTheme.Surface).Y.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_SetsSxAndSy()
     {
-        var sut = new Level(0, 0, 32, 32, LevelTheme.Surface);
-        sut.Sx.Should().Be(32);
-        sut.Sy.Should().Be(32);
+        Level sut = new(0, 0, 32, 32, LevelTheme.Surface);
+        _ = sut.Sx.Should().Be(32);
+        _ = sut.Sy.Should().Be(32);
     }
 
     [Fact]
     public void Constructor_SetsTheme()
     {
-        new Level(64, 0, 32, 32, LevelTheme.Cave).Theme.Should().Be(LevelTheme.Cave);
-        new Level(0,  0, 64, 64, LevelTheme.Surface).Theme.Should().Be(LevelTheme.Surface);
+        _ = new Level(64, 0, 32, 32, LevelTheme.Cave).Theme.Should().Be(LevelTheme.Cave);
+        _ = new Level(0, 0, 64, 64, LevelTheme.Surface).Theme.Should().Be(LevelTheme.Surface);
     }
 
     [Fact]
     public void Map_HasCorrectDimensions()
     {
-        var sut = new Level(0, 0, 32, 32, LevelTheme.Surface);
-        sut.Map.GetLength(0).Should().Be(32);
-        sut.Map.GetLength(1).Should().Be(32);
+        Level sut = new(0, 0, 32, 32, LevelTheme.Surface);
+        _ = sut.Map.GetLength(0).Should().Be(32);
+        _ = sut.Map.GetLength(1).Should().Be(32);
     }
 
     // --------------------------------------------------------------------------
@@ -53,13 +53,13 @@ public sealed class LevelTests
     [Fact]
     public void Ent_IsEmptyOnConstruction()
     {
-        new Level(0, 0, 64, 64, LevelTheme.Surface).Ent.Should().BeEmpty();
+        _ = new Level(0, 0, 64, 64, LevelTheme.Surface).Ent.Should().BeEmpty();
     }
 
     [Fact]
     public void Ene_IsEmptyOnConstruction()
     {
-        new Level(0, 0, 64, 64, LevelTheme.Surface).Ene.Should().BeEmpty();
+        _ = new Level(0, 0, 64, 64, LevelTheme.Surface).Ene.Should().BeEmpty();
     }
 
     // Dat removed — tile-level data is now stored in Tile.HarvestLife / Tile.GrowthTimer
@@ -72,24 +72,26 @@ public sealed class LevelTests
     [Fact]
     public void Stx_DefaultsZero()
     {
-        new Level(0, 0, 64, 64, LevelTheme.Surface).Stx.Should().Be(F32.Zero);
+        _ = new Level(0, 0, 64, 64, LevelTheme.Surface).Stx.Should().Be(F32.Zero);
     }
 
     [Fact]
     public void Sty_DefaultsZero()
     {
-        new Level(0, 0, 64, 64, LevelTheme.Surface).Sty.Should().Be(F32.Zero);
+        _ = new Level(0, 0, 64, 64, LevelTheme.Surface).Sty.Should().Be(F32.Zero);
     }
 
     [Fact]
     public void SpawnPoint_CanBeMutated()
     {
-        var sut = new Level(0, 0, 64, 64, LevelTheme.Surface);
-        sut.Stx = F32.FromInt(520);
-        sut.Sty = F32.FromInt(312);
+        Level sut = new(0, 0, 64, 64, LevelTheme.Surface)
+        {
+            Stx = F32.FromInt(520),
+            Sty = F32.FromInt(312)
+        };
 
-        sut.Stx.Should().Be(F32.FromInt(520));
-        sut.Sty.Should().Be(F32.FromInt(312));
+        _ = sut.Stx.Should().Be(F32.FromInt(520));
+        _ = sut.Sty.Should().Be(F32.FromInt(312));
     }
 
     // --------------------------------------------------------------------------

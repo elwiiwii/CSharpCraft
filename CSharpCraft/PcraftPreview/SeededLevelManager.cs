@@ -8,19 +8,22 @@ internal static class SeededLevelManager
 {
     private static long _seed;
 
-    internal static void Initialize(long seed) => _seed = seed;
+    internal static void Initialize(long seed)
+    {
+        _seed = seed;
+    }
 
     internal static Level CreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
     {
         if (theme == LevelTheme.Cave)
             return LevelManager.CreateLevel(x, y, sx, sy, theme, player);
 
-        var level = new Level(x, y, sx, sy, theme);
+        Level level = new(x, y, sx, sy, theme);
         PcraftServices.SetLevel(level, player);
-        var (holeX, holeY) = SeededMapGenerator.CreateMap(level, player, _seed);
+        (int holeX, int holeY) = SeededMapGenerator.CreateMap(level, player, _seed);
         PcraftServices.FillEne(level, player);
-        level.Stx = F32.FromInt((holeX - level.X) * 16 + 8);
-        level.Sty = F32.FromInt((holeY - level.Y) * 16 + 8);
+        level.Stx = F32.FromInt(((holeX - level.X) * 16) + 8);
+        level.Sty = F32.FromInt(((holeY - level.Y) * 16) + 8);
         return level;
     }
 }

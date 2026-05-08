@@ -18,17 +18,17 @@ internal static class LevelManager
         {
             for (int j = 0; j < level.Sy; j++)
             {
-                var tile = PcraftServices.GetDirectTile(i, j, level);
-                var r = Pico8.Rnd(100);
-                var ex = F32.FromInt(i * 16 + 8);
-                var ey = F32.FromInt(j * 16 + 8);
+                Tile tile = PcraftServices.GetDirectTile(i, j, level);
+                F32 r = Pico8.Rnd(100);
+                var ex = F32.FromInt((i * 16) + 8);
+                var ey = F32.FromInt((j * 16) + 8);
                 var dist = F32.Max(F32.Abs(ex - player.X), F32.Abs(ey - player.Y));
                 if (r < 3 &&
                     tile.Type is not WallTileType &&
                     tile.Type != PcraftData.TileWater &&
                     dist > F32.FromInt(50))
                 {
-                    var zombie = new ZombieEntity(ex, ey)
+                    ZombieEntity zombie = new(ex, ey)
                     {
                         Life = F32.FromInt(10),
                         Prot = F32.Zero,
@@ -48,38 +48,38 @@ internal static class LevelManager
 
     internal static Level CreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
     {
-        var level = new Level(x, y, sx, sy, theme);
+        Level level = new(x, y, sx, sy, theme);
         PcraftServices.SetLevel(level, player);
-        var (holeX, holeY) = PcraftServices.CreateMap(level, player);
+        (int holeX, int holeY) = PcraftServices.CreateMap(level, player);
         PcraftServices.FillEne(level, player);
-        level.Stx = F32.FromInt((holeX - level.X) * 16 + 8);
-        level.Sty = F32.FromInt((holeY - level.Y) * 16 + 8);
+        level.Stx = F32.FromInt(((holeX - level.X) * 16) + 8);
+        level.Sty = F32.FromInt(((holeY - level.Y) * 16) + 8);
         return level;
     }
 
     internal static void ResetLevel(PlayerEntity player)
     {
-        player.Prot   = F32.Zero;
-        player.Lrot   = F32.Zero;
-        player.Panim  = F32.Zero;
-        player.Stam   = F32.FromInt(100);
-        player.Lstam  = player.Stam;
-        player.Life   = F32.FromInt(100);
-        player.Llife  = player.Life;
-        player.Banim  = F32.Zero;
-        player.Camera.Coffx  = F32.Zero;
-        player.Camera.Coffy  = F32.Zero;
+        player.Prot = F32.Zero;
+        player.Lrot = F32.Zero;
+        player.Panim = F32.Zero;
+        player.Stam = F32.FromInt(100);
+        player.Lstam = player.Stam;
+        player.Life = F32.FromInt(100);
+        player.Llife = player.Life;
+        player.Banim = F32.Zero;
+        player.Camera.Coffx = F32.Zero;
+        player.Camera.Coffy = F32.Zero;
         player.CurItem = null;
 
         player.Invent.Clear();
 
-        var session = PcraftSession.Current;
-        session.Cave   = PcraftServices.CreateLevel(64, 0, 32, 32, LevelTheme.Cave,    player);
-        session.Island = PcraftServices.CreateLevel( 0, 0, 64, 64, LevelTheme.Surface, player);
+        PcraftSession session = PcraftSession.Current;
+        session.Cave = PcraftServices.CreateLevel(64, 0, 32, 32, LevelTheme.Cave, player);
+        session.Island = PcraftServices.CreateLevel(0, 0, 64, 64, LevelTheme.Surface, player);
 
         // Init RndWat on both levels
-        var rndWat = PcraftServices.InitRndWat();
-        foreach (var lev in new[] { session.Cave, session.Island })
+        F32[][] rndWat = PcraftServices.InitRndWat();
+        foreach (Level? lev in new[] { session.Cave, session.Island })
         {
             for (int i = 0; i < 16; i++)
                 for (int j = 0; j < 16; j++)
@@ -89,8 +89,8 @@ internal static class LevelManager
         player.Invent.Add(new UnstackableItem(PcraftData.Workbench));
         player.Invent.Add(new UnstackableItem(PcraftData.PickupTool));
 
-        player.CurrentLevel   = session.Island;
-        player.SwitchLevel    = false;
+        player.CurrentLevel = session.Island;
+        player.SwitchLevel = false;
         player.CanSwitchLevel = false;
     }
 
@@ -101,18 +101,18 @@ internal static class LevelManager
 
         for (int k = 0; k < count; k++)
         {
-            var ex = tileX + Pico8.Rnd(14) + 1;
-            var ey = tileY + Pico8.Rnd(14) + 1;
-            var vx = Pico8.Rnd(3) - F32.FromDouble(1.5);
-            var vy = Pico8.Rnd(3) - F32.FromDouble(1.5);
-            var entity = new DroppedItemEntity(mat, ex, ey, timer: 110 + Pico8.Rnd(20), vx: vx, vy: vy);
+            F32 ex = tileX + Pico8.Rnd(14) + 1;
+            F32 ey = tileY + Pico8.Rnd(14) + 1;
+            F32 vx = Pico8.Rnd(3) - F32.FromDouble(1.5);
+            F32 vy = Pico8.Rnd(3) - F32.FromDouble(1.5);
+            DroppedItemEntity entity = new(mat, ex, ey, timer: 110 + Pico8.Rnd(20), vx: vx, vy: vy);
             entities.Add(entity);
         }
     }
 
     internal static void UpGround(Level level, PlayerEntity player)
     {
-        var camera = player.Camera;
+        CameraState camera = player.Camera;
         int ci = F32.FloorToInt((camera.Clx - F32.FromInt(64)) / F32.FromInt(16));
         int cj = F32.FloorToInt((camera.Cly - F32.FromInt(64)) / F32.FromInt(16));
 
@@ -121,7 +121,7 @@ internal static class LevelManager
             for (int j = cj; j <= cj + 8; j++)
             {
                 if (MapOps.OutOfBounds(i, j, level)) continue;
-                var tile = level.Map[i, j];
+                Tile tile = level.Map[i, j];
                 if (tile.Type == PcraftData.TileFarm && tile.GrowthTimer.HasValue && level.Time > tile.GrowthTimer.Value)
                     level.SetTile(i, j, new Tile(PcraftData.TileSand));
             }

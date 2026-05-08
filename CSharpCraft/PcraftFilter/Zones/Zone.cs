@@ -11,8 +11,10 @@ internal sealed record RectangleZone(int X, int Y, int Width, int Height) : Zone
 {
     internal override string HashString => $"rect.{X}.{Y}.{Width}.{Height}";
 
-    internal override bool Contains(int x, int y) =>
-        x >= X && x < X + Width && y >= Y && y < Y + Height;
+    internal override bool Contains(int x, int y)
+    {
+        return x >= X && x < X + Width && y >= Y && y < Y + Height;
+    }
 
     internal override IEnumerable<(int x, int y)> Cells(int gridSx, int gridSy)
     {
@@ -35,7 +37,7 @@ internal sealed record RadiusZone(int CenterX, int CenterY, int Radius) : Zone
     {
         int dx = x - CenterX;
         int dy = y - CenterY;
-        return dx * dx + dy * dy <= Radius * Radius;
+        return (dx * dx) + (dy * dy) <= Radius * Radius;
     }
 
     internal override IEnumerable<(int x, int y)> Cells(int gridSx, int gridSy)

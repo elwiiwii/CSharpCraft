@@ -18,40 +18,40 @@ public sealed class RecipeTests
     [Fact]
     public void Constructor_StoresOutput_AsStackableItem()
     {
-        var sut = new Recipe(new StackableItem(IronBar, 1), []);
-        sut.Output.Should().BeOfType<StackableItem>()
+        Recipe sut = new(new StackableItem(IronBar, 1), []);
+        _ = sut.Output.Should().BeOfType<StackableItem>()
             .Which.Type.Should().BeSameAs(IronBar);
     }
 
     [Fact]
     public void Constructor_StoresOutput_AsToolItem()
     {
-        var sut = new Recipe(new ToolItem(Sword, 5), []);
-        sut.Output.Should().BeOfType<ToolItem>()
+        Recipe sut = new(new ToolItem(Sword, 5), []);
+        _ = sut.Output.Should().BeOfType<ToolItem>()
             .Which.Power.Should().Be(5);
     }
 
     [Fact]
     public void Constructor_StoresOutput_AsUnstackableItem()
     {
-        var sut = new Recipe(new UnstackableItem(IronBar), []);
-        sut.Output.Should().BeOfType<UnstackableItem>()
+        Recipe sut = new(new UnstackableItem(IronBar), []);
+        _ = sut.Output.Should().BeOfType<UnstackableItem>()
             .Which.Type.Should().BeSameAs(IronBar);
     }
 
     [Fact]
     public void Constructor_StoresReq()
     {
-        var req = new List<StackableItem> { new(Iron, 3) };
-        var sut = new Recipe(new StackableItem(IronBar, 1), req);
-        sut.Req.Should().BeSameAs(req);
+        List<StackableItem> req = [new(Iron, 3)];
+        Recipe sut = new(new StackableItem(IronBar, 1), req);
+        _ = sut.Req.Should().BeSameAs(req);
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenOutputIsNull()
     {
-        var act = () => new Recipe(null!, []);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("output");
+        Func<Recipe> act = () => new Recipe(null!, []);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("output");
     }
 
     // --------------------------------------------------------------------------
@@ -63,28 +63,28 @@ public sealed class RecipeTests
     [Fact]
     public void IronBarRecipe_HasCorrectOutputCountAndIngredient()
     {
-        var req = new List<StackableItem> { new(Iron, 3) };
-        var sut = new Recipe(new StackableItem(IronBar, 1), req);
+        List<StackableItem> req = [new(Iron, 3)];
+        Recipe sut = new(new StackableItem(IronBar, 1), req);
 
-        sut.Output.Should().BeOfType<StackableItem>()
+        _ = sut.Output.Should().BeOfType<StackableItem>()
             .Which.Count.Should().Be(1);
-        sut.Output.Type.Should().BeSameAs(IronBar);
-        sut.Req.Should().HaveCount(1);
-        sut.Req[0].Type.Should().BeSameAs(Iron);
-        sut.Req[0].Count.Should().Be(3);
+        _ = sut.Output.Type.Should().BeSameAs(IronBar);
+        _ = sut.Req.Should().HaveCount(1);
+        _ = sut.Req[0].Type.Should().BeSameAs(Iron);
+        _ = sut.Req[0].Count.Should().Be(3);
     }
 
     // recipe(setpower(5, inst(sword)), {instc(gem, 21)}) → output=ToolItem(Sword,5), req=[{Gem,21}]
     [Fact]
     public void GemSwordRecipe_HasPowerFiveAndTwentyOneGems()
     {
-        var req = new List<StackableItem> { new(Gem, 21) };
-        var sut = new Recipe(new ToolItem(Sword, 5), req);
+        List<StackableItem> req = [new(Gem, 21)];
+        Recipe sut = new(new ToolItem(Sword, 5), req);
 
-        sut.Output.Should().BeOfType<ToolItem>()
+        _ = sut.Output.Should().BeOfType<ToolItem>()
             .Which.Power.Should().Be(5);
-        sut.Req[0].Type.Should().BeSameAs(Gem);
-        sut.Req[0].Count.Should().Be(21);
+        _ = sut.Req[0].Type.Should().BeSameAs(Gem);
+        _ = sut.Req[0].Count.Should().Be(21);
     }
 
     // --------------------------------------------------------------------------

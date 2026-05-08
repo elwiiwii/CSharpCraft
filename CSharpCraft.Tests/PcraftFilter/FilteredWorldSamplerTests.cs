@@ -19,8 +19,8 @@ public sealed class FilteredWorldSamplerTests
     [Fact]
     public void Sample_ThrowsArgumentNullException_WhenFilterSetIsNull()
     {
-        var act = () => FilteredWorldSampler.Sample(0L, radius: 2, filters: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("filters");
+        Func<SampleResult> act = () => FilteredWorldSampler.Sample(0L, radius: 2, filters: null!);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("filters");
     }
 
     // --------------------------------------------------------------------------
@@ -35,42 +35,42 @@ public sealed class FilteredWorldSamplerTests
     [InlineData(8)]  // larger window
     public void Sample_TilesDimensions_AreTwiceRadiusPlusOne(int radius)
     {
-        var result = FilteredWorldSampler.Sample(1L, radius, Empty, forceCenterX: 32, forceCenterY: 32);
+        SampleResult result = FilteredWorldSampler.Sample(1L, radius, Empty, forceCenterX: 32, forceCenterY: 32);
 
-        int expected = 2 * radius + 1;
-        result.Tiles.GetLength(0).Should().Be(expected);
-        result.Tiles.GetLength(1).Should().Be(expected);
+        int expected = (2 * radius) + 1;
+        _ = result.Tiles.GetLength(0).Should().Be(expected);
+        _ = result.Tiles.GetLength(1).Should().Be(expected);
     }
 
     [Fact]
     public void Sample_CenterTile_EqualsForcedCoordinates_WhenForceCenterProvided()
     {
-        var result = FilteredWorldSampler.Sample(0L, radius: 4, Empty,
+        SampleResult result = FilteredWorldSampler.Sample(0L, radius: 4, Empty,
             forceCenterX: 30, forceCenterY: 35);
 
-        result.CenterTileX.Should().Be(30);
-        result.CenterTileY.Should().Be(35);
+        _ = result.CenterTileX.Should().Be(30);
+        _ = result.CenterTileY.Should().Be(35);
     }
 
     [Fact]
     public void Sample_RndWat_Is16x16()
     {
-        var result = FilteredWorldSampler.Sample(1L, radius: 2, Empty,
+        SampleResult result = FilteredWorldSampler.Sample(1L, radius: 2, Empty,
             forceCenterX: 32, forceCenterY: 32);
 
-        result.RndWat.GetLength(0).Should().Be(16);
-        result.RndWat.GetLength(1).Should().Be(16);
+        _ = result.RndWat.GetLength(0).Should().Be(16);
+        _ = result.RndWat.GetLength(1).Should().Be(16);
     }
 
     [Fact]
     public void Sample_RndWat_ValuesAreInRange()
     {
-        var result = FilteredWorldSampler.Sample(7L, radius: 2, Empty,
+        SampleResult result = FilteredWorldSampler.Sample(7L, radius: 2, Empty,
             forceCenterX: 32, forceCenterY: 32);
 
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
-                result.RndWat[i, j].Should().BeInRange(0.0, 100.0);
+                _ = result.RndWat[i, j].Should().BeInRange(0.0, 100.0);
     }
 
     // --------------------------------------------------------------------------
@@ -85,12 +85,12 @@ public sealed class FilteredWorldSamplerTests
     [InlineData(99L)]
     public void Sample_WithEmptyFilterSet_ProducesSameTilesAsPcraftWorldSampler(long seed)
     {
-        var filtered = FilteredWorldSampler.Sample(seed, radius: 4, Empty,
+        SampleResult filtered = FilteredWorldSampler.Sample(seed, radius: 4, Empty,
             forceCenterX: 32, forceCenterY: 32);
-        var baseline = PcraftWorldSampler.Sample(seed, radius: 4,
+        SampleResult baseline = PcraftWorldSampler.Sample(seed, radius: 4,
             forceCenterX: 32, forceCenterY: 32);
 
-        filtered.Tiles.Should().BeEquivalentTo(baseline.Tiles,
+        _ = filtered.Tiles.Should().BeEquivalentTo(baseline.Tiles,
             because: "no filters should leave classification identical to the base sampler");
     }
 
@@ -99,12 +99,12 @@ public sealed class FilteredWorldSamplerTests
     [InlineData(42L)]
     public void Sample_WithEmptyFilterSet_ProducesSameRndWatAsPcraftWorldSampler(long seed)
     {
-        var filtered = FilteredWorldSampler.Sample(seed, radius: 4, Empty,
+        SampleResult filtered = FilteredWorldSampler.Sample(seed, radius: 4, Empty,
             forceCenterX: 32, forceCenterY: 32);
-        var baseline = PcraftWorldSampler.Sample(seed, radius: 4,
+        SampleResult baseline = PcraftWorldSampler.Sample(seed, radius: 4,
             forceCenterX: 32, forceCenterY: 32);
 
-        filtered.RndWat.Should().BeEquivalentTo(baseline.RndWat);
+        _ = filtered.RndWat.Should().BeEquivalentTo(baseline.RndWat);
     }
 
     // --------------------------------------------------------------------------
@@ -117,26 +117,26 @@ public sealed class FilteredWorldSamplerTests
     public void Sample_SatisfiesTileCountFilter_ForMinimumRockCount()
     {
         // Demand at least 30 Rock(3) tiles on the 64×64 grid.
-        var filters = new FilterSet([new TileCountFilter(TileId: 3, MinimumCount: 30)]);
+        FilterSet filters = new([new TileCountFilter(TileId: 3, MinimumCount: 30)]);
 
-        var result = FilteredWorldSampler.Sample(1L, radius: 32, filters,
+        SampleResult result = FilteredWorldSampler.Sample(1L, radius: 32, filters,
             forceCenterX: 32, forceCenterY: 32);
 
         int rockCount = CountTileId(result.Tiles, tileId: 3);
-        rockCount.Should().BeGreaterThanOrEqualTo(30,
+        _ = rockCount.Should().BeGreaterThanOrEqualTo(30,
             because: "TileCountFilter(Rock, 30) must be satisfied");
     }
 
     [Fact]
     public void Sample_SatisfiesTileCountFilter_ForMinimumTreeCount()
     {
-        var filters = new FilterSet([new TileCountFilter(TileId: 4, MinimumCount: 20)]);
+        FilterSet filters = new([new TileCountFilter(TileId: 4, MinimumCount: 20)]);
 
-        var result = FilteredWorldSampler.Sample(2L, radius: 32, filters,
+        SampleResult result = FilteredWorldSampler.Sample(2L, radius: 32, filters,
             forceCenterX: 32, forceCenterY: 32);
 
         int treeCount = CountTileId(result.Tiles, tileId: 4);
-        treeCount.Should().BeGreaterThanOrEqualTo(20,
+        _ = treeCount.Should().BeGreaterThanOrEqualTo(20,
             because: "TileCountFilter(Tree, 4) must be satisfied");
     }
 
@@ -149,13 +149,13 @@ public sealed class FilteredWorldSamplerTests
     [Fact]
     public void Sample_SpawnIsInsideAllowedZone_WhenSpawnConstraintFilterPresent()
     {
-        var zone    = new RectangleZone(16, 16, 32, 32);
-        var filters = new FilterSet([new SpawnConstraintFilter([zone])]);
+        RectangleZone zone = new(16, 16, 32, 32);
+        FilterSet filters = new([new SpawnConstraintFilter([zone])]);
 
-        var result = FilteredWorldSampler.Sample(42L, radius: 4, filters);
+        SampleResult result = FilteredWorldSampler.Sample(42L, radius: 4, filters);
 
         if (result.SpawnTileX >= 0)
-            zone.Contains(result.SpawnTileX, result.SpawnTileY).Should().BeTrue(
+            _ = zone.Contains(result.SpawnTileX, result.SpawnTileY).Should().BeTrue(
                 because: "SpawnConstraintFilter must confine the spawn to the allowed zone");
     }
 
@@ -170,16 +170,16 @@ public sealed class FilteredWorldSamplerTests
     [InlineData(42L)]
     public void Sample_IsDeterministic_ForSameSeedAndFilters(long seed)
     {
-        var filters = new FilterSet([new TileCountFilter(TileId: 3, MinimumCount: 10)]);
+        FilterSet filters = new([new TileCountFilter(TileId: 3, MinimumCount: 10)]);
 
-        var r1 = FilteredWorldSampler.Sample(seed, radius: 4, filters,
+        SampleResult r1 = FilteredWorldSampler.Sample(seed, radius: 4, filters,
             forceCenterX: 32, forceCenterY: 32);
-        var r2 = FilteredWorldSampler.Sample(seed, radius: 4, filters,
+        SampleResult r2 = FilteredWorldSampler.Sample(seed, radius: 4, filters,
             forceCenterX: 32, forceCenterY: 32);
 
-        r1.Tiles.Should().BeEquivalentTo(r2.Tiles);
-        r1.SpawnTileX.Should().Be(r2.SpawnTileX);
-        r1.SpawnTileY.Should().Be(r2.SpawnTileY);
+        _ = r1.Tiles.Should().BeEquivalentTo(r2.Tiles);
+        _ = r1.SpawnTileX.Should().Be(r2.SpawnTileX);
+        _ = r1.SpawnTileY.Should().Be(r2.SpawnTileY);
     }
 
     // --------------------------------------------------------------------------

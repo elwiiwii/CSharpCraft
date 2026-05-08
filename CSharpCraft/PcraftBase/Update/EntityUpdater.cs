@@ -12,10 +12,10 @@ internal static class EntityUpdater
         int fin = level.Ent.Count;
         for (int i = fin - 1; i >= 0; i--)
         {
-            var e = level.Ent[i];
+            Entity e = level.Ent[i];
 
             // Physics: wall-bounce for dropped + placed items
-            if (e is DroppedItemEntity || e is PlacedItemEntity)
+            if (e is DroppedItemEntity or PlacedItemEntity)
             {
                 (e.Vx, e.Vy) = PcraftServices.ReflectCol(
                     e.X, e.Y, e.Vx, e.Vy,
@@ -23,8 +23,8 @@ internal static class EntityUpdater
                     F32.FromDouble(0.90));
             }
 
-            e.X  += e.Vx;
-            e.Y  += e.Vy;
+            e.X += e.Vx;
+            e.Y += e.Vy;
             e.Vx *= F32.FromDouble(0.95);
             e.Vy *= F32.FromDouble(0.95);
 
@@ -44,10 +44,10 @@ internal static class EntityUpdater
                 // Pickup: only when close enough and timer has counted down
                 if (dist < F32.FromInt(5) && dropped.Timer < F32.FromInt(115))
                 {
-                    var newit = new StackableItem(dropped.Type, 1);
+                    StackableItem newit = new(dropped.Type, 1);
                     PcraftServices.AddItemInList(player.Invent, newit, player.Invent.Count);
                     level.Ent.RemoveAt(i);
-                    var popup = new TextPopupEntity(
+                    TextPopupEntity popup = new(
                         F32.FromInt(PcraftServices.HowMany(player.Invent, newit)),
                         11,
                         e.X, e.Y - F32.FromInt(5), -F32.One);
@@ -68,17 +68,16 @@ internal static class EntityUpdater
                 {
                     if (player.CurItem is not null && player.CurItem.Type == PcraftData.PickupTool)
                     {
-                        var asSlot = new UnstackableItem(placed.Type);
+                        UnstackableItem asSlot = new(placed.Type);
                         PcraftServices.AddItemInList(player.Invent, asSlot, 0);
                         player.CurItem = asSlot;
                         level.Ent.RemoveAt(i);
                     }
                     else
                     {
-                        if (placed.Type is BenchItemDef bench)
-                            player.CurMenu = new CraftingMenu(bench, player.Invent);
-                        else
-                            player.CurMenu = new ChestMenu([], player.Invent);
+                        player.CurMenu = placed.Type is BenchItemDef bench
+                            ? new CraftingMenu(bench, player.Invent)
+                            : new ChestMenu([], player.Invent);
                         Pico8.Sfx(13);
                     }
                     canAct = false;

@@ -13,7 +13,7 @@ internal sealed class PcraftGameScene : PcraftBase.PcraftSceneBase
 
     public override void Init(ISceneSetup setup)
     {
-        new SeededServices(_seed); // registers itself via SetServices(this) before base.Init fires
+        _ = new SeededServices(_seed); // registers itself via SetServices(this) before base.Init fires
         base.Init(setup);
     }
 }

@@ -9,7 +9,7 @@ internal static class InventoryOps
     internal static int HowMany(List<InventorySlot> list, InventorySlot query)
     {
         int total = 0;
-        foreach (var slot in list)
+        foreach (InventorySlot slot in list)
         {
             if (slot.Type == query.Type)
                 total += slot is StackableItem s ? s.Count : 1;
@@ -20,7 +20,7 @@ internal static class InventoryOps
     // Return the first StackableItem slot matching query.Type, or null.
     internal static StackableItem? FindStackable(List<InventorySlot> list, StackableItem query)
     {
-        foreach (var slot in list)
+        foreach (InventorySlot slot in list)
         {
             if (slot is StackableItem s && s.Type == query.Type)
                 return s;
@@ -35,17 +35,17 @@ internal static class InventoryOps
     {
         if (elem is StackableItem StackableElem)
         {
-            var found = FindStackable(list, StackableElem);
+            StackableItem? found = FindStackable(list, StackableElem);
             if (found is null) return;
             found.Count -= StackableElem.Count;
             if (found.Count <= 0)
-                list.Remove(found);
+                _ = list.Remove(found);
         }
         else
         {
-            var found = FindByType(list, elem.Type);
+            InventorySlot? found = FindByType(list, elem.Type);
             if (found is not null)
-                list.Remove(found);
+                _ = list.Remove(found);
         }
     }
 
@@ -55,7 +55,7 @@ internal static class InventoryOps
     {
         if (item is StackableItem Stackable)
         {
-            var existing = FindStackable(list, Stackable);
+            StackableItem? existing = FindStackable(list, Stackable);
             if (existing is not null)
             {
                 existing.Count += Stackable.Count;
@@ -66,11 +66,13 @@ internal static class InventoryOps
     }
 
     internal static int Loop(int sel, int count)
-        => ((sel % count) + count) % count;
+    {
+        return ((sel % count) + count) % count;
+    }
 
     private static InventorySlot? FindByType(List<InventorySlot> list, ItemDef type)
     {
-        foreach (var slot in list)
+        foreach (InventorySlot slot in list)
         {
             if (slot.Type == type)
                 return slot;

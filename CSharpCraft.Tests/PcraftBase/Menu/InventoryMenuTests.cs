@@ -24,8 +24,8 @@ public sealed class InventoryMenuPureTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenListIsNull()
     {
-        var act = () => new InventoryMenu(list: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("list");
+        Func<InventoryMenu> act = () => new InventoryMenu(list: null!);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("list");
     }
 
     // --------------------------------------------------------------------------
@@ -36,17 +36,17 @@ public sealed class InventoryMenuPureTests
     [Fact]
     public void Constructor_InitializesSelToZero()
     {
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
-        var menu = new InventoryMenu(list);
-        menu.Sel.Should().Be(0);
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1)];
+        InventoryMenu menu = new(list);
+        _ = menu.Sel.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_ExposesListReference()
     {
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
-        var menu = new InventoryMenu(list);
-        menu.List.Should().BeSameAs(list);
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1)];
+        InventoryMenu menu = new(list);
+        _ = menu.List.Should().BeSameAs(list);
     }
 
     // --------------------------------------------------------------------------
@@ -87,8 +87,8 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         _sfxDir = FnaFixture.CreateTempSfxDirectory(
             "pcraft_og_16", "pcraft_og_17", "pcraft_og_18");
 
-        var scene = new NullScene();
-        var orch = new GameOrchestrator(
+        NullScene scene = new();
+        GameOrchestrator orch = new(
             _musicDir.Path, _sfxDir, ".", scene,
             fixture.GraphicsDevice, fixture.GraphicsDeviceManager, fixture.Window,
             inputManager: input);
@@ -105,68 +105,72 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_IncreasesSel_WhenBtnp3Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(3);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
-        var menu = new InventoryMenu(list);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1)];
+        InventoryMenu menu = new(list);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.Sel.Should().Be(1);
+        _ = menu.Sel.Should().Be(1);
     }
 
     [Fact]
     public void Update_DecreasesSel_WhenBtnp2Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(2);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
-        var menu = new InventoryMenu(list);
-        menu.Sel = 1;
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1)];
+        InventoryMenu menu = new(list)
+        {
+            Sel = 1
+        };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.Sel.Should().Be(0);
+        _ = menu.Sel.Should().Be(0);
     }
 
     [Fact]
     public void Update_WrapsSel_ToLast_WhenBtnp2AtFirstItem()
     {
         // Loop(-1, 2) = 1 — PICO-8 uses modular wrap, not clamp
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(2);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
-        var menu = new InventoryMenu(list); // Sel = 0
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1)];
+        InventoryMenu menu = new(list); // Sel = 0
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.Sel.Should().Be(1); // wraps to last
+        _ = menu.Sel.Should().Be(1); // wraps to last
     }
 
     [Fact]
     public void Update_WrapsSel_ToFirst_WhenBtnp3AtLastItem()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(3);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1) };
-        var menu = new InventoryMenu(list);
-        menu.Sel = 1; // at last (2 items, 0-based)
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1), new StackableItem(PcraftData.Stone, 1)];
+        InventoryMenu menu = new(list)
+        {
+            Sel = 1 // at last (2 items, 0-based)
+        };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.Sel.Should().Be(0); // wraps to first
+        _ = menu.Sel.Should().Be(0); // wraps to first
     }
 
     // --------------------------------------------------------------------------
@@ -177,34 +181,34 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_SetsCurMenuToNull_WhenBtnp4Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
-        var menu = new InventoryMenu(list);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1)];
+        InventoryMenu menu = new(list);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurMenu.Should().BeNull();
+        _ = player.CurMenu.Should().BeNull();
     }
 
     [Fact]
     public void Update_DoesNotClose_WhenLb4IsTrue()
     {
         // lb4=true means btn4 was already held — guard prevents repeat-close
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
-        var menu = new InventoryMenu(list);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu, Lb4 = true };
+        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1)];
+        InventoryMenu menu = new(list);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu, Lb4 = true };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurMenu.Should().BeSameAs(menu);
+        _ = player.CurMenu.Should().BeSameAs(menu);
     }
 
     // --------------------------------------------------------------------------
@@ -215,51 +219,51 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_SetsStateCurItemToSelectedItem_WhenBtnp5()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var axe = new UnstackableItem(PcraftData.Haxe);
-        var list = new List<InventorySlot> { axe };
-        var menu = new InventoryMenu(list);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        UnstackableItem axe = new(PcraftData.Haxe);
+        List<InventorySlot> list = [axe];
+        InventoryMenu menu = new(list);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurItem.Should().BeSameAs(axe);
+        _ = player.CurItem.Should().BeSameAs(axe);
     }
 
     [Fact]
     public void Update_SetsCurMenuToNull_WhenBtnp5Equips()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var list = new List<InventorySlot> { new UnstackableItem(PcraftData.Haxe) };
-        var menu = new InventoryMenu(list);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> list = [new UnstackableItem(PcraftData.Haxe)];
+        InventoryMenu menu = new(list);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurMenu.Should().BeNull();
+        _ = player.CurMenu.Should().BeNull();
     }
 
     [Fact]
     public void Update_DoesNotEquip_WhenListIsEmpty_AndBtnp5()
     {
         // No items → btn5 is a no-op; menu stays open
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new InventoryMenu(new List<InventorySlot>());
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        InventoryMenu menu = new([]);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurItem.Should().BeNull();
-        player.CurMenu.Should().BeSameAs(menu);
+        _ = player.CurItem.Should().BeNull();
+        _ = player.CurMenu.Should().BeSameAs(menu);
     }
 
     // --------------------------------------------------------------------------

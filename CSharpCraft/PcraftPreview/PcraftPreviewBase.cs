@@ -30,15 +30,15 @@ internal class PcraftPreviewBase : PcraftSceneBase, IScene
         int side = 2 * PreviewRadius;
         setup.Resolution = (16 * side, 16 * side);
 
-        var result = PcraftWorldSampler.Sample(
+        SampleResult result = PcraftWorldSampler.Sample(
             PreviewSeed, PreviewRadius,
             CenterOverride?.X, CenterOverride?.Y);
 
         F32 time = F32.Zero;
 
         if (AnimateWater)
-            setup.RegisterUpdate(() => time += F32.FromDouble(1.0 / 30.0), fps: 30);
+            _ = setup.RegisterUpdate(() => time += F32.FromDouble(1.0 / 30.0), fps: 30);
 
-        setup.RegisterDraw(() => PreviewDrawer.Draw(result, time), fps: 30);
+        _ = setup.RegisterDraw(() => PreviewDrawer.Draw(result, time), fps: 30);
     }
 }

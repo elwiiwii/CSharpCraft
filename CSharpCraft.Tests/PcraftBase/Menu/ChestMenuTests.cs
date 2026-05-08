@@ -24,17 +24,17 @@ public sealed class ChestMenuPureTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenChestItemsIsNull()
     {
-        var playerItems = new List<InventorySlot>();
-        var act = () => new ChestMenu(chestItems: null!, playerItems);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("chestItems");
+        List<InventorySlot> playerItems = [];
+        Func<ChestMenu> act = () => new ChestMenu(chestItems: null!, playerItems);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("chestItems");
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenPlayerItemsIsNull()
     {
-        var chestItems = new List<InventorySlot>();
-        var act = () => new ChestMenu(chestItems, playerItems: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("playerItems");
+        List<InventorySlot> chestItems = [];
+        Func<ChestMenu> act = () => new ChestMenu(chestItems, playerItems: null!);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("playerItems");
     }
 
     // --------------------------------------------------------------------------
@@ -45,25 +45,25 @@ public sealed class ChestMenuPureTests
     [Fact]
     public void Constructor_InitializesTabToggleToZero()
     {
-        var menu = new ChestMenu(new List<InventorySlot>(), new List<InventorySlot>());
-        menu.TabToggle.Should().Be(0);
+        ChestMenu menu = new([], []);
+        _ = menu.TabToggle.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_InitializesSelToZero()
     {
-        var menu = new ChestMenu(new List<InventorySlot>(), new List<InventorySlot>());
-        menu.Sel.Should().Be(0);
+        ChestMenu menu = new([], []);
+        _ = menu.Sel.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_ExposesChestItemsAndPlayerItemsReferences()
     {
-        var chestItems  = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
-        var playerItems = new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) };
-        var menu = new ChestMenu(chestItems, playerItems);
-        menu.ChestItems.Should().BeSameAs(chestItems);
-        menu.PlayerItems.Should().BeSameAs(playerItems);
+        List<InventorySlot> chestItems = [new StackableItem(PcraftData.Wood, 1)];
+        List<InventorySlot> playerItems = [new StackableItem(PcraftData.Stone, 1)];
+        ChestMenu menu = new(chestItems, playerItems);
+        _ = menu.ChestItems.Should().BeSameAs(chestItems);
+        _ = menu.PlayerItems.Should().BeSameAs(playerItems);
     }
 
     // --------------------------------------------------------------------------
@@ -104,8 +104,8 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
         _sfxDir = FnaFixture.CreateTempSfxDirectory(
             "pcraft_og_16", "pcraft_og_17", "pcraft_og_18");
 
-        var scene = new NullScene();
-        var orch = new GameOrchestrator(
+        NullScene scene = new();
+        GameOrchestrator orch = new(
             _musicDir.Path, _sfxDir, ".", scene,
             fixture.GraphicsDevice, fixture.GraphicsDeviceManager, fixture.Window,
             inputManager: input);
@@ -123,56 +123,60 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_IncrementsTabToggle_WhenBtnp1Pressed()
     {
         // btn1 = "right" — increments tab; mod 2 wraps 0→1
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(1);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new ChestMenu(
-            chestItems:  new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) },
-            playerItems: new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) });
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        ChestMenu menu = new(
+            chestItems: [new StackableItem(PcraftData.Wood, 1)],
+            playerItems: [new StackableItem(PcraftData.Stone, 1)]);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.TabToggle.Should().Be(1);
+        _ = menu.TabToggle.Should().Be(1);
     }
 
     [Fact]
     public void Update_DecrementsTabToggle_WhenBtnp0Pressed()
     {
         // btn0 = "left" — decrements tab; wraps 1→0
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(0);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new ChestMenu(
-            chestItems:  new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) },
-            playerItems: new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) });
-        menu.TabToggle = 1;
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        ChestMenu menu = new(
+            chestItems: [new StackableItem(PcraftData.Wood, 1)],
+            playerItems: [new StackableItem(PcraftData.Stone, 1)])
+        {
+            TabToggle = 1
+        };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.TabToggle.Should().Be(0);
+        _ = menu.TabToggle.Should().Be(0);
     }
 
     [Fact]
     public void Update_WrapsTabToggle_Modulo2_WhenBtnp1AtLastTab()
     {
         // mod-2 wrap: 1 + 1 = 2 → 2 % 2 = 0
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(1);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new ChestMenu(
-            chestItems:  new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) },
-            playerItems: new List<InventorySlot> { new StackableItem(PcraftData.Stone, 1) });
-        menu.TabToggle = 1;
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        ChestMenu menu = new(
+            chestItems: [new StackableItem(PcraftData.Wood, 1)],
+            playerItems: [new StackableItem(PcraftData.Stone, 1)])
+        {
+            TabToggle = 1
+        };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.TabToggle.Should().Be(0);
+        _ = menu.TabToggle.Should().Be(0);
     }
 
     // --------------------------------------------------------------------------
@@ -184,60 +188,62 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_TransfersItem_FromChestToPlayer_WhenBtnp5_OnChestTab()
     {
         // TabToggle=0 → chest is active; btn5 moves selected chest item into player invent
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var wood        = new StackableItem(PcraftData.Wood, 1);
-        var chestItems  = new List<InventorySlot> { wood };
-        var playerItems = new List<InventorySlot>();
-        var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        StackableItem wood = new(PcraftData.Wood, 1);
+        List<InventorySlot> chestItems = [wood];
+        List<InventorySlot> playerItems = [];
+        ChestMenu menu = new(chestItems, playerItems); // TabToggle=0
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        chestItems.Should().BeEmpty("item was transferred out of chest");
-        playerItems.Should().ContainSingle(i => i.Type == PcraftData.Wood, "item arrived in player inventory");
+        _ = chestItems.Should().BeEmpty("item was transferred out of chest");
+        _ = playerItems.Should().ContainSingle(i => i.Type == PcraftData.Wood, "item arrived in player inventory");
     }
 
     [Fact]
     public void Update_TransfersItem_FromPlayerToChest_WhenBtnp5_OnPlayerTab()
     {
         // TabToggle=1 → player inventory is active; btn5 moves selected item into chest
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var stone       = new StackableItem(PcraftData.Stone, 1);
-        var chestItems  = new List<InventorySlot>();
-        var playerItems = new List<InventorySlot> { stone };
-        var menu = new ChestMenu(chestItems, playerItems);
-        menu.TabToggle = 1;
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        StackableItem stone = new(PcraftData.Stone, 1);
+        List<InventorySlot> chestItems = [];
+        List<InventorySlot> playerItems = [stone];
+        ChestMenu menu = new(chestItems, playerItems)
+        {
+            TabToggle = 1
+        };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        playerItems.Should().BeEmpty("item was transferred out of player inventory");
-        chestItems.Should().ContainSingle(i => i.Type == PcraftData.Stone, "item arrived in chest");
+        _ = playerItems.Should().BeEmpty("item was transferred out of player inventory");
+        _ = chestItems.Should().ContainSingle(i => i.Type == PcraftData.Stone, "item arrived in chest");
     }
 
     [Fact]
     public void Update_DoesNotTransfer_WhenActiveListIsEmpty_AndBtnp5()
     {
         // No items in active tab → btn5 is a no-op
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var chestItems  = new List<InventorySlot>();
-        var playerItems = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 1) };
-        var menu = new ChestMenu(chestItems, playerItems); // TabToggle=0 → chest tab (empty)
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> chestItems = [];
+        List<InventorySlot> playerItems = [new StackableItem(PcraftData.Wood, 1)];
+        ChestMenu menu = new(chestItems, playerItems); // TabToggle=0 → chest tab (empty)
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        chestItems.Should().BeEmpty();
-        playerItems.Should().ContainSingle(); // unchanged
+        _ = chestItems.Should().BeEmpty();
+        _ = playerItems.Should().ContainSingle(); // unchanged
     }
 
     // --------------------------------------------------------------------------
@@ -248,16 +254,16 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_SetsCurMenuToNull_WhenBtnp4Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = new ChestMenu(new List<InventorySlot>(), new List<InventorySlot>());
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        ChestMenu menu = new([], []);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurMenu.Should().BeNull();
+        _ = player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------

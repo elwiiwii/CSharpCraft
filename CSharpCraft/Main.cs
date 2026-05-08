@@ -1,17 +1,14 @@
 ﻿using CSharpCraft.Input;
-using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftFilter;
-using CSharpCraft.PcraftPreview;
 using CSharpCraft.Settings;
-using Microsoft.Xna.Framework;
 using PSharp8.Input;
 
 namespace CSharpCraft;
 
-class FNAGame : Game
+internal class FNAGame : Game
 {
     [STAThread]
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         Environment.SetEnvironmentVariable("FNA_PLATFORM_BACKEND", "SDL3");
         Environment.SetEnvironmentVariable("FNA_NO_OPENGL_INTERCEPTION", "1");
@@ -54,7 +51,7 @@ class FNAGame : Game
         _inputProvider = new PollingInputProvider(InputBindings.Default);
 
         //var scene = new PcraftPreviewScene();
-        var scene = new PcraftFilterBase();
+        PcraftFilterBase scene = new();
         _orchestrator = new GameOrchestrator(
             musicDirectory: _musicFolderPath,
             sfxDirectory: _sfxFolderPath,
@@ -68,7 +65,7 @@ class FNAGame : Game
         _orchestrator.LoadSoundtracks(scene.Music, "new!");
         _orchestrator.LoadSfxPacks(scene.Sfx, "soft");
 
-        var configDir = Path.Combine(
+        string configDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "CSharpCraft");
         _settingsManager = new SettingsManager(configDir, _orchestrator, _graphics);
@@ -112,7 +109,7 @@ class FNAGame : Game
             (_graphics.PreferredBackBufferWidth != newW ||
              _graphics.PreferredBackBufferHeight != newH))
         {
-            _graphics.PreferredBackBufferWidth  = newW;
+            _graphics.PreferredBackBufferWidth = newW;
             _graphics.PreferredBackBufferHeight = newH;
             _graphics.ApplyChanges();
         }

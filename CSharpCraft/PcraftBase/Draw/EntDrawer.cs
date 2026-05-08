@@ -6,7 +6,7 @@ internal static class EntDrawer
 {
     internal static void DrawEnt(Level level)
     {
-        foreach (var e in level.Ent)
+        foreach (Entity e in level.Ent)
         {
             if (e is PlacedItemEntity placed)
             {

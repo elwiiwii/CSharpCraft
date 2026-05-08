@@ -36,7 +36,7 @@ internal sealed class SplashScreen(int spr, IReadOnlyList<string> lines)
         Pico8.Rectfill(0, 46, 128, 128, 1);
         Pico8.Spr(Spr, 32, 14, 8, 8);
         for (int i = 0; i < Lines.Count; i++)
-            PcraftServices.PrintC(Lines[i], 64, 80 + i * 10, 6);
+            PcraftServices.PrintC(Lines[i], 64, 80 + (i * 10), 6);
         int tc = 6 + F32.FloorToInt(level.Time % 2);
         PcraftServices.PrintC("press button 1", 64, 112, tc);
         level.Time += F32.FromDouble(0.1);

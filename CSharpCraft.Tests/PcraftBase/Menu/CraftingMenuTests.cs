@@ -1,5 +1,4 @@
 using CSharpCraft.PcraftBase;
-using CSharpCraft.PcraftBase.Crafting;
 using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Menu;
 using CSharpCraft.Tests.Infrastructure;
@@ -26,16 +25,16 @@ public sealed class CraftingMenuPureTests
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenBenchTypeIsNull()
     {
-        var playerInvent = new List<InventorySlot>();
-        var act = () => new CraftingMenu(benchType: null!, playerInvent);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("benchType");
+        List<InventorySlot> playerInvent = [];
+        Func<CraftingMenu> act = () => new CraftingMenu(benchType: null!, playerInvent);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("benchType");
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenPlayerInventIsNull()
     {
-        var act = () => new CraftingMenu(_testBench, playerInvent: null!);
-        act.Should().Throw<ArgumentNullException>().WithParameterName("playerInvent");
+        Func<CraftingMenu> act = () => new CraftingMenu(_testBench, playerInvent: null!);
+        _ = act.Should().Throw<ArgumentNullException>().WithParameterName("playerInvent");
     }
 
     // --------------------------------------------------------------------------
@@ -46,22 +45,22 @@ public sealed class CraftingMenuPureTests
     [Fact]
     public void Constructor_InitializesSelToZero()
     {
-        var menu = new CraftingMenu(_testBench, new List<InventorySlot>());
-        menu.Sel.Should().Be(0);
+        CraftingMenu menu = new(_testBench, []);
+        _ = menu.Sel.Should().Be(0);
     }
 
     [Fact]
     public void Constructor_ExposesRecipesFromBench()
     {
-        var bench = new BenchItemDef("test", 0, 0);
-        var recipes = new List<Recipe>
-        {
+        BenchItemDef bench = new("test", 0, 0);
+        List<Recipe> recipes =
+        [
             new Recipe(new StackableItem(PcraftData.Haxe, 1),
                 [new StackableItem(PcraftData.Wood, 3)])
-        };
+        ];
         bench.Recipes = recipes;
-        var menu = new CraftingMenu(bench, new List<InventorySlot>());
-        menu.Recipes.Should().BeSameAs(recipes);
+        CraftingMenu menu = new(bench, []);
+        _ = menu.Recipes.Should().BeSameAs(recipes);
     }
 
     // --------------------------------------------------------------------------
@@ -104,8 +103,8 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
         _sfxDir = FnaFixture.CreateTempSfxDirectory(
             "pcraft_og_16", "pcraft_og_17", "pcraft_og_18");
 
-        var scene = new NullScene();
-        var orch = new GameOrchestrator(
+        NullScene scene = new();
+        GameOrchestrator orch = new(
             _musicDir.Path, _sfxDir, ".", scene,
             fixture.GraphicsDevice, fixture.GraphicsDeviceManager, fixture.Window,
             inputManager: input);
@@ -116,14 +115,18 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     }
 
     /// <summary>A minimal recipe: 3x Wood → 1x Haxe.</summary>
-    private static Recipe MakeHaxeRecipe() =>
-        new Recipe(new StackableItem(PcraftData.Haxe, 1),
+    private static Recipe MakeHaxeRecipe()
+    {
+        return new(new StackableItem(PcraftData.Haxe, 1),
             [new StackableItem(PcraftData.Wood, 3)]);
+    }
 
     private static CraftingMenu MakeBenchMenu(List<InventorySlot> invent, List<Recipe>? recipes = null)
     {
-        var bench = new BenchItemDef("test", 0, 0);
-        bench.Recipes = recipes ?? [MakeHaxeRecipe()];
+        BenchItemDef bench = new("test", 0, 0)
+        {
+            Recipes = recipes ?? [MakeHaxeRecipe()]
+        };
         return new CraftingMenu(bench, invent);
     }
 
@@ -134,34 +137,34 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_IncreasesSel_WhenBtnp3Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(3);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var recipes = new List<Recipe> { MakeHaxeRecipe(), MakeHaxeRecipe() };
-        var menu = MakeBenchMenu(new List<InventorySlot>(), recipes);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<Recipe> recipes = [MakeHaxeRecipe(), MakeHaxeRecipe()];
+        CraftingMenu menu = MakeBenchMenu([], recipes);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.Sel.Should().Be(1);
+        _ = menu.Sel.Should().Be(1);
     }
 
     [Fact]
     public void Update_DecreasesSel_WhenBtnp2Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(2);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var recipes = new List<Recipe> { MakeHaxeRecipe(), MakeHaxeRecipe() };
-        var menu = MakeBenchMenu(new List<InventorySlot>(), recipes);
+        List<Recipe> recipes = [MakeHaxeRecipe(), MakeHaxeRecipe()];
+        CraftingMenu menu = MakeBenchMenu([], recipes);
         menu.Sel = 1;
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        menu.Sel.Should().Be(0);
+        _ = menu.Sel.Should().Be(0);
     }
 
     // --------------------------------------------------------------------------
@@ -172,37 +175,37 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_AddsResultItemToInventory_WhenBtnp5AndHasIngredients()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var playerInvent = new List<InventorySlot> { new StackableItem(PcraftData.Wood, 3) };
-        var recipes = new List<Recipe> { MakeHaxeRecipe() };
-        var menu = MakeBenchMenu(playerInvent, recipes);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<InventorySlot> playerInvent = [new StackableItem(PcraftData.Wood, 3)];
+        List<Recipe> recipes = [MakeHaxeRecipe()];
+        CraftingMenu menu = MakeBenchMenu(playerInvent, recipes);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
         player.Invent.Add(new StackableItem(PcraftData.Wood, 3));
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.Invent.Should().Contain(i => i.Type == PcraftData.Haxe,
+        _ = player.Invent.Should().Contain(i => i.Type == PcraftData.Haxe,
             "crafting should add the result to the player inventory");
     }
 
     [Fact]
     public void Update_RemovesIngredients_FromInventory_WhenBtnp5AndHasIngredients()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var recipes = new List<Recipe> { MakeHaxeRecipe() };
-        var menu = MakeBenchMenu(new List<InventorySlot>(), recipes);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        List<Recipe> recipes = [MakeHaxeRecipe()];
+        CraftingMenu menu = MakeBenchMenu([], recipes);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
         player.Invent.Add(new StackableItem(PcraftData.Wood, 3));
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.Invent.Should().NotContain(i => i.Type == PcraftData.Wood,
+        _ = player.Invent.Should().NotContain(i => i.Type == PcraftData.Wood,
             "all 3 wood should be consumed by the recipe");
     }
 
@@ -210,34 +213,34 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_DoesNotCraft_WhenPlayerMissingIngredient_AndBtnp5()
     {
         // Missing ingredient → CanCraft returns false → no Haxe added
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var recipes = new List<Recipe> { MakeHaxeRecipe() };
-        var menu = MakeBenchMenu(new List<InventorySlot>(), recipes);
+        List<Recipe> recipes = [MakeHaxeRecipe()];
+        CraftingMenu menu = MakeBenchMenu([], recipes);
         // player.Invent is empty — missing 3x Wood
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.Invent.Should().BeEmpty("no ingredients means nothing is crafted");
+        _ = player.Invent.Should().BeEmpty("no ingredients means nothing is crafted");
     }
 
     [Fact]
     public void Update_DoesNotCraft_WhenRecipeListIsEmpty_AndBtnp5()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(5);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = MakeBenchMenu(new List<InventorySlot>(), []);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        CraftingMenu menu = MakeBenchMenu([], []);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.Invent.Should().BeEmpty();
-        player.CurMenu.Should().BeSameAs(menu); // menu stays open
+        _ = player.Invent.Should().BeEmpty();
+        _ = player.CurMenu.Should().BeSameAs(menu); // menu stays open
     }
 
     // --------------------------------------------------------------------------
@@ -248,16 +251,16 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_SetsCurMenuToNull_WhenBtnp4Pressed()
     {
-        var fake = new FakeInputManager();
+        FakeInputManager fake = new();
         fake.PressOnce(4);
-        using var orch = BuildOrchestrator(fake);
+        using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
-        var menu = MakeBenchMenu(new List<InventorySlot>(), []);
-        var player = new PlayerEntity(F32.Zero, F32.Zero) { CurMenu = menu };
+        CraftingMenu menu = MakeBenchMenu([], []);
+        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu };
 
-        menu.Update(player);
+        _ = menu.Update(player);
 
-        player.CurMenu.Should().BeNull();
+        _ = player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------

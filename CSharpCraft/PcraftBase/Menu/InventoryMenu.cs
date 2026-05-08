@@ -22,7 +22,7 @@ internal sealed class InventoryMenu(List<InventorySlot> list) : IMenu
                 List.RemoveAt(Sel);
                 PcraftServices.AddItemInList(player.Invent, player.CurItem, 0);
                 player.CurMenu = null;
-                player.Block5  = true;
+                player.Block5 = true;
                 Pico8.Sfx(16);
                 return false;
             }
@@ -36,5 +36,8 @@ internal sealed class InventoryMenu(List<InventorySlot> list) : IMenu
         return false;
     }
 
-    public void Draw(PlayerEntity player, Level level) => PcraftServices.DrawInventoryMenu(this);
+    public void Draw(PlayerEntity player, Level level)
+    {
+        PcraftServices.DrawInventoryMenu(this);
+    }
 }

@@ -1,6 +1,5 @@
 using CSharpCraft.Input;
 using FluentAssertions;
-using Microsoft.Xna.Framework.Input;
 using PSharp8.Input;
 using Xunit;
 
@@ -15,9 +14,9 @@ public class InputEventTranslatorTests
     [Fact]
     public void TranslateKeyboard_ReturnsNull_WhenKeycodeUnrecognised()
     {
-        var result = InputEventTranslator.TranslateKeyboard(0xDEADBEEFu, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateKeyboard(0xDEADBEEFu, isDown: true, timestampNs: 0UL);
 
-        result.Should().BeNull();
+        _ = result.Should().BeNull();
     }
 
     [Theory]
@@ -94,37 +93,37 @@ public class InputEventTranslatorTests
     [InlineData(0x00000060u, (int)Keys.OemTilde)]        // SDLK_GRAVE
     public void TranslateKeyboard_ReturnsKeyboardSourceEvent_WhenKeycodeKnown(uint keycode, int expectedKeyInt)
     {
-        var result = InputEventTranslator.TranslateKeyboard(keycode, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateKeyboard(keycode, isDown: true, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.Source.Should().Be(new KeyboardSource((Keys)expectedKeyInt));
+        _ = result.Should().NotBeNull();
+        _ = result!.Source.Should().Be(new KeyboardSource((Keys)expectedKeyInt));
     }
 
     [Fact]
     public void TranslateKeyboard_PreservesIsDown_WhenTrue()
     {
-        var result = InputEventTranslator.TranslateKeyboard(0x40000050u, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateKeyboard(0x40000050u, isDown: true, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.IsDown.Should().BeTrue();
+        _ = result.Should().NotBeNull();
+        _ = result!.IsDown.Should().BeTrue();
     }
 
     [Fact]
     public void TranslateKeyboard_PreservesIsDown_WhenFalse()
     {
-        var result = InputEventTranslator.TranslateKeyboard(0x40000050u, isDown: false, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateKeyboard(0x40000050u, isDown: false, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.IsDown.Should().BeFalse();
+        _ = result.Should().NotBeNull();
+        _ = result!.IsDown.Should().BeFalse();
     }
 
     [Fact]
     public void TranslateKeyboard_PreservesTimestampNs()
     {
-        var result = InputEventTranslator.TranslateKeyboard(0x40000050u, isDown: true, timestampNs: 12345UL);
+        InputEvent? result = InputEventTranslator.TranslateKeyboard(0x40000050u, isDown: true, timestampNs: 12345UL);
 
-        result.Should().NotBeNull();
-        result!.TimestampNs.Should().Be(12345UL);
+        _ = result.Should().NotBeNull();
+        _ = result!.TimestampNs.Should().Be(12345UL);
     }
 
     // --------------------------------------------------------------------------
@@ -137,9 +136,9 @@ public class InputEventTranslatorTests
     [InlineData(99)]   // far above valid SDL range
     public void TranslateMouse_ReturnsNull_WhenButtonUnrecognised(byte sdlButton)
     {
-        var result = InputEventTranslator.TranslateMouse(sdlButton, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateMouse(sdlButton, isDown: true, timestampNs: 0UL);
 
-        result.Should().BeNull();
+        _ = result.Should().BeNull();
     }
 
     [Theory]
@@ -150,28 +149,28 @@ public class InputEventTranslatorTests
     [InlineData(5, (int)MouseButton.X2)]        // SDL button 5 → X2
     public void TranslateMouse_ReturnsMouseSourceEvent_ForEachSdlButton(byte sdlButton, int expectedButtonInt)
     {
-        var result = InputEventTranslator.TranslateMouse(sdlButton, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateMouse(sdlButton, isDown: true, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.Source.Should().Be(new MouseSource((MouseButton)expectedButtonInt));
+        _ = result.Should().NotBeNull();
+        _ = result!.Source.Should().Be(new MouseSource((MouseButton)expectedButtonInt));
     }
 
     [Fact]
     public void TranslateMouse_PreservesIsDown()
     {
-        var result = InputEventTranslator.TranslateMouse(sdlButton: 1, isDown: false, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateMouse(sdlButton: 1, isDown: false, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.IsDown.Should().BeFalse();
+        _ = result.Should().NotBeNull();
+        _ = result!.IsDown.Should().BeFalse();
     }
 
     [Fact]
     public void TranslateMouse_PreservesTimestampNs()
     {
-        var result = InputEventTranslator.TranslateMouse(sdlButton: 1, isDown: true, timestampNs: 99999UL);
+        InputEvent? result = InputEventTranslator.TranslateMouse(sdlButton: 1, isDown: true, timestampNs: 99999UL);
 
-        result.Should().NotBeNull();
-        result!.TimestampNs.Should().Be(99999UL);
+        _ = result.Should().NotBeNull();
+        _ = result!.TimestampNs.Should().Be(99999UL);
     }
 
     // --------------------------------------------------------------------------
@@ -182,22 +181,22 @@ public class InputEventTranslatorTests
     [Fact]
     public void TranslateGamepad_ReturnsNull_WhenButtonUnrecognised()
     {
-        var result = InputEventTranslator.TranslateGamepad(sdlButton: 99, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateGamepad(sdlButton: 99, isDown: true, timestampNs: 0UL);
 
-        result.Should().BeNull();
+        _ = result.Should().BeNull();
     }
 
     [Theory]
-    [InlineData(0,  (int)Buttons.A)]              // SDL SOUTH  → A
-    [InlineData(1,  (int)Buttons.B)]              // SDL EAST   → B
-    [InlineData(2,  (int)Buttons.X)]              // SDL WEST   → X
-    [InlineData(3,  (int)Buttons.Y)]              // SDL NORTH  → Y
-    [InlineData(4,  (int)Buttons.Back)]           // SDL BACK   → Back
-    [InlineData(5,  (int)Buttons.BigButton)]      // SDL GUIDE  → BigButton
-    [InlineData(6,  (int)Buttons.Start)]          // SDL START  → Start
-    [InlineData(7,  (int)Buttons.LeftStick)]      // SDL LEFT_STICK  → LeftStick
-    [InlineData(8,  (int)Buttons.RightStick)]     // SDL RIGHT_STICK → RightStick
-    [InlineData(9,  (int)Buttons.LeftShoulder)]   // SDL LEFT_SHOULDER  → LeftShoulder
+    [InlineData(0, (int)Buttons.A)]              // SDL SOUTH  → A
+    [InlineData(1, (int)Buttons.B)]              // SDL EAST   → B
+    [InlineData(2, (int)Buttons.X)]              // SDL WEST   → X
+    [InlineData(3, (int)Buttons.Y)]              // SDL NORTH  → Y
+    [InlineData(4, (int)Buttons.Back)]           // SDL BACK   → Back
+    [InlineData(5, (int)Buttons.BigButton)]      // SDL GUIDE  → BigButton
+    [InlineData(6, (int)Buttons.Start)]          // SDL START  → Start
+    [InlineData(7, (int)Buttons.LeftStick)]      // SDL LEFT_STICK  → LeftStick
+    [InlineData(8, (int)Buttons.RightStick)]     // SDL RIGHT_STICK → RightStick
+    [InlineData(9, (int)Buttons.LeftShoulder)]   // SDL LEFT_SHOULDER  → LeftShoulder
     [InlineData(10, (int)Buttons.RightShoulder)]  // SDL RIGHT_SHOULDER → RightShoulder
     [InlineData(11, (int)Buttons.DPadUp)]         // SDL DPAD_UP    → DPadUp
     [InlineData(12, (int)Buttons.DPadDown)]       // SDL DPAD_DOWN  → DPadDown
@@ -205,28 +204,28 @@ public class InputEventTranslatorTests
     [InlineData(14, (int)Buttons.DPadRight)]      // SDL DPAD_RIGHT → DPadRight
     public void TranslateGamepad_ReturnsGamePadSourceEvent_ForEachSdlButton(byte sdlButton, int expectedButtonInt)
     {
-        var result = InputEventTranslator.TranslateGamepad(sdlButton, isDown: true, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateGamepad(sdlButton, isDown: true, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.Source.Should().Be(new GamePadSource((Buttons)expectedButtonInt));
+        _ = result.Should().NotBeNull();
+        _ = result!.Source.Should().Be(new GamePadSource((Buttons)expectedButtonInt));
     }
 
     [Fact]
     public void TranslateGamepad_PreservesIsDown()
     {
-        var result = InputEventTranslator.TranslateGamepad(sdlButton: 0, isDown: false, timestampNs: 0UL);
+        InputEvent? result = InputEventTranslator.TranslateGamepad(sdlButton: 0, isDown: false, timestampNs: 0UL);
 
-        result.Should().NotBeNull();
-        result!.IsDown.Should().BeFalse();
+        _ = result.Should().NotBeNull();
+        _ = result!.IsDown.Should().BeFalse();
     }
 
     [Fact]
     public void TranslateGamepad_PreservesTimestampNs()
     {
-        var result = InputEventTranslator.TranslateGamepad(sdlButton: 0, isDown: true, timestampNs: 77777UL);
+        InputEvent? result = InputEventTranslator.TranslateGamepad(sdlButton: 0, isDown: true, timestampNs: 77777UL);
 
-        result.Should().NotBeNull();
-        result!.TimestampNs.Should().Be(77777UL);
+        _ = result.Should().NotBeNull();
+        _ = result!.TimestampNs.Should().Be(77777UL);
     }
 
     // --------------------------------------------------------------------------

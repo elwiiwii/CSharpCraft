@@ -11,5 +11,8 @@ internal sealed class FilterSet
 
     internal string HashString => string.Join(":", Filters.Select(f => f.HashString));
 
-    internal string CombineWithSeed(long seed) => $"{seed}:{HashString}";
+    internal string CombineWithSeed(long seed)
+    {
+        return $"{seed}:{HashString}";
+    }
 }

@@ -6,22 +6,22 @@ internal static class EnemiesDrawer
 {
     internal static void DrawEnemies(PlayerEntity player, Level level)
     {
-        var camera = player.Camera;
+        CameraState camera = player.Camera;
         // Build combined Y-sortable list: player + visible enemies
-        var drawList = new List<CharacterEntity>(level.Ene.Count + 1)
+        List<CharacterEntity> drawList = new(level.Ene.Count + 1)
         {
             player
         };
 
-        foreach (var e in level.Ene)
+        foreach (CharacterEntity e in level.Ene)
         {
             if (PcraftServices.IsIn(e, F32.FromInt(72), camera.Clx, camera.Cly))
                 drawList.Add(e);
         }
-        
+
         SortY(drawList);
 
-        foreach (var e in drawList)
+        foreach (CharacterEntity e in drawList)
         {
             if (e is PlayerEntity p)
             {
@@ -32,9 +32,9 @@ internal static class EnemiesDrawer
             {
                 Pico8.Pal();
                 Pico8.Pal(15, 3);
-                Pico8.Pal(4,  1);
-                Pico8.Pal(2,  8);
-                Pico8.Pal(1,  1);
+                Pico8.Pal(4, 1);
+                Pico8.Pal(2, 8);
+                Pico8.Pal(1, 1);
                 DrawPlayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, isPlayer: false, player, level);
             }
         }
@@ -45,49 +45,49 @@ internal static class EnemiesDrawer
         F32 cr = Pico8.Cos(rot);
         F32 sr = Pico8.Sin(rot);
         F32 cv = -sr;
-        F32 sv =  cr;
+        F32 sv = cr;
 
         F32 fxF = F32.Floor(x);
         F32 fyF = F32.Floor(y - 4);
 
         F32 lan = Pico8.Sin(anim * 2) * F32.FromDouble(1.5);
-        var belTile = PcraftServices.GetTile(x, y, level);
+        Tile belTile = PcraftServices.GetTile(x, y, level);
 
         if (belTile.Type == PcraftData.TileWater)
         {
             fyF += 4;
-            Pico8.Circ(fxF + cv * 3 + cr * lan,
-                       fyF + sv * 3 + sr * lan,
+            Pico8.Circ(fxF + (cv * 3) + (cr * lan),
+                       fyF + (sv * 3) + (sr * lan),
                        F32.FromInt(3), F32.FromInt(6));
-            Pico8.Circ(fxF - cv * 3 - cr * lan,
-                       fyF - sv * 3 - sr * lan,
+            Pico8.Circ(fxF - (cv * 3) - (cr * lan),
+                       fyF - (sv * 3) - (sr * lan),
                        F32.FromInt(3), F32.FromInt(6));
 
-            F32 anc = 3 + level.Time * 3 % F32.One * 3;
-            Pico8.Circ(fxF + cv * 3 + cr * lan,
-                       fyF + sv * 3 + sr * lan,
+            F32 anc = 3 + (level.Time * 3 % F32.One * 3);
+            Pico8.Circ(fxF + (cv * 3) + (cr * lan),
+                       fyF + (sv * 3) + (sr * lan),
                        anc, F32.FromInt(6));
-            Pico8.Circ(fxF - cv * 3 - cr * lan,
-                       fyF - sv * 3 - sr * lan,
+            Pico8.Circ(fxF - (cv * 3) - (cr * lan),
+                       fyF - (sv * 3) - (sr * lan),
                        anc, F32.FromInt(6));
         }
         else
         {
-            Pico8.Circfill(fxF + cv * 2 - cr * lan,
-                           fyF + 3 + sv * 2 - sr * lan,
+            Pico8.Circfill(fxF + (cv * 2) - (cr * lan),
+                           fyF + 3 + (sv * 2) - (sr * lan),
                            F32.FromInt(3), F32.FromInt(1));
-            Pico8.Circfill(fxF - cv * 2 + cr * lan,
-                           fyF + 3 - sv * 2 + sr * lan,
+            Pico8.Circfill(fxF - (cv * 2) + (cr * lan),
+                           fyF + 3 - (sv * 2) + (sr * lan),
                            F32.FromInt(3), F32.FromInt(1));
         }
 
         F32 blade = (rot + F32.FromDouble(0.25)) % F32.One;
         if (subAnim > F32.Zero)
-            blade = blade - F32.FromDouble(0.3) + subAnim * F32.FromDouble(0.04);
+            blade = blade - F32.FromDouble(0.3) + (subAnim * F32.FromDouble(0.04));
 
         F32 bcr = Pico8.Cos(blade);
         F32 bsr = Pico8.Sin(blade);
-        var (mx, my) = PcraftServices.Mirror(blade);
+        (int mx, int my) = PcraftServices.Mirror(blade);
 
         int weap = 75;
         if (isPlayer && player.CurItem is not null)
@@ -105,32 +105,32 @@ internal static class EnemiesDrawer
         }
 
         Pico8.Spr(weap,
-            fxF.Double + bcr.Double * 4 - cr.Double * lan.Double - mx * 8 + 1,
-            fyF.Double + bsr.Double * 4 - sr.Double * lan.Double + my * 8 - 7,
+            fxF.Double + (bcr.Double * 4) - (cr.Double * lan.Double) - (mx * 8) + 1,
+            fyF.Double + (bsr.Double * 4) - (sr.Double * lan.Double) + (my * 8) - 7,
             1, 1, mx == 1, my == 1);
 
         if (isPlayer) Pico8.Pal();
 
         if (belTile.Type != PcraftData.TileWater)
         {
-            Pico8.Circfill(fxF + cv * 3 + cr * lan,
-                           fyF + sv * 3 + sr * lan,
+            Pico8.Circfill(fxF + (cv * 3) + (cr * lan),
+                           fyF + (sv * 3) + (sr * lan),
                            F32.FromInt(3), F32.FromInt(2));
-            Pico8.Circfill(fxF - cv * 3 - cr * lan,
-                           fyF - sv * 3 - sr * lan,
+            Pico8.Circfill(fxF - (cv * 3) - (cr * lan),
+                           fyF - (sv * 3) - (sr * lan),
                            F32.FromInt(3), F32.FromInt(2));
 
-            var (my2, mx2) = PcraftServices.Mirror((rot + F32.FromDouble(0.75)) % F32.One);
+            (int my2, int mx2) = PcraftServices.Mirror((rot + F32.FromDouble(0.75)) % F32.One);
             Pico8.Spr(75,
-                fxF.Double + cv.Double * 4 + cr.Double * lan.Double - 8 + mx2 * 8 + 1,
-                fyF.Double + sv.Double * 4 + sr.Double * lan.Double + my2 * 8 - 7,
+                fxF.Double + (cv.Double * 4) + (cr.Double * lan.Double) - 8 + (mx2 * 8) + 1,
+                fyF.Double + (sv.Double * 4) + (sr.Double * lan.Double) + (my2 * 8) - 7,
                 1, 1, mx2 == 0, my2 == 1);
         }
 
-        Pico8.Circfill(fxF + cr,                       fyF + sr - 2,                       F32.FromInt(4), F32.FromInt(2));
-        Pico8.Circfill(fxF + cr,                       fyF + sr,                           F32.FromInt(4), F32.FromInt(2));
-        Pico8.Circfill(fxF + cr * F32.FromDouble(1.5), fyF + sr * F32.FromDouble(1.5) - 2, F32.FromDouble(2.5), F32.FromInt(15));
-        Pico8.Circfill(fxF - cr,                       fyF - sr - 3,                       F32.FromInt(3), F32.FromInt(4));
+        Pico8.Circfill(fxF + cr, fyF + sr - 2, F32.FromInt(4), F32.FromInt(2));
+        Pico8.Circfill(fxF + cr, fyF + sr, F32.FromInt(4), F32.FromInt(2));
+        Pico8.Circfill(fxF + (cr * F32.FromDouble(1.5)), fyF + (sr * F32.FromDouble(1.5)) - 2, F32.FromDouble(2.5), F32.FromInt(15));
+        Pico8.Circfill(fxF - cr, fyF - sr - 3, F32.FromInt(3), F32.FromInt(4));
     }
 
     internal static void SortY(List<CharacterEntity> enemies)
@@ -138,11 +138,11 @@ internal static class EnemiesDrawer
         int tv = enemies.Count - 1;
         for (int i = 0; i < tv; i++)
         {
-            var t1 = enemies[i];
-            var t2 = enemies[i + 1];
+            CharacterEntity t1 = enemies[i];
+            CharacterEntity t2 = enemies[i + 1];
             if (t1.Y > t2.Y)
             {
-                enemies[i]     = t2;
+                enemies[i] = t2;
                 enemies[i + 1] = t1;
             }
         }

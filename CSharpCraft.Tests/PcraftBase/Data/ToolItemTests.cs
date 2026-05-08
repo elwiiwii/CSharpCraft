@@ -11,21 +11,21 @@ public sealed class ToolItemTests
     [Fact]
     public void Constructor_StoresType()
     {
-        var sut = new ToolItem(Haxe, 1);
-        sut.Type.Should().BeSameAs(Haxe);
+        ToolItem sut = new(Haxe, 1);
+        _ = sut.Type.Should().BeSameAs(Haxe);
     }
 
     [Fact]
     public void Constructor_StoresPower()
     {
-        var sut = new ToolItem(Haxe, 3);
-        sut.Power.Should().Be(3);
+        ToolItem sut = new(Haxe, 3);
+        _ = sut.Power.Should().Be(3);
     }
 
     [Fact]
     public void IsSubclassOfInventorySlot()
     {
-        var sut = new ToolItem(Haxe, 1);
-        sut.Should().BeAssignableTo<InventorySlot>();
+        ToolItem sut = new(Haxe, 1);
+        _ = sut.Should().BeAssignableTo<InventorySlot>();
     }
 }

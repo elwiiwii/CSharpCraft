@@ -12,7 +12,7 @@ internal static class MapGenerator
     /// </summary>
     internal static F32[,] Noise(int sx, int sy, F32 startScale, F32 scaleMod, int featStep)
     {
-        var n = new F32[sx + 1, sy + 1];
+        F32[,] n = new F32[sx + 1, sy + 1];
         for (int i = 0; i <= sx; i++)
             for (int j = 0; j <= sy; j++)
                 n[i, j] = Half;
@@ -32,8 +32,8 @@ internal static class MapGenerator
                     var c1 = n[i, j];
                     var c2 = n[i + step, j];
                     var c3 = n[i, j + step];
-                    n[i + step / 2, j]       = (c1 + c2) * Half + (Pico8.Rnd(1) - Half) * cscal;
-                    n[i, j + step / 2]       = (c1 + c3) * Half + (Pico8.Rnd(1) - Half) * cscal;
+                    n[i + (step / 2), j] = ((c1 + c2) * Half) + ((Pico8.Rnd(1) - Half) * cscal);
+                    n[i, j + (step / 2)] = ((c1 + c3) * Half) + ((Pico8.Rnd(1) - Half) * cscal);
                 }
             }
 
@@ -46,7 +46,7 @@ internal static class MapGenerator
                     var c2 = n[i + step, j];
                     var c3 = n[i, j + step];
                     var c4 = n[i + step, j + step];
-                    n[i + step / 2, j + step / 2] = (c1 + c2 + c3 + c4) * F32.FromDouble(0.25) + (Pico8.Rnd(1) - Half) * cscal;
+                    n[i + (step / 2), j + (step / 2)] = ((c1 + c2 + c3 + c4) * F32.FromDouble(0.25)) + ((Pico8.Rnd(1) - Half) * cscal);
                 }
             }
 
@@ -59,27 +59,27 @@ internal static class MapGenerator
 
     internal static TileId[,] CreateMapStep(int sx, int sy, TileId a, TileId b, TileId c, TileId d, TileId e)
     {
-        var cur  = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
-        var cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
-        var cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
-        var cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
+        F32[,] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
+        F32[,] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
+        F32[,] cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
+        F32[,] cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
 
-        var result = new TileId[sx + 1, sy + 1];
+        TileId[,] result = new TileId[sx + 1, sy + 1];
 
         for (int i = 0; i <= sx; i++)
         {
             for (int j = 0; j <= sy; j++)
             {
-                var v  = F32.Abs(cur[i, j] - cur2[i, j]);
-                var v2 = F32.Abs(cur[i, j] - cur3[i, j]);
-                var v3 = F32.Abs(cur[i, j] - cur4[i, j]);
+                F32 v = F32.Abs(cur[i, j] - cur2[i, j]);
+                F32 v2 = F32.Abs(cur[i, j] - cur3[i, j]);
+                F32 v3 = F32.Abs(cur[i, j] - cur4[i, j]);
 
-                F32 di    = F32.Abs(F32.FromDouble((double)i / sx) - Half) * 2;
-                F32 dj    = F32.Abs(F32.FromDouble((double)j / sy) - Half) * 2;
-                F32 dist  = F32.Max(di, dj);
+                F32 di = F32.Abs(F32.FromDouble((double)i / sx) - Half) * 2;
+                F32 dj = F32.Abs(F32.FromDouble((double)j / sy) - Half) * 2;
+                F32 dist = F32.Max(di, dj);
                 dist = dist * dist * dist * dist;
 
-                var coast = v * F32.FromInt(4) - dist * F32.FromInt(4);
+                var coast = (v * F32.FromInt(4)) - (dist * F32.FromInt(4));
 
                 TileId id = a;
                 if (coast > F32.FromDouble(0.3)) id = b;
@@ -96,7 +96,7 @@ internal static class MapGenerator
 
     internal static F32[][] InitRndWat()
     {
-        var result = new F32[16][];
+        F32[][] result = new F32[16][];
         for (int i = 0; i < 16; i++)
         {
             result[i] = new F32[16];
@@ -110,25 +110,25 @@ internal static class MapGenerator
     {
         int levelSx = level.Sx;
         int levelSy = level.Sy;
-        int levelX  = level.X;
-        int levelY  = level.Y;
+        int levelX = level.X;
+        int levelY = level.Y;
         bool isUnder = level.Theme == LevelTheme.Cave;
 
-        var tiles = new TileId[levelSx + 1, levelSy + 1];
+        TileId[,] tiles = new TileId[levelSx + 1, levelSy + 1];
         bool needMap = true;
 
         while (needMap)
         {
             needMap = false;
 
-            var typecount = new int[12];
+            int[] typecount = new int[12];
 
             if (isUnder)
             {
                 tiles = CreateMapStep(levelSx, levelSy, TileId.Rock, TileId.Iron, TileId.Sand, TileId.Gold, TileId.Gem);
                 CountTypes(tiles, levelSx, levelSy, typecount);
-                if (typecount[8]  < 30) needMap = true;
-                if (typecount[9]  < 20) needMap = true;
+                if (typecount[8] < 30) needMap = true;
+                if (typecount[9] < 20) needMap = true;
                 if (typecount[10] < 15) needMap = true;
             }
             else
@@ -149,7 +149,7 @@ internal static class MapGenerator
                     if (depx >= 0 && depx <= levelSx && depy >= 0 && depy <= levelSy)
                     {
                         int tileId = (int)tiles[depx, depy];
-                        if (tileId == 1 || tileId == 2)
+                        if (tileId is 1 or 2)
                         {
                             plxTile = depx;
                             plyTile = depy;
@@ -161,8 +161,8 @@ internal static class MapGenerator
                     needMap = true;
                 else
                 {
-                    player.X = F32.FromInt(plxTile * 16 + 8);
-                    player.Y = F32.FromInt(plyTile * 16 + 8);
+                    player.X = F32.FromInt((plxTile * 16) + 8);
+                    player.Y = F32.FromInt((plyTile * 16) + 8);
                 }
             }
         }

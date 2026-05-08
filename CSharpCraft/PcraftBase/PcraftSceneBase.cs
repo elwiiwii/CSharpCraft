@@ -13,13 +13,13 @@ internal abstract class PcraftSceneBase : IScene
     {
         setup.Resolution = (128, 128);
 
-        var session = CreateSession();
+        PcraftSession session = CreateSession();
         PcraftSession.SetCurrent(session);
-        var player = session.Player;
+        PlayerEntity player = session.Player;
 
         bool initialized = false;
 
-        setup.RegisterUpdate(() =>
+        _ = setup.RegisterUpdate(() =>
         {
             if (!initialized)
             {
@@ -32,11 +32,13 @@ internal abstract class PcraftSceneBase : IScene
             PcraftServices.UpdateMain(player);
         }, fps: 30);
 
-        setup.RegisterDraw(() => PcraftDraw.Draw(player, player.CurrentLevel!), fps: 30);
+        _ = setup.RegisterDraw(() => PcraftDraw.Draw(player, player.CurrentLevel!), fps: 30);
     }
 
     protected virtual PcraftSession CreateSession()
-        => new PcraftSession(new PlayerEntity(F32.Zero, F32.Zero));
+    {
+        return new(new PlayerEntity(F32.Zero, F32.Zero));
+    }
 
     public virtual string? SpritesPath => "pcraft_sprites";
 
@@ -45,7 +47,7 @@ internal abstract class PcraftSceneBase : IScene
     public virtual string? FlagData => null;
 
     public virtual IReadOnlyList<Soundtrack> Music => [
-        new Soundtrack(name: "original", 
+        new Soundtrack(name: "original",
         tracks: [
             new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 0),
             new Track(parts: [new(filename: "pcraft_og_surface", loop: true)], channel: 1),
@@ -53,7 +55,7 @@ internal abstract class PcraftSceneBase : IScene
             new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 3),
             new Track(parts: [new(filename: "pcraft_og_cave_0", loop: false), new(filename: "pcraft_og_cave_1", loop: true)], channel: 4)]
         ),
-        new Soundtrack(name: "new!", 
+        new Soundtrack(name: "new!",
         tracks: [
             new Track(parts: [new(filename: "pcraft_new_title", loop: true)], channel: 0),
             new Track(parts: [new(filename: "pcraft_new_surface", loop: true)], channel: 1),
@@ -61,7 +63,7 @@ internal abstract class PcraftSceneBase : IScene
             new Track(parts: [new(filename: "pcraft_new_title", loop: false), new(filename: "pcraft_new_title", loop: true)], channel: 3),
             new Track(parts: [new(filename: "pcraft_new_death", loop: true)], channel: 4)]
         ),
-        new Soundtrack(name: "pog edition", 
+        new Soundtrack(name: "pog edition",
         tracks: [
             new Track(parts: [new(filename: "pcraft_pe_title_0", loop: false), new(filename: "pcraft_pe_title_1", loop: true)], channel: 0),
             new Track(parts: [new(filename: "pcraft_pe_surface_0", loop: false), new(filename: "pcraft_pe_surface_1", loop: true)], channel: 1),

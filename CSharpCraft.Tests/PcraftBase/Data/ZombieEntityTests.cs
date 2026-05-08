@@ -13,17 +13,17 @@ public sealed class ZombieEntityTests
     [Fact]
     public void Constructor_SetsPosition()
     {
-        var sut = new ZombieEntity(F32.FromInt(50), F32.FromInt(60));
-        sut.X.Should().Be(F32.FromInt(50));
-        sut.Y.Should().Be(F32.FromInt(60));
+        ZombieEntity sut = new(F32.FromInt(50), F32.FromInt(60));
+        _ = sut.X.Should().Be(F32.FromInt(50));
+        _ = sut.Y.Should().Be(F32.FromInt(60));
     }
 
     [Fact]
     public void Constructor_DefaultsVelocityToZero()
     {
-        var sut = new ZombieEntity(F32.Zero, F32.Zero);
-        sut.Vx.Should().Be(F32.Zero);
-        sut.Vy.Should().Be(F32.Zero);
+        ZombieEntity sut = new(F32.Zero, F32.Zero);
+        _ = sut.Vx.Should().Be(F32.Zero);
+        _ = sut.Vy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -34,7 +34,7 @@ public sealed class ZombieEntityTests
     [Fact]
     public void IsCharacterEntity()
     {
-        new ZombieEntity(F32.Zero, F32.Zero).Should().BeAssignableTo<CharacterEntity>();
+        _ = new ZombieEntity(F32.Zero, F32.Zero).Should().BeAssignableTo<CharacterEntity>();
     }
 
     // --------------------------------------------------------------------------
@@ -45,18 +45,18 @@ public sealed class ZombieEntityTests
     [Fact]
     public void AiFields_DefaultToZero()
     {
-        var sut = new ZombieEntity(F32.Zero, F32.Zero);
-        sut.Life.Should().Be(F32.Zero);
-        sut.Prot.Should().Be(F32.Zero);
-        sut.Lrot.Should().Be(F32.Zero);
-        sut.Panim.Should().Be(F32.Zero);
-        sut.Banim.Should().Be(F32.Zero);
-        sut.Step.Should().Be(0);
-        sut.Dtim.Should().Be(F32.Zero);
-        sut.Dx.Should().Be(F32.Zero);
-        sut.Dy.Should().Be(F32.Zero);
-        sut.Ox.Should().Be(F32.Zero);
-        sut.Oy.Should().Be(F32.Zero);
+        ZombieEntity sut = new(F32.Zero, F32.Zero);
+        _ = sut.Life.Should().Be(F32.Zero);
+        _ = sut.Prot.Should().Be(F32.Zero);
+        _ = sut.Lrot.Should().Be(F32.Zero);
+        _ = sut.Panim.Should().Be(F32.Zero);
+        _ = sut.Banim.Should().Be(F32.Zero);
+        _ = sut.Step.Should().Be(0);
+        _ = sut.Dtim.Should().Be(F32.Zero);
+        _ = sut.Dx.Should().Be(F32.Zero);
+        _ = sut.Dy.Should().Be(F32.Zero);
+        _ = sut.Ox.Should().Be(F32.Zero);
+        _ = sut.Oy.Should().Be(F32.Zero);
     }
 
     // --------------------------------------------------------------------------
@@ -67,14 +67,16 @@ public sealed class ZombieEntityTests
     [Fact]
     public void Fields_CanBeMutated()
     {
-        var sut = new ZombieEntity(F32.Zero, F32.Zero);
-        sut.Life = F32.FromInt(10);
-        sut.Step = EnStep.Chase;
-        sut.Ox   = F32.FromFloat(0.4f);
+        ZombieEntity sut = new(F32.Zero, F32.Zero)
+        {
+            Life = F32.FromInt(10),
+            Step = EnStep.Chase,
+            Ox = F32.FromFloat(0.4f)
+        };
 
-        sut.Life.Should().Be(F32.FromInt(10));
-        sut.Step.Should().Be(EnStep.Chase);
-        sut.Ox.Should().Be(F32.FromFloat(0.4f));
+        _ = sut.Life.Should().Be(F32.FromInt(10));
+        _ = sut.Step.Should().Be(EnStep.Chase);
+        _ = sut.Ox.Should().Be(F32.FromFloat(0.4f));
     }
 
     // --------------------------------------------------------------------------

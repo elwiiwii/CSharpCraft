@@ -12,8 +12,8 @@ namespace CSharpCraft.PcraftFilter.Spawn;
 /// </summary>
 internal static class FilteredSpawnFinder
 {
-    private const int    MaxCandidates = 500;
-    private const double Epsilon       = 0.001;
+    private const int MaxCandidates = 500;
+    private const double Epsilon = 0.001;
 
     internal static (int tileX, int tileY)? FindSpawn(
         long masterSeed,
@@ -25,17 +25,17 @@ internal static class FilteredSpawnFinder
         IFilterDiagnosticSink? sink = null)
     {
         if (classifier is null) throw new ArgumentNullException(nameof(classifier));
-        if (biases is null)     throw new ArgumentNullException(nameof(biases));
+        if (biases is null) throw new ArgumentNullException(nameof(biases));
 
         // No constraint — delegate directly.
         if (filter is null)
             return SpawnFinder.FindSpawn(masterSeed, classifier, gridSx, gridSy);
 
-        var candidateArea = BuildCandidateArea(classifier, filter, gridSx, gridSy);
+        HashSet<(int x, int y)> candidateArea = BuildCandidateArea(classifier, filter, gridSx, gridSy);
         if (candidateArea.Count == 0) return null;
 
         // Initial search with the caller's classifier (may be BiasedMapClassifier).
-        var result = SearchCandidates(masterSeed, classifier, candidateArea, gridSx, gridSy);
+        (int tileX, int tileY)? result = SearchCandidates(masterSeed, classifier, candidateArea, gridSx, gridSy);
         if (result.HasValue) return result;
 
         // Fallback: apply minimum coast bias to every unspawnable candidate cell so
@@ -44,7 +44,7 @@ internal static class FilteredSpawnFinder
         sink?.OnSpawnFallbackApplied(filter);
 
         // Re-search using a wrapper that applies the (now mutated) biases.
-        var wrapped = new WrapClassifier(classifier, biases);
+        WrapClassifier wrapped = new(classifier, biases);
         return SearchCandidates(masterSeed, wrapped, candidateArea, gridSx, gridSy);
     }
 
@@ -59,14 +59,14 @@ internal static class FilteredSpawnFinder
         int gridSy)
     {
         // Start with the union of AllowedZones.
-        var area = filter.AllowedZones
+        HashSet<(int x, int y)> area = filter.AllowedZones
             .SelectMany(z => z.Cells(gridSx, gridSy))
             .ToHashSet();
 
         if (filter.Proximity is null) return area;
 
         // Intersect with cells near a qualifying cluster.
-        var proxCells = FindProximityCells(classifier, filter.Proximity, gridSx, gridSy);
+        HashSet<(int x, int y)> proxCells = FindProximityCells(classifier, filter.Proximity, gridSx, gridSy);
         area.IntersectWith(proxCells);
         return area;
     }
@@ -78,30 +78,30 @@ internal static class FilteredSpawnFinder
         int gridSy)
     {
         // Collect all cells of the cluster tile type.
-        var tileCells = new HashSet<(int, int)>();
+        HashSet<(int, int)> tileCells = [];
         for (int x = 0; x < gridSx; x++)
             for (int y = 0; y < gridSy; y++)
                 if (classifier.ClassifyTile(x, y) == proximity.ClusterTileId)
-                    tileCells.Add((x, y));
+                    _ = tileCells.Add((x, y));
 
         // BFS flood-fill to identify clusters; Chebyshev-expand qualifying ones.
-        var visited  = new HashSet<(int, int)>();
-        var expanded = new HashSet<(int x, int y)>();
+        HashSet<(int, int)> visited = [];
+        HashSet<(int x, int y)> expanded = [];
 
-        foreach (var seed in tileCells)
+        foreach ((int, int) seed in tileCells)
         {
             if (visited.Contains(seed)) continue;
 
-            var cluster = BfsCluster(seed, tileCells, visited);
+            HashSet<(int, int)> cluster = BfsCluster(seed, tileCells, visited);
             if (cluster.Count < proximity.MinClusterSize) continue;
 
-            foreach (var (cx, cy) in cluster)
+            foreach ((int cx, int cy) in cluster)
                 for (int dx = -proximity.MaxDistance; dx <= proximity.MaxDistance; dx++)
                     for (int dy = -proximity.MaxDistance; dy <= proximity.MaxDistance; dy++)
                     {
                         int nx = cx + dx, ny = cy + dy;
                         if ((uint)nx < (uint)gridSx && (uint)ny < (uint)gridSy)
-                            expanded.Add((nx, ny));
+                            _ = expanded.Add((nx, ny));
                     }
         }
 
@@ -113,16 +113,16 @@ internal static class FilteredSpawnFinder
         HashSet<(int, int)> allCells,
         HashSet<(int, int)> visited)
     {
-        var cluster = new HashSet<(int, int)>();
-        var queue   = new Queue<(int, int)>();
+        HashSet<(int, int)> cluster = [];
+        Queue<(int, int)> queue = new();
         queue.Enqueue(seed);
-        visited.Add(seed);
+        _ = visited.Add(seed);
 
         while (queue.Count > 0)
         {
-            var cur = queue.Dequeue();
-            cluster.Add(cur);
-            foreach (var n in Neighbours4(cur.Item1, cur.Item2))
+            (int, int) cur = queue.Dequeue();
+            _ = cluster.Add(cur);
+            foreach ((int x, int y) n in Neighbours4(cur.Item1, cur.Item2))
                 if (allCells.Contains(n) && visited.Add(n))
                     queue.Enqueue(n);
         }
@@ -149,14 +149,14 @@ internal static class FilteredSpawnFinder
 
         for (int k = 0; k < MaxCandidates; k++)
         {
-            var rng = new Random(HashCode.Combine(masterSeed.GetHashCode(), k, spawnHash));
+            Random rng = new(HashCode.Combine(masterSeed.GetHashCode(), k, spawnHash));
             int x = minX + rng.Next(rangeX);
             int y = minY + rng.Next(rangeY);
 
             if (!candidateArea.Contains((x, y))) continue;
 
             int tileId = classifier.ClassifyTile(x, y);
-            if (tileId == 1 || tileId == 2) return (x, y);
+            if (tileId is 1 or 2) return (x, y);
         }
 
         return null;
@@ -171,9 +171,9 @@ internal static class FilteredSpawnFinder
         BiasLayers biases,
         HashSet<(int x, int y)> candidateArea)
     {
-        foreach (var (x, y) in candidateArea)
+        foreach ((int x, int y) in candidateArea)
         {
-            var (coast, _, _) = classifier.GetIntermediate(x, y);
+            (double coast, double _, double _) = classifier.GetIntermediate(x, y);
             coast += biases.GetCoast(x, y);
 
             double dCoast = Math.Max(0.0, 0.3 + Epsilon - coast);
@@ -193,7 +193,7 @@ internal static class FilteredSpawnFinder
     private sealed class WrapClassifier : MapClassifier
     {
         private readonly MapClassifier _base;
-        private readonly BiasLayers    _biases;
+        private readonly BiasLayers _biases;
 
         internal WrapClassifier(MapClassifier b, BiasLayers biases)
             : base(new NullGrid(), new NullGrid(), new NullGrid(), new NullGrid(),
@@ -201,17 +201,17 @@ internal static class FilteredSpawnFinder
                    b.TileA, b.TileB, b.TileC, b.TileD, b.TileE,
                    b.GenerateHole)
         {
-            _base   = b;
+            _base = b;
             _biases = biases;
         }
 
         internal override int ClassifyTile(int i, int j)
         {
             if (FixedTileAt(i, j) is { } f) return f;
-            var (coast, v2, v3) = _base.GetIntermediate(i, j);
+            (double coast, double v2, double v3) = _base.GetIntermediate(i, j);
             coast += _biases.GetCoast(i, j);
-            v2    += _biases.GetV2(i, j);
-            v3    += _biases.GetV3(i, j);
+            v2 += _biases.GetV2(i, j);
+            v3 += _biases.GetV3(i, j);
             return ClassifyFromValues(coast, v2, v3);
         }
     }
@@ -219,7 +219,10 @@ internal static class FilteredSpawnFinder
     private sealed class NullGrid : SeededNoiseGrid
     {
         internal NullGrid() : base(0L, 64, 64, 64, 0.0, 0.0, 0) { }
-        internal override double GetValue(int x, int y) => 0.5;
+        internal override double GetValue(int x, int y)
+        {
+            return 0.5;
+        }
     }
 
     private static IEnumerable<(int x, int y)> Neighbours4(int x, int y)

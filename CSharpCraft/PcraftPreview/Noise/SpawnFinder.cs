@@ -34,12 +34,12 @@ internal static class SpawnFinder
 
         for (int k = 0; k < MaxCandidates; k++)
         {
-            var rng = new Random(HashCode.Combine(masterSeed.GetHashCode(), k, spawnHash));
+            Random rng = new(HashCode.Combine(masterSeed.GetHashCode(), k, spawnHash));
             int x = minX + rng.Next(rangeX);
             int y = minY + rng.Next(rangeY);
 
             int tileId = classifier.ClassifyTile(x, y);
-            if (tileId == 1 || tileId == 2)
+            if (tileId is 1 or 2)
                 return (x, y);
         }
 

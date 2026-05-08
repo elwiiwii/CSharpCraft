@@ -16,7 +16,7 @@ internal class SeededNoiseGrid
     private readonly double _startScale;
     private readonly double _scaleMod;
     private readonly int _layerIndex;
-    private readonly Dictionary<(int, int), double> _cache = new();
+    private readonly Dictionary<(int, int), double> _cache = [];
 
     internal SeededNoiseGrid(long masterSeed, int gridSx, int gridSy, int featStep,
         double startScale, double scaleMod, int layerIndex)
@@ -70,8 +70,8 @@ internal class SeededNoiseGrid
         while (s >= 2)
         {
             int half = s >> 1;
-            bool isHMid   = x % s == half && y % s == 0;
-            bool isVMid   = x % s == 0    && y % s == half;
+            bool isHMid = x % s == half && y % s == 0;
+            bool isVMid = x % s == 0 && y % s == half;
             bool isCenter = x % s == half && y % s == half;
             if (isHMid || isVMid || isCenter)
                 return s;
