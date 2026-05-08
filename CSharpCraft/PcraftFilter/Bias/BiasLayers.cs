@@ -27,4 +27,7 @@ internal sealed class BiasLayers
     /// <summary>Returns true if any bias channel has been set for this cell.</summary>
     internal bool HasAnyBias(int x, int y) =>
         _coast.ContainsKey((x, y)) || _v2.ContainsKey((x, y)) || _v3.ContainsKey((x, y));
+
+    /// <summary>Returns true when no biases have been set on any cell or channel.</summary>
+    internal bool IsEmpty => _coast.Count == 0 && _v2.Count == 0 && _v3.Count == 0;
 }
