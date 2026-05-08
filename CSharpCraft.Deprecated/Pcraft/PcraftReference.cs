@@ -5,8 +5,6 @@ public class PcraftReference(Pico8Functions p8)
 {
     private readonly Pico8Functions p8 = p8;
 
-#nullable enable
-
     private List<Entity>? anvilRecipe;
 
     private double banim;
@@ -72,8 +70,6 @@ public class PcraftReference(Pico8Functions p8)
     readonly int[] typeCount = new int[11];
 
     private List<Entity>? workbenchRecipe;
-
-#nullable disable
 
     //p.craft
     //by nusan

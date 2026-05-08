@@ -14,7 +14,7 @@ dotnet test CSharpCraft.Tests/CSharpCraft.Tests.csproj -c Debug
 ## Code Rules
 
 - **Access**: Default `internal`. Only `public` for PSharp8 ↔ CSharpCraft boundary.
-- **Nullability**: `#nullable enable` everywhere. Constructor guards: `param ?? throw new ArgumentNullException(nameof(param))`
+- **Nullability**: Constructor guards: `param ?? throw new ArgumentNullException(nameof(param))`
 - **Tests**: xUnit `[Fact]`, FluentAssertions, Moq. Pattern: `Subject_Expected_Context()`
 - **Namespaces**: `CSharpCraft.*`, `PSharp8.*`, tests in `.Tests` projects
 

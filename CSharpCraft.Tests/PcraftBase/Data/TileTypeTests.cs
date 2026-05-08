@@ -1,4 +1,3 @@
-#nullable enable
 using CSharpCraft.PcraftBase.Data;
 using FluentAssertions;
 using Xunit;

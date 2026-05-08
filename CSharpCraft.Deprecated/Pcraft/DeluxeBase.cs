@@ -11,7 +11,6 @@ public abstract class DeluxeBase : IScene, IDisposable
 
     private static Pico8Functions? p8;
 
-#nullable enable
     private F32 clx;
     private F32 cly;
     private List<Entity> invent = [];
@@ -23,7 +22,6 @@ public abstract class DeluxeBase : IScene, IDisposable
     private Entity menuMap;
     private bool bossDead;
     private F32 baseRand;
-#nullable disable
 
     private readonly string version = "";
 

@@ -11,7 +11,6 @@ public abstract class PcraftBase : IScene, IDisposable
     public virtual double Fps => 30.0;
     public static (int w, int h) Resolution => (128, 128);
 
-#nullable enable
     protected Pico8Functions? p8;
 
     protected List<Entity>? anvilRecipe;
@@ -79,8 +78,6 @@ public abstract class PcraftBase : IScene, IDisposable
     protected int[] typeCount = new int[11];
 
     protected List<Entity>? workbenchRecipe;
-
-#nullable disable
 
     //p.craft
     //by nusan

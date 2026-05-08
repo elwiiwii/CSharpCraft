@@ -1,5 +1,3 @@
-#nullable enable
-using PSharp8;
 using PSharp8.Scene;
 
 namespace CSharpCraft.PcraftPreview;

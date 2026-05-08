@@ -1,5 +1,3 @@
-#nullable enable
-
 using CSharpCraft.PcraftPreview.Noise;
 
 namespace CSharpCraft.PcraftPreview;

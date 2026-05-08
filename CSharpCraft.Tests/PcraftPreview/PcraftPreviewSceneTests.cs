@@ -1,5 +1,3 @@
-#nullable enable
-
 using CSharpCraft.PcraftPreview;
 using FluentAssertions;
 using Moq;

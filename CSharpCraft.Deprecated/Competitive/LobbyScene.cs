@@ -13,12 +13,10 @@ namespace CSharpCraft.Competitive;
 
 public class LobbyScene(Role joinRole) : PcraftBase
 {
-#nullable enable
     private List<Item> actionsItems = new();
     private List<Item> rulesItems = new();
     private string roomName;
     private string roomPassword;
-#nullable disable
 
     public override string SceneName { get => "1"; }
     public override double Fps { get => 60.0; }
