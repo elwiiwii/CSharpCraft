@@ -14,6 +14,14 @@ internal class MapClassifier
     private readonly int _d;
     private readonly int _e;
 
+    internal int GridSx => _gridSx;
+    internal int GridSy => _gridSy;
+    internal int TileA   => _a;
+    internal int TileB   => _b;
+    internal int TileC   => _c;
+    internal int TileD   => _d;
+    internal int TileE   => _e;
+
     internal MapClassifier(
         SeededNoiseGrid cur,
         SeededNoiseGrid cur2,
@@ -41,6 +49,13 @@ internal class MapClassifier
         var (coast, v2, v3) = ComputeIntermediate(i, j);
         return ClassifyFromValues(coast, v2, v3);
     }
+
+    /// <summary>
+    /// Exposes <see cref="ComputeIntermediate"/> to non-subclass internal callers.
+    /// Returns the raw (coast, v2, v3) triple before any bias is applied.
+    /// </summary>
+    internal (double coast, double v2, double v3) GetIntermediate(int i, int j) =>
+        ComputeIntermediate(i, j);
 
     protected (double coast, double v2, double v3) ComputeIntermediate(int i, int j)
     {
