@@ -31,18 +31,20 @@ internal class PcraftFilterBase : PcraftSceneBase, IScene
             new TileCountFilter(TileId: 4, MinimumCount: 80),
         ]);
 
-        long          seed     = 0L;
-        SampleResult? baseline = null;
-        SampleResult? filtered = null;
-        bool          dirty    = true;
+        long          seed         = 0L;
+        SampleResult? baseline     = null;
+        SampleResult? filtered     = null;
+        bool          dirty        = true;
+        bool          previewDirty = true;
 
         void Regenerate()
         {
-            baseline = PcraftWorldSampler.Sample(seed, radius: 32,
+            baseline     = PcraftWorldSampler.Sample(seed, radius: 32,
                 forceCenterX: 32, forceCenterY: 32);
-            filtered = FilteredWorldSampler.Sample(seed, radius: 32, filters,
+            filtered     = FilteredWorldSampler.Sample(seed, radius: 32, filters,
                 forceCenterX: 32, forceCenterY: 32);
-            dirty = false;
+            dirty        = false;
+            previewDirty = true;
         }
 
         setup.RegisterUpdate(() =>
@@ -59,19 +61,22 @@ internal class PcraftFilterBase : PcraftSceneBase, IScene
         setup.RegisterDraw(() =>
         {
             if (baseline is null || filtered is null) return;
+            if (!previewDirty) return;
 
             Pico8.Cls(13);
 
             // Panel labels
-            Pico8.Print("BASELINE", Left0X,  2, 7);
-            Pico8.Print("FILTERED", Right0X, 2, 7);
+            Pico8.Print("baseline", Left0X,  2, 7);
+            Pico8.Print("filtered", Right0X, 2, 7);
 
             // Maps
             FilterPreviewDrawer.Draw(baseline, Left0X,  HeaderY);
             FilterPreviewDrawer.Draw(filtered, Right0X, HeaderY);
 
             // Footer: seed value + hint
-            Pico8.Print($"seed:{seed:X16}  X:new", Left0X, FooterY, 6);
+            Pico8.Print($"seed:{seed.ToString("X16").ToLower()}  x:new", Left0X, FooterY, 6);
+
+            previewDirty = false;
         }, fps: 30);
     }
 }
