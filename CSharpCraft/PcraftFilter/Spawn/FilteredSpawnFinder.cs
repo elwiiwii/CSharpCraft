@@ -198,7 +198,8 @@ internal static class FilteredSpawnFinder
         internal WrapClassifier(MapClassifier b, BiasLayers biases)
             : base(new NullGrid(), new NullGrid(), new NullGrid(), new NullGrid(),
                    b.GridSx, b.GridSy,
-                   b.TileA, b.TileB, b.TileC, b.TileD, b.TileE)
+                   b.TileA, b.TileB, b.TileC, b.TileD, b.TileE,
+                   b.GenerateHole)
         {
             _base   = b;
             _biases = biases;
@@ -206,6 +207,7 @@ internal static class FilteredSpawnFinder
 
         internal override int ClassifyTile(int i, int j)
         {
+            if (FixedTileAt(i, j) is { } f) return f;
             var (coast, v2, v3) = _base.GetIntermediate(i, j);
             coast += _biases.GetCoast(i, j);
             v2    += _biases.GetV2(i, j);

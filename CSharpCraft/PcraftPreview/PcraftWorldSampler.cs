@@ -61,7 +61,7 @@ internal static class PcraftWorldSampler
         var cur4 = new SeededNoiseGrid(masterSeed, GridSx, GridSy,      4, 0.8, 1.1, 3);
 
         var classifier = new MapClassifier(cur, cur2, cur3, cur4,
-            GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4);
+            GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4, generateHole: true);
 
         // --- Spawn detection ---
         var spawn = SpawnFinder.FindSpawn(masterSeed, classifier, GridSx, GridSy);

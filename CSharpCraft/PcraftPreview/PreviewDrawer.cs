@@ -20,7 +20,7 @@ internal static class PreviewDrawer
                 int my  = tj * 2;
                 int tId = tiles[ti, tj];
 
-                if (tId == 1) // sand — flat randomised sprites, same as BackDrawer
+                if (tId == 1 || tId == 11) // sand + hole — flat randomised sand sprites, no corner blending
                 {
                     Pico8.Mset(mx,     my,     RndSand(ti,       tj,       result.RndWat));
                     Pico8.Mset(mx + 1, my,     RndSand(ti + 0.5, tj,       result.RndWat));
@@ -56,6 +56,7 @@ internal static class PreviewDrawer
         Pico8.Map(0, 0, -8, -8, side * 2, side * 2);
 
         // Pass 2 — tree quad overlay, same sprite layout as BackDrawer's Spr4 for trees
+        PcraftServices.SetPal(PcraftData.TileTree.SpritePal!);
         for (int ti = 0; ti < side; ti++)
         {
             for (int tj = 0; tj < side; tj++)
@@ -70,6 +71,7 @@ internal static class PreviewDrawer
                 Pico8.Spr(RndTree(ti + 0.5, tj + 0.5, result.RndWat) + 81, px - 8 + 8, py - 8 + 8);
             }
         }
+        Pico8.Pal();
 
         // Pass 3 — water animation overlay, same formula as BackDrawer.WatAnim
         for (int ti = 0; ti < side; ti++)
@@ -86,6 +88,24 @@ internal static class PreviewDrawer
                 WatAnim(ti + 0.5, tj + 0.5, px - 8 + 8, py - 8 + 8, time, result.RndWat);
             }
         }
+
+        // Pass 4 — hole overlay: sprite 31 (left + right halves) + sprite 77 (portal), same as BackDrawer.
+        for (int ti = 0; ti < side; ti++)
+        {
+            for (int tj = 0; tj < side; tj++)
+            {
+                if (tiles[ti, tj] != 11) continue;
+
+                int px = ti * 16;
+                int py = tj * 16;
+
+                Pico8.Palt(0, false);
+                Pico8.Spr(31, px - 8,     py - 8, 1, 2);
+                Pico8.Spr(31, px - 8 + 8, py - 8, 1, 2, true, false);
+                Pico8.Palt();
+                Pico8.Spr(77, px - 8 + 4, py - 8, 1, 2);
+            }
+        }
     }
 
     // --- Sprite base values matching BackDrawer's 'b' variable ---
@@ -97,7 +117,7 @@ internal static class PreviewDrawer
     private static bool SameGroup(int[,] tiles, int ti, int tj, int tileId, int side)
     {
         if (ti < 0 || ti >= side || tj < 0 || tj >= side) return true;
-        static int Group(int id) => id switch { 0 => 0, 1 => 1, 3 => 3, _ => 2 };
+        static int Group(int id) => id switch { 0 => 0, 1 => 1, 11 => 1, 3 => 3, _ => 2 };
         return Group(tiles[ti, tj]) == Group(tileId);
     }
 

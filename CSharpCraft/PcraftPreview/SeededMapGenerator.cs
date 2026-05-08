@@ -34,7 +34,7 @@ internal static class SeededMapGenerator
         var cur2 = new SeededNoiseGrid(seed, GridSx, GridSy,      8, 0.9, 0.4, 1);
         var cur3 = new SeededNoiseGrid(seed, GridSx, GridSy,      8, 0.9, 0.3, 2);
         var cur4 = new SeededNoiseGrid(seed, GridSx, GridSy,      4, 0.8, 1.1, 3);
-        var classifier = new MapClassifier(cur, cur2, cur3, cur4, GridSx, GridSy, 0, 1, 2, 3, 4);
+        var classifier = new MapClassifier(cur, cur2, cur3, cur4, GridSx, GridSy, 0, 1, 2, 3, 4, generateHole: true);
 
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)

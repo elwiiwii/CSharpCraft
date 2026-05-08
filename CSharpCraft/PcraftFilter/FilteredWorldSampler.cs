@@ -39,7 +39,7 @@ internal static class FilteredWorldSampler
         var cur4 = new SeededNoiseGrid(masterSeed, GridSx, GridSy,      4, 0.8, 1.1, 3);
 
         var baseClassifier = new MapClassifier(cur, cur2, cur3, cur4,
-            GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4);
+            GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4, generateHole: true);
 
         // --- 2. Extract SpawnConstraintFilter (if present) ---
         var spawnFilter = filters.Filters.OfType<SpawnConstraintFilter>().FirstOrDefault();
@@ -51,7 +51,7 @@ internal static class FilteredWorldSampler
         MapClassifier classifier = biases.IsEmpty
             ? baseClassifier
             : new BiasedMapClassifier(cur, cur2, cur3, cur4,
-                GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4, biases);
+                GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4, biases, generateHole: true);
 
         // --- 5. Find spawn via FilteredSpawnFinder ---
         var spawn  = FilteredSpawnFinder.FindSpawn(masterSeed, classifier, biases, GridSx, GridSy, spawnFilter, sink);
@@ -81,3 +81,4 @@ internal static class FilteredWorldSampler
         return new SampleResult(tiles, spawnX, spawnY, centerX, centerY, rndWat);
     }
 }
+

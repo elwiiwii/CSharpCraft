@@ -75,7 +75,9 @@ internal static class FilterBiasComputer
         // already counted above). Cells committed to a DIFFERENT tile by a prior
         // filter (HasAnyBias) are also excluded to avoid conflicts.
         var candidates = (filter.Zone is null ? AllCells(gridSx, gridSy) : filter.Zone.Cells(gridSx, gridSy))
-            .Where(c => biased.ClassifyTile(c.x, c.y) != filter.TileId && !biases.HasAnyBias(c.x, c.y))
+            .Where(c => biased.ClassifyTile(c.x, c.y) != filter.TileId
+                     && !biases.HasAnyBias(c.x, c.y)
+                     && !baseClassifier.IsFixedTile(c.x, c.y))
             .Select(c => ScoreCell(baseClassifier, biases, c.x, c.y, filter.TileId))
             .OrderBy(c => c.cost)
             .ToList();
@@ -117,7 +119,7 @@ internal static class FilterBiasComputer
         if (cluster.Count == 0)
         {
             var seed = filter.Zone.Cells(gridSx, gridSy)
-                .Where(c => !biases.HasAnyBias(c.x, c.y))
+                .Where(c => !biases.HasAnyBias(c.x, c.y) && !baseClassifier.IsFixedTile(c.x, c.y))
                 .Select(c => ScoreCell(baseClassifier, biases, c.x, c.y, filter.TileId))
                 .OrderBy(c => c.cost)
                 .FirstOrDefault();
@@ -143,7 +145,8 @@ internal static class FilterBiasComputer
                 .Where(n => filter.Zone.Contains(n.x, n.y)
                             && !cluster.Contains(n)
                             && biased.ClassifyTile(n.x, n.y) != filter.TileId
-                            && !biases.HasAnyBias(n.x, n.y))
+                            && !biases.HasAnyBias(n.x, n.y)
+                            && !baseClassifier.IsFixedTile(n.x, n.y))
                 .Distinct()
                 .Select(n => ScoreCell(baseClassifier, biases, n.x, n.y, filter.TileId))
                 .OrderBy(n => n.cost)
@@ -293,7 +296,8 @@ internal static class FilterBiasComputer
             : base(new NullGrid(), new NullGrid(), new NullGrid(), new NullGrid(),
                    baseClassifier.GridSx, baseClassifier.GridSy,
                    baseClassifier.TileA, baseClassifier.TileB, baseClassifier.TileC,
-                   baseClassifier.TileD, baseClassifier.TileE)
+                   baseClassifier.TileD, baseClassifier.TileE,
+                   baseClassifier.GenerateHole)
         {
             _base   = baseClassifier;
             _biases = biases;
@@ -301,6 +305,7 @@ internal static class FilterBiasComputer
 
         internal override int ClassifyTile(int i, int j)
         {
+            if (FixedTileAt(i, j) is { } f) return f;
             var (coast, v2, v3) = _base.GetIntermediate(i, j);
             coast += _biases.GetCoast(i, j);
             v2    += _biases.GetV2(i, j);

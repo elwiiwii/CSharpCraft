@@ -53,7 +53,8 @@ class FNAGame : Game
 
         _inputProvider = new PollingInputProvider(InputBindings.Default);
 
-        var scene = new PcraftPreviewScene();
+        //var scene = new PcraftPreviewScene();
+        var scene = new PcraftFilterBase();
         _orchestrator = new GameOrchestrator(
             musicDirectory: _musicFolderPath,
             sfxDirectory: _sfxFolderPath,

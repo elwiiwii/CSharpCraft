@@ -20,14 +20,16 @@ internal sealed class BiasedMapClassifier : MapClassifier
         int gridSx,
         int gridSy,
         int a, int b, int c, int d, int e,
-        BiasLayers biasLayers)
-        : base(cur, cur2, cur3, cur4, gridSx, gridSy, a, b, c, d, e)
+        BiasLayers biasLayers,
+        bool generateHole = false)
+        : base(cur, cur2, cur3, cur4, gridSx, gridSy, a, b, c, d, e, generateHole)
     {
         _biasLayers = biasLayers ?? throw new ArgumentNullException(nameof(biasLayers));
     }
 
     internal override int ClassifyTile(int i, int j)
     {
+        if (FixedTileAt(i, j) is { } f) return f;
         var (coast, v2, v3) = ComputeIntermediate(i, j);
         coast += _biasLayers.GetCoast(i, j);
         v2    += _biasLayers.GetV2(i, j);

@@ -185,7 +185,7 @@ public sealed class PcraftWorldSamplerTests
     {
         var result = PcraftWorldSampler.Sample(seed, radius: 4, forceCenterX: 32, forceCenterY: 32);
 
-        int[] valid = [0, 1, 2, 3, 4];
+        int[] valid = [0, 1, 2, 3, 4, 11];
         int side = result.Tiles.GetLength(0);
 
         for (int i = 0; i < side; i++)
@@ -275,7 +275,7 @@ public sealed class PcraftWorldSamplerTests
         var cur2 = new SeededNoiseGrid(Seed, 64, 64,  8, 0.9, 0.4, 1);
         var cur3 = new SeededNoiseGrid(Seed, 64, 64,  8, 0.9, 0.3, 2);
         var cur4 = new SeededNoiseGrid(Seed, 64, 64,  4, 0.8, 1.1, 3);
-        var classifier = new MapClassifier(cur, cur2, cur3, cur4, 64, 64, 0, 1, 2, 3, 4);
+        var classifier = new MapClassifier(cur, cur2, cur3, cur4, 64, 64, 0, 1, 2, 3, 4, generateHole: true);
 
         result.Tiles[0, 0].Should().Be(classifier.ClassifyTile(Cx - R, Cy - R),
             because: "Tiles[0,0] must be the top-left corner of the slice at (Cx-R, Cy-R)");
