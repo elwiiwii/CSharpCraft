@@ -34,9 +34,7 @@
 	  </Content>
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Include="../FNAlibs/**" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
+	<Import Project="../FNALibs.props" />
 
 	<ItemGroup>
 	  <Folder Include="Protos\" />

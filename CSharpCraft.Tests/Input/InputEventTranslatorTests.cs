@@ -1,5 +1,6 @@
 using CSharpCraft.Input;
 using FluentAssertions;
+using Microsoft.Xna.Framework.Input;
 using PSharp8.Input;
 using Xunit;
 

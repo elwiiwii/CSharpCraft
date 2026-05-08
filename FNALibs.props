@@ -1,0 +1,60 @@
+<!--
+  FNALibs.props
+  =============
+  Import this file from any project that needs FNA native libraries copied to
+  its output directory.  The correct platform subfolder is chosen automatically
+  at build time:
+
+	Windows x64   -> fnalibs/x64/   (+ fnalibs/D3D12/ sub-directory)
+	Windows x86   -> fnalibs/x86/
+	Linux x64     -> fnalibs/lib64/
+	Linux ARM64   -> fnalibs/libaarch64/
+
+  To update the libraries for the whole solution, just replace the files inside
+  the relevant subfolder(s) of  <solution-root>/fnalibs/  – no project files
+  need to be touched.
+-->
+<Project>
+
+  <PropertyGroup>
+	<FNALibsRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)fnalibs'))</FNALibsRoot>
+  </PropertyGroup>
+
+  <!-- ── Windows ─────────────────────────────────────────────────────────── -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(Platform)' != 'x86'">
+	<!-- x64 runtime DLLs go straight into the output root -->
+	<None Include="$(FNALibsRoot)x64\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <Link>%(Filename)%(Extension)</Link>
+	</None>
+	<!-- D3D12 sub-folder must stay as a sub-folder in the output -->
+	<None Include="$(FNALibsRoot)D3D12\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <Link>D3D12\%(Filename)%(Extension)</Link>
+	</None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(Platform)' == 'x86'">
+	<None Include="$(FNALibsRoot)x86\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <Link>%(Filename)%(Extension)</Link>
+	</None>
+  </ItemGroup>
+
+  <!-- ── Linux x64 ─────────────────────────────────────────────────────── -->
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT' AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">
+	<None Include="$(FNALibsRoot)lib64\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <Link>%(Filename)%(Extension)</Link>
+	</None>
+  </ItemGroup>
+
+  <!-- ── Linux / macOS ARM64 ───────────────────────────────────────────── -->
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT' AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">
+	<None Include="$(FNALibsRoot)libaarch64\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <Link>%(Filename)%(Extension)</Link>
+	</None>
+  </ItemGroup>
+
+</Project>

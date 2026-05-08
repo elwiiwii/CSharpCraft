@@ -160,7 +160,7 @@ public sealed class SettingsManagerFnaTests(FnaFixture fixture) : IDisposable
         File.WriteAllText(
             Path.Combine(_tempDir, "general.json"),
             """{"MusicVolume":100,"SfxVolume":100,"WindowWidth":640,"WindowHeight":480,"Fullscreen":false}""");
-        await Task.Delay(500); // wait > 300ms debounce
+        await Task.Delay(500, TestContext.Current.CancellationToken); // wait > 300ms debounce
 
         sut.Update();
 

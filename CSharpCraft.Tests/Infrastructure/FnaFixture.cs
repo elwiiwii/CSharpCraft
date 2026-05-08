@@ -1,3 +1,5 @@
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using SDL3;
 
 namespace CSharpCraft.Tests.Infrastructure;
