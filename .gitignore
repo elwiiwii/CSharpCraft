@@ -429,3 +429,5 @@ Thumbs.db
 appsettings.json
 appsettings.*.json
 !appsettings.Example.json
+
+**/fnalibs/
