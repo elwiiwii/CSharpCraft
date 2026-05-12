@@ -59,10 +59,10 @@ internal static class MapGenerator
 
     internal static TileId[,] CreateMapStep(int sx, int sy, TileId a, TileId b, TileId c, TileId d, TileId e)
     {
-        F32[,] cur = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
-        F32[,] cur2 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
-        F32[,] cur3 = Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
-        F32[,] cur4 = Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
+        F32[,] cur = PcraftServices.Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.2), sx);
+        F32[,] cur2 = PcraftServices.Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.4), 8);
+        F32[,] cur3 = PcraftServices.Noise(sx, sy, F32.FromDouble(0.9), F32.FromDouble(0.3), 8);
+        F32[,] cur4 = PcraftServices.Noise(sx, sy, F32.FromDouble(0.8), F32.FromDouble(1.1), 4);
 
         TileId[,] result = new TileId[sx + 1, sy + 1];
 
@@ -125,16 +125,16 @@ internal static class MapGenerator
 
             if (isUnder)
             {
-                tiles = CreateMapStep(levelSx, levelSy, TileId.Rock, TileId.Iron, TileId.Sand, TileId.Gold, TileId.Gem);
-                CountTypes(tiles, levelSx, levelSy, typecount);
+                tiles = PcraftServices.CreateMapStep(levelSx, levelSy, TileId.Rock, TileId.Iron, TileId.Sand, TileId.Gold, TileId.Gem);
+                PcraftServices.CountTypes(tiles, levelSx, levelSy, typecount);
                 if (typecount[8] < 30) needMap = true;
                 if (typecount[9] < 20) needMap = true;
                 if (typecount[10] < 15) needMap = true;
             }
             else
             {
-                tiles = CreateMapStep(levelSx, levelSy, TileId.Water, TileId.Sand, TileId.Grass, TileId.Rock, TileId.Tree);
-                CountTypes(tiles, levelSx, levelSy, typecount);
+                tiles = PcraftServices.CreateMapStep(levelSx, levelSy, TileId.Water, TileId.Sand, TileId.Grass, TileId.Rock, TileId.Tree);
+                PcraftServices.CountTypes(tiles, levelSx, levelSy, typecount);
                 if (typecount[3] < 30) needMap = true;
                 if (typecount[4] < 30) needMap = true;
             }

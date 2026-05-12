@@ -120,7 +120,7 @@ internal static class LevelManager
         {
             for (int j = cj; j <= cj + 8; j++)
             {
-                if (MapOps.OutOfBounds(i, j, level)) continue;
+                if (PcraftServices.OutOfBounds(i, j, level)) continue;
                 Tile tile = level.Map[i, j];
                 if (tile.Type == PcraftData.TileFarm && tile.GrowthTimer.HasValue && level.Time > tile.GrowthTimer.Value)
                     level.SetTile(i, j, new Tile(PcraftData.TileSand));

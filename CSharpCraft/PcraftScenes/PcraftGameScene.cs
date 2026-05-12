@@ -1,8 +1,10 @@
+using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftSeeded;
 using PSharp8.Scene;
 
-namespace CSharpCraft.PcraftPreview;
+namespace CSharpCraft.PcraftScenes;
 
-internal sealed class PcraftGameScene : PcraftBase.PcraftSceneBase
+internal sealed class PcraftGameScene : PcraftSceneBase
 {
     private readonly long _seed;
 

@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftPreview;
+using CSharpCraft.PcraftScenes;
 using FluentAssertions;
 using Moq;
 using PSharp8.Scene;

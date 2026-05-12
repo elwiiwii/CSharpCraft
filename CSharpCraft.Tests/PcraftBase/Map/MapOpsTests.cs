@@ -217,34 +217,6 @@ public sealed class MapOpsTileTests(FnaFixture fixture)
         _ = result.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData(4)] // Tree → surface → IsCool
-    [InlineData(3)] // Rock → surface → IsCool
-    public void IsCool_ReturnsTrue_WhenTileHasSurface(int tileId)
-    {
-        using GameOrchestrator orch = BuildOrchestrator();
-        Pico8.Initialize(orch);
-        Level state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TileFor((TileId)tileId);
-
-        bool result = MapOps.IsCool(F32.Zero, F32.Zero, state);
-
-        _ = result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsCool_ReturnsFalse_WhenTileIsFloorOnly()
-    {
-        using GameOrchestrator orch = BuildOrchestrator();
-        Pico8.Initialize(orch);
-        Level state = MakeState(levelX: 0, sx: 8, sy: 8);
-        state.Map[0, 0] = PcraftData.TileFor(TileId.Grass);
-
-        bool result = MapOps.IsCool(F32.Zero, F32.Zero, state);
-
-        _ = result.Should().BeFalse();
-    }
-
     // --------------------------------------------------------------------------
     #endregion
     // --------------------------------------------------------------------------

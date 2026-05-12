@@ -6,8 +6,8 @@ internal static class HudDrawer
 {
     internal static void DrawHud(PlayerEntity player)
     {
-        DrawBar(F32.FromInt(4), F32.FromInt(4), player.Life, player.Llife, F32.FromInt(8), F32.FromInt(2));
-        DrawBar(F32.FromInt(4), F32.FromInt(9), F32.Max(F32.Zero, player.Stam), player.Lstam, F32.FromInt(11), F32.FromInt(3));
+        PcraftServices.DrawBar(F32.FromInt(4), F32.FromInt(4), player.Life, player.Llife, F32.FromInt(8), F32.FromInt(2));
+        PcraftServices.DrawBar(F32.FromInt(4), F32.FromInt(9), F32.Max(F32.Zero, player.Stam), player.Lstam, F32.FromInt(11), F32.FromInt(3));
 
         if (player.CurItem is not null)
         {

@@ -9,7 +9,7 @@ internal static class PcraftMath
 
     internal static F32 GetInvLen(F32 x, F32 y)
     {
-        return F32.One / GetLen(x, y);
+        return F32.One / PcraftServices.GetLen(x, y);
     }
 
     internal static F32 GetRot(F32 dx, F32 dy)
@@ -21,8 +21,8 @@ internal static class PcraftMath
 
     internal static F32 NormGetRot(F32 dx, F32 dy)
     {
-        F32 l = GetInvLen(dx, dy);
-        return GetRot(dx * l, dy * l);
+        F32 l = PcraftServices.GetInvLen(dx, dy);
+        return PcraftServices.GetRot(dx * l, dy * l);
     }
 
     internal static F32 UpRot(F32 grot, F32 rot)

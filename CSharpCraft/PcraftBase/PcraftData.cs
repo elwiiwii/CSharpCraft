@@ -2,8 +2,11 @@ using CSharpCraft.PcraftBase.Data;
 
 namespace CSharpCraft.PcraftBase;
 
-internal static class PcraftData
+internal class PcraftData
 {
+    private static PcraftData _current = new();
+    internal static void SetData(PcraftData d) => _current = d ?? throw new ArgumentNullException(nameof(d));
+
     // ------------------------------------------------------------------
     #region Palettes
     // ------------------------------------------------------------------
@@ -87,7 +90,9 @@ internal static class PcraftData
     internal static readonly WallTileType TileGold = new(BlendGroup.Sand, [1, 2, 9, 10], Gold, TileSand, life: 80);
     internal static readonly WallTileType TileGem = new(BlendGroup.Sand, [1, 2, 14, 12], Gem, TileSand, life: 160);
 
-    internal static Tile TileFor(TileId id)
+    internal static Tile TileFor(TileId id) => _current.OnTileFor(id);
+
+    protected virtual Tile OnTileFor(TileId id)
     {
         return id switch
         {
@@ -106,7 +111,9 @@ internal static class PcraftData
         };
     }
 
-    internal static int TileIdFor(TileType type)
+    internal static int TileIdFor(TileType type) => _current.OnTileIdFor(type);
+
+    protected virtual int OnTileIdFor(TileType type)
     {
         if (type == TileWater) return (int)TileId.Water;
         if (type == TileSand) return (int)TileId.Sand;

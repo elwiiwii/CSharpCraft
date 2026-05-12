@@ -1,6 +1,7 @@
+using CSharpCraft.PcraftPreview;
 using PSharp8.Scene;
 
-namespace CSharpCraft.PcraftPreview;
+namespace CSharpCraft.PcraftScenes;
 
 internal class PcraftPreviewScene : PcraftPreviewBase
 {

@@ -244,12 +244,24 @@ internal class PcraftServices
     #endregion
     #region Inventory
     // ---------------------------------------------------------------------------
-
+    
     internal static void AddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
         => _current.OnAddItemInList(list, item, pos);
 
     protected virtual void OnAddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
         => InventoryOps.AddItemInList(list, item, pos);
+
+    internal static InventorySlot? FindByType(List<InventorySlot> list, ItemDef type)
+        => _current.OnFindByType(list, type);
+
+    protected virtual InventorySlot? OnFindByType(List<InventorySlot> list, ItemDef type)
+        => InventoryOps.FindByType(list, type);
+    
+    internal static StackableItem? FindStackable(List<InventorySlot> list, StackableItem query)
+        => _current.OnFindStackable(list, query);
+
+    protected virtual StackableItem? OnFindStackable(List<InventorySlot> list, StackableItem query)
+        => InventoryOps.FindStackable(list, query);
 
     internal static int HowMany(List<InventorySlot> list, InventorySlot query)
         => _current.OnHowMany(list, query);
@@ -367,12 +379,6 @@ internal class PcraftServices
 
     protected virtual (int i, int j) OnGetMCoord(F32 x, F32 y)
         => MapOps.GetMCoord(x, y);
-
-    internal static bool IsCool(F32 x, F32 y, Level level)
-        => _current.OnIsCool(x, y, level);
-
-    protected virtual bool OnIsCool(F32 x, F32 y, Level level)
-        => MapOps.IsCool(x, y, level);
 
     internal static bool IsFree(F32 x, F32 y, Level level)
         => _current.OnIsFree(x, y, level);

@@ -1,6 +1,6 @@
 using CSharpCraft.PcraftFilter.Bias;
 using CSharpCraft.PcraftFilter.Noise;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded.Noise;
 using FluentAssertions;
 using Xunit;
 

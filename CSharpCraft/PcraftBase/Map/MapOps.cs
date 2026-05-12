@@ -12,7 +12,7 @@ internal static class MapOps
 
     internal static Tile GetDirectTile(int i, int j, Level level)
     {
-        if (OutOfBounds(i, j, level))
+        if (PcraftServices.OutOfBounds(i, j, level))
             return new Tile(PcraftData.TileWater);
         Tile tile = level.Map[i, j];
         return tile.Type is null ? new Tile(PcraftData.TileWater) : tile;
@@ -20,14 +20,14 @@ internal static class MapOps
 
     internal static Tile GetTile(F32 x, F32 y, Level level)
     {
-        (int i, int j) = GetMCoord(x, y);
-        return GetDirectTile(i, j, level);
+        (int i, int j) = PcraftServices.GetMCoord(x, y);
+        return PcraftServices.GetDirectTile(i, j, level);
     }
 
     internal static void SetTile(F32 x, F32 y, Tile tile, Level level)
     {
-        (int i, int j) = GetMCoord(x, y);
-        if (OutOfBounds(i, j, level)) return;
+        (int i, int j) = PcraftServices.GetMCoord(x, y);
+        if (PcraftServices.OutOfBounds(i, j, level)) return;
         level.SetTile(i, j, tile);
     }
 
@@ -38,18 +38,13 @@ internal static class MapOps
 
     internal static bool IsFree(F32 x, F32 y, Level level)
     {
-        Tile tile = GetTile(x, y, level);
+        Tile tile = PcraftServices.GetTile(x, y, level);
         return tile.Type is not WallTileType;
     }
 
     internal static bool IsFreeEnem(F32 x, F32 y, Level level)
     {
-        Tile tile = GetTile(x, y, level);
+        Tile tile = PcraftServices.GetTile(x, y, level);
         return tile.Type is not WallTileType && tile.Type.BlendGroup != BlendGroup.Water;
-    }
-
-    internal static bool IsCool(F32 x, F32 y, Level level)
-    {
-        return !IsFree(x, y, level);
     }
 }

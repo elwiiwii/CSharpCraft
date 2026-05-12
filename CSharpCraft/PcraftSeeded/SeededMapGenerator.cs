@@ -1,8 +1,8 @@
 using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded.Noise;
 
-namespace CSharpCraft.PcraftPreview;
+namespace CSharpCraft.PcraftSeeded;
 
 internal static class SeededMapGenerator
 {
@@ -25,24 +25,38 @@ internal static class SeededMapGenerator
 
     internal static (int holeX, int holeY) CreateMap(Level level, PlayerEntity player, long seed)
     {
-        int levelX = level.X;
-        int levelY = level.Y;
-        int levelSx = level.Sx;
-        int levelSy = level.Sy;
-
         SeededNoiseGrid cur = new(seed, GridSx, GridSy, GridSx, 0.9, 0.2, 0);
         SeededNoiseGrid cur2 = new(seed, GridSx, GridSy, 8, 0.9, 0.4, 1);
         SeededNoiseGrid cur3 = new(seed, GridSx, GridSy, 8, 0.9, 0.3, 2);
         SeededNoiseGrid cur4 = new(seed, GridSx, GridSy, 4, 0.8, 1.1, 3);
         MapClassifier classifier = new(cur, cur2, cur3, cur4, GridSx, GridSy, 0, 1, 2, 3, 4, generateHole: true);
 
+        (int tileX, int tileY)? spawn = SpawnFinder.FindSpawn(seed, classifier, GridSx, GridSy);
+        return CreateMap(level, player, classifier, spawn);
+    }
+
+    /// <summary>
+    /// Writes tiles to <paramref name="level"/>, positions the player at <paramref name="spawn"/>
+    /// (or grid centre if null), and places the portal hole structure.
+    /// Used by the filter pipeline to inject a pre-built biased classifier.
+    /// </summary>
+    internal static (int holeX, int holeY) CreateMap(
+        Level level,
+        PlayerEntity player,
+        MapClassifier classifier,
+        (int tileX, int tileY)? spawn)
+    {
+        int levelX = level.X;
+        int levelY = level.Y;
+        int levelSx = level.Sx;
+        int levelSy = level.Sy;
+
         for (int i = 0; i < levelSx; i++)
             for (int j = 0; j < levelSy; j++)
                 level.SetTile(i, j, PcraftData.TileFor((TileId)classifier.ClassifyTile(i, j)));
 
-        (int tileX, int tileY)? spawn = SpawnFinder.FindSpawn(seed, classifier, GridSx, GridSy);
-        int spawnX = spawn?.tileX ?? (GridSx / 2);
-        int spawnY = spawn?.tileY ?? (GridSy / 2);
+        int spawnX = spawn?.tileX ?? (classifier.GridSx / 2);
+        int spawnY = spawn?.tileY ?? (classifier.GridSy / 2);
         player.X = F32.FromInt((spawnX * 16) + 8);
         player.Y = F32.FromInt((spawnY * 16) + 8);
         player.Camera.Clx = player.X;

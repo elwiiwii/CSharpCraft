@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace CSharpCraft.PcraftPreview.Noise;
+namespace CSharpCraft.PcraftSeeded.Noise;
 
 /// <summary>
 /// Computes diamond-square noise values on-demand using per-cell deterministic hashing.

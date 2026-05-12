@@ -1,5 +1,5 @@
-using CSharpCraft.PcraftPreview;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded;
+using CSharpCraft.PcraftSeeded.Noise;
 using FluentAssertions;
 using Xunit;
 

@@ -1,7 +1,7 @@
 using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftPreview;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded;
+using CSharpCraft.PcraftSeeded.Noise;
 using CSharpCraft.Tests.Infrastructure;
 using FluentAssertions;
 using PSharp8;

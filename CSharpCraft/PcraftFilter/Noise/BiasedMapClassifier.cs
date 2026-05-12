@@ -1,5 +1,5 @@
 using CSharpCraft.PcraftFilter.Bias;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded.Noise;
 
 namespace CSharpCraft.PcraftFilter.Noise;
 

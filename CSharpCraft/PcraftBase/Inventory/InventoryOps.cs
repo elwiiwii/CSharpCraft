@@ -35,7 +35,7 @@ internal static class InventoryOps
     {
         if (elem is StackableItem StackableElem)
         {
-            StackableItem? found = FindStackable(list, StackableElem);
+            StackableItem? found = PcraftServices.FindStackable(list, StackableElem);
             if (found is null) return;
             found.Count -= StackableElem.Count;
             if (found.Count <= 0)
@@ -43,7 +43,7 @@ internal static class InventoryOps
         }
         else
         {
-            InventorySlot? found = FindByType(list, elem.Type);
+            InventorySlot? found = PcraftServices.FindByType(list, elem.Type);
             if (found is not null)
                 _ = list.Remove(found);
         }
@@ -55,7 +55,7 @@ internal static class InventoryOps
     {
         if (item is StackableItem Stackable)
         {
-            StackableItem? existing = FindStackable(list, Stackable);
+            StackableItem? existing = PcraftServices.FindStackable(list, Stackable);
             if (existing is not null)
             {
                 existing.Count += Stackable.Count;
@@ -70,7 +70,7 @@ internal static class InventoryOps
         return ((sel % count) + count) % count;
     }
 
-    private static InventorySlot? FindByType(List<InventorySlot> list, ItemDef type)
+    internal static InventorySlot? FindByType(List<InventorySlot> list, ItemDef type)
     {
         foreach (InventorySlot slot in list)
         {

@@ -2,7 +2,7 @@ using CSharpCraft.PcraftFilter.Bias;
 using CSharpCraft.PcraftFilter.Filters;
 using CSharpCraft.PcraftFilter.Spawn;
 using CSharpCraft.PcraftFilter.Zones;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded.Noise;
 using FluentAssertions;
 using Xunit;
 

@@ -8,7 +8,7 @@ internal static class MenuOverlayDrawer
     internal static void ItemName(int x, int y, InventorySlot item, int col)
     {
         int? power = item is ToolItem tool ? tool.Power : null;
-        DrawItemVisual(x, y, col, power, item.Type);
+        PcraftServices.DrawItemVisual(x, y, col, power, item.Type);
     }
 
     internal static void DrawItemVisual(int x, int y, int col, int? power, ItemDef type)
@@ -45,13 +45,13 @@ internal static class MenuOverlayDrawer
     internal static void DrawInventoryMenu(InventoryMenu menu)
     {
         Pico8.Camera();
-        DrawPanel(PcraftData.Inventary.Name, 4, 24, 84, 96);
+        PcraftServices.DrawPanel(PcraftData.Inventary.Name, 4, 24, 84, 96);
         List<InventorySlot> list = menu.List;
         if (list.Count < 1) return;
-        menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 24, 84, 96, 10, list.Count, (i, lx, py) =>
+        menu.Off = PcraftServices.DrawListCore(menu.Sel, menu.Off, 4, 24, 84, 96, 10, list.Count, (i, lx, py) =>
         {
             InventorySlot it = list[i - 1];
-            ItemName(lx, py, it, 7);
+            PcraftServices.ItemName(lx, py, it, 7);
             if (it is StackableItem Stackable)
             {
                 string c = Stackable.Count.ToString();
@@ -67,26 +67,26 @@ internal static class MenuOverlayDrawer
         int off = menu.Off;
         if (menu.TabToggle == 0)
         {
-            off = DrawItemList(menu.ChestItems, PcraftData.Chest.Name, sel, off, 4, 24, 84, 96, 10);
-            off = DrawItemList(menu.PlayerItems, PcraftData.Inventary.Name, sel, off, 87, 24, 84, 96, 10);
+            off = PcraftServices.DrawItemList(menu.ChestItems, PcraftData.Chest.Name, sel, off, 4, 24, 84, 96, 10);
+            off = PcraftServices.DrawItemList(menu.PlayerItems, PcraftData.Inventary.Name, sel, off, 87, 24, 84, 96, 10);
         }
         else
         {
-            off = DrawItemList(menu.ChestItems, PcraftData.Chest.Name, sel, off, -44, 24, 84, 96, 10);
-            off = DrawItemList(menu.PlayerItems, PcraftData.Inventary.Name, sel, off, 39, 24, 84, 96, 10);
+            off = PcraftServices.DrawItemList(menu.ChestItems, PcraftData.Chest.Name, sel, off, -44, 24, 84, 96, 10);
+            off = PcraftServices.DrawItemList(menu.PlayerItems, PcraftData.Inventary.Name, sel, off, 39, 24, 84, 96, 10);
         }
         menu.Off = off;
     }
 
     internal static int DrawItemList(List<InventorySlot> list, string panelName, int sel, int off, int x, int y, int sx, int sy, int my)
     {
-        DrawPanel(panelName, x, y, sx, sy);
+        PcraftServices.DrawPanel(panelName, x, y, sx, sy);
         return list.Count < 1
             ? off
-            : DrawListCore(sel, off, x, y, sx, sy, my, list.Count, (i, lx, py) =>
+            : PcraftServices.DrawListCore(sel, off, x, y, sx, sy, my, list.Count, (i, lx, py) =>
         {
             InventorySlot it = list[i - 1];
-            ItemName(lx, py, it, 7);
+            PcraftServices.ItemName(lx, py, it, 7);
             if (it is StackableItem Stackable)
             {
                 string c = Stackable.Count.ToString();
@@ -102,21 +102,21 @@ internal static class MenuOverlayDrawer
         if (recipeList.Count >= 1 && menu.Sel >= 0 && menu.Sel < recipeList.Count)
         {
             Recipe curGoal = recipeList[menu.Sel];
-            DrawPanel("have", 71, 50, 52, 30);
+            PcraftServices.DrawPanel("have", 71, 50, 52, 30);
             int have = PcraftServices.HowMany(player.Invent, curGoal.Output);
             Pico8.Print(have.ToString(), 91, 65, 7);
-            DrawRequireList(curGoal, 4, 79, 104, 50, player);
+            PcraftServices.DrawRequireList(curGoal, 4, 79, 104, 50, player);
         }
 
-        DrawPanel(menu.BenchType.Name, 4, 16, 68, 64);
+        PcraftServices.DrawPanel(menu.BenchType.Name, 4, 16, 68, 64);
 
         if (recipeList.Count < 1) return;
-        menu.Off = DrawListCore(menu.Sel, menu.Off, 4, 16, 68, 64, 6, recipeList.Count, (i, lx, py) =>
+        menu.Off = PcraftServices.DrawListCore(menu.Sel, menu.Off, 4, 16, 68, 64, 6, recipeList.Count, (i, lx, py) =>
         {
             Recipe it = recipeList[i - 1];
             int col = PcraftServices.CanCraft(player.Invent, it) ? 7 : 0;
             int? power = it.Output is ToolItem toolOut ? toolOut.Power : null;
-            DrawItemVisual(lx, py, col, power, it.Output.Type);
+            PcraftServices.DrawItemVisual(lx, py, col, power, it.Output.Type);
             if (it.Output is StackableItem countedOut)
             {
                 string c = countedOut.Count.ToString();
@@ -154,7 +154,7 @@ internal static class MenuOverlayDrawer
 
     internal static void DrawRequireList(Recipe recip, int x, int y, int sx, int sy, PlayerEntity player)
     {
-        DrawPanel("require", x, y, sx, sy);
+        PcraftServices.DrawPanel("require", x, y, sx, sy);
         if (recip.Req.Count < 1) return;
 
         int lx = x + 5;
@@ -164,7 +164,7 @@ internal static class MenuOverlayDrawer
         {
             StackableItem it = recip.Req[i];
             int py = ly + (i * 8);
-            ItemName(lx, py, it, 7);
+            PcraftServices.ItemName(lx, py, it, 7);
             {
                 int h = PcraftServices.HowMany(player.Invent, it);
                 string c = $"{h}/{it.Count}";

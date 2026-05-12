@@ -2,8 +2,8 @@ using CSharpCraft.PcraftFilter.Bias;
 using CSharpCraft.PcraftFilter.Filters;
 using CSharpCraft.PcraftFilter.Noise;
 using CSharpCraft.PcraftFilter.Spawn;
-using CSharpCraft.PcraftPreview;
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded;
+using CSharpCraft.PcraftSeeded.Noise;
 
 namespace CSharpCraft.PcraftFilter;
 

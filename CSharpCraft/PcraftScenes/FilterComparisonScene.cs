@@ -1,24 +1,26 @@
 using CSharpCraft.PcraftBase;
+using CSharpCraft.PcraftBase.Data;
+using CSharpCraft.PcraftFilter;
 using CSharpCraft.PcraftFilter.Filters;
-using CSharpCraft.PcraftPreview;
+using CSharpCraft.PcraftSeeded;
 using PSharp8.Scene;
 
-namespace CSharpCraft.PcraftFilter;
+namespace CSharpCraft.PcraftScenes;
 
-internal class PcraftFilterBase : PcraftSceneBase, IScene
+internal class FilterComparisonScene : PcraftSceneBase, IScene
 {
-    public override string? Name => "Pcraft Filter Base";
+    public override string? Name => "Filter Comparison";
 
     // Layout constants
     // Resolution: 4px margin | 512px map | 4px gap | 512px map | 4px margin = 1036px wide
     //             10px header | 512px map | 10px footer = 532px tall
     private const int MarginX = 4;
     private const int GapX = 4;
-    private const int MapPx = 64 * 14;   // 64 tiles × 12px/tile
+    private const int MapPx = 64 * 14;   // 64 tiles × 14px/tile
     private const int HeaderY = 10;
-    private const int FooterY = HeaderY + MapPx;   // HeaderY + MapPx = 10 + 512
+    private const int FooterY = HeaderY + MapPx;
     private const int Left0X = MarginX;
-    private const int Right0X = MarginX + MapPx + GapX;  // 520
+    private const int Right0X = MarginX + MapPx + GapX;
 
     public override void Init(ISceneSetup setup)
     {
@@ -26,8 +28,8 @@ internal class PcraftFilterBase : PcraftSceneBase, IScene
         setup.Resolution = ((MapPx * 2) + 12, FooterY + 10);
 
         FilterSet filters = new([
-            new TileCountFilter(TileId: 3, MinimumCount: 80),
-            new TileCountFilter(TileId: 4, MinimumCount: 80),
+            new TileCountFilter(TileId: (int)TileId.Rock, MinimumCount: 80),
+            new TileCountFilter(TileId: (int)TileId.Sand, MinimumCount: 80),
         ]);
 
         long seed = 0L;
@@ -79,4 +81,3 @@ internal class PcraftFilterBase : PcraftSceneBase, IScene
         }, fps: 30);
     }
 }
-

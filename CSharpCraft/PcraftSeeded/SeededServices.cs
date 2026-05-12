@@ -1,11 +1,11 @@
 using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftBase.Data;
 
-namespace CSharpCraft.PcraftPreview;
+namespace CSharpCraft.PcraftSeeded;
 
 internal class SeededServices : PcraftServices
 {
-    private readonly long _seed;
+    protected readonly long _seed;
 
     internal SeededServices(long seed)
     {

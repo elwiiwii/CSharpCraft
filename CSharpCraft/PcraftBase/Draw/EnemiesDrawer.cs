@@ -19,14 +19,14 @@ internal static class EnemiesDrawer
                 drawList.Add(e);
         }
 
-        SortY(drawList);
+        PcraftServices.SortY(drawList);
 
         foreach (CharacterEntity e in drawList)
         {
             if (e is PlayerEntity p)
             {
                 Pico8.Pal();
-                DrawPlayer(p.X, p.Y, p.Prot, p.Panim, p.Banim, isPlayer: true, p, level);
+                PcraftServices.DrawPlayer(p.X, p.Y, p.Prot, p.Panim, p.Banim, isPlayer: true, p, level);
             }
             else
             {
@@ -35,7 +35,7 @@ internal static class EnemiesDrawer
                 Pico8.Pal(4, 1);
                 Pico8.Pal(2, 8);
                 Pico8.Pal(1, 1);
-                DrawPlayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, isPlayer: false, player, level);
+                PcraftServices.DrawPlayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, isPlayer: false, player, level);
             }
         }
     }

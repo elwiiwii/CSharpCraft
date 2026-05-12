@@ -1,4 +1,4 @@
-namespace CSharpCraft.PcraftPreview.Noise;
+namespace CSharpCraft.PcraftSeeded.Noise;
 
 /// <summary>
 /// Finds a valid spawn tile by sampling deterministic candidates within the

@@ -1,6 +1,6 @@
 using CSharpCraft.PcraftBase.Data;
 
-namespace CSharpCraft.PcraftPreview.Noise;
+namespace CSharpCraft.PcraftSeeded.Noise;
 
 internal class MapClassifier
 {

@@ -2,7 +2,7 @@ using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Map;
 
-namespace CSharpCraft.PcraftPreview;
+namespace CSharpCraft.PcraftSeeded;
 
 internal static class SeededLevelManager
 {

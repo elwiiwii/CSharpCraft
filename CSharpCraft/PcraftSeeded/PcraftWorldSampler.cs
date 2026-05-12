@@ -1,6 +1,6 @@
-using CSharpCraft.PcraftPreview.Noise;
+using CSharpCraft.PcraftSeeded.Noise;
 
-namespace CSharpCraft.PcraftPreview;
+namespace CSharpCraft.PcraftSeeded;
 
 /// <summary>
 /// Immutable result of a <see cref="PcraftWorldSampler.Sample"/> call.
