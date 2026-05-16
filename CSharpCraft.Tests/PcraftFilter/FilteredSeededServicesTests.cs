@@ -123,7 +123,7 @@ public sealed class FilteredSeededServicesTests(FnaFixture fixture)
             SampleResult sample = FilteredWorldSampler.Sample(Seed, Radius, Empty,
                 forceCenterX: 32, forceCenterY: 32);
 
-            // SeededMapGenerator.CreateMap writes a 3×3 portal hole at (32, 32). Skip it.
+            // SeededMapGenerator.CreateMap writes a 3×3 ladder hole at (32, 32). Skip it.
             const int holeX = 32;
             const int holeY = 32;
 

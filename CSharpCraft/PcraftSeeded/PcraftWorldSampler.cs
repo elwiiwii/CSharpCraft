@@ -30,9 +30,6 @@ internal sealed record SampleResult(
 /// </summary>
 internal static class PcraftWorldSampler
 {
-    private const int GridSx = 64;
-    private const int GridSy = 64;
-
     /// <summary>
     /// Generates a (2×radius+1)² tile window centred on the spawn tile (or a forced
     /// override). Tiles, spawn position, and water-animation table are all
@@ -54,23 +51,22 @@ internal static class PcraftWorldSampler
         int? forceCenterX = null,
         int? forceCenterY = null)
     {
-        // --- Noise layers (matching MapGenerator.CreateMapStep params) ---
-        SeededNoiseGrid cur = new(masterSeed, GridSx, GridSy, GridSx, 0.9, 0.2, 0);
-        SeededNoiseGrid cur2 = new(masterSeed, GridSx, GridSy, 8, 0.9, 0.4, 1);
-        SeededNoiseGrid cur3 = new(masterSeed, GridSx, GridSy, 8, 0.9, 0.3, 2);
-        SeededNoiseGrid cur4 = new(masterSeed, GridSx, GridSy, 4, 0.8, 1.1, 3);
+        // --- Noise layers ---
+        var (cur, cur2, cur3, cur4) = SeededMapGenerator.CreateIslandNoiseGrids(masterSeed);
 
         MapClassifier classifier = new(cur, cur2, cur3, cur4,
-            GridSx, GridSy, a: 0, b: 1, c: 2, d: 3, e: 4, generateHole: true);
+            SeededMapGenerator.IslandGridSx, SeededMapGenerator.IslandGridSy,
+            a: 0, b: 1, c: 2, d: 3, e: 4, generateHole: true);
 
         // --- Spawn detection ---
-        (int tileX, int tileY)? spawn = SpawnFinder.FindSpawn(masterSeed, classifier, GridSx, GridSy);
+        (int tileX, int tileY)? spawn = SpawnFinder.FindSpawn(masterSeed, classifier,
+            SeededMapGenerator.IslandGridSx, SeededMapGenerator.IslandGridSy);
         int spawnX = spawn?.tileX ?? -1;
         int spawnY = spawn?.tileY ?? -1;
 
         // --- Window centre ---
-        int centerX = forceCenterX ?? spawn?.tileX ?? (GridSx / 2);
-        int centerY = forceCenterY ?? spawn?.tileY ?? (GridSy / 2);
+        int centerX = forceCenterX ?? spawn?.tileX ?? (SeededMapGenerator.IslandGridSx / 2);
+        int centerY = forceCenterY ?? spawn?.tileY ?? (SeededMapGenerator.IslandGridSy / 2);
 
         // --- Tile slice ---
         int side = (2 * radius) + 1;

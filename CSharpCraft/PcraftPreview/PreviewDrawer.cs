@@ -92,7 +92,7 @@ internal static class PreviewDrawer
             }
         }
 
-        // Pass 4 — hole overlay: sprite 31 (left + right halves) + sprite 77 (portal), same as BackDrawer.
+        // Pass 4 — hole overlay: sprite 31 (left + right halves) + sprite 77 (ladder), same as BackDrawer.
         for (int ti = 0; ti < side; ti++)
         {
             for (int tj = 0; tj < side; tj++)

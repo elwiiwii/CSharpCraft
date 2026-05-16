@@ -15,11 +15,10 @@ internal sealed class DeluxeSeededServices : DeluxeServices
     internal DeluxeSeededServices(long seed) : base()
     {
         _seed = seed;
-        SeededLevelManager.Initialize(seed);
     }
 
     protected override Level OnCreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
-        => SeededLevelManager.CreateLevel(x, y, sx, sy, theme, player);
+        => SeededLevelManager.CreateLevel(_seed, _seed, x, y, sx, sy, theme, player);
 
     protected override F32[][] OnInitRndWat()
         => SeededMapGenerator.InitRndWat(_seed);

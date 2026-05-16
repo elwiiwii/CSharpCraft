@@ -50,7 +50,7 @@ internal class MapClassifier
     }
 
     /// <summary>
-    /// Returns a fixed tile id for the portal structure at the grid centre,
+    /// Returns a fixed tile id for the ladder structure at the grid centre,
     /// or <see langword="null"/> for all other cells.
     /// The 3×3 area around (GridSx/2, GridSy/2) is always Rock (3); the
     /// centre cell itself is always Hole (11).
@@ -68,7 +68,7 @@ internal class MapClassifier
     }
 
     /// <summary>
-    /// Returns true if the cell is occupied by a fixed portal tile that cannot be biased.
+    /// Returns true if the cell is occupied by a fixed ladder tile that cannot be biased.
     /// </summary>
     internal bool IsFixedTile(int i, int j)
     {

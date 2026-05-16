@@ -1,5 +1,4 @@
 using CSharpCraft.PcraftBase.Data;
-using CSharpCraft.PcraftFilter;
 
 namespace CSharpCraft.PcraftSeeded;
 
@@ -8,7 +7,7 @@ internal static class SeededDropManager
     internal static void AddItem(
         ItemDef mat, int minCount, int maxCount, F32 hitX, F32 hitY, List<Entity> entities,
         long nonGenSeed, Dictionary<string, int> harvestCounts,
-        Dictionary<string, IDropFilter> dropFilters, bool useRelativeFacing,
+        bool useRelativeFacing,
         F32? playerFacing = null, double dropChance = 1.0)
     {
         int harvestIndex = harvestCounts.GetValueOrDefault(mat.Name, 0);
@@ -19,15 +18,9 @@ internal static class SeededDropManager
             SeedMixer.HashString(mat.Name),
             harvestIndex));
 
-        double roll = rng.NextDouble();
-        dropFilters.TryGetValue(mat.Name, out IDropFilter? filter);
-        if (filter is not null) roll = filter.NudgeRoll(roll, harvestIndex);
-        if (roll >= dropChance) return;
+        if (rng.NextDouble() >= dropChance) return;
 
-        (int effMin, int effMax) = filter is not null
-            ? filter.ModifyCount(minCount, maxCount, harvestIndex)
-            : (minCount, maxCount);
-        int count = rng.Next(effMin, effMax + 1);
+        int count = rng.Next(minCount, maxCount + 1);
 
         int tileX = F32.FloorToInt(hitX / F32.FromInt(16)) * 16;
         int tileY = F32.FloorToInt(hitY / F32.FromInt(16)) * 16;

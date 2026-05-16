@@ -1,4 +1,4 @@
-using CSharpCraft.PcraftSeeded.Noise;
+using CSharpCraft.PcraftSeeded;
 using FluentAssertions;
 using Xunit;
 

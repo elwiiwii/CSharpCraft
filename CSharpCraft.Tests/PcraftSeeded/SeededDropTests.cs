@@ -6,14 +6,6 @@ using Xunit;
 
 namespace CSharpCraft.Tests.PcraftSeeded;
 
-// ---------------------------------------------------------------------------
-// Tests for Phase 3 SeededServices drop behaviour.
-// These tests MUST FAIL TO COMPILE until Green phase because:
-//   - "worldSeed" named parameter does not exist (current param is "seed")
-//   - "nonGenSeed" named parameter does not exist
-//   - UseRelativeFacing property does not exist
-// ---------------------------------------------------------------------------
-
 public sealed class SeededServicesDropTests
 {
     // --------------------------------------------------------------------------
@@ -24,11 +16,11 @@ public sealed class SeededServicesDropTests
     public void OnAddItem_ProducesSameDrops_GivenSameSeedAndHarvestOrder()
     {
         List<Entity> entities1 = [];
-        SeededServices svc1 = new(worldSeed: 42L);
+        SeededServices svc1 = new(masterSeed: 42L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities1, dropChance: 1.0);
 
         List<Entity> entities2 = [];
-        SeededServices svc2 = new(worldSeed: 42L);
+        SeededServices svc2 = new(masterSeed: 42L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities2, dropChance: 1.0);
 
         entities1.Should().HaveCount(entities2.Count);
@@ -56,12 +48,12 @@ public sealed class SeededServicesDropTests
     {
         // svc1: harvest Wood at index 0 for Wood
         List<Entity> entities1 = [];
-        SeededServices svc1 = new(worldSeed: 42L);
+        SeededServices svc1 = new(masterSeed: 42L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities1, dropChance: 1.0);
 
         // svc2: harvest Stone 3 times (indices 0,1,2 for Stone), then Wood (index 0 for Wood)
         List<Entity> stoneIgnored = [];
-        SeededServices svc2 = new(worldSeed: 42L);
+        SeededServices svc2 = new(masterSeed: 42L);
         PcraftServices.AddItem(PcraftData.Stone, 2, 2, F32.FromInt(32), F32.FromInt(32), stoneIgnored, dropChance: 1.0);
         PcraftServices.AddItem(PcraftData.Stone, 2, 2, F32.FromInt(32), F32.FromInt(32), stoneIgnored, dropChance: 1.0);
         PcraftServices.AddItem(PcraftData.Stone, 2, 2, F32.FromInt(32), F32.FromInt(32), stoneIgnored, dropChance: 1.0);
@@ -93,11 +85,11 @@ public sealed class SeededServicesDropTests
     public void OnAddItem_ProducesDifferentDrops_GivenDifferentNonGenSeeds()
     {
         List<Entity> entities1 = [];
-        SeededServices svc1 = new(worldSeed: 42L, nonGenSeed: 100L);
+        SeededServices svc1 = new(masterSeed: 42L, nonGenSeed: 100L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities1, dropChance: 1.0);
 
         List<Entity> entities2 = [];
-        SeededServices svc2 = new(worldSeed: 42L, nonGenSeed: 200L);
+        SeededServices svc2 = new(masterSeed: 42L, nonGenSeed: 200L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities2, dropChance: 1.0);
 
         entities1.Should().NotBeEmpty();
@@ -114,14 +106,14 @@ public sealed class SeededServicesDropTests
     [Fact]
     public void OnAddItem_ProducesDifferentDrops_WhenNonGenSeedDiffersFromWorldSeed()
     {
-        // svc1: nonGenSeed defaults to worldSeed (42L)
+        // svc1: nonGenSeed defaults to masterSeed (42L)
         List<Entity> entities1 = [];
-        SeededServices svc1 = new(worldSeed: 42L);
+        SeededServices svc1 = new(masterSeed: 42L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities1, dropChance: 1.0);
 
-        // svc2: same worldSeed but different nonGenSeed
+        // svc2: same masterSeed but different nonGenSeed
         List<Entity> entities2 = [];
-        SeededServices svc2 = new(worldSeed: 42L, nonGenSeed: 999L);
+        SeededServices svc2 = new(masterSeed: 42L, nonGenSeed: 999L);
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities2, dropChance: 1.0);
 
         entities1.Should().NotBeEmpty();
@@ -149,7 +141,7 @@ public sealed class SeededServicesDropTests
         for (int i = 0; i < 300; i++)
         {
             List<Entity> entities = [];
-            SeededServices svc = new(worldSeed: (long)i);
+        SeededServices svc = new(masterSeed: (long)i);
             PcraftServices.AddItem(PcraftData.Apple, 1, 1, F32.FromInt(32), F32.FromInt(32), entities, dropChance: 0.3);
             if (entities.Count > 0)
                 nonEmptyCount++;
@@ -173,12 +165,12 @@ public sealed class SeededServicesDropTests
         // tile centre = (4*8+8, 4*8+8) = (40, 40) → mirror axis at x=40, y=40
 
         List<Entity> entities1 = [];
-        SeededServices svc1 = new(worldSeed: 42L) { UseRelativeFacing = true };
+        SeededServices svc1 = new(masterSeed: 42L) { UseRelativeFacing = true };
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities1,
             playerFacing: F32.Zero, dropChance: 1.0);
 
         List<Entity> entities2 = [];
-        SeededServices svc2 = new(worldSeed: 42L) { UseRelativeFacing = true };
+        SeededServices svc2 = new(masterSeed: 42L) { UseRelativeFacing = true };
         PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities2,
             playerFacing: F32.FromDouble(0.5), dropChance: 1.0);
 
@@ -225,7 +217,7 @@ public sealed class SeededServicesDropTests
         };
 
         List<Entity> entities = [];
-        SeededServices svc = new(worldSeed: 1L, nonGenSeed: 99L);
+        SeededServices svc = new(masterSeed: 1L, nonGenSeed: 99L);
         PcraftServices.AddItem(mat, 1, 1, F32.FromInt(32), F32.FromInt(32), entities, dropChance: 1.0);
 
         entities.Should().ContainSingle(because: "dropChance=1.0 and count range [1,1]");
