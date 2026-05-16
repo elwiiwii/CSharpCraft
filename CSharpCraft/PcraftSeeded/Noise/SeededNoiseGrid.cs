@@ -54,7 +54,7 @@ internal class SeededNoiseGrid
         double cscal = ComputeCscal(step);
         double avg = ComputeParentAverage(x, y, step);
 
-        int hashSeed = HashCode.Combine(_masterSeed.GetHashCode(), _layerIndex, step, x, y);
+        int hashSeed = SeedMixer.Combine(_masterSeed, _layerIndex, step, x, y);
         double jitter = (new Random(hashSeed).NextDouble() - 0.5) * cscal;
 
         double value = avg + jitter;

@@ -94,11 +94,15 @@ internal static class LevelManager
         player.CanSwitchLevel = false;
     }
 
-    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
+    internal static void AddItem(ItemDef mat, int minCount, int maxCount, F32 hitX, F32 hitY, List<Entity> entities,
+        F32? playerFacing = null, double dropChance = 1.0)
     {
+        if (dropChance < 1.0 && Pico8.Rnd(F32.One) >= F32.FromDouble(dropChance)) return;
+
         int tileX = F32.FloorToInt(hitX / F32.FromInt(16)) * 16;
         int tileY = F32.FloorToInt(hitY / F32.FromInt(16)) * 16;
 
+        int count = F32.FloorToInt(Pico8.Rnd(F32.FromInt(maxCount - minCount + 1))) + minCount;
         for (int k = 0; k < count; k++)
         {
             F32 ex = tileX + Pico8.Rnd(14) + 1;

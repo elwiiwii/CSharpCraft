@@ -75,8 +75,8 @@ internal static class PlayerActionUpdater
                         if (e.Life <= F32.Zero)
                         {
                             _ = level.Ene.Remove(e);
-                            PcraftServices.AddItem(PcraftData.Ichor, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
-                            PcraftServices.AddItem(PcraftData.Fabric, F32.FloorToInt(Pico8.Rnd(3)), e.X, e.Y, level.Ent);
+                            PcraftServices.AddItem(PcraftData.Ichor, 0, 2, e.X, e.Y, level.Ent, playerFacing: player.Prot);
+                            PcraftServices.AddItem(PcraftData.Fabric, 0, 2, e.X, e.Y, level.Ent, playerFacing: player.Prot);
                         }
                         TextPopupEntity popup = new(pow, 9, e.X, e.Y - F32.FromInt(10), -F32.One);
                         level.Ent.Add(popup);
@@ -111,9 +111,9 @@ internal static class PlayerActionUpdater
                     if (harvestLife - pow <= F32.Zero)
                     {
                         PcraftServices.SetTile(hitx, hity, new Tile(wall.UnderlyingType), level);
-                        PcraftServices.AddItem(wall.Mat, F32.FloorToInt(Pico8.Rnd(3)) + 2, hitx, hity, level.Ent);
-                        if (hitTile.Type == PcraftData.TileTree && Pico8.Rnd(1) > F32.FromDouble(0.7))
-                            PcraftServices.AddItem(PcraftData.Apple, 1, hitx, hity, level.Ent);
+                        PcraftServices.AddItem(wall.Mat, 2, 4, hitx, hity, level.Ent, playerFacing: player.Prot);
+                        if (hitTile.Type == PcraftData.TileTree)
+                            PcraftServices.AddItem(PcraftData.Apple, 1, 1, hitx, hity, level.Ent, playerFacing: player.Prot, dropChance: 0.3);
                     }
                     else
                     {
@@ -140,20 +140,19 @@ internal static class PlayerActionUpdater
                         if (hitTile.Type == PcraftData.TileGrass && player.CurItem.Type == PcraftData.Scythe)
                         {
                             PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
-                            if (Pico8.Rnd(1) > F32.FromDouble(0.4))
-                                PcraftServices.AddItem(PcraftData.Seed, 1, hitx, hity, level.Ent);
+                            PcraftServices.AddItem(PcraftData.Seed, 1, 1, hitx, hity, level.Ent, playerFacing: player.Prot, dropChance: 0.6);
                         }
                         if (hitTile.Type == PcraftData.TileSand && player.CurItem.Type == PcraftData.Shovel)
                         {
                             if (player.CurItem is ToolItem shovelTool && shovelTool.Power > 3)
                             {
                                 PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileWater), level);
-                                PcraftServices.AddItem(PcraftData.Sand, 2, hitx, hity, level.Ent);
+                                PcraftServices.AddItem(PcraftData.Sand, 2, 2, hitx, hity, level.Ent, playerFacing: player.Prot);
                             }
                             else
                             {
                                 PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileFarm, GrowthTimer: level.Time + 15 + Pico8.Rnd(5)), level);
-                                PcraftServices.AddItem(PcraftData.Sand, F32.FloorToInt(Pico8.Rnd(2)), hitx, hity, level.Ent);
+                                PcraftServices.AddItem(PcraftData.Sand, 0, 1, hitx, hity, level.Ent, playerFacing: player.Prot);
                             }
                         }
                         if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Sand)
@@ -179,10 +178,8 @@ internal static class PlayerActionUpdater
                             var dw = F32.Clamp(F32.FromInt(4) - (hitTile.GrowthTimer.GetValueOrDefault(F32.Zero) - level.Time),
                                 F32.Zero,
                                 F32.FromInt(4));
-                            PcraftServices.AddItem(PcraftData.Wheat,
-                                F32.FloorToInt((dw / F32.FromInt(2)) + Pico8.Rnd(dw / F32.FromInt(2))),
-                                hitx, hity, level.Ent);
-                            PcraftServices.AddItem(PcraftData.Seed, 1, hitx, hity, level.Ent);
+                            PcraftServices.AddItem(PcraftData.Wheat, F32.FloorToInt(dw / F32.FromInt(2)), F32.FloorToInt(dw), hitx, hity, level.Ent, playerFacing: player.Prot);
+                            PcraftServices.AddItem(PcraftData.Seed, 1, 1, hitx, hity, level.Ent, playerFacing: player.Prot);
                         }
                     }
                 }

@@ -30,11 +30,11 @@ internal static class SpawnFinder
         int rangeX = maxX - minX + 1;
         int rangeY = maxY - minY + 1;
 
-        int spawnHash = "spawn".GetHashCode();
+        const int SpawnSalt = 0x5350_4157;
 
         for (int k = 0; k < MaxCandidates; k++)
         {
-            Random rng = new(HashCode.Combine(masterSeed.GetHashCode(), k, spawnHash));
+            Random rng = new(SeedMixer.Combine(masterSeed, k, SpawnSalt));
             int x = minX + rng.Next(rangeX);
             int y = minY + rng.Next(rangeY);
 

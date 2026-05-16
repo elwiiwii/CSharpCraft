@@ -69,7 +69,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        LevelManager.AddItem(PcraftData.Wood, 3, F32.FromInt(32), F32.FromInt(32), entities);
+        LevelManager.AddItem(PcraftData.Wood, 3, 3, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().HaveCount(3);
     }
@@ -81,7 +81,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        LevelManager.AddItem(PcraftData.Stone, 2, F32.FromInt(48), F32.FromInt(16), entities);
+        LevelManager.AddItem(PcraftData.Stone, 2, 2, F32.FromInt(48), F32.FromInt(16), entities);
 
         _ = entities.Should().AllSatisfy(e => (e as DroppedItemEntity)!.Type.Should().BeSameAs(PcraftData.Stone));
     }
@@ -93,7 +93,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        LevelManager.AddItem(PcraftData.Wood, 2, F32.FromInt(32), F32.FromInt(32), entities);
+        LevelManager.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().AllSatisfy(e => (e is DroppedItemEntity).Should().BeTrue());
     }
@@ -106,7 +106,7 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         // Lua: timer = 110 + rnd(20)  ->  [110, 130)
         List<Entity> entities = [];
 
-        LevelManager.AddItem(PcraftData.Wood, 5, F32.FromInt(32), F32.FromInt(32), entities);
+        LevelManager.AddItem(PcraftData.Wood, 5, 5, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().AllSatisfy(e =>
         {
@@ -123,13 +123,79 @@ public sealed class LevelManagerPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        LevelManager.AddItem(PcraftData.Wood, 20, F32.FromInt(32), F32.FromInt(32), entities);
+        LevelManager.AddItem(PcraftData.Wood, 20, 20, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().AllSatisfy(e =>
         {
             _ = e.X.Should().BeGreaterThanOrEqualTo(F32.FromInt(33));
             _ = e.X.Should().BeLessThanOrEqualTo(F32.FromInt(47));
         });
+    }
+
+    [Fact]
+    public void AddItem_SpawnsCountInRange_GivenMinMaxBounds()
+    {
+        using GameOrchestrator orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+
+        // 50 individual calls — each list must contain between 2 and 4 entities
+        for (int i = 0; i < 50; i++)
+        {
+            List<Entity> callEntities = [];
+            LevelManager.AddItem(PcraftData.Wood, 2, 4, F32.FromInt(32), F32.FromInt(32), callEntities);
+            _ = callEntities.Count.Should().BeGreaterThanOrEqualTo(2);
+            _ = callEntities.Count.Should().BeLessThanOrEqualTo(4);
+        }
+    }
+
+    [Fact]
+    public void AddItem_SpawnsExactCount_WhenMinEqualsMax()
+    {
+        using GameOrchestrator orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        List<Entity> entities = [];
+
+        LevelManager.AddItem(PcraftData.Wood, 3, 3, F32.FromInt(32), F32.FromInt(32), entities);
+
+        _ = entities.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void AddItem_SpawnsNothing_WhenDropChanceIsZero()
+    {
+        using GameOrchestrator orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        List<Entity> entities = [];
+
+        LevelManager.AddItem(PcraftData.Wood, 3, 3, F32.FromInt(32), F32.FromInt(32), entities, dropChance: 0.0);
+
+        _ = entities.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddItem_AlwaysSpawns_WhenDropChanceIsOne()
+    {
+        using GameOrchestrator orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+
+        for (int i = 0; i < 10; i++)
+        {
+            List<Entity> callEntities = [];
+            LevelManager.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), callEntities, dropChance: 1.0);
+            _ = callEntities.Count.Should().Be(2);
+        }
+    }
+
+    [Fact]
+    public void AddItem_SpawnsEntities_WhenPlayerFacingProvided()
+    {
+        using GameOrchestrator orch = BuildOrchestrator();
+        Pico8.Initialize(orch);
+        List<Entity> entities = [];
+
+        LevelManager.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities, playerFacing: F32.Zero);
+
+        _ = entities.Should().HaveCount(2);
     }
 
     // --------------------------------------------------------------------------

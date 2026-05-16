@@ -70,12 +70,11 @@ internal static class FilteredWorldSampler
                 tiles[i, j] = classifier.ClassifyTile(centerX - radius + i, centerY - radius + j);
 
         // --- 8. Water animation table (identical to PcraftWorldSampler) ---
-        int rndWatHash = "rndwat".GetHashCode();
         double[,] rndWat = new double[16, 16];
         for (int i = 0; i < 16; i++)
             for (int j = 0; j < 16; j++)
                 rndWat[i, j] = new Random(
-                    HashCode.Combine(masterSeed.GetHashCode(), i, j, rndWatHash))
+                    SeedMixer.Combine(masterSeed, i, j, 0x574F_4154))
                     .NextDouble() * 100.0;
 
         return new SampleResult(tiles, spawnX, spawnY, centerX, centerY, rndWat);

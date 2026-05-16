@@ -67,7 +67,7 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        PcraftServices.AddItem(PcraftData.Wood, 3, F32.FromInt(32), F32.FromInt(32), entities);
+        PcraftServices.AddItem(PcraftData.Wood, 3, 3, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().HaveCount(3);
     }
@@ -79,7 +79,7 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        PcraftServices.AddItem(PcraftData.Stone, 2, F32.FromInt(48), F32.FromInt(16), entities);
+        PcraftServices.AddItem(PcraftData.Stone, 2, 2, F32.FromInt(48), F32.FromInt(16), entities);
 
         _ = entities.Should().AllSatisfy(e => (e as DroppedItemEntity)!.Type.Should().BeSameAs(PcraftData.Stone));
     }
@@ -91,7 +91,7 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        PcraftServices.AddItem(PcraftData.Wood, 2, F32.FromInt(32), F32.FromInt(32), entities);
+        PcraftServices.AddItem(PcraftData.Wood, 2, 2, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().AllSatisfy(e => (e is DroppedItemEntity).Should().BeTrue());
     }
@@ -103,7 +103,7 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        PcraftServices.AddItem(PcraftData.Wood, 5, F32.FromInt(32), F32.FromInt(32), entities);
+        PcraftServices.AddItem(PcraftData.Wood, 5, 5, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().AllSatisfy(e =>
         {
@@ -120,7 +120,7 @@ public sealed class PcraftServicesPureTests(FnaFixture fixture)
         Pico8.Initialize(orch);
         List<Entity> entities = [];
 
-        PcraftServices.AddItem(PcraftData.Wood, 20, F32.FromInt(32), F32.FromInt(32), entities);
+        PcraftServices.AddItem(PcraftData.Wood, 20, 20, F32.FromInt(32), F32.FromInt(32), entities);
 
         _ = entities.Should().AllSatisfy(e =>
         {

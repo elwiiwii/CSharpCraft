@@ -286,11 +286,13 @@ internal class PcraftServices
     #region Map - LevelManager
     // ---------------------------------------------------------------------------
 
-    internal static void AddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
-        => _current.OnAddItem(mat, count, hitX, hitY, entities);
+    internal static void AddItem(ItemDef mat, int minCount, int maxCount, F32 hitX, F32 hitY, List<Entity> entities,
+        F32? playerFacing = null, double dropChance = 1.0)
+        => _current.OnAddItem(mat, minCount, maxCount, hitX, hitY, entities, playerFacing, dropChance);
 
-    protected virtual void OnAddItem(ItemDef mat, int count, F32 hitX, F32 hitY, List<Entity> entities)
-        => LevelManager.AddItem(mat, count, hitX, hitY, entities);
+    protected virtual void OnAddItem(ItemDef mat, int minCount, int maxCount, F32 hitX, F32 hitY, List<Entity> entities,
+        F32? playerFacing = null, double dropChance = 1.0)
+        => LevelManager.AddItem(mat, minCount, maxCount, hitX, hitY, entities, playerFacing, dropChance);
 
     internal static Level CreateLevel(int x, int y, int sx, int sy, LevelTheme theme, PlayerEntity player)
         => _current.OnCreateLevel(x, y, sx, sy, theme, player);

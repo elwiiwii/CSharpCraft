@@ -17,7 +17,7 @@ internal static class SeededMapGenerator
             result[i] = new F32[16];
             for (int j = 0; j < 16; j++)
                 result[i][j] = F32.FromDouble(
-                    new Random(HashCode.Combine(seed.GetHashCode(), i, j, "rndwat".GetHashCode()))
+                    new Random(SeedMixer.Combine(seed, i, j, 0x574F_4154))
                         .NextDouble() * 100);
         }
         return result;

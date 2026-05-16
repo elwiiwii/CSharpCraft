@@ -40,7 +40,7 @@ internal class FNAGame : Game
         Content.RootDirectory = "Content";
 
         IsFixedTimeStep = true;
-        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 60.0));
+        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
         _graphics.SynchronizeWithVerticalRetrace = true;
         //IsMouseVisible = true;
     }
@@ -51,8 +51,9 @@ internal class FNAGame : Game
 
         _inputProvider = new PollingInputProvider(InputBindings.Default);
 
-        //PreviewFilterScene scene = new();
-        FilterComparisonScene scene = new();
+        PcraftGameScene scene = new(seed: 12345);
+        //PcraftPreviewScene scene = new();
+        //FilterComparisonScene scene = new();
         _orchestrator = new GameOrchestrator(
             musicDirectory: _musicFolderPath,
             sfxDirectory: _sfxFolderPath,

@@ -9,6 +9,8 @@ internal static class PreviewDrawer
     {
         int side = result.Tiles.GetLength(0);
         int[,] tiles = result.Tiles;
+        int worldOriginX = result.CenterTileX - (side - 1) / 2;
+        int worldOriginY = result.CenterTileY - (side - 1) / 2;
 
         // Pass 1 — write corner-blended sprite indices into the map, then render with a single Map() call.
         // Sand tiles use randomised flat sprites (no corner blending), matching BackDrawer's sand path.
@@ -23,10 +25,10 @@ internal static class PreviewDrawer
 
                 if (tId is 1 or 11) // sand + hole — flat randomised sand sprites, no corner blending
                 {
-                    Pico8.Mset(mx, my, RndSand(ti, tj, result.RndWat));
-                    Pico8.Mset(mx + 1, my, RndSand(ti + 0.5, tj, result.RndWat));
-                    Pico8.Mset(mx, my + 1, RndSand(ti, tj + 0.5, result.RndWat));
-                    Pico8.Mset(mx + 1, my + 1, RndSand(ti + 0.5, tj + 0.5, result.RndWat));
+                    Pico8.Mset(mx, my, RndSand(worldOriginX + ti, worldOriginY + tj, result.RndWat));
+                    Pico8.Mset(mx + 1, my, RndSand(worldOriginX + ti + 0.5, worldOriginY + tj, result.RndWat));
+                    Pico8.Mset(mx, my + 1, RndSand(worldOriginX + ti, worldOriginY + tj + 0.5, result.RndWat));
+                    Pico8.Mset(mx + 1, my + 1, RndSand(worldOriginX + ti + 0.5, worldOriginY + tj + 0.5, result.RndWat));
                 }
                 else
                 {
@@ -41,10 +43,10 @@ internal static class PreviewDrawer
                     bool dl = SameGroup(tiles, ti - 1, tj + 1, tId, side);
                     bool dr = SameGroup(tiles, ti + 1, tj + 1, tId, side);
 
-                    int tl = PcraftServices.CornerOffset(l, u, ul, RndCenter(ti, tj, result.RndWat), innerCorner: 20, hOnly: 1, vOnly: 16, outer: 0);
-                    int tr = PcraftServices.CornerOffset(r, u, ur, RndCenter(ti + 0.5, tj, result.RndWat), innerCorner: 19, hOnly: 1, vOnly: 18, outer: 2);
-                    int bl = PcraftServices.CornerOffset(l, d, dl, RndCenter(ti, tj + 0.5, result.RndWat), innerCorner: 4, hOnly: 33, vOnly: 16, outer: 32);
-                    int br = PcraftServices.CornerOffset(r, d, dr, RndCenter(ti + 0.5, tj + 0.5, result.RndWat), innerCorner: 3, hOnly: 33, vOnly: 18, outer: 34);
+                    int tl = PcraftServices.CornerOffset(l, u, ul, RndCenter(worldOriginX + ti, worldOriginY + tj, result.RndWat), innerCorner: 20, hOnly: 1, vOnly: 16, outer: 0);
+                    int tr = PcraftServices.CornerOffset(r, u, ur, RndCenter(worldOriginX + ti + 0.5, worldOriginY + tj, result.RndWat), innerCorner: 19, hOnly: 1, vOnly: 18, outer: 2);
+                    int bl = PcraftServices.CornerOffset(l, d, dl, RndCenter(worldOriginX + ti, worldOriginY + tj + 0.5, result.RndWat), innerCorner: 4, hOnly: 33, vOnly: 16, outer: 32);
+                    int br = PcraftServices.CornerOffset(r, d, dr, RndCenter(worldOriginX + ti + 0.5, worldOriginY + tj + 0.5, result.RndWat), innerCorner: 3, hOnly: 33, vOnly: 18, outer: 34);
 
                     Pico8.Mset(mx, my, b + tl);
                     Pico8.Mset(mx + 1, my, b + tr);
@@ -66,10 +68,10 @@ internal static class PreviewDrawer
 
                 int px = ti * 16;
                 int py = tj * 16;
-                Pico8.Spr(RndTree(ti, tj, result.RndWat) + 64, px - 8, py - 8);
-                Pico8.Spr(RndTree(ti + 0.5, tj, result.RndWat) + 65, px - 8 + 8, py - 8);
-                Pico8.Spr(RndTree(ti, tj + 0.5, result.RndWat) + 80, px - 8, py - 8 + 8);
-                Pico8.Spr(RndTree(ti + 0.5, tj + 0.5, result.RndWat) + 81, px - 8 + 8, py - 8 + 8);
+                Pico8.Spr(RndTree(worldOriginX + ti, worldOriginY + tj, result.RndWat) + 64, px - 8, py - 8);
+                Pico8.Spr(RndTree(worldOriginX + ti + 0.5, worldOriginY + tj, result.RndWat) + 65, px - 8 + 8, py - 8);
+                Pico8.Spr(RndTree(worldOriginX + ti, worldOriginY + tj + 0.5, result.RndWat) + 80, px - 8, py - 8 + 8);
+                Pico8.Spr(RndTree(worldOriginX + ti + 0.5, worldOriginY + tj + 0.5, result.RndWat) + 81, px - 8 + 8, py - 8 + 8);
             }
         }
         Pico8.Pal();
@@ -83,10 +85,10 @@ internal static class PreviewDrawer
 
                 int px = ti * 16;
                 int py = tj * 16;
-                WatAnim(ti, tj, px - 8, py - 8, time, result.RndWat);
-                WatAnim(ti + 0.5, tj, px - 8 + 8, py - 8, time, result.RndWat);
-                WatAnim(ti, tj + 0.5, px - 8, py - 8 + 8, time, result.RndWat);
-                WatAnim(ti + 0.5, tj + 0.5, px - 8 + 8, py - 8 + 8, time, result.RndWat);
+                WatAnim(worldOriginX + ti, worldOriginY + tj, px - 8, py - 8, time, result.RndWat);
+                WatAnim(worldOriginX + ti + 0.5, worldOriginY + tj, px - 8 + 8, py - 8, time, result.RndWat);
+                WatAnim(worldOriginX + ti, worldOriginY + tj + 0.5, px - 8, py - 8 + 8, time, result.RndWat);
+                WatAnim(worldOriginX + ti + 0.5, worldOriginY + tj + 0.5, px - 8 + 8, py - 8 + 8, time, result.RndWat);
             }
         }
 
@@ -142,12 +144,11 @@ internal static class PreviewDrawer
     }
 
     // --- Rnd helpers — mirror of BackDrawer private helpers, adapted to double[,] RndWat ---
-    private static F32 WatVal(double i, double j, double[,] rndWat)
+    // i and j are world tile coordinates so the lookup matches PcraftBase.WatVal exactly.
+    internal static F32 WatVal(double i, double j, double[,] rndWat)
     {
-        int xi = (int)(i * 2 % 16);
-        int yj = (int)(j * 2 % 16);
-        if (xi < 0) xi += 16;
-        if (yj < 0) yj += 16;
+        int xi = (int)(Math.Abs(i * 2) % 16);
+        int yj = (int)(Math.Abs(j * 2) % 16);
         return F32.FromDouble(rndWat[xi, yj]);
     }
 
