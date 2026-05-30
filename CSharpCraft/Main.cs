@@ -51,7 +51,8 @@ internal class FNAGame : Game
 
         _inputProvider = new PollingInputProvider(InputBindings.Default);
 
-        PcraftGameScene scene = new(seed: 12345);
+        MainScene scene = new();
+        //PcraftGameScene scene = new(seed: 12345);
         //PcraftPreviewScene scene = new();
         //FilterComparisonScene scene = new();
         _orchestrator = new GameOrchestrator(
