@@ -6,19 +6,19 @@ namespace CSharpCraft.PcraftScenes;
 
 internal class MainScene : IScene
 {
-    public string? Name => "Pcraft Base";
+    public string Name => "Pcraft Base";
 
     public void Init(ISceneSetup setup)
     {
         setup.Resolution = (141, 141);
         MainMenuObj menu = new();
 
-        _ = setup.RegisterUpdate(() => menu.Update(), fps: 60);
+        _ = setup.RegisterUpdate(menu.Update, fps: 60);
 
-        _ = setup.RegisterDraw(() => menu.Draw(), fps: 60);
+        _ = setup.RegisterDraw(menu.Draw, fps: 60);
     }
 
-    public string? SpritesPath => "SpriteSheet_Main";
+    public string SpritesPath => "Spritesheet_Main";
 
     public string? MapPath => null;
 

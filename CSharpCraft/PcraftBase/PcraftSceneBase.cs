@@ -40,9 +40,9 @@ internal abstract class PcraftSceneBase : IScene
         return new(new PlayerEntity(F32.Zero, F32.Zero));
     }
 
-    public virtual string? SpritesPath => "pcraft_sprites";
+    public virtual string SpritesPath => "pcraft_sprites";
 
-    public virtual string? MapPath => "pcraft_map";
+    public virtual string MapPath => "pcraft_map";
 
     public virtual string? FlagData => null;
 

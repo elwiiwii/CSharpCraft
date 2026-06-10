@@ -1,30 +1,93 @@
+using Microsoft.Xna.Framework;
+
 namespace CSharpCraft.MainMenu;
 
 internal class MainMenuObj
 {
+    // Hover animation speed: full transition in 12 frames (~0.2 s at 60 fps)
+    private const float HoverStep = 1f / 12f;
+
+    // Per-button hover progress: 0 = mono (idle), 1 = full color (hovered)
+    private readonly float[] _hoverT = new float[MainMenuDefs.All.Length];
+
+    // Color 17 (darker-blue background) — text at this color is invisible on the bg
+    private static readonly Color DimColor = new(0x11, 0x1D, 0x35);
+    // Color 7 (white)
+    private static readonly Color WhiteColor = new(0xFF, 0xF1, 0xE8);
+    // Disabled label text: white pre-blended through the color-17/alpha-200 tint
+    private static readonly Color DisabledTextColor = Color.Lerp(WhiteColor, DimColor, 200f / 255f);
+
     internal void Update()
     {
-        
+        var (mx, my) = Pico8.MouseScenePosition();
+
+        for (int i = 0; i < MainMenuDefs.All.Length; i++)
+        {
+            MainMenuButtonDef btn = MainMenuDefs.All[i];
+
+            if (!btn.IsEnabled)
+            {
+                _hoverT[i] = 0f;
+                continue;
+            }
+
+            bool hovered = mx >= btn.DestX && mx < btn.DestX + btn.DestW
+                        && my >= btn.DestY && my < btn.DestY + btn.DestH;
+
+            _hoverT[i] = Math.Clamp(_hoverT[i] + (hovered ? HoverStep : -HoverStep), 0f, 1f);
+        }
     }
 
     internal void Draw()
     {
         Pico8.Cls(17);
 
-        Pico8.Sspr(0, 0, 19, 17, 39, 11, 19, 17);
-        Pico8.Sspr(38, 0, 19, 17, 83, 11, 19, 17);
-        Pico8.Sspr(0, 17, 15, 17, 19, 47, 15, 17);
-        Pico8.Sspr(30, 17, 23, 17, 59, 47, 23, 17);
-        Pico8.Sspr(76, 0, 15, 17, 107, 47, 15, 17);
-        Pico8.Sspr(0, 34, 15, 17, 41, 83, 15, 17);
-        Pico8.Sspr(30, 34, 15, 17, 85, 83, 15, 17);
+        for (int i = 0; i < MainMenuDefs.All.Length; i++)
+        {
+            MainMenuButtonDef btn = MainMenuDefs.All[i];
+            float t = _hoverT[i];
 
-        Pico8.Sspr(0, 51, 11, 14, 6, 114, 11, 14);
-        Pico8.Sspr(22, 51, 14, 11, 22, 119, 14, 11);
-        Pico8.Sspr(50, 51, 13, 13, 43, 121, 13, 13);
-        Pico8.Sspr(0, 65, 17, 13, 62, 122, 17, 13);
-        Pico8.Sspr(34, 65, 10, 13, 85, 121, 10, 13);
-        Pico8.Sspr(54, 65, 14, 11, 101, 119, 14, 11);
-        Pico8.Sspr(60, 34, 14, 14, 121, 114, 14, 14);
+            // Step 1: draw the monochrome sprite (always visible as base)
+            Pico8.Pal();
+            Pico8.Palt();
+            Pico8.Sspr(btn.MonoSx, btn.MonoSy, btn.MonoSw, btn.MonoSh,
+                       btn.DestX, btn.DestY, btn.DestW, btn.DestH);
+            Pico8.Print(btn.Label, btn.LabelX, btn.LabelY, 7);
+
+            if (!btn.IsEnabled)
+            {
+                // Step 2 (disabled): fixed color-17 tint overlay at alpha 200
+                Pico8.PalAll(17);
+                Pico8.PaltAll(200);
+                Pico8.Palt(0, true); // keep transparent pixels clear
+                Pico8.Sspr(btn.MonoSx, btn.MonoSy, btn.MonoSw, btn.MonoSh,
+                           btn.DestX, btn.DestY, btn.DestW, btn.DestH);
+
+                // Step 3 (disabled): pre-blended white label
+                if (btn.Label.Length <= 0) continue;
+                Pico8.Pal();
+                Pico8.Palt();
+                Pico8.Print(btn.Label, btn.LabelX, btn.LabelY, DisabledTextColor);
+            }
+            else
+            {
+                // Step 2 (enabled): fade in color sprite on hover
+                if (t > 0f)
+                {
+                    Pico8.Pal();
+                    Pico8.Palt(0, false);
+                    Pico8.PaltAll((int)(255 * t));
+                    Pico8.Sspr(btn.ColorSx, btn.ColorSy, btn.ColorSw, btn.ColorSh,
+                               btn.DestX, btn.DestY, btn.DestW, btn.DestH);
+                }
+
+                // Step 3 (enabled): label fades from white to label color on hover
+                if (btn.Label.Length <= 0) continue;
+                Pico8.Pal();
+                Pico8.Palt();
+                Pico8.Print(btn.Label, btn.LabelX, btn.LabelY,
+                    Color.Lerp(Pico8.BasePalette.ElementAt(7).Key, Pico8.BasePalette.ElementAt(btn.LabelCol).Key, t));
+            }
+        }
     }
 }

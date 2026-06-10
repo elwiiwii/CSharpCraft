@@ -42,7 +42,7 @@ internal class FNAGame : Game
         IsFixedTimeStep = true;
         TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
         _graphics.SynchronizeWithVerticalRetrace = true;
-        //IsMouseVisible = true;
+        IsMouseVisible = true;
     }
 
     protected override void Initialize()
