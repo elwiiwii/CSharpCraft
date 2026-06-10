@@ -431,3 +431,4 @@ appsettings.*.json
 !appsettings.Example.json
 
 **/fnalibs/
+.reasonix/

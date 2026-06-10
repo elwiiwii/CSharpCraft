@@ -4,11 +4,12 @@ namespace CSharpCraft.MainMenu;
 
 internal class MainMenuObj
 {
-    // Hover animation speed: full transition in 12 frames (~0.2 s at 60 fps)
-    private const float HoverStep = 1f / 12f;
+    // Spotlight tuning — adjust to taste
+    internal float InnerRadius = 15f; // px from button edge where reveal is 1.0
+    internal float FadeWidth   = 20f; // px over which reveal fades from 1.0 to 0.0
 
-    // Per-button hover progress: 0 = mono (idle), 1 = full color (hovered)
-    private readonly float[] _hoverT = new float[MainMenuDefs.All.Length];
+    private float _mx = -1f;
+    private float _my = -1f;
 
     // Color 17 (darker-blue background) — text at this color is invisible on the bg
     private static readonly Color DimColor = new(0x11, 0x1D, 0x35);
@@ -19,23 +20,7 @@ internal class MainMenuObj
 
     internal void Update()
     {
-        var (mx, my) = Pico8.MouseScenePosition();
-
-        for (int i = 0; i < MainMenuDefs.All.Length; i++)
-        {
-            MainMenuButtonDef btn = MainMenuDefs.All[i];
-
-            if (!btn.IsEnabled)
-            {
-                _hoverT[i] = 0f;
-                continue;
-            }
-
-            bool hovered = mx >= btn.DestX && mx < btn.DestX + btn.DestW
-                        && my >= btn.DestY && my < btn.DestY + btn.DestH;
-
-            _hoverT[i] = Math.Clamp(_hoverT[i] + (hovered ? HoverStep : -HoverStep), 0f, 1f);
-        }
+        (_mx, _my) = Pico8.MouseScenePosition();
     }
 
     internal void Draw()
@@ -45,7 +30,6 @@ internal class MainMenuObj
         for (int i = 0; i < MainMenuDefs.All.Length; i++)
         {
             MainMenuButtonDef btn = MainMenuDefs.All[i];
-            float t = _hoverT[i];
 
             // Step 1: draw the monochrome sprite (always visible as base)
             Pico8.Pal();
@@ -71,23 +55,40 @@ internal class MainMenuObj
             }
             else
             {
-                // Step 2 (enabled): fade in color sprite on hover
-                if (t > 0f)
+                float reveal = ComputeReveal(_mx, _my, btn, InnerRadius, FadeWidth);
+
+                // Step 2 (enabled): fade in color sprite by spotlight amount
+                if (reveal > 0f)
                 {
                     Pico8.Pal();
                     Pico8.Palt(0, false);
-                    Pico8.PaltAll((int)(255 * t));
                     Pico8.Sspr(btn.ColorSx, btn.ColorSy, btn.ColorSw, btn.ColorSh,
                                btn.DestX, btn.DestY, btn.DestW, btn.DestH);
                 }
 
-                // Step 3 (enabled): label fades from white to label color on hover
+                // Step 3 (enabled): label fades from dim to label color by spotlight amount
                 if (btn.Label.Length <= 0) continue;
                 Pico8.Pal();
                 Pico8.Palt();
                 Pico8.Print(btn.Label, btn.LabelX, btn.LabelY,
-                    Color.Lerp(Pico8.BasePalette.ElementAt(7).Key, Pico8.BasePalette.ElementAt(btn.LabelCol).Key, t));
+                    Color.Lerp(Pico8.BasePalette.ElementAt(7).Key, Pico8.BasePalette.ElementAt(btn.LabelCol).Key, reveal));
             }
         }
+    }
+
+    /// <summary>
+    /// Computes how much of the color sprite to reveal [0, 1] based on the
+    /// distance from the cursor to the nearest edge of the button's dest rect.
+    /// Inside <paramref name="innerRadius"/> → 1.0; fades to 0 over <paramref name="fadeWidth"/>.
+    /// </summary>
+    private static float ComputeReveal(
+        float mx, float my, MainMenuButtonDef btn,
+        float innerRadius, float fadeWidth)
+    {
+        float nearestX = Math.Clamp(mx, btn.DestX, btn.DestX + btn.DestW);
+        float nearestY = Math.Clamp(my, btn.DestY, btn.DestY + btn.DestH);
+        float dist = MathF.Sqrt((mx - nearestX) * (mx - nearestX)
+                               + (my - nearestY) * (my - nearestY));
+        return 1f - Math.Clamp((dist - innerRadius) / fadeWidth, 0f, 1f);
     }
 }
