@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PSharp8.Input;
 
 namespace CSharpCraft.MainMenu;
 
@@ -6,6 +7,7 @@ internal class MainMenuObj
 {
     // Hover animation speed: full transition in 12 frames (~0.2 s at 60 fps)
     private const float HoverStep = 1f / 12f;
+    private const float HoverRadius = 4f;
 
     // Per-button hover progress: 0 = mono (idle), 1 = full color (hovered)
     private readonly float[] _hoverT = new float[MainMenuDefs.All.Length];
@@ -31,10 +33,15 @@ internal class MainMenuObj
                 continue;
             }
 
-            bool hovered = mx >= btn.DestX && mx < btn.DestX + btn.DestW
-                        && my >= btn.DestY && my < btn.DestY + btn.DestH;
+            bool hovered = MainMenuGeometry.IsPointInRoundedHull(
+                new Vector2(mx, my), btn.HullVertices, HoverRadius);
 
             _hoverT[i] = Math.Clamp(_hoverT[i] + (hovered ? HoverStep : -HoverStep), 0f, 1f);
+
+            if (hovered && (Pico8.MouseState().LeftButton == MouseInput.Press || Pico8.Btnp(4)))
+            {
+                btn.Action?.Invoke();
+            }
         }
     }
 

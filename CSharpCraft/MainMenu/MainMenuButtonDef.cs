@@ -1,16 +1,33 @@
+using Microsoft.Xna.Framework;
+
 namespace CSharpCraft.MainMenu;
 
-/// <summary>
-/// Immutable data describing a single main-menu button.
-/// </summary>
 internal record MainMenuButtonDef(
-    // Monochrome sprite source rect (default / idle state)
     int MonoSx, int MonoSy, int MonoSw, int MonoSh,
-    // Full-color sprite source rect (revealed on hover)
     int ColorSx, int ColorSy, int ColorSw, int ColorSh,
-    // Destination rect on screen (also used as the hover hit-box)
     int DestX, int DestY, int DestW, int DestH,
-    // Label text drawn beneath the sprite (empty for icon-only buttons)
     string Label = "", int LabelX = 0, int LabelY = 0, int LabelCol = 17,
-    // When true the button is frozen: mono + tint overlay + pre-blended text
-    bool IsEnabled = true);
+    bool IsEnabled = true, Action? Action = null)
+{
+    internal IReadOnlyList<Vector2> HullVertices { get; } = ComputeHull(DestX, DestY, DestW, DestH, Label, LabelX, LabelY);
+
+    private static Vector2[] ComputeHull(int destX, int destY, int destW, int destH,
+        string label, int labelX, int labelY)
+    {
+        Vector2[] spriteCorners = MainMenuGeometry.GetRectCorners(destX, destY, destW, destH);
+
+        var labelBounds = MainMenuGeometry.GetLabelBounds(label, labelX, labelY);
+        if (labelBounds is null)
+            return MainMenuGeometry.ConvexHull(spriteCorners.AsSpan());
+
+        Vector2[] labelCorners = MainMenuGeometry.GetRectCorners(
+            labelBounds.Value.X, labelBounds.Value.Y,
+            labelBounds.Value.W, labelBounds.Value.H);
+
+        Vector2[] allPoints = new Vector2[spriteCorners.Length + labelCorners.Length];
+        spriteCorners.CopyTo(allPoints, 0);
+        labelCorners.CopyTo(allPoints, spriteCorners.Length);
+
+        return MainMenuGeometry.ConvexHull(allPoints.AsSpan());
+    }
+}

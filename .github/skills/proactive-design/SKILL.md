@@ -1,50 +1,78 @@
 ---
 name: proactive-design
-description: '**WORKFLOW SKILL** — Be proactive and vigilant in identifying and removing convoluted, fragile, or poorly designed architecture. Use for design reviews, refactor plans, and code health audits. DO NOT USE for trivial lint/style changes.'
+description: |-
+  Proactive consulting and alternative generation when unexpected problems arise.
+  Use proactively when a bug is discovered, test fails, build breaks, design conflict,
+  architecture decision needed, unexpected behavior, compilation error, or runtime error.
+
+  Examples:
+  - user encounters a build error → STOP, diagnose root cause, present 2-3 fix alternatives with tradeoffs
+  - user reports a bug → pause current work, identify impact, propose root fix vs workaround options
+  - architectural conflict detected → generate alternative designs, explain tech debt implications of each
+  - test regression → diagnose, propose fix approaches, suggest documentation/workflow updates to prevent recurrence
 ---
 
-# Proactive Design Review (ProactiveDesign)
+## Escalation Protocol
 
-Purpose
-- Help the agent identify and remediate convoluted or poorly designed architecture.
-- Encourage safe, incremental improvements that increase maintainability and clarity.
+When something unexpected arises, follow this sequence:
 
-When to Use
-- During code review or PR triage when design or code-quality issues are suspected.
-- When working with legacy modules with high complexity or technical debt.
-- When a proposed change increases coupling, hidden state, or long-term maintenance cost.
+### 1. PAUSE
+Stop all active changes. Do not continue in the current direction.
 
-Behavior / Responsibilities
-- Explain the specific design smells found (tight coupling, god objects, hidden global state, unclear invariants).
-- Propose concrete, minimal refactor steps that preserve behavior and add tests.
-- Provide a staged plan: small PRs, test updates, verification steps, and rollback strategy.
-- Estimate impact and effort; call out migration steps for breaking changes.
-- If a breaking API change is required, escalate and require explicit approval before implementing.
+### 2. DIAGNOSE
+Identify the root cause. Ask:
+- What exactly went wrong?
+- Why did it happen? (not just the symptom)
+- Is this a new problem or a recurrence?
+- Does this reveal a flaw in the existing design/assumptions?
 
-Guardrails
-- Never justify or preserve bad design merely because "it's how it was done before." Challenge historical decisions with data and rationale.
-- Avoid large one-shot refactors without tests, benchmarks, and explicit approval.
-- Do not change unrelated code in the same PR; keep changes scoped and reviewable.
-- Do not remove functionality without tests and a documented migration path.
+### 3. GENERATE ALTERNATIVES
+Produce at least 2 distinct approaches. For each, document:
+- **Approach**: What it involves
+- **Impact**: What changes are needed
+- **Risk**: Likelihood of further issues
+- **Effort**: Estimated work
+- **Tech debt**: Does this fix the root cause or just patch the symptom?
+- **Design quality**: Does this improve or compromise the architecture?
 
-Checklist (for suggested refactors)
-- Add or update unit/integration tests covering behavior before and after change.
-- Verify full test suite passes locally and in CI.
-- Add a short design rationale in the PR description and link to this skill if appropriate.
-- For public API changes: include a migration plan, versioning notes, and deprecation timeline.
+### 4. PRESENT TO USER
+Present the options clearly:
 
-Example agent prompts
-- "Perform a design review of `PSharp8/Graphics/TextureCache.cs` and propose safe refactors with tests."
-- "This module has high cyclomatic complexity — suggest incremental improvements and list required tests."
+> **Problem:** {one-line summary}
+>
+> **Root cause:** {diagnosis}
+>
+> **Options:**
+> 1. {Option A} — {brief} — Impact: X | Risk: Y | Effort: Z
+> 2. {Option B} — {brief} — Impact: X | Risk: Y | Effort: Z
+> 3. {Option C} — {brief} — Impact: X | Risk: Y | Effort: Z
+>
+> **Recommendation:** {your assessment}
+>
+> *Waiting for your decision before proceeding.*
 
-Non-goals
-- This skill is not for formatting, trivial lint fixes, or demand-driven small style changes. Use normal linters or formatting tools for those.
+### 5. WAIT
+Do not proceed until the user responds.
 
-Acceptance Criteria
-- Suggestions include concrete steps and minimal, test-backed code changes.
-- Large or breaking changes are accompanied by migration plans, tests, and an explicit approval step.
+## Technical Debt Detection
 
-Resources
-- Design refactor checklist: [.github/DESIGN-REFACTOR-CHECKLIST.md](../../DESIGN-REFACTOR-CHECKLIST.md)
-- Workspace guidance: [.github/copilot-instructions.md](../../copilot-instructions.md)
+Flag any proposed fix that works around a deeper problem. Warning signs:
+- "We'll fix it properly later"
+- Duplicating existing flawed logic
+- Adding special cases instead of fixing the general case
+- Copy-paste with minor modifications
 
+**Rule:** Never compromise architectural design to work around past mistakes. If a design flaw is discovered during debugging, the fix must include addressing the design flaw.
+
+## Learn & Prevent Cycle
+
+After every resolution, identify preventive measures:
+
+1. Could a unit test catch this? → **Add a test**
+2. Could documentation clarify this? → **Update docs** (CLAUDE.md, README, code comments)
+3. Could a code review catch this? → **Add a review checklist item**
+4. Could a linting/analysis rule catch this? → **Propose a rule**
+5. Could a CI check catch this? → **Propose a CI step**
+6. Could a workflow change prevent this? → **Propose a workflow update**
+
+Propose at least one preventive action with every resolution.
