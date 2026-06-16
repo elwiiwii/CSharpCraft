@@ -24,8 +24,8 @@ internal static class FilteredSpawnFinder
         SpawnConstraintFilter? filter,
         IFilterDiagnosticSink? sink = null)
     {
-        if (classifier is null) throw new ArgumentNullException(nameof(classifier));
-        if (biases is null) throw new ArgumentNullException(nameof(biases));
+        ArgumentNullException.ThrowIfNull(classifier);
+        ArgumentNullException.ThrowIfNull(biases);
 
         // No constraint — delegate directly.
         if (filter is null)

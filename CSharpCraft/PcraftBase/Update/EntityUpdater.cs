@@ -1,5 +1,7 @@
 using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Menu;
+using PSharp8.Graphics;
+using PSharp8.Input;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -28,70 +30,72 @@ internal static class EntityUpdater
             e.Vx *= F32.FromDouble(0.95);
             e.Vy *= F32.FromDouble(0.95);
 
-            var dist = F32.Max(F32.Abs(e.X - player.X), F32.Abs(e.Y - player.Y));
+            F32 dist = F32.Max(F32.Abs(e.X - player.X), F32.Abs(e.Y - player.Y));
 
-            // Per-entity behaviour
-            if (e is DroppedItemEntity dropped)
+            switch (e)
             {
+                // Per-entity behaviour
                 // Expiry
-                if (dropped.Timer < F32.One)
-                {
+                case DroppedItemEntity dropped when dropped.Timer < F32.One:
                     level.Ent.RemoveAt(i);
                     continue;
-                }
-                dropped.Timer -= F32.One;
-
-                // Pickup: only when close enough and timer has counted down
-                if (dist < F32.FromInt(5) && dropped.Timer < F32.FromInt(115))
+                case DroppedItemEntity dropped:
                 {
-                    StackableItem newit = new(dropped.Type, 1);
-                    PcraftServices.AddItemInList(player.Invent, newit, player.Invent.Count);
-                    level.Ent.RemoveAt(i);
-                    TextPopupEntity popup = new(
-                        F32.FromInt(PcraftServices.HowMany(player.Invent, newit)),
-                        11,
-                        e.X, e.Y - F32.FromInt(5), -F32.One);
-                    level.Ent.Add(popup);
-                    Pico8.Sfx(18);
-                }
-            }
-            else if (e is PlacedItemEntity placed)
-            {
-                // Player push-back
-                (dx, dy) = PcraftServices.ReflectCol(
-                    player.X, player.Y, dx, dy,
-                    (fx, fy) => PcraftServices.EntColFree(fx, fy, placed),
-                    F32.Zero);
+                    dropped.Timer -= F32.One;
 
-                // Btn5 interaction
-                if (dist < F32.FromInt(12) && Pico8.Btn(5) && !player.Block5 && !player.Lb5)
-                {
-                    if (player.CurItem is not null && player.CurItem.Type == PcraftData.PickupTool)
+                    // Pickup: only when close enough and timer has counted down
+                    if (dist < F32.FromInt(5) && dropped.Timer < F32.FromInt(115))
                     {
-                        UnstackableItem asSlot = new(placed.Type);
-                        PcraftServices.AddItemInList(player.Invent, asSlot, 0);
-                        player.CurItem = asSlot;
+                        StackableItem newit = new(dropped.Type, 1);
+                        PcraftServices.AddItemInList(player.Invent, newit, player.Invent.Count);
                         level.Ent.RemoveAt(i);
+                        TextPopupEntity popup = new(
+                            F32.FromInt(PcraftServices.HowMany(player.Invent, newit)),
+                            PicoColor._11Green,
+                            e.X, e.Y - F32.FromInt(5), -F32.One);
+                        level.Ent.Add(popup);
+                        Pico8.Sfx(18);
                     }
-                    else
-                    {
-                        player.CurMenu = placed.Type is BenchItemDef bench
-                            ? new CraftingMenu(bench, player.Invent)
-                            : new ChestMenu([], player.Invent);
-                        Pico8.Sfx(13);
-                    }
-                    canAct = false;
+
+                    break;
                 }
-            }
-            else if (e is TextPopupEntity textPopup)
-            {
-                // Expiry
-                if (textPopup.Timer < F32.One)
+                case PlacedItemEntity placed:
                 {
+                    // Player push-back
+                    (dx, dy) = PcraftServices.ReflectCol(
+                        player.X, player.Y, dx, dy,
+                        (fx, fy) => PcraftServices.EntColFree(fx, fy, placed),
+                        F32.Zero);
+
+                    // Btn5 interaction
+                    if (dist < F32.FromInt(12) && Pico8.Btnp(PicoButton.Primary, repeat: false) && !player.Block5)
+                    {
+                        if (player.CurItem is not null && player.CurItem.Type == PcraftData.PickupTool)
+                        {
+                            UnstackableItem asSlot = new(placed.Type);
+                            PcraftServices.AddItemInList(player.Invent, asSlot, 0);
+                            player.CurItem = asSlot;
+                            level.Ent.RemoveAt(i);
+                        }
+                        else
+                        {
+                            player.CurMenu = placed.Type is BenchItemDef bench
+                                ? new CraftingMenu(bench, player.Invent)
+                                : new ChestMenu([], player.Invent);
+                            Pico8.Sfx(13);
+                        }
+                        canAct = false;
+                    }
+
+                    break;
+                }
+                // Expiry
+                case TextPopupEntity textPopup when textPopup.Timer < F32.One:
                     level.Ent.RemoveAt(i);
                     continue;
-                }
-                textPopup.Timer -= F32.One;
+                case TextPopupEntity textPopup:
+                    textPopup.Timer -= F32.One;
+                    break;
             }
         }
 

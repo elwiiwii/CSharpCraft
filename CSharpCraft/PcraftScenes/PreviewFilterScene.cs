@@ -13,9 +13,9 @@ namespace CSharpCraft.PcraftScenes;
 /// Combine a filtered preview with a button-launch by subclassing and adding
 /// a RegisterUpdate call that calls <see cref="LaunchGame"/>.
 /// </summary>
-internal class PreviewFilterScene : PcraftSceneBase, IScene
+internal class PreviewFilterScene : PcraftSceneBase
 {
-    public override string? Name => "Preview (Filtered)";
+    public override string Name => "Preview (Filtered)";
 
     protected virtual long PreviewSeed => 0;
     protected virtual int PreviewRadius => 4;

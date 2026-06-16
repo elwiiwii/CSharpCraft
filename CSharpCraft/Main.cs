@@ -6,7 +6,7 @@ using PSharp8.Input;
 
 namespace CSharpCraft;
 
-internal class FNAGame : Game
+internal class FnaGame : Game
 {
     [STAThread]
     private static void Main(string[] args)
@@ -15,7 +15,7 @@ internal class FNAGame : Game
         Environment.SetEnvironmentVariable("FNA_NO_OPENGL_INTERCEPTION", "1");
         ArgumentNullException.ThrowIfNull(args);
 
-        using FNAGame g = new();
+        using FnaGame g = new();
         g.Run();
     }
 
@@ -28,13 +28,13 @@ internal class FNAGame : Game
     private SettingsManager? _settingsManager;
     private PollingInputProvider? _inputProvider;
 
-    private FNAGame()
+    private FnaGame()
     {
         _graphics = new GraphicsDeviceManager(this);
 
         // Allow the user to resize the window
         Window.AllowUserResizing = true;
-        Window.ClientSizeChanged += new EventHandler<EventArgs>(Window_ClientSizeChanged);
+        Window.ClientSizeChanged += Window_ClientSizeChanged;
 
         // All content loaded will be in a "Content" folder
         Content.RootDirectory = "Content";
@@ -99,10 +99,10 @@ internal class FNAGame : Game
         base.UnloadContent();
     }
 
-    protected override void OnExiting(object sender, EventArgs args)
-    {
-        base.OnExiting(sender, args);
-    }
+    //protected override void OnExiting(object sender, EventArgs args)
+    //{
+    //    base.OnExiting(sender, args);
+    //}
 
     private void Window_ClientSizeChanged(object? sender, EventArgs args)
     {

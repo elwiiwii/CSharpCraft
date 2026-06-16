@@ -28,7 +28,7 @@ internal static class MapGenerator
                 F32 dist = F32.Max(di, dj);
                 dist = dist * dist * dist * dist;
 
-                var coast = (v * F32.FromInt(4)) - (dist * F32.FromInt(4));
+                F32 coast = (v * F32.FromInt(4)) - (dist * F32.FromInt(4));
 
                 TileId id = a == TileId.Rock
                     ? (coast < F32.FromDouble(-1.3) ? 0 : a)

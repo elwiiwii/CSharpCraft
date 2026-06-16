@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
+using PSharp8.Graphics;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -17,7 +18,7 @@ internal static class EnemyUpdater
             if (!PcraftServices.IsIn(e, F32.FromInt(100), camera.Clx, camera.Cly)) continue;
 
             F32 distp = PcraftServices.GetLen(e.X - player.X, e.Y - player.Y);
-            var mspeed = F32.FromDouble(0.8);
+            F32 mspeed = F32.FromDouble(0.8);
 
             F32 disten = PcraftServices.GetLen(
                 e.X - player.X - (ebx * F32.FromInt(8)),
@@ -33,23 +34,23 @@ internal static class EnemyUpdater
 
             if (e.Dtim <= F32.Zero)
             {
-                if (e.Step is EnStep.Wait or EnStep.Patrol)
+                switch (e.Step)
                 {
-                    e.Step = EnStep.Walk;
-                    e.Dx = Pico8.Rnd(2) - F32.One;
-                    e.Dy = Pico8.Rnd(2) - F32.One;
-                    e.Dtim = F32.FromInt(30) + Pico8.Rnd(60);
-                }
-                else if (e.Step == EnStep.Walk)
-                {
-                    e.Step = EnStep.Wait;
-                    e.Dx = F32.Zero;
-                    e.Dy = F32.Zero;
-                    e.Dtim = F32.FromInt(30) + Pico8.Rnd(60);
-                }
-                else // chase
-                {
-                    e.Dtim = F32.FromInt(10) + Pico8.Rnd(60);
+                    case EnStep.Wait or EnStep.Patrol:
+                        e.Step = EnStep.Walk;
+                        e.Dx = Pico8.Rnd(2) - F32.One;
+                        e.Dy = Pico8.Rnd(2) - F32.One;
+                        e.Dtim = F32.FromInt(30) + Pico8.Rnd(60);
+                        break;
+                    case EnStep.Walk:
+                        e.Step = EnStep.Wait;
+                        e.Dx = F32.Zero;
+                        e.Dy = F32.Zero;
+                        e.Dtim = F32.FromInt(30) + Pico8.Rnd(60);
+                        break;
+                    default: // chase
+                        e.Dtim = F32.FromInt(10) + Pico8.Rnd(60);
+                        break;
                 }
             }
             else
@@ -68,11 +69,11 @@ internal static class EnemyUpdater
                         e.Dy = F32.Zero;
                         e.Banim -= F32.One;
                         e.Banim = Pico8.Mod(e.Banim, F32.FromInt(8));
-                        var pow = F32.FromInt(10);
+                        F32 pow = F32.FromInt(10);
                         if (e.Banim == F32.FromInt(4))
                         {
                             player.Life -= pow;
-                            TextPopupEntity popup = new(pow, 8, player.X, player.Y - F32.FromInt(10), -F32.One);
+                            TextPopupEntity popup = new(pow, PicoColor._08Red, player.X, player.Y - F32.FromInt(10), -F32.One);
                             level.Ent.Add(popup);
                             Pico8.Sfx(14 + Pico8.Rnd(2).Float);
                         }

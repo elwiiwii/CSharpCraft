@@ -34,15 +34,18 @@ internal static class MainMenuGeometry
         // Sort by x, then y
         Vector2[] sorted = points.ToArray();
         Array.Sort(sorted, (a, b) =>
-            a.X != b.X ? a.X.CompareTo(b.X) : a.Y.CompareTo(b.Y));
+        {
+            int cmp = a.X.CompareTo(b.X);
+            return cmp != 0 ? cmp : a.Y.CompareTo(b.Y);
+        });
 
         // Build lower hull
         List<Vector2> lower = new(sorted.Length);
-        for (int i = 0; i < sorted.Length; i++)
+        foreach (var t in sorted)
         {
-            while (lower.Count >= 2 && Cross(lower[^2], lower[^1], sorted[i]) <= 0)
+            while (lower.Count >= 2 && Cross(lower[^2], lower[^1], t) <= 0)
                 lower.RemoveAt(lower.Count - 1);
-            lower.Add(sorted[i]);
+            lower.Add(t);
         }
 
         // Build upper hull
@@ -94,6 +97,44 @@ internal static class MainMenuGeometry
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Returns a continuous signed distance from <paramref name="point"/> to the
+    /// outer boundary of the rounded convex hull.
+    /// Positive = inside, zero = on the rounded boundary, negative = outside.
+    /// The value is continuous across the polygon/rounded-zone boundary:
+    /// interior depth = <c>radius + dist_to_polygon_edge</c>,
+    /// exterior (within radius) depth = <c>radius - dist_to_polygon_edge</c>.
+    /// </summary>
+    internal static float SignedDistanceToRoundedHull(Vector2 point, IReadOnlyList<Vector2> hull, float radius)
+    {
+        if (hull.Count == 0)
+            return float.MinValue;
+
+        if (hull.Count == 1)
+            return radius - Vector2.Distance(point, hull[0]);
+
+        // Distance to the nearest edge segment
+        float minEdgeDist = float.MaxValue;
+        for (int i = 0; i < hull.Count; i++)
+        {
+            Vector2 a = hull[i];
+            Vector2 b = hull[(i + 1) % hull.Count];
+            float dist = DistanceToSegment(point, a, b);
+            if (dist < minEdgeDist)
+                minEdgeDist = dist;
+        }
+
+        if (IsPointInConvexPolygon(point, hull))
+            return minEdgeDist + radius; // depth from outer boundary = radius + dist inside polygon
+
+        // Outside polygon — check rounded radius
+        if (minEdgeDist <= radius)
+            return radius - minEdgeDist; // positive: depth within rounded zone
+
+        // Outside entirely
+        return -(minEdgeDist - radius); // negative: how far outside
     }
 
     private static bool IsPointInConvexPolygon(Vector2 point, IReadOnlyList<Vector2> hull)

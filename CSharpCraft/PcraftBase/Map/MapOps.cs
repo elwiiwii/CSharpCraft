@@ -12,10 +12,9 @@ internal static class MapOps
 
     internal static Tile GetDirectTile(int i, int j, Level level)
     {
-        if (PcraftServices.OutOfBounds(i, j, level))
-            return new Tile(PcraftData.TileWater);
-        Tile tile = level.Map[i, j];
-        return tile.Type is null ? new Tile(PcraftData.TileWater) : tile;
+        return PcraftServices.OutOfBounds(i, j, level)
+            ? new Tile(PcraftData.TileWater)
+            : level.Map[i, j];
     }
 
     internal static Tile GetTile(F32 x, F32 y, Level level)

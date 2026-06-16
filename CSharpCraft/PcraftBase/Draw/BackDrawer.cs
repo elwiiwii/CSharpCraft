@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
+using PSharp8.Graphics;
 
 namespace CSharpCraft.PcraftBase.Draw;
 
@@ -55,8 +56,8 @@ internal static class BackDrawer
         Pico8.Pal();
         if (level.Theme == LevelTheme.Cave)
         {
-            Pico8.Pal(15, 5);
-            Pico8.Pal(4, 1);
+            Pico8.Pal(PicoColor._15LightPeach, PicoColor._05DarkGrey);
+            Pico8.Pal(PicoColor._04Brown, PicoColor._01DarkBlue);
         }
         Pico8.Map(64, 32, ci * 16, cj * 16, 18, 18);
 
@@ -84,11 +85,11 @@ internal static class BackDrawer
                     F32 dd = tile.GrowthTimer.GetValueOrDefault(F32.Zero) - level.Time;
                     for (int pp = 2; pp <= 4; pp++)
                     {
-                        Pico8.Pal(pp, 3);
+                        Pico8.Pal((PicoColor)pp, PicoColor._03DarkGreen);
                         if (dd > F32.FromInt(10 - (pp * 2)))
-                            Pico8.Palt(pp, true);
+                            Pico8.Palt((PicoColor)pp, true);
                     }
-                    if (dd < F32.Zero) Pico8.Pal(4, 9);
+                    if (dd < F32.Zero) Pico8.Pal(PicoColor._04Brown, PicoColor._09Orange);
                     PcraftServices.Spr4(i, j, gi, gj, 6, 6, 6, 6, 0, (x, y) => PcraftServices.RndSand(x, y, level));
                 }
 
@@ -103,9 +104,9 @@ internal static class BackDrawer
                     Pico8.Pal();
                     if (level.Theme == LevelTheme.Surface)
                     {
-                        Pico8.Palt(0, false);
+                        Pico8.Palt(PicoColor._00Black, false);
                         Pico8.Spr(31, gi, gj, 1, 2);
-                        Pico8.Spr(31, gi + 8, gj, 1, 2, true, false);
+                        Pico8.Spr(31, gi + 8, gj, 1, 2, true);
                     }
                     Pico8.Palt();
                     Pico8.Spr(77, gi + 4, gj, 1, 2);
@@ -173,6 +174,4 @@ internal static class BackDrawer
         Pico8.Spr(f(i, j + 0.5 + off) + c, gi, gj + 8 + (2 * off));
         Pico8.Spr(f(i + 0.5, j + 0.5 + off) + d, gi + 8, gj + 8 + (2 * off));
     }
-
 }
-

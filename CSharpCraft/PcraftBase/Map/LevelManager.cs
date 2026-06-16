@@ -23,25 +23,26 @@ internal static class LevelManager
                 var ex = F32.FromInt((i * 16) + 8);
                 var ey = F32.FromInt((j * 16) + 8);
                 var dist = F32.Max(F32.Abs(ex - player.X), F32.Abs(ey - player.Y));
-                if (r < 3 &&
-                    tile.Type is not WallTileType &&
-                    tile.Type != PcraftData.TileWater &&
-                    dist > F32.FromInt(50))
+
+                if (r >= 3 ||
+                    tile.Type is WallTileType ||
+                    tile.Type == PcraftData.TileWater ||
+                    dist <= F32.FromInt(50)) continue;
+                
+                ZombieEntity zombie = new(ex, ey)
                 {
-                    ZombieEntity zombie = new(ex, ey)
-                    {
-                        Life = F32.FromInt(10),
-                        Prot = F32.Zero,
-                        Lrot = F32.Zero,
-                        Panim = F32.Zero,
-                        Banim = F32.Zero,
-                        Dtim = F32.Zero,
-                        Step = 0,
-                        Ox = F32.Zero,
-                        Oy = F32.Zero
-                    };
-                    level.Ene.Add(zombie);
-                }
+                    Life = F32.FromInt(10),
+                
+                    Prot = F32.Zero,
+                    Lrot = F32.Zero,
+                    Panim = F32.Zero,
+                    Banim = F32.Zero,
+                    Dtim = F32.Zero,
+                    Step = 0,
+                    Ox = F32.Zero,
+                    Oy = F32.Zero
+                };
+                level.Ene.Add(zombie);
             }
         }
     }
@@ -70,7 +71,6 @@ internal static class LevelManager
         player.Camera.Coffx = F32.Zero;
         player.Camera.Coffy = F32.Zero;
         player.CurItem = null;
-
         player.Invent.Clear();
 
         PcraftSession session = PcraftSession.Current;

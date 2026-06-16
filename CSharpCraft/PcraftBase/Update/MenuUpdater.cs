@@ -10,8 +10,6 @@ internal static class MenuUpdater
         if (player.CurMenu is null) return (false, false);
 
         bool needsReset = player.CurMenu.Update(player);
-        player.Lb4 = Pico8.Btn(4);
-        player.Lb5 = Pico8.Btn(5);
         return (true, needsReset);
     }
 }

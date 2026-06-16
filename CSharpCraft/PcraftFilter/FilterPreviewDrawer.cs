@@ -1,5 +1,6 @@
 using CSharpCraft.PcraftBase;
 using CSharpCraft.PcraftSeeded;
+using PSharp8.Graphics;
 
 namespace CSharpCraft.PcraftFilter;
 
@@ -93,16 +94,16 @@ internal static class FilterPreviewDrawer
                 Pico8.Sspr(120, 8, 8, 16, bx + CellPx, by, CellPx, TilePx, flipX: true);
                 Pico8.Palt();
 
-                Pico8.Sspr(104, 32, 8, 16, bx + (CellPx / 2), by, CellPx, TilePx);
+                Pico8.Sspr(104, 32, 8, 16, bx + (CellPx / 2.0), by, CellPx, TilePx);
             }
         }
 
         // Spawn marker
         if (result.SpawnTileX >= 0)
             Pico8.Circfill(
-                offsetX + (result.SpawnTileX * TilePx) + (TilePx / 2),
-                offsetY + (result.SpawnTileY * TilePx) + (TilePx / 2),
-                5, 8);
+                offsetX + (result.SpawnTileX * TilePx) + (TilePx / 2.0),
+                offsetY + (result.SpawnTileY * TilePx) + (TilePx / 2.0),
+                5, PicoColor._08Red);
     }
 
     // -----------------------------------------------------------------------
@@ -111,7 +112,7 @@ internal static class FilterPreviewDrawer
 
     private static void SsprCell(int n, int destX, int destY)
     {
-        Pico8.Sspr(n % 16 * 8, n / 16 * 8, 8, 8, destX, destY, CellPx, CellPx);
+        Pico8.Sspr(n % 16 * 8, n / 16.0 * 8, 8, 8, destX, destY, CellPx, CellPx);
     }
 
     private static int SpriteBase(int tileId)

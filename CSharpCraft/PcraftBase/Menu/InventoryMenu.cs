@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
+using PSharp8.Input;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
@@ -12,11 +13,11 @@ internal sealed class InventoryMenu(List<InventorySlot> list) : IMenu
     {
         if (List.Count > 0)
         {
-            if (Pico8.Btnp(3)) { Sel += 1; Pico8.Sfx(18); }
-            if (Pico8.Btnp(2)) { Sel -= 1; Pico8.Sfx(18); }
+            if (Pico8.Btnp(PicoButton.Down)) { Sel += 1; Pico8.Sfx(18); }
+            if (Pico8.Btnp(PicoButton.Up)) { Sel -= 1; Pico8.Sfx(18); }
             Sel = PcraftServices.Loop(Sel, List.Count);
 
-            if (Pico8.Btnp(5) && !player.Lb5)
+            if (Pico8.Btnp(PicoButton.Primary, repeat: false))
             {
                 player.CurItem = List[Sel];
                 List.RemoveAt(Sel);
@@ -28,7 +29,7 @@ internal sealed class InventoryMenu(List<InventorySlot> list) : IMenu
             }
         }
 
-        if (Pico8.Btnp(4) && !player.Lb4)
+        if (Pico8.Btnp(PicoButton.Secondary, repeat: false))
         {
             player.CurMenu = null;
             Pico8.Sfx(17);

@@ -33,11 +33,11 @@ internal static class InventoryOps
     // ToolItem / UnstackableItem: remove the first slot whose Type matches.
     internal static void RemInList(List<InventorySlot> list, InventorySlot elem)
     {
-        if (elem is StackableItem StackableElem)
+        if (elem is StackableItem stackableElem)
         {
-            StackableItem? found = PcraftServices.FindStackable(list, StackableElem);
+            StackableItem? found = PcraftServices.FindStackable(list, stackableElem);
             if (found is null) return;
-            found.Count -= StackableElem.Count;
+            found.Count -= stackableElem.Count;
             if (found.Count <= 0)
                 _ = list.Remove(found);
         }
@@ -53,12 +53,12 @@ internal static class InventoryOps
     // ToolItem and UnstackableItem always create a new slot.
     internal static void AddItemInList(List<InventorySlot> list, InventorySlot item, int pos)
     {
-        if (item is StackableItem Stackable)
+        if (item is StackableItem stackable)
         {
-            StackableItem? existing = PcraftServices.FindStackable(list, Stackable);
+            StackableItem? existing = PcraftServices.FindStackable(list, stackable);
             if (existing is not null)
             {
-                existing.Count += Stackable.Count;
+                existing.Count += stackable.Count;
                 return;
             }
         }

@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
+using PSharp8.Input;
 
 namespace CSharpCraft.PcraftBase.Menu;
 
@@ -6,19 +7,19 @@ internal sealed class ChestMenu(List<InventorySlot> chestItems, List<InventorySl
 {
     internal List<InventorySlot> ChestItems { get; } = chestItems ?? throw new ArgumentNullException(nameof(chestItems));
     internal List<InventorySlot> PlayerItems { get; } = playerItems ?? throw new ArgumentNullException(nameof(playerItems));
-    internal int Sel { get; set; } = 0;
-    internal int Off { get; set; } = 0;
-    internal int TabToggle { get; set; } = 0;
+    internal int Sel { get; set; }
+    internal int Off { get; set; }
+    internal int TabToggle { get; set; }
 
     public bool Update(PlayerEntity player)
     {
-        if (Pico8.Btnp(0)) { TabToggle = PcraftServices.Loop(TabToggle - 1, 2); Pico8.Sfx(18); }
-        if (Pico8.Btnp(1)) { TabToggle = PcraftServices.Loop(TabToggle + 1, 2); Pico8.Sfx(18); }
+        if (Pico8.Btnp(PicoButton.Left)) { TabToggle = PcraftServices.Loop(TabToggle - 1, 2); Pico8.Sfx(18); }
+        if (Pico8.Btnp(PicoButton.Right)) { TabToggle = PcraftServices.Loop(TabToggle + 1, 2); Pico8.Sfx(18); }
 
         List<InventorySlot> activeList = TabToggle == 0 ? ChestItems : PlayerItems;
         List<InventorySlot> otherList = TabToggle == 0 ? PlayerItems : ChestItems;
 
-        if (activeList.Count > 0 && Pico8.Btnp(5))
+        if (activeList.Count > 0 && Pico8.Btnp(PicoButton.Primary))
         {
             InventorySlot item = activeList[Sel];
             activeList.RemoveAt(Sel);
@@ -26,7 +27,7 @@ internal sealed class ChestMenu(List<InventorySlot> chestItems, List<InventorySl
             Pico8.Sfx(16);
         }
 
-        if (Pico8.Btnp(4) && !player.Lb4)
+        if (Pico8.Btnp(PicoButton.Secondary, repeat: false))
         {
             player.CurMenu = null;
             Pico8.Sfx(17);

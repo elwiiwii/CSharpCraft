@@ -12,7 +12,7 @@ internal class PcraftPreviewScene : PcraftPreviewBase
         bool launched = false;
         _ = setup.RegisterUpdate(() =>
         {
-            if (!launched && AnyButton())
+            if (!launched && Pico8.Btn() > 0)
             {
                 launched = true;
                 LaunchGame();
@@ -23,11 +23,5 @@ internal class PcraftPreviewScene : PcraftPreviewBase
     protected virtual void LaunchGame()
     {
         Pico8.ScheduleScene(() => new PcraftGameScene(PreviewSeed));
-    }
-
-    protected virtual bool AnyButton()
-    {
-        return Pico8.Btn(0) || Pico8.Btn(1) || Pico8.Btn(2)
-            || Pico8.Btn(3) || Pico8.Btn(4) || Pico8.Btn(5);
     }
 }

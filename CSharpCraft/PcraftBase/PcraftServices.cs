@@ -6,6 +6,7 @@ using CSharpCraft.PcraftBase.Map;
 using CSharpCraft.PcraftBase.Menu;
 using CSharpCraft.PcraftBase.Physics;
 using CSharpCraft.PcraftBase.Update;
+using PSharp8.Graphics;
 
 namespace CSharpCraft.PcraftBase;
 
@@ -137,16 +138,16 @@ internal class PcraftServices
     protected virtual void OnSetPal(int[] l)
         => DrawHelpers.SetPal(l);
 
-    internal static void PrintB(string t, double x, double y, double inCol, double outCol)
+    internal static void PrintB(string t, double x, double y, PicoColor inCol, PicoColor outCol)
         => _current.OnPrintB(t, x, y, inCol, outCol);
 
-    protected virtual void OnPrintB(string t, double x, double y, double inCol, double outCol)
+    protected virtual void OnPrintB(string t, double x, double y, PicoColor inCol, PicoColor outCol)
         => DrawHelpers.PrintB(t, x, y, inCol, outCol);
 
-    internal static void PrintC(string t, int x, int y, int c)
+    internal static void PrintC(string t, int x, int y, PicoColor c)
         => _current.OnPrintC(t, x, y, c);
 
-    protected virtual void OnPrintC(string t, int x, int y, int c)
+    protected virtual void OnPrintC(string t, int x, int y, PicoColor c)
         => DrawHelpers.PrintC(t, x, y, c);
 
     // ---------------------------------------------------------------------------
@@ -154,10 +155,10 @@ internal class PcraftServices
     #region Draw - Hud
     // ---------------------------------------------------------------------------
 
-    internal static void DrawBar(F32 px, F32 py, F32 v, F32 m, F32 c, F32 c2)
+    internal static void DrawBar(F32 px, F32 py, F32 v, F32 m, PicoColor c, PicoColor c2)
         => _current.OnDrawBar(px, py, v, m, c, c2);
 
-    protected virtual void OnDrawBar(F32 px, F32 py, F32 v, F32 m, F32 c, F32 c2)
+    protected virtual void OnDrawBar(F32 px, F32 py, F32 v, F32 m, PicoColor c, PicoColor c2)
         => HudDrawer.DrawBar(px, py, v, m, c, c2);
 
     internal static void DrawHud(PlayerEntity player)
@@ -208,10 +209,10 @@ internal class PcraftServices
         int x, int y, int sx, int sy, int my)
         => MenuOverlayDrawer.DrawItemList(list, panelName, sel, off, x, y, sx, sy, my);
 
-    internal static void DrawItemVisual(int x, int y, int col, int? power, ItemDef type)
+    internal static void DrawItemVisual(int x, int y, PicoColor col, int? power, ItemDef type)
         => _current.OnDrawItemVisual(x, y, col, power, type);
 
-    protected virtual void OnDrawItemVisual(int x, int y, int col, int? power, ItemDef type)
+    protected virtual void OnDrawItemVisual(int x, int y, PicoColor col, int? power, ItemDef type)
         => MenuOverlayDrawer.DrawItemVisual(x, y, col, power, type);
 
     internal static int DrawListCore(int sel, int off, int x, int y, int sx, int sy,
@@ -234,10 +235,10 @@ internal class PcraftServices
     protected virtual void OnDrawRequireList(Recipe recip, int x, int y, int sx, int sy, PlayerEntity player)
         => MenuOverlayDrawer.DrawRequireList(recip, x, y, sx, sy, player);
 
-    internal static void ItemName(int x, int y, InventorySlot item, int col)
+    internal static void ItemName(int x, int y, InventorySlot item, PicoColor col)
         => _current.OnItemName(x, y, item, col);
 
-    protected virtual void OnItemName(int x, int y, InventorySlot item, int col)
+    protected virtual void OnItemName(int x, int y, InventorySlot item, PicoColor col)
         => MenuOverlayDrawer.ItemName(x, y, item, col);
 
     // ---------------------------------------------------------------------------
@@ -428,12 +429,6 @@ internal class PcraftServices
 
     protected virtual F32 OnGetRot(F32 dx, F32 dy)
         => PcraftMath.GetRot(dx, dy);
-
-    internal static F32 NormGetRot(F32 dx, F32 dy)
-        => _current.OnNormGetRot(dx, dy);
-
-    protected virtual F32 OnNormGetRot(F32 dx, F32 dy)
-        => PcraftMath.NormGetRot(dx, dy);
 
     internal static F32 UpRot(F32 grot, F32 rot)
         => _current.OnUpRot(grot, rot);

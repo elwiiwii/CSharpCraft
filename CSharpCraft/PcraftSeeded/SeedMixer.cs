@@ -6,7 +6,7 @@ namespace CSharpCraft.PcraftSeeded;
 /// suitable for seeding <see cref="System.Random"/>.
 /// </summary>
 /// <remarks>
-/// Unlike <see cref="System.HashCode.Combine"/>, this is stable across process restarts,
+/// Unlike <see cref="System.HashCode.Combine{T1}"/>, this is stable across process restarts,
 /// machines, and .NET versions because it uses only unchecked arithmetic (no runtime seeds).
 /// The finalizer is the MurmurHash3 64-bit avalanche pass.
 /// </remarks>
@@ -17,10 +17,10 @@ internal static class SeedMixer
         unchecked
         {
             long h = seed;
-            h ^= (long)a; h = Avalanche(h);
-            h ^= (long)b; h = Avalanche(h);
-            h ^= (long)c; h = Avalanche(h);
-            h ^= (long)d; h = Avalanche(h);
+            h ^= a; h = Avalanche(h);
+            h ^= b; h = Avalanche(h);
+            h ^= c; h = Avalanche(h);
+            h ^= d; h = Avalanche(h);
             return (int)h;
         }
     }
@@ -38,7 +38,7 @@ internal static class SeedMixer
             long h = 0;
             foreach (char c in s)
             {
-                h ^= (long)c;
+                h ^= c;
                 h = Avalanche(h);
             }
             return (int)h;

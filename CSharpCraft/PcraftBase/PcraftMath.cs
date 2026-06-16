@@ -19,12 +19,6 @@ internal static class PcraftMath
             : (F32.One - dx) * F32.FromFloat(0.25f);
     }
 
-    internal static F32 NormGetRot(F32 dx, F32 dy)
-    {
-        F32 l = PcraftServices.GetInvLen(dx, dy);
-        return PcraftServices.GetRot(dx * l, dy * l);
-    }
-
     internal static F32 UpRot(F32 grot, F32 rot)
     {
         if (F32.Abs(rot - grot) > F32.FromFloat(0.5f))

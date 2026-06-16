@@ -10,5 +10,5 @@ public class GeneralSettings
     public int WindowWidth { get; set; } = 512;
     public int WindowHeight { get; set; } = 512;
     public InputBindings InputBindings { get; set; } = InputBindings.Default;
-    public BtnpConfig BtnpConfig { get; set; } = new BtnpConfig();
+    public BtnpConfig BtnpConfig { get; set; } = new();
 }

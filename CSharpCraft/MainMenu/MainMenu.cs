@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PSharp8.Graphics;
 using PSharp8.Input;
 
 namespace CSharpCraft.MainMenu;
@@ -21,7 +22,23 @@ internal class MainMenuObj
 
     internal void Update()
     {
-        var (mx, my) = Pico8.MouseScenePosition();
+        var (mx, my) = Pico8.MouseState().ScenePosition;
+        var cursor = new Vector2(mx, my);
+
+        // Find the (enabled) button whose bounds the cursor is furthest inside
+        int bestIndex = -1;
+        float bestDepth = 0f;
+        for (int i = 0; i < MainMenuDefs.All.Length; i++)
+        {
+            if (!MainMenuDefs.All[i].IsEnabled) continue;
+            float depth = MainMenuGeometry.SignedDistanceToRoundedHull(
+                cursor, MainMenuDefs.All[i].HullVertices, HoverRadius);
+            if (depth > bestDepth && depth > 0f)
+            {
+                bestDepth = depth;
+                bestIndex = i;
+            }
+        }
 
         for (int i = 0; i < MainMenuDefs.All.Length; i++)
         {
@@ -33,12 +50,11 @@ internal class MainMenuObj
                 continue;
             }
 
-            bool hovered = MainMenuGeometry.IsPointInRoundedHull(
-                new Vector2(mx, my), btn.HullVertices, HoverRadius);
+            bool hovered = i == bestIndex;
 
             _hoverT[i] = Math.Clamp(_hoverT[i] + (hovered ? HoverStep : -HoverStep), 0f, 1f);
 
-            if (hovered && (Pico8.MouseState().LeftButton == MouseInput.Press || Pico8.Btnp(4)))
+            if (hovered && (Pico8.MouseState().LeftButton == InputState.Press || Pico8.Btnp(PicoButton.Primary, repeat: false)))
             {
                 btn.Action?.Invoke();
             }
@@ -47,7 +63,7 @@ internal class MainMenuObj
 
     internal void Draw()
     {
-        Pico8.Cls(17);
+        Pico8.Cls(PicoColor._17DarkerBlue);
 
         for (int i = 0; i < MainMenuDefs.All.Length; i++)
         {
@@ -59,12 +75,12 @@ internal class MainMenuObj
             Pico8.Palt();
             Pico8.Sspr(btn.MonoSx, btn.MonoSy, btn.MonoSw, btn.MonoSh,
                        btn.DestX, btn.DestY, btn.DestW, btn.DestH);
-            Pico8.Print(btn.Label, btn.LabelX, btn.LabelY, 7);
+            Pico8.Print(btn.Label, btn.LabelX, btn.LabelY, PicoColor._07White);
 
             if (!btn.IsEnabled)
             {
                 // Step 2 (disabled): fixed color-17 tint overlay at alpha 200
-                Pico8.PalAll(17);
+                Pico8.PalAll(PicoColor._17DarkerBlue);
                 Pico8.PaltAll(200);
                 Pico8.Palt(0, true); // keep transparent pixels clear
                 Pico8.Sspr(btn.MonoSx, btn.MonoSy, btn.MonoSw, btn.MonoSh,

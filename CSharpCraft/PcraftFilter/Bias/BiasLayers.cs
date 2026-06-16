@@ -2,7 +2,7 @@ namespace CSharpCraft.PcraftFilter.Bias;
 
 /// <summary>
 /// Sparse additive bias offsets applied to the three intermediate classification
-/// values (coast, v2, v3) computed by <see cref="PcraftPreview.Noise.MapClassifier"/>.
+/// values (coast, v2, v3) computed by <see cref="PcraftSeeded.Noise.MapClassifier"/>.
 /// All values default to zero (no bias). Biases accumulate additively.
 /// </summary>
 internal sealed class BiasLayers

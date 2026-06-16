@@ -26,23 +26,21 @@ internal static class CollisionSystem
         bool chor = check(newx, y);
         bool cver = check(x, newy);
 
-        if (ccur)
+        if (!ccur)
+            return (dx, dy);
+        if (chor || cver)
         {
-            if (chor || cver)
-            {
-                if (!ctotal)
-                {
-                    if (chor)
-                        dy = -dy * dp;
-                    else
-                        dx = -dx * dp;
-                }
-            }
-            else
-            {
-                dx = -dx * dp;
+            if (ctotal)
+                return (dx, dy);
+            if (chor)
                 dy = -dy * dp;
-            }
+            else
+                dx = -dx * dp;
+        }
+        else
+        {
+            dx = -dx * dp;
+            dy = -dy * dp;
         }
 
         return (dx, dy);

@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
+using PSharp8.Graphics;
 
 namespace CSharpCraft.PcraftBase.Draw;
 
@@ -31,10 +32,10 @@ internal static class EnemiesDrawer
             else
             {
                 Pico8.Pal();
-                Pico8.Pal(15, 3);
-                Pico8.Pal(4, 1);
-                Pico8.Pal(2, 8);
-                Pico8.Pal(1, 1);
+                Pico8.Pal(PicoColor._15LightPeach, PicoColor._03DarkGreen);
+                Pico8.Pal(PicoColor._04Brown, PicoColor._01DarkBlue);
+                Pico8.Pal(PicoColor._02DarkPurple, PicoColor._08Red);
+                Pico8.Pal(PicoColor._01DarkBlue, PicoColor._01DarkBlue);
                 PcraftServices.DrawPlayer(e.X, e.Y, e.Prot, e.Panim, e.Banim, isPlayer: false, player, level);
             }
         }
@@ -58,27 +59,27 @@ internal static class EnemiesDrawer
             fyF += 4;
             Pico8.Circ(fxF + (cv * 3) + (cr * lan),
                        fyF + (sv * 3) + (sr * lan),
-                       F32.FromInt(3), F32.FromInt(6));
+                       F32.FromInt(3), PicoColor._06LightGrey);
             Pico8.Circ(fxF - (cv * 3) - (cr * lan),
                        fyF - (sv * 3) - (sr * lan),
-                       F32.FromInt(3), F32.FromInt(6));
+                       F32.FromInt(3), PicoColor._06LightGrey);
 
             F32 anc = 3 + (level.Time * 3 % F32.One * 3);
             Pico8.Circ(fxF + (cv * 3) + (cr * lan),
                        fyF + (sv * 3) + (sr * lan),
-                       anc, F32.FromInt(6));
+                       anc, PicoColor._06LightGrey);
             Pico8.Circ(fxF - (cv * 3) - (cr * lan),
                        fyF - (sv * 3) - (sr * lan),
-                       anc, F32.FromInt(6));
+                       anc, PicoColor._06LightGrey);
         }
         else
         {
             Pico8.Circfill(fxF + (cv * 2) - (cr * lan),
                            fyF + 3 + (sv * 2) - (sr * lan),
-                           F32.FromInt(3), F32.FromInt(1));
+                           F32.FromInt(3), PicoColor._01DarkBlue);
             Pico8.Circfill(fxF - (cv * 2) + (cr * lan),
                            fyF + 3 - (sv * 2) + (sr * lan),
-                           F32.FromInt(3), F32.FromInt(1));
+                           F32.FromInt(3), PicoColor._01DarkBlue);
         }
 
         F32 blade = (rot + F32.FromDouble(0.25)) % F32.One;
@@ -115,10 +116,10 @@ internal static class EnemiesDrawer
         {
             Pico8.Circfill(fxF + (cv * 3) + (cr * lan),
                            fyF + (sv * 3) + (sr * lan),
-                           F32.FromInt(3), F32.FromInt(2));
+                           F32.FromInt(3), PicoColor._02DarkPurple);
             Pico8.Circfill(fxF - (cv * 3) - (cr * lan),
                            fyF - (sv * 3) - (sr * lan),
-                           F32.FromInt(3), F32.FromInt(2));
+                           F32.FromInt(3), PicoColor._02DarkPurple);
 
             (int my2, int mx2) = PcraftServices.Mirror((rot + F32.FromDouble(0.75)) % F32.One);
             Pico8.Spr(75,
@@ -127,10 +128,10 @@ internal static class EnemiesDrawer
                 1, 1, mx2 == 0, my2 == 1);
         }
 
-        Pico8.Circfill(fxF + cr, fyF + sr - 2, F32.FromInt(4), F32.FromInt(2));
-        Pico8.Circfill(fxF + cr, fyF + sr, F32.FromInt(4), F32.FromInt(2));
-        Pico8.Circfill(fxF + (cr * F32.FromDouble(1.5)), fyF + (sr * F32.FromDouble(1.5)) - 2, F32.FromDouble(2.5), F32.FromInt(15));
-        Pico8.Circfill(fxF - cr, fyF - sr - 3, F32.FromInt(3), F32.FromInt(4));
+        Pico8.Circfill(fxF + cr, fyF + sr - 2, F32.FromInt(4), PicoColor._02DarkPurple);
+        Pico8.Circfill(fxF + cr, fyF + sr, F32.FromInt(4), PicoColor._02DarkPurple);
+        Pico8.Circfill(fxF + (cr * F32.FromDouble(1.5)), fyF + (sr * F32.FromDouble(1.5)) - 2, F32.FromDouble(2.5), PicoColor._15LightPeach);
+        Pico8.Circfill(fxF - cr, fyF - sr - 3, F32.FromInt(3), PicoColor._04Brown);
     }
 
     internal static void SortY(List<CharacterEntity> enemies)

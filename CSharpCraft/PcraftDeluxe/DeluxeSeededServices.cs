@@ -12,7 +12,7 @@ internal sealed class DeluxeSeededServices : DeluxeServices
 {
     private readonly long _seed;
 
-    internal DeluxeSeededServices(long seed) : base()
+    internal DeluxeSeededServices(long seed)
     {
         _seed = seed;
     }

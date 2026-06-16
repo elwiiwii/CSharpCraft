@@ -4,9 +4,9 @@ using PSharp8.Scene;
 
 namespace CSharpCraft.PcraftPreview;
 
-internal class PcraftPreviewBase : PcraftSceneBase, IScene
+internal class PcraftPreviewBase : PcraftSceneBase
 {
-    public override string? Name => "Pcraft Preview Base";
+    public override string Name => "Pcraft Preview Base";
 
     /// <summary>World seed — determines the entire map deterministically.</summary>
     protected virtual long PreviewSeed => 0;

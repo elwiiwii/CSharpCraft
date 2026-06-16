@@ -104,7 +104,7 @@ internal static class PreviewDrawer
 
                 Pico8.Palt(0, false);
                 Pico8.Spr(31, px - 8, py - 8, 1, 2);
-                Pico8.Spr(31, px - 8 + 8, py - 8, 1, 2, true, false);
+                Pico8.Spr(31, px - 8 + 8, py - 8, 1, 2, true);
                 Pico8.Palt();
                 Pico8.Spr(77, px - 8 + 4, py - 8, 1, 2);
             }

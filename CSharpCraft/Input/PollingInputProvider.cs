@@ -14,9 +14,9 @@ internal sealed class PollingInputProvider : IInputProvider
     /// <summary>Production constructor — reads live hardware state each frame.</summary>
     public PollingInputProvider(InputBindings bindings)
         : this(bindings,
-               () => Keyboard.GetState(),
+               Keyboard.GetState,
                () => GamePad.GetState(PlayerIndex.One),
-               () => Mouse.GetState())
+               Mouse.GetState)
     {
     }
 
@@ -59,6 +59,8 @@ internal sealed class PollingInputProvider : IInputProvider
         }
         return held;
     }
+
+    public MouseState GetMouseState() => _getMouse();
 
     private static bool IsSourceHeld(
         InputSource source,

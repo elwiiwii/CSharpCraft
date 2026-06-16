@@ -30,7 +30,7 @@ internal static class FilteredWorldSampler
         int? forceCenterY = null,
         IFilterDiagnosticSink? sink = null)
     {
-        if (filters is null) throw new ArgumentNullException(nameof(filters));
+        ArgumentNullException.ThrowIfNull(filters);
 
         // --- 1. Noise layers (identical parameters to PcraftWorldSampler) ---
         SeededNoiseGrid cur = new(masterSeed, GridSx, GridSy, GridSx, 0.9, 0.2, 0);

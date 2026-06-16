@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftBase.Data;
+using PSharp8.Input;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -65,10 +66,10 @@ internal static class PcraftUpdate
         F32 dx = F32.Zero;
         F32 dy = F32.Zero;
 
-        if (Pico8.Btn(0)) dx -= F32.One;
-        if (Pico8.Btn(1)) dx += F32.One;
-        if (Pico8.Btn(2)) dy -= F32.One;
-        if (Pico8.Btn(3)) dy += F32.One;
+        if (Pico8.Btn(PicoButton.Left)) dx -= F32.One;
+        if (Pico8.Btn(PicoButton.Right)) dx += F32.One;
+        if (Pico8.Btn(PicoButton.Up)) dy -= F32.One;
+        if (Pico8.Btn(PicoButton.Down)) dy += F32.One;
 
         F32 dl = PcraftServices.GetInvLen(dx, dy);
         dx *= dl;

@@ -238,7 +238,7 @@ internal class PcraftData
     private static Recipe MakeRecipe(ItemDef type, int? count, (ItemDef def, int qty)[] reqPairs)
     {
         List<StackableItem> req = new(reqPairs.Length);
-        foreach ((ItemDef? def, int qty) in reqPairs)
+        foreach ((ItemDef def, int qty) in reqPairs)
             req.Add(new StackableItem(def, qty));
         InventorySlot output = count.HasValue
             ? new StackableItem(type, count.Value)

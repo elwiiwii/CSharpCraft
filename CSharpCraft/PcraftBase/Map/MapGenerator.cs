@@ -29,9 +29,9 @@ internal static class MapGenerator
             {
                 for (int j = 0; j < sy; j += step)
                 {
-                    var c1 = n[i, j];
-                    var c2 = n[i + step, j];
-                    var c3 = n[i, j + step];
+                    F32 c1 = n[i, j];
+                    F32 c2 = n[i + step, j];
+                    F32 c3 = n[i, j + step];
                     n[i + (step / 2), j] = ((c1 + c2) * Half) + ((Pico8.Rnd(1) - Half) * cscal);
                     n[i, j + (step / 2)] = ((c1 + c3) * Half) + ((Pico8.Rnd(1) - Half) * cscal);
                 }
@@ -42,11 +42,12 @@ internal static class MapGenerator
             {
                 for (int j = 0; j < sy; j += step)
                 {
-                    var c1 = n[i, j];
-                    var c2 = n[i + step, j];
-                    var c3 = n[i, j + step];
-                    var c4 = n[i + step, j + step];
-                    n[i + (step / 2), j + (step / 2)] = ((c1 + c2 + c3 + c4) * F32.FromDouble(0.25)) + ((Pico8.Rnd(1) - Half) * cscal);
+                    F32 c1 = n[i, j];
+                    F32 c2 = n[i + step, j];
+                    F32 c3 = n[i, j + step];
+                    F32 c4 = n[i + step, j + step];
+                    n[i + (step / 2), j + (step / 2)] =
+                        ((c1 + c2 + c3 + c4) * F32.FromDouble(0.25)) + ((Pico8.Rnd(1) - Half) * cscal);
                 }
             }
 
@@ -79,7 +80,7 @@ internal static class MapGenerator
                 F32 dist = F32.Max(di, dj);
                 dist = dist * dist * dist * dist;
 
-                var coast = (v * F32.FromInt(4)) - (dist * F32.FromInt(4));
+                F32 coast = (v * F32.FromInt(4)) - (dist * F32.FromInt(4));
 
                 TileId id = a;
                 if (coast > F32.FromDouble(0.3)) id = b;

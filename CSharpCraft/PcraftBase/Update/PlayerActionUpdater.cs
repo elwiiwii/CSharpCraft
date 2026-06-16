@@ -1,5 +1,7 @@
 using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftBase.Menu;
+using PSharp8.Graphics;
+using PSharp8.Input;
 
 namespace CSharpCraft.PcraftBase.Update;
 
@@ -25,17 +27,17 @@ internal static class PlayerActionUpdater
         player.Lstam += F32.Clamp(player.Stam - player.Lstam, -F32.One, F32.One);
 
         // ── Btn(5) action block ───────────────────────────────────────────────
-        if (Pico8.Btn(5) && !player.Block5 && canAct)
+        if (Pico8.Btn(PicoButton.Primary) && !player.Block5 && canAct)
         {
             F32 bx = Pico8.Cos(player.Prot);
             F32 by = Pico8.Sin(player.Prot);
             F32 hitx = player.X + (bx * F32.FromInt(8));
             F32 hity = player.Y + (by * F32.FromInt(8));
             Tile hitTile = PcraftServices.GetTile(hitx, hity, level);
-            var stamcost = F32.FromInt(20);
+            F32 stamcost = F32.FromInt(20);
 
             // Place bench
-            if (!player.Lb5 && player.CurItem is not null && player.CurItem.Type is PlaceableItemDef def)
+            if (Pico8.Btnp(PicoButton.Primary, repeat: false) && player.CurItem?.Type is PlaceableItemDef def)
             {
                 if (hitTile.Type is not WallTileType && (hitTile.Type == PcraftData.TileSand || hitTile.Type == PcraftData.TileGrass))
                 {
@@ -65,7 +67,7 @@ internal static class PlayerActionUpdater
                         pow = F32.FromInt(F32.FloorToInt(pow));
                         Pico8.Sfx(14 + Pico8.Rnd(2).Double);
                     }
-                    var count = F32.FromInt(nearEnemies.Count);
+                    F32 count = F32.FromInt(nearEnemies.Count);
                     foreach (CharacterEntity e in nearEnemies)
                     {
                         e.Life -= pow / count;
@@ -78,7 +80,7 @@ internal static class PlayerActionUpdater
                             PcraftServices.AddItem(PcraftData.Ichor, 0, 2, e.X, e.Y, level.Ent, playerFacing: player.Prot);
                             PcraftServices.AddItem(PcraftData.Fabric, 0, 2, e.X, e.Y, level.Ent, playerFacing: player.Prot);
                         }
-                        TextPopupEntity popup = new(pow, 9, e.X, e.Y - F32.FromInt(10), -F32.One);
+                        TextPopupEntity popup = new(pow, PicoColor._09Orange, e.X, e.Y - F32.FromInt(10), -F32.One);
                         level.Ent.Add(popup);
                     }
                 }
@@ -119,7 +121,7 @@ internal static class PlayerActionUpdater
                     {
                         PcraftServices.SetTile(hitx, hity, hitTile with { HarvestLife = harvestLife - pow }, level);
                     }
-                    TextPopupEntity popup2 = new(pow, 10, hitx, hity, -F32.One);
+                    TextPopupEntity popup2 = new(pow, PicoColor._10Yellow, hitx, hity, -F32.One);
                     level.Ent.Add(popup2);
                 }
                 else
@@ -131,20 +133,20 @@ internal static class PlayerActionUpdater
                         if (player.CurItem is ToolItem toolForStam)
                             stamcost = F32.Max(F32.Zero, F32.FromInt(20 - (toolForStam.Power * 2)));
 
-                        if (player.CurItem.Type is HealthItemDef health && health.GiveLife > 0)
+                        if (player.CurItem.Type is HealthItemDef { GiveLife: > 0 } health)
                         {
                             player.Life = F32.Min(F32.FromInt(100), player.Life + F32.FromInt(health.GiveLife));
                             PcraftServices.RemInList(player.Invent, new StackableItem(player.CurItem.Type, 1));
                             Pico8.Sfx(21);
                         }
-                        if (hitTile.Type == PcraftData.TileGrass && player.CurItem.Type == PcraftData.Scythe)
+                        else if (hitTile.Type == PcraftData.TileGrass && player.CurItem.Type == PcraftData.Scythe)
                         {
                             PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
                             PcraftServices.AddItem(PcraftData.Seed, 1, 1, hitx, hity, level.Ent, playerFacing: player.Prot, dropChance: 0.6);
                         }
-                        if (hitTile.Type == PcraftData.TileSand && player.CurItem.Type == PcraftData.Shovel)
+                        else if (hitTile.Type == PcraftData.TileSand && player.CurItem.Type == PcraftData.Shovel)
                         {
-                            if (player.CurItem is ToolItem shovelTool && shovelTool.Power > 3)
+                            if (player.CurItem is ToolItem { Power: > 3 })
                             {
                                 PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileWater), level);
                                 PcraftServices.AddItem(PcraftData.Sand, 2, 2, hitx, hity, level.Ent, playerFacing: player.Prot);
@@ -155,27 +157,27 @@ internal static class PlayerActionUpdater
                                 PcraftServices.AddItem(PcraftData.Sand, 0, 1, hitx, hity, level.Ent, playerFacing: player.Prot);
                             }
                         }
-                        if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Sand)
+                        else if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Sand)
                         {
                             PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
                             PcraftServices.RemInList(player.Invent, new StackableItem(PcraftData.Sand, 1));
                         }
-                        if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Boat)
+                        else if (hitTile.Type == PcraftData.TileWater && player.CurItem.Type == PcraftData.Boat)
                         {
                             Pico8.Reload();
                             Pico8.MapToSpritesheet1D();
                             player.CurMenu = PcraftData.WinMenu;
                             Pico8.Music(4);
                         }
-                        if (hitTile.Type == PcraftData.TileFarm && player.CurItem.Type == PcraftData.Seed)
+                        else if (hitTile.Type == PcraftData.TileFarm && player.CurItem.Type == PcraftData.Seed)
                         {
                             PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileWheat, GrowthTimer: level.Time + 15 + Pico8.Rnd(5)), level);
                             PcraftServices.RemInList(player.Invent, new StackableItem(PcraftData.Seed, 1));
                         }
-                        if (hitTile.Type == PcraftData.TileWheat && player.CurItem.Type == PcraftData.Scythe)
+                        else if (hitTile.Type == PcraftData.TileWheat && player.CurItem.Type == PcraftData.Scythe)
                         {
                             PcraftServices.SetTile(hitx, hity, new Tile(PcraftData.TileSand), level);
-                            var dw = F32.Clamp(F32.FromInt(4) - (hitTile.GrowthTimer.GetValueOrDefault(F32.Zero) - level.Time),
+                            F32 dw = F32.Clamp(F32.FromInt(4) - (hitTile.GrowthTimer.GetValueOrDefault(F32.Zero) - level.Time),
                                 F32.Zero,
                                 F32.FromInt(4));
                             PcraftServices.AddItem(PcraftData.Wheat, F32.FloorToInt(dw / F32.FromInt(2)), F32.FloorToInt(dw), hitx, hity, level.Ent, playerFacing: player.Prot);
@@ -196,16 +198,14 @@ internal static class PlayerActionUpdater
             player.Stam = F32.Min(F32.FromInt(100), player.Stam + F32.One);
 
         // ── Inventory shortcut (Btnp 4) ───────────────────────────────────────
-        if (Pico8.Btnp(4) && !player.Lb4)
+        if (Pico8.Btnp(PicoButton.Secondary, repeat: false))
         {
             player.CurMenu = new InventoryMenu(player.Invent);
             Pico8.Sfx(13);
         }
 
         // ── Button-state latch ────────────────────────────────────────────────
-        player.Lb4 = Pico8.Btn(4);
-        player.Lb5 = Pico8.Btn(5);
-        if (!Pico8.Btn(5))
+        if (!Pico8.Btn(PicoButton.Primary))
             player.Block5 = false;
 
         // ── Time advance ──────────────────────────────────────────────────────

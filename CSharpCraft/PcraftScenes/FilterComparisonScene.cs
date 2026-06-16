@@ -3,13 +3,15 @@ using CSharpCraft.PcraftBase.Data;
 using CSharpCraft.PcraftFilter;
 using CSharpCraft.PcraftFilter.Filters;
 using CSharpCraft.PcraftSeeded;
+using PSharp8.Graphics;
+using PSharp8.Input;
 using PSharp8.Scene;
 
 namespace CSharpCraft.PcraftScenes;
 
-internal class FilterComparisonScene : PcraftSceneBase, IScene
+internal class FilterComparisonScene : PcraftSceneBase
 {
-    public override string? Name => "Filter Comparison";
+    public override string Name => "Filter Comparison";
 
     // Layout constants
     // Resolution: 4px margin | 512px map | 4px gap | 512px map | 4px margin = 1036px wide
@@ -52,7 +54,7 @@ internal class FilterComparisonScene : PcraftSceneBase, IScene
         {
             if (dirty) Regenerate();
 
-            if (Pico8.Btnp(4) || Pico8.Btnp(5))
+            if (Pico8.Btnp(PicoButton.Primary) || Pico8.Btnp(PicoButton.Secondary))
             {
                 seed = Random.Shared.NextInt64();
                 dirty = true;
@@ -64,18 +66,18 @@ internal class FilterComparisonScene : PcraftSceneBase, IScene
             if (baseline is null || filtered is null) return;
             if (!previewDirty) return;
 
-            Pico8.Cls(13);
+            Pico8.Cls(PicoColor._13Lavender);
 
             // Panel labels
-            Pico8.Print("baseline", Left0X, 2, 7);
-            Pico8.Print("filtered", Right0X, 2, 7);
+            Pico8.Print("baseline", Left0X, 2, PicoColor._07White);
+            Pico8.Print("filtered", Right0X, 2, PicoColor._07White);
 
             // Maps
             FilterPreviewDrawer.Draw(baseline, Left0X, HeaderY);
             FilterPreviewDrawer.Draw(filtered, Right0X, HeaderY);
 
             // Footer: seed value + hint
-            Pico8.Print($"seed:{seed.ToString("X16").ToLower()}  x:new", Left0X, FooterY, 6);
+            Pico8.Print($"seed:{seed.ToString("X16").ToLower()}  x:new", Left0X, FooterY, PicoColor._06LightGrey);
 
             previewDirty = false;
         }, fps: 30);

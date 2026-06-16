@@ -7,8 +7,8 @@ internal static class CameraUpdater
     internal static void Update(PlayerEntity player, F32 dx, F32 dy)
     {
         CameraState camera = player.Camera;
-        var m = F32.FromInt(16);
-        var msp = F32.FromInt(4);
+        F32 m = F32.FromInt(16);
+        F32 msp = F32.FromInt(4);
 
         if (F32.Abs(camera.Cmx - player.X) > m)
             camera.Coffx += dx * F32.FromDouble(0.4);
