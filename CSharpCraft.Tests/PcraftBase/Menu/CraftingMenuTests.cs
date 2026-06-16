@@ -176,7 +176,7 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_AddsResultItemToInventory_WhenBtnp5AndHasIngredients()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         List<InventorySlot> playerInvent = [new StackableItem(PcraftData.Wood, 3)];
@@ -195,7 +195,7 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_RemovesIngredients_FromInventory_WhenBtnp5AndHasIngredients()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         List<Recipe> recipes = [MakeHaxeRecipe()];
@@ -214,7 +214,7 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     {
         // Missing ingredient → CanCraft returns false → no Haxe added
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         List<Recipe> recipes = [MakeHaxeRecipe()];
@@ -231,7 +231,7 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_DoesNotCraft_WhenRecipeListIsEmpty_AndBtnp5()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         CraftingMenu menu = MakeBenchMenu([], []);
@@ -252,7 +252,7 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_SetsCurMenuToNull_WhenBtnp4Pressed()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(4);
+        fake.PressOnce(5);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         CraftingMenu menu = MakeBenchMenu([], []);

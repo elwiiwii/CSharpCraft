@@ -188,6 +188,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void CreateLevel_ReturnsLevel_WithCorrectDimensions()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -204,6 +205,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void CreateLevel_SetsSpawnPositionOnLevel()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -222,6 +224,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_SetsPlayerStats_ToInitialValues()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -239,6 +242,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_ResetsMovementStats()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero)
@@ -266,6 +270,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_InventoryContainsWorkbench_AsFirstItem()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -282,6 +287,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_InventoryContainsPickupTool_AsSecondItem()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -298,6 +304,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_CreatesCaveLevel()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -315,6 +322,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_CreatesIslandLevel()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -332,6 +340,7 @@ public sealed class PcraftServicesFnaTests(FnaFixture fixture)
     [Fact]
     public void ResetLevel_InitialisesRndWat_WithNonZeroValues()
     {
+        PcraftServices.SetServices(new PcraftServices());
         using GameOrchestrator orch = BuildOrchestrator();
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);

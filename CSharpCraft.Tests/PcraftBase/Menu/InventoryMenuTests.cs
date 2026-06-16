@@ -182,7 +182,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_SetsCurMenuToNull_WhenBtnp4Pressed()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(4);
+        fake.PressOnce(5);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1)];
@@ -194,23 +194,6 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
         _ = player.CurMenu.Should().BeNull();
     }
 
-    [Fact]
-    public void Update_DoesNotClose_WhenLb4IsTrue()
-    {
-        // lb4=true means btn4 was already held — guard prevents repeat-close
-        FakeInputManager fake = new();
-        fake.PressOnce(4);
-        using GameOrchestrator orch = BuildOrchestrator(fake);
-        Pico8.Initialize(orch);
-        List<InventorySlot> list = [new StackableItem(PcraftData.Wood, 1)];
-        InventoryMenu menu = new(list);
-        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = menu, Lb4 = true };
-
-        _ = menu.Update(player);
-
-        _ = player.CurMenu.Should().BeSameAs(menu);
-    }
-
     // --------------------------------------------------------------------------
     #endregion
     #region Equip — btn5
@@ -220,7 +203,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_SetsStateCurItemToSelectedItem_WhenBtnp5()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         UnstackableItem axe = new(PcraftData.Haxe);
@@ -237,7 +220,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_SetsCurMenuToNull_WhenBtnp5Equips()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         List<InventorySlot> list = [new UnstackableItem(PcraftData.Haxe)];
@@ -254,7 +237,7 @@ public sealed class InventoryMenuFnaTests(FnaFixture fixture) : IDisposable
     {
         // No items → btn5 is a no-op; menu stays open
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         InventoryMenu menu = new([]);

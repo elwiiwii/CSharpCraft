@@ -115,21 +115,6 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
         _ = player.CurMenu.Should().BeSameAs(PcraftData.MainMenu);
     }
 
-    [Fact]
-    public void Update_SetsLb4_AfterSplash()
-    {
-        // Btn(4) held → lb4 becomes true; released → false
-        FakeInputManager fake = new();
-        fake.SetBtn(4, true);
-        using GameOrchestrator orch = BuildOrchestrator(fake);
-        Pico8.Initialize(orch);
-        PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
-
-        _ = MenuUpdater.Update(player);
-
-        _ = player.Lb4.Should().BeTrue();
-    }
-
     // --------------------------------------------------------------------------
     #endregion
     #region Splash menu — button pressed
@@ -140,7 +125,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         // Lua: if curmenu==mainmenu then curmenu=intromenu
         FakeInputManager fake = new();
-        fake.PressOnce(4); // Btnp(4) fires once
+        fake.PressOnce(5); // Btnp(PicoButton.Secondary) fires once
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.MainMenu };
@@ -155,7 +140,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         // Lua: else resetlevel() ; curmenu=nil ; music(1)
         FakeInputManager fake = new();
-        fake.PressOnce(4);
+        fake.PressOnce(5);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero) { CurMenu = PcraftData.IntroMenu };
@@ -196,23 +181,6 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     }
 
     [Fact]
-    public void Update_SetsLb4AndLb5_AfterInteractive()
-    {
-        FakeInputManager fake = new();
-        fake.SetBtn(4, true);
-        fake.SetBtn(5, true);
-        using GameOrchestrator orch = BuildOrchestrator(fake);
-        Pico8.Initialize(orch);
-        PlayerEntity player = new(F32.Zero, F32.Zero);
-        player.CurMenu = new InventoryMenu(player.Invent);
-
-        _ = MenuUpdater.Update(player);
-
-        _ = player.Lb4.Should().BeTrue();
-        _ = player.Lb5.Should().BeTrue();
-    }
-
-    [Fact]
     public void Update_DoesNotMoveSel_WhenNoNavButtons()
     {
         using GameOrchestrator orch = BuildOrchestrator();
@@ -239,7 +207,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         // Lua: if btnp(4) and not lb4 then curmenu=nil
         FakeInputManager fake = new();
-        fake.PressOnce(4);
+        fake.PressOnce(5);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -315,7 +283,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         // Lua: curitem = curmenu.list[curmenu.sel] ; curmenu=nil ; block5=true
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);
@@ -337,7 +305,7 @@ public sealed class MenuUpdaterFnaTests(FnaFixture fixture) : IDisposable
     {
         // Lua: if cancraft(rec) then craft(rec)
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero);

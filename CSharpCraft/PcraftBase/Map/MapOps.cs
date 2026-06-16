@@ -38,12 +38,12 @@ internal static class MapOps
     internal static bool IsFree(F32 x, F32 y, Level level)
     {
         Tile tile = PcraftServices.GetTile(x, y, level);
-        return tile.Type is not WallTileType;
+        return tile.Type is not null and not WallTileType;
     }
 
     internal static bool IsFreeEnem(F32 x, F32 y, Level level)
     {
         Tile tile = PcraftServices.GetTile(x, y, level);
-        return tile.Type is not WallTileType && tile.Type.BlendGroup != BlendGroup.Water;
+        return tile.Type is not null and not WallTileType and not { BlendGroup: BlendGroup.Water };
     }
 }

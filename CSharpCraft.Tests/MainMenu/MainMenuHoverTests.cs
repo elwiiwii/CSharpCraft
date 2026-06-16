@@ -1,4 +1,4 @@
-using CSharpCraft.MainMenu;
+using CSharpCraft.MenuShared;
 using FluentAssertions;
 using Microsoft.Xna.Framework;
 using Xunit;
@@ -16,7 +16,7 @@ public sealed class MainMenuHoverTests
     [Fact]
     public void GetRectCorners_ReturnsFourCorners_InClockwiseOrder()
     {
-        Vector2[] corners = MainMenuGeometry.GetRectCorners(10, 20, 30, 40);
+        Vector2[] corners = MenuButtonGeometry.GetRectCorners(10, 20, 30, 40);
 
         corners.Should().HaveCount(4);
         corners[0].Should().Be(new Vector2(10, 20));     // top-left
@@ -35,7 +35,7 @@ public sealed class MainMenuHoverTests
     public void GetLabelBounds_ReturnsCorrectBounds_ForNonEmptyLabel()
     {
         // P8SCII default: 4 px per character wide, 6 px tall
-        var bounds = MainMenuGeometry.GetLabelBounds("hello", 37, 30);
+        var bounds = MenuButtonGeometry.GetLabelBounds("hello", 37, 30);
         bounds.Should().NotBeNull();
         bounds.Value.X.Should().Be(37);
         bounds.Value.Y.Should().Be(30);
@@ -46,7 +46,7 @@ public sealed class MainMenuHoverTests
     [Fact]
     public void GetLabelBounds_ReturnsNull_WhenLabelIsEmpty()
     {
-        MainMenuGeometry.GetLabelBounds("", 0, 0).Should().BeNull();
+        MenuButtonGeometry.GetLabelBounds("", 0, 0).Should().BeNull();
     }
 
     // --------------------------------------------------------------------------
@@ -58,9 +58,9 @@ public sealed class MainMenuHoverTests
     [Fact]
     public void ConvexHull_ReturnsFourCorners_ForSingleRectangle()
     {
-        Vector2[] corners = MainMenuGeometry.GetRectCorners(0, 0, 10, 10);
+        Vector2[] corners = MenuButtonGeometry.GetRectCorners(0, 0, 10, 10);
 
-        Vector2[] hull = MainMenuGeometry.ConvexHull(corners);
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(corners);
 
         hull.Should().HaveCount(4);
         hull.Should().BeEquivalentTo(corners);
@@ -76,7 +76,7 @@ public sealed class MainMenuHoverTests
             new(10, 5), // interior point
         ];
 
-        Vector2[] hull = MainMenuGeometry.ConvexHull(points);
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(points);
 
         hull.Should().HaveCount(4);
     }
@@ -85,10 +85,10 @@ public sealed class MainMenuHoverTests
     public void ConvexHull_CombinesSpriteAndLabelRectCorners()
     {
         // Sprite: (39, 11, 19, 17), Label: (37, 30, 6*4=24, 6)
-        Vector2[] spriteCorners = MainMenuGeometry.GetRectCorners(39, 11, 19, 17);
-        Vector2[] labelCorners = MainMenuGeometry.GetRectCorners(37, 30, 24, 6);
+        Vector2[] spriteCorners = MenuButtonGeometry.GetRectCorners(39, 11, 19, 17);
+        Vector2[] labelCorners = MenuButtonGeometry.GetRectCorners(37, 30, 24, 6);
 
-        Vector2[] hull = MainMenuGeometry.ConvexHull([.. spriteCorners, .. labelCorners]);
+        Vector2[] hull = MenuButtonGeometry.ConvexHull([.. spriteCorners, .. labelCorners]);
 
         // The convex hull of two adjacent rectangles should have at least 4 vertices
         hull.Should().HaveCount(count => count >= 4);
@@ -110,10 +110,10 @@ public sealed class MainMenuHoverTests
     public void IsPointInRoundedHull_ReturnsTrue_WhenPointInsideSprite()
     {
         // Sprite rect: (39, 11, 19, 17) — center is ~(48.5, 19.5)
-        Vector2[] hull = MainMenuGeometry.ConvexHull(
-            MainMenuGeometry.GetRectCorners(39, 11, 19, 17));
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(
+            MenuButtonGeometry.GetRectCorners(39, 11, 19, 17));
 
-        MainMenuGeometry.IsPointInRoundedHull(new Vector2(48, 19), hull, Radius)
+        MenuButtonGeometry.IsPointInRoundedHull(new Vector2(48, 19), hull, Radius)
             .Should().BeTrue();
     }
 
@@ -121,11 +121,11 @@ public sealed class MainMenuHoverTests
     public void IsPointInRoundedHull_ReturnsTrue_WhenPointInsideLabelArea()
     {
         // Label for "ranked": (37, 30, 24, 6) — center is ~(49, 33)
-        Vector2[] spriteCorners = MainMenuGeometry.GetRectCorners(39, 11, 19, 17);
-        Vector2[] labelCorners = MainMenuGeometry.GetRectCorners(37, 30, 24, 6);
-        Vector2[] hull = MainMenuGeometry.ConvexHull([.. spriteCorners, .. labelCorners]);
+        Vector2[] spriteCorners = MenuButtonGeometry.GetRectCorners(39, 11, 19, 17);
+        Vector2[] labelCorners = MenuButtonGeometry.GetRectCorners(37, 30, 24, 6);
+        Vector2[] hull = MenuButtonGeometry.ConvexHull([.. spriteCorners, .. labelCorners]);
 
-        MainMenuGeometry.IsPointInRoundedHull(new Vector2(49, 33), hull, Radius)
+        MenuButtonGeometry.IsPointInRoundedHull(new Vector2(49, 33), hull, Radius)
             .Should().BeTrue();
     }
 
@@ -133,43 +133,43 @@ public sealed class MainMenuHoverTests
     public void IsPointInRoundedHull_ReturnsTrue_WhenPointInRoundedCorner()
     {
         // A point just outside the sharp corner of the hull but within radius
-        Vector2[] hull = MainMenuGeometry.ConvexHull(
-            MainMenuGeometry.GetRectCorners(0, 0, 20, 20));
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(
+            MenuButtonGeometry.GetRectCorners(0, 0, 20, 20));
 
         // Top-left corner — point 2px outside (within radius 4)
-        MainMenuGeometry.IsPointInRoundedHull(new Vector2(-2, -2), hull, Radius)
+        MenuButtonGeometry.IsPointInRoundedHull(new Vector2(-2, -2), hull, Radius)
             .Should().BeTrue();
     }
 
     [Fact]
     public void IsPointInRoundedHull_ReturnsFalse_WhenPointFarOutside()
     {
-        Vector2[] hull = MainMenuGeometry.ConvexHull(
-            MainMenuGeometry.GetRectCorners(39, 11, 19, 17));
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(
+            MenuButtonGeometry.GetRectCorners(39, 11, 19, 17));
 
-        MainMenuGeometry.IsPointInRoundedHull(new Vector2(-50, -50), hull, Radius)
+        MenuButtonGeometry.IsPointInRoundedHull(new Vector2(-50, -50), hull, Radius)
             .Should().BeFalse();
     }
 
     [Fact]
     public void IsPointInRoundedHull_ReturnsFalse_WhenPointOutsideRadius()
     {
-        Vector2[] hull = MainMenuGeometry.ConvexHull(
-            MainMenuGeometry.GetRectCorners(0, 0, 20, 20));
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(
+            MenuButtonGeometry.GetRectCorners(0, 0, 20, 20));
 
         // Point 6px beyond the top-left corner — outside radius 4
-        MainMenuGeometry.IsPointInRoundedHull(new Vector2(-6, -6), hull, Radius)
+        MenuButtonGeometry.IsPointInRoundedHull(new Vector2(-6, -6), hull, Radius)
             .Should().BeFalse();
     }
 
     [Fact]
     public void IsPointInRoundedHull_ReturnsTrue_WhenPointNearEdge()
     {
-        Vector2[] hull = MainMenuGeometry.ConvexHull(
-            MainMenuGeometry.GetRectCorners(0, 0, 20, 20));
+        Vector2[] hull = MenuButtonGeometry.ConvexHull(
+            MenuButtonGeometry.GetRectCorners(0, 0, 20, 20));
 
         // Above the top edge by 3px — inside the 4px radius zone
-        MainMenuGeometry.IsPointInRoundedHull(new Vector2(10, -3), hull, Radius)
+        MenuButtonGeometry.IsPointInRoundedHull(new Vector2(10, -3), hull, Radius)
             .Should().BeTrue();
     }
 

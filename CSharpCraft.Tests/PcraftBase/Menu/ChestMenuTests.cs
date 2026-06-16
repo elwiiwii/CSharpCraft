@@ -189,7 +189,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     {
         // TabToggle=0 → chest is active; btn5 moves selected chest item into player invent
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         StackableItem wood = new(PcraftData.Wood, 1);
@@ -209,7 +209,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     {
         // TabToggle=1 → player inventory is active; btn5 moves selected item into chest
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         StackableItem stone = new(PcraftData.Stone, 1);
@@ -232,7 +232,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     {
         // No items in active tab → btn5 is a no-op
         FakeInputManager fake = new();
-        fake.PressOnce(5);
+        fake.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         List<InventorySlot> chestItems = [];
@@ -255,7 +255,7 @@ public sealed class ChestMenuFnaTests(FnaFixture fixture) : IDisposable
     public void Update_SetsCurMenuToNull_WhenBtnp4Pressed()
     {
         FakeInputManager fake = new();
-        fake.PressOnce(4);
+        fake.PressOnce(5);
         using GameOrchestrator orch = BuildOrchestrator(fake);
         Pico8.Initialize(orch);
         ChestMenu menu = new([], []);

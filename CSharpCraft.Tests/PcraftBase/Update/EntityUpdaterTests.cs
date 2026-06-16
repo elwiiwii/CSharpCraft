@@ -226,10 +226,10 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         // When pressing Btn5 near a chest entity (without PickupTool equipped),
         // EntityUpdater should open a ChestMenu with the player's inventory.
         FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(5, true);
+        fakeInput.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        PlayerEntity player = new(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { Block5 = false };
         Level level = new(0, 0, 64, 64, LevelTheme.Surface);
         PlacedItemEntity chestEntity = new(PcraftData.Chest, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(chestEntity);
@@ -249,10 +249,10 @@ public sealed class EntityUpdaterTests(FnaFixture fixture) : IDisposable
         List<Recipe> recipes = [];
         BenchItemDef testBench = new("test bench", 89, 104) { Recipes = recipes };
         FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(5, true);
+        fakeInput.PressOnce(4);
         using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
-        PlayerEntity player = new(F32.Zero, F32.Zero) { Block5 = false, Lb5 = false };
+        PlayerEntity player = new(F32.Zero, F32.Zero) { Block5 = false };
         Level level = new(0, 0, 64, 64, LevelTheme.Surface);
         PlacedItemEntity benchEntity = new(testBench, x: F32.Zero, y: F32.Zero);
         level.Ent.Add(benchEntity);

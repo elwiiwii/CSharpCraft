@@ -241,50 +241,8 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
 
     // --------------------------------------------------------------------------
     #endregion
-    #region Last-button-state update (lb4, lb5, block5)
+    #region Last-button-state update (block5)
     // --------------------------------------------------------------------------
-
-    [Fact]
-    public void Update_UpdatesLb4_FromBtn4HeldState()
-    {
-        // lb4 = btn(4)
-        FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(4, true);
-        using GameOrchestrator orch = BuildOrchestrator(fakeInput);
-        Pico8.Initialize(orch);
-        PlayerEntity player = new(F32.Zero, F32.Zero)
-        {
-            Lb4 = false
-        };
-        Level level = new(0, 0, 8, 8, LevelTheme.Surface);
-
-        player.CurrentLevel = level;
-        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
-
-        _ = player.Lb4.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Update_UpdatesLb5_FromBtn5HeldState()
-    {
-        // lb5 = btn(5)
-        FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(5, true);
-        using GameOrchestrator orch = BuildOrchestrator(fakeInput);
-        Pico8.Initialize(orch);
-        // canAct=false prevents action block from firing; also set banim>0 to prevent attack
-        PlayerEntity player = new(F32.Zero, F32.Zero)
-        {
-            Block5 = true,
-            Banim = F32.FromInt(1)
-        };
-        Level level = new(0, 0, 8, 8, LevelTheme.Surface);
-
-        player.CurrentLevel = level;
-        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
-
-        _ = player.Lb5.Should().BeTrue();
-    }
 
     [Fact]
     public void Update_ClearsBlock5_WhenBtn5NotHeld()
@@ -313,14 +271,13 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
     [Fact]
     public void Update_SetsCurMenu_ToMenuInvent_WhenBtnp4()
     {
-        // if btnp(4) and not lb4 then curmenu=inventorymenu
+        // Btnp(PicoButton.Secondary) opens inventory menu
         FakeInputManager fakeInput = new();
-        fakeInput.PressOnce(4);
+        fakeInput.PressOnce(5);
         using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero)
         {
-            Lb4 = false,
             Life = F32.FromInt(10)
         };
         Level level = new(0, 0, 8, 8, LevelTheme.Surface);
@@ -330,28 +287,6 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
 
         _ = player.CurMenu.Should().BeOfType<InventoryMenu>()
             .Which.List.Should().BeSameAs(player.Invent);
-    }
-
-    [Fact]
-    public void Update_DoesNotOpenMenu_WhenBtnp4ButLb4IsTrue()
-    {
-        // lb4 guard prevents double-open on held press
-        FakeInputManager fakeInput = new();
-        fakeInput.PressOnce(4);
-        using GameOrchestrator orch = BuildOrchestrator(fakeInput);
-        Pico8.Initialize(orch);
-        PlayerEntity player = new(F32.Zero, F32.Zero)
-        {
-            Lb4 = true,
-            CurMenu = null,
-            Life = F32.FromInt(10)
-        };
-        Level level = new(0, 0, 8, 8, LevelTheme.Surface);
-
-        player.CurrentLevel = level;
-        PlayerActionUpdater.Update(player, F32.Zero, F32.Zero, canAct: false, nearEnemies: []);
-
-        _ = player.CurMenu.Should().BeNull();
     }
 
     // --------------------------------------------------------------------------
@@ -387,7 +322,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
     {
         // banim==0 and pstam>0 and canact and nearenemies>0 -> e.life -= pow/#nearenemies (pow=1 by default)
         FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(5, true);
+        fakeInput.SetBtn(4, true);
         using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero)
@@ -411,7 +346,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
     {
         // e.life <= 0 -> del(enemies, e)
         FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(5, true);
+        fakeInput.SetBtn(4, true);
         using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero)
@@ -436,7 +371,7 @@ public sealed class PlayerActionUpdaterTests(FnaFixture fixture) : IDisposable
     {
         // banim>0 -> attack block skipped; enemy life unchanged
         FakeInputManager fakeInput = new();
-        fakeInput.SetBtn(5, true);
+        fakeInput.SetBtn(4, true);
         using GameOrchestrator orch = BuildOrchestrator(fakeInput);
         Pico8.Initialize(orch);
         PlayerEntity player = new(F32.Zero, F32.Zero)

@@ -80,28 +80,6 @@ public sealed class PcraftMathTests
 
     // --------------------------------------------------------------------------
     #endregion
-    #region NormGetRot
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void NormGetRot_ReturnsSameAsGetRot_ForAlreadyNormalizedVector()
-    {
-        // (1,0) is unit length (approx) — normgetrot should equal getrot(1,0).
-        // The +0.001 epsilon inside GetLen shifts the normalised vector by ~0.0001,
-        // so we use a looser tolerance here.
-        _ = PcraftMath.NormGetRot(F32.One, F32.Zero).Float.Should().BeApproximately(PcraftMath.GetRot(F32.One, F32.Zero).Float, precision: 0.002f);
-    }
-
-    [Fact]
-    public void NormGetRot_IsLengthIndependent()
-    {
-        // (3,0) and (1,0) point in the same direction — results must be very close.
-        // Epsilon epsilon causes a tiny difference (~0.0001) between short and long vectors.
-        _ = PcraftMath.NormGetRot(F32.FromInt(3), F32.Zero).Float.Should().BeApproximately(PcraftMath.NormGetRot(F32.One, F32.Zero).Float, precision: 0.002f);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
     #region Mirror — sprite flip for drawing
     // --------------------------------------------------------------------------
 
