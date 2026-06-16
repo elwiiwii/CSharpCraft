@@ -1,8 +1,8 @@
 using Microsoft.Xna.Framework;
 
-namespace CSharpCraft.MainMenu;
+namespace CSharpCraft.MenuShared;
 
-internal static class MainMenuGeometry
+internal static class MenuButtonGeometry
 {
     private const int CharWidth = 4;
     private const int CharHeight = 6;

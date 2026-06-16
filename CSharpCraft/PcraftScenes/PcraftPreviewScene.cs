@@ -1,4 +1,5 @@
 using CSharpCraft.PcraftPreview;
+using PSharp8.Input;
 using PSharp8.Scene;
 
 namespace CSharpCraft.PcraftScenes;
@@ -12,7 +13,7 @@ internal class PcraftPreviewScene : PcraftPreviewBase
         bool launched = false;
         _ = setup.RegisterUpdate(() =>
         {
-            if (!launched && Pico8.Btn() > 0)
+            if (!launched && (Pico8.Btn() & ~(1 << (int)PicoButton.Pause)) > 0)
             {
                 launched = true;
                 LaunchGame();

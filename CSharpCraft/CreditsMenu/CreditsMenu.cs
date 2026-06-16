@@ -3,16 +3,16 @@ using Microsoft.Xna.Framework;
 using PSharp8.Graphics;
 using PSharp8.Input;
 
-namespace CSharpCraft.MainMenu;
+namespace CSharpCraft.CreditsMenu;
 
-internal class MainMenuObj
+internal class CreditsMenuObj
 {
     // Hover animation speed: full transition in 12 frames (~0.2 s at 60 fps)
     private const float HoverStep = 1f / 12f;
     private const float HoverRadius = 4f;
 
     // Per-button hover progress: 0 = mono (idle), 1 = full color (hovered)
-    private readonly float[] _hoverT = new float[MainMenuDefs.All.Length];
+    private readonly float[] _hoverT = new float[CreditsMenuDefs.All.Length];
 
     // Color 17 (darker-blue background) — text at this color is invisible on the bg
     private static readonly Color DimColor = new(0x11, 0x1D, 0x35);
@@ -29,11 +29,11 @@ internal class MainMenuObj
         // Find the (enabled) button whose bounds the cursor is furthest inside
         int bestIndex = -1;
         float bestDepth = 0f;
-        for (int i = 0; i < MainMenuDefs.All.Length; i++)
+        for (int i = 0; i < CreditsMenuDefs.All.Length; i++)
         {
-            if (!MainMenuDefs.All[i].IsEnabled) continue;
+            if (!CreditsMenuDefs.All[i].IsEnabled) continue;
             float depth = MenuButtonGeometry.SignedDistanceToRoundedHull(
-                cursor, MainMenuDefs.All[i].HullVertices, HoverRadius);
+                cursor, CreditsMenuDefs.All[i].HullVertices, HoverRadius);
             if (depth > bestDepth && depth > 0f)
             {
                 bestDepth = depth;
@@ -41,9 +41,9 @@ internal class MainMenuObj
             }
         }
 
-        for (int i = 0; i < MainMenuDefs.All.Length; i++)
+        for (int i = 0; i < CreditsMenuDefs.All.Length; i++)
         {
-            MenuButtonDef btn = MainMenuDefs.All[i];
+            MenuButtonDef btn = CreditsMenuDefs.All[i];
 
             if (!btn.IsEnabled)
             {
@@ -66,9 +66,9 @@ internal class MainMenuObj
     {
         Pico8.Cls(PicoColor._17DarkerBlue);
 
-        for (int i = 0; i < MainMenuDefs.All.Length; i++)
+        for (int i = 0; i < CreditsMenuDefs.All.Length; i++)
         {
-            MenuButtonDef btn = MainMenuDefs.All[i];
+            MenuButtonDef btn = CreditsMenuDefs.All[i];
             float t = _hoverT[i];
 
             // Step 1: draw the monochrome sprite (always visible as base)

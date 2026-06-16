@@ -1,8 +1,8 @@
 using Microsoft.Xna.Framework;
 
-namespace CSharpCraft.MainMenu;
+namespace CSharpCraft.MenuShared;
 
-internal record MainMenuButtonDef(
+internal record MenuButtonDef(
     int MonoSx, int MonoSy, int MonoSw, int MonoSh,
     int ColorSx, int ColorSy, int ColorSw, int ColorSh,
     int DestX, int DestY, int DestW, int DestH,
@@ -14,13 +14,13 @@ internal record MainMenuButtonDef(
     private static Vector2[] ComputeHull(int destX, int destY, int destW, int destH,
         string label, int labelX, int labelY)
     {
-        Vector2[] spriteCorners = MainMenuGeometry.GetRectCorners(destX, destY, destW, destH);
+        Vector2[] spriteCorners = MenuButtonGeometry.GetRectCorners(destX, destY, destW, destH);
 
-        var labelBounds = MainMenuGeometry.GetLabelBounds(label, labelX, labelY);
+        var labelBounds = MenuButtonGeometry.GetLabelBounds(label, labelX, labelY);
         if (labelBounds is null)
-            return MainMenuGeometry.ConvexHull(spriteCorners.AsSpan());
+            return MenuButtonGeometry.ConvexHull(spriteCorners.AsSpan());
 
-        Vector2[] labelCorners = MainMenuGeometry.GetRectCorners(
+        Vector2[] labelCorners = MenuButtonGeometry.GetRectCorners(
             labelBounds.Value.X, labelBounds.Value.Y,
             labelBounds.Value.W, labelBounds.Value.H);
 
@@ -28,6 +28,6 @@ internal record MainMenuButtonDef(
         spriteCorners.CopyTo(allPoints, 0);
         labelCorners.CopyTo(allPoints, spriteCorners.Length);
 
-        return MainMenuGeometry.ConvexHull(allPoints.AsSpan());
+        return MenuButtonGeometry.ConvexHull(allPoints.AsSpan());
     }
 }
