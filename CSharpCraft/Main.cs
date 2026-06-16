@@ -40,7 +40,7 @@ internal class FnaGame : Game
         Content.RootDirectory = "Content";
 
         IsFixedTimeStep = true;
-        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 30.0));
+        TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 60.0));
         _graphics.SynchronizeWithVerticalRetrace = true;
         IsMouseVisible = true;
     }

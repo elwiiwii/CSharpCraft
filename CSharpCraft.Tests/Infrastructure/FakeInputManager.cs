@@ -26,18 +26,44 @@ public sealed class FakeInputManager : IInputManager
         _btnp[button] = true;
     }
 
-    public bool Btn(int button, int player)
+    public int Btn()
     {
-        return !InputBlocked && _btn[button];
+        if (InputBlocked) return 0;
+        int result = 0;
+        for (int i = 0; i < ButtonCount; i++)
+        {
+            if (_btn[i])
+                result |= (1 << i);
+        }
+        return result;
     }
 
-    public bool Btnp(int button, int player)
+    public bool Btn(PicoButton button, int player)
+    {
+        return !InputBlocked && _btn[(int)button];
+    }
+
+    public bool Btnp(PicoButton button, int player, bool repeat = true)
     {
         if (InputBlocked) return false;
-        bool value = _btnp[button];
-        _btnp[button] = false; // auto-consume: once per frame, matching real InputManager
+        var i = (int)button;
+        bool value = _btnp[i];
+        _btnp[i] = false; // auto-consume: once per frame, matching real InputManager
         return value;
     }
 
+    public PicoMouseState MouseState() => default;
+
     public void Update(TimeSpan elapsed) { }
+
+    public void ResetInputStates()
+    {
+        Array.Clear(_btn, 0, ButtonCount);
+        Array.Clear(_btnp, 0, ButtonCount);
+    }
+
+    public void ConsumePressedFlags()
+    {
+        Array.Clear(_btnp, 0, ButtonCount);
+    }
 }

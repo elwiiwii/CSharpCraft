@@ -25,6 +25,7 @@ Identify the root cause. Ask:
 - Why did it happen? (not just the symptom)
 - Is this a new problem or a recurrence?
 - Does this reveal a flaw in the existing design/assumptions?
+- **Accumulator/input timing issue? → See `copilot-instructions.md` § Accumulator & Fixed Timestep**
 
 ### 3. GENERATE ALTERNATIVES
 Produce at least 2 distinct approaches. For each, document:

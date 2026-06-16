@@ -48,6 +48,16 @@ Find 2-3 existing implementations of similar functionality in the codebase. Foll
 - Resolution declared in PICO-8 convention pixels in `Init()`
 - Base class `PcraftSceneBase` for common gameplay scene behavior
 
+### Game Loop & Accumulator (PSharp8)
+- **Fixed timestep** via per-registration accumulators (`FunctionRegistration.Accumulator`). Each registration has its own `Fps` and accumulates frame delta independently.
+- **First `RegisterUpdate` call** on a scene is the primary (input-receiving) registration. It gets `ReceivesInput = true` and controls consumption. Subsequent registrations default to `ReceivesInput = false`.
+- **Input latching**: `InputManager` polls hardware every display frame (60fps). `_pressedThisFrame` and `_consumedSincePress` latch across frames until `ConsumePressedFlags()` is called by `SceneManager` after the primary callback.
+- **Btnp() fresh-press check**: `_pressedThisFrame[i] && !_consumedSincePress[i]` — returns true at most once per physical press edge. Auto-repeat (`_heldMs >= InitialRepeatMs`) is separate and ms-based.
+- **Spiral-of-death guard**: max 5 accumulator steps per frame in `SceneManager.InternalUpdate`/`InternalDraw`. Excess time is discarded — prevents performance cascades after hitches.
+- **Consumption granularity**: one `ConsumePressedFlags()` call per accumulator tick of the primary registration. If a callback fires multiple times in one frame (catch-up steps), each invocation gets a fresh input view.
+- **Draw callbacks** do NOT consume input. Only update callbacks on the top scene's primary registration trigger consumption.
+- **Testing** accumulator behavior: use real `InputManager` with mock `IInputProvider`, advance time in discrete steps, verify callback firing intervals and `Btnp()` responses. Tests should assert the number of callback invocations and the consumed/unconsumed state.
+
 ### Filter Pipeline (PcraftFilter)
 - Each filter extends `MapFilter` with specific tile count / spawn / concentration constraints
 - `FilterSet` holds `IReadOnlyList<MapFilter>`
