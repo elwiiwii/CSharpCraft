@@ -20,9 +20,9 @@ internal class FnaGame : Game
     }
 
     private readonly GraphicsDeviceManager _graphics;
-    private readonly string _graphicsFolderPath = "Content/Graphics";
-    private readonly string _musicFolderPath = "Content/Music";
-    private readonly string _sfxFolderPath = "Content/Sfx";
+    private const string GraphicsFolderPath = "Content/Graphics";
+    private const string MusicFolderPath = "Content/Music";
+    private const string SfxFolderPath = "Content/Sfx";
 
     private GameOrchestrator? _orchestrator;
     private SettingsManager? _settingsManager;
@@ -41,7 +41,7 @@ internal class FnaGame : Game
 
         IsFixedTimeStep = true;
         TargetElapsedTime = TimeSpan.FromTicks((long)(TimeSpan.TicksPerSecond / 60.0));
-        _graphics.SynchronizeWithVerticalRetrace = true;
+        //_graphics.SynchronizeWithVerticalRetrace = true;
         IsMouseVisible = true;
     }
 
@@ -56,9 +56,9 @@ internal class FnaGame : Game
         //PcraftPreviewScene scene = new();
         //FilterComparisonScene scene = new();
         _orchestrator = new GameOrchestrator(
-            musicDirectory: _musicFolderPath,
-            sfxDirectory: _sfxFolderPath,
-            texturesDirectory: _graphicsFolderPath,
+            musicDirectory: MusicFolderPath,
+            sfxDirectory: SfxFolderPath,
+            texturesDirectory: GraphicsFolderPath,
             defaultScene: scene,
             graphicsDevice: GraphicsDevice,
             graphicsDeviceManager: _graphics,
