@@ -13,165 +13,8 @@ public sealed class PcraftPreviewSceneTests
     #region Helpers
     // --------------------------------------------------------------------------
 
-    // Creates a mock ISceneSetup whose RegisterUpdate/RegisterDraw return a no-op handle.
-    private static (Mock<ISceneSetup> setup, List<Action> updateCallbacks, List<Action> drawCallbacks) MakeSetup()
-    {
-        Mock<ISceneSetup> mock = new();
-        Mock<IFunctionHandle> handle = new();
-        List<Action> updates = [];
-        List<Action> draws = [];
-
-        _ = mock.Setup(s => s.RegisterUpdate(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
-            .Callback<Action, double, PauseBehavior>((cb, _, _) => updates.Add(cb))
-            .Returns(handle.Object);
-        _ = mock.Setup(s => s.RegisterDraw(It.IsAny<Action>(), It.IsAny<double>(), It.IsAny<PauseBehavior>()))
-            .Callback<Action, double, PauseBehavior>((cb, _, _) => draws.Add(cb))
-            .Returns(handle.Object);
-
-        return (mock, updates, draws);
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
-    // --------------------------------------------------------------------------
-    #region Init — update registration
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void Init_RegistersTwoUpdateCallbacks_WhenAnimateWaterIsTrue()
-    {
-        // base.Init registers one update (water time counter), PcraftPreviewScene
-        // registers one more for the button listener — total: 2.
-        (Mock<ISceneSetup>? setup, List<Action>? updates, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new();
-
-        sut.Init(setup.Object);
-
-        _ = updates.Should().HaveCount(2,
-            because: "one update from base (water animation) plus one for button polling");
-    }
-
-    [Fact]
-    public void Init_RegistersOneUpdateCallback_WhenAnimateWaterIsFalse()
-    {
-        // When AnimateWater=false, base registers no update; only the button listener
-        // update is registered.
-        (Mock<ISceneSetup>? setup, List<Action>? updates, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new() { Water = false };
-
-        sut.Init(setup.Object);
-
-        _ = updates.Should().HaveCount(1,
-            because: "only the button-listener update must be registered when AnimateWater=false");
-    }
-
-    [Fact]
-    public void Init_RegistersButtonUpdate_At30Fps()
-    {
-        (Mock<ISceneSetup>? setup, List<Action> _, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new();
-
-        sut.Init(setup.Object);
-
-        // At least one RegisterUpdate call must use 30 fps (the button listener).
-        setup.Verify(
-            s => s.RegisterUpdate(It.IsAny<Action>(), 30.0, It.IsAny<PauseBehavior>()),
-            Times.AtLeastOnce,
-            "the button-listener update must be registered at 30 fps");
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
-    // --------------------------------------------------------------------------
-    #region Button callback — launch behaviour
-    // --------------------------------------------------------------------------
-
-    [Fact]
-    public void ButtonCallback_DoesNotLaunch_WhenNoButtonPressed()
-    {
-        (Mock<ISceneSetup>? setup, List<Action>? updates, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new()
-        {
-            ButtonOverride = () => false
-        };
-        sut.Init(setup.Object);
-
-        // Invoke all update callbacks several times.
-        for (int i = 0; i < 5; i++)
-            foreach (Action cb in updates)
-                cb();
-
-        _ = sut.LaunchCount.Should().Be(0, because: "LaunchGame must not fire when no button is pressed");
-    }
-
-    [Fact]
-    public void ButtonCallback_LaunchesOnce_WhenButtonPressedOnFirstFrame()
-    {
-        (Mock<ISceneSetup>? setup, List<Action>? updates, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new()
-        {
-            ButtonOverride = () => true  // button always held
-        };
-        sut.Init(setup.Object);
-
-        // Invoke all update callbacks multiple times — launch must happen exactly once.
-        for (int i = 0; i < 5; i++)
-            foreach (Action cb in updates)
-                cb();
-
-        _ = sut.LaunchCount.Should().Be(1, because: "LaunchGame must fire exactly once, not every frame");
-    }
-
-    [Fact]
-    public void ButtonCallback_LaunchesOnce_WhenButtonToggledAfterDelay()
-    {
-        (Mock<ISceneSetup>? setup, List<Action>? updates, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new();
-        bool pressed = false;
-        sut.ButtonOverride = () => pressed;
-        sut.Init(setup.Object);
-
-        // Several frames with no button.
-        for (int i = 0; i < 3; i++)
-            foreach (Action cb in updates)
-                cb();
-
-        _ = sut.LaunchCount.Should().Be(0, because: "LaunchGame must not fire before any button press");
-
-        // Press button and run several more frames.
-        pressed = true;
-        for (int i = 0; i < 4; i++)
-            foreach (Action cb in updates)
-                cb();
-
-        _ = sut.LaunchCount.Should().Be(1, because: "LaunchGame must fire exactly once after the button is first pressed");
-    }
-
-    [Fact]
-    public void ButtonCallback_DoesNotLaunchAgain_AfterSceneAlreadyScheduled()
-    {
-        (Mock<ISceneSetup>? setup, List<Action>? updates, List<Action> _) = MakeSetup();
-        TestablePcraftPreviewScene sut = new()
-        {
-            ButtonOverride = () => true
-        };
-        sut.Init(setup.Object);
-
-        // Run 20 frames — launch must still be exactly 1 despite constant button press.
-        for (int i = 0; i < 20; i++)
-            foreach (Action cb in updates)
-                cb();
-
-        _ = sut.LaunchCount.Should().Be(1, because: "the launched flag must prevent re-triggering on subsequent frames");
-    }
-
-    // --------------------------------------------------------------------------
-    #endregion
-    // --------------------------------------------------------------------------
-    #region Subclass — overridable helpers
-    // --------------------------------------------------------------------------
-
-    // Helper: subclass that exposes AnimateWater override for test control.
+    // Subclass that exposes AnimateWater override for test control and stubs out
+    // the Pico8-dependent AnyButton/LaunchGame entry points.
     private sealed class TestablePcraftPreviewScene : PcraftPreviewScene
     {
         internal bool Water { get; init; } = true;
@@ -188,6 +31,91 @@ public sealed class PcraftPreviewSceneTests
         {
             return ButtonOverride?.Invoke() ?? base.AnyButton();
         }
+    }
+
+    private static TestablePcraftPreviewScene MakeSut(Func<bool>? button = null)
+    {
+        var sut = new TestablePcraftPreviewScene { ButtonOverride = button ?? (() => false) };
+        sut.Init(new Mock<ISceneSetup>().Object);
+        return sut;
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    // --------------------------------------------------------------------------
+    #region Update — launch behaviour
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void Update_DoesNotLaunch_WhenNoButtonPressed()
+    {
+        TestablePcraftPreviewScene sut = MakeSut(() => false);
+
+        for (int i = 0; i < 5; i++)
+            sut.Update();
+
+        _ = sut.LaunchCount.Should().Be(0, because: "LaunchGame must not fire when no button is pressed");
+    }
+
+    [Fact]
+    public void Update_LaunchesOnce_WhenButtonPressedOnFirstFrame()
+    {
+        TestablePcraftPreviewScene sut = MakeSut(() => true); // button always held
+
+        for (int i = 0; i < 5; i++)
+            sut.Update();
+
+        _ = sut.LaunchCount.Should().Be(1, because: "LaunchGame must fire exactly once, not every frame");
+    }
+
+    [Fact]
+    public void Update_LaunchesOnce_WhenButtonToggledAfterDelay()
+    {
+        TestablePcraftPreviewScene sut = new();
+        bool pressed = false;
+        sut.ButtonOverride = () => pressed;
+        sut.Init(new Mock<ISceneSetup>().Object);
+
+        // Several frames with no button.
+        for (int i = 0; i < 3; i++)
+            sut.Update();
+
+        _ = sut.LaunchCount.Should().Be(0, because: "LaunchGame must not fire before any button press");
+
+        // Press button and run several more frames.
+        pressed = true;
+        for (int i = 0; i < 4; i++)
+            sut.Update();
+
+        _ = sut.LaunchCount.Should().Be(1, because: "LaunchGame must fire exactly once after the button is first pressed");
+    }
+
+    [Fact]
+    public void Update_DoesNotLaunchAgain_AfterSceneAlreadyScheduled()
+    {
+        TestablePcraftPreviewScene sut = MakeSut(() => true);
+
+        // Run 20 frames — launch must still be exactly 1 despite constant button press.
+        for (int i = 0; i < 20; i++)
+            sut.Update();
+
+        _ = sut.LaunchCount.Should().Be(1, because: "the launched flag must prevent re-triggering on subsequent frames");
+    }
+
+    // --------------------------------------------------------------------------
+    #endregion
+    // --------------------------------------------------------------------------
+    #region Init
+    // --------------------------------------------------------------------------
+
+    [Fact]
+    public void Init_DoesNotThrow_WhenAnimateWaterIsFalse()
+    {
+        var sut = new TestablePcraftPreviewScene { Water = false };
+
+        var act = () => sut.Init(new Mock<ISceneSetup>().Object);
+
+        _ = act.Should().NotThrow();
     }
 
     // --------------------------------------------------------------------------

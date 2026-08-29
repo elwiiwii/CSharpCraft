@@ -6,19 +6,22 @@ namespace CSharpCraft.PcraftScenes;
 
 internal class PcraftPreviewScene : PcraftPreviewBase
 {
+    private bool _launched;
+
     public override void Init(ISceneSetup setup)
     {
         base.Init(setup);
+        _launched = false;
+    }
 
-        bool launched = false;
-        _ = setup.RegisterUpdate(() =>
+    public override void Update()
+    {
+        base.Update();
+        if (!_launched && AnyButton())
         {
-            if (!launched && AnyButton())
-            {
-                launched = true;
-                LaunchGame();
-            }
-        }, fps: 30);
+            _launched = true;
+            LaunchGame();
+        }
     }
 
     protected virtual void LaunchGame()

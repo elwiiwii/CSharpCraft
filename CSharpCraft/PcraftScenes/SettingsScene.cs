@@ -8,15 +8,16 @@ internal class SettingsScene : IScene
 {
     public string Name => "Settings";
 
+    private readonly SettingsMenuObj _menu = new();
+
     public void Init(ISceneSetup setup)
     {
         setup.Resolution = (141, 141);
-        SettingsMenuObj menu = new();
-
-        _ = setup.RegisterUpdate(menu.Update, fps: 60);
-
-        _ = setup.RegisterDraw(menu.Draw, fps: 60);
     }
+
+    public void Update() => _menu.Update();
+
+    public void Draw() => _menu.Draw();
 
     public string SpritesPath => "Spritesheet_Main";
 

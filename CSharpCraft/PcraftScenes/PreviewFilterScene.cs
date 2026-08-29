@@ -24,22 +24,31 @@ internal class PreviewFilterScene : PcraftSceneBase
 
     protected virtual FilterSet BuildFilters() => new([]);
 
+    private SampleResult? _result;
+    private F32 _time = F32.Zero;
+
     public override void Init(ISceneSetup setup)
     {
         int side = 2 * PreviewRadius;
         setup.Resolution = (16 * side, 16 * side);
 
         FilterSet filters = BuildFilters();
-        SampleResult result = FilteredWorldSampler.Sample(
+        _result = FilteredWorldSampler.Sample(
             PreviewSeed, PreviewRadius, filters,
             CenterOverride?.X, CenterOverride?.Y);
 
-        F32 time = F32.Zero;
+        _time = F32.Zero;
+    }
 
+    public override void Update()
+    {
         if (AnimateWater)
-            _ = setup.RegisterUpdate(() => time += F32.FromDouble(1.0 / 30.0), fps: 30);
+            _time += F32.FromDouble(1.0 / 30.0);
+    }
 
-        _ = setup.RegisterDraw(() => PreviewDrawer.Draw(result, time), fps: 30);
+    public override void Draw()
+    {
+        PreviewDrawer.Draw(_result!, _time);
     }
 
     protected void LaunchGame(FilterSet filters)

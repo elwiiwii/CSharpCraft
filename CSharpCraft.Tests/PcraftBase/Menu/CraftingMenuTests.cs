@@ -90,6 +90,8 @@ public sealed class CraftingMenuFnaTests(FnaFixture fixture) : IDisposable
     {
         public string? Name => null;
         public void Init(ISceneSetup setup) { }
+        public void Update() { }
+        public void Draw() { }
         public string? SpritesPath => null;
         public string? MapPath => null;
         public string? FlagData => null;

@@ -24,62 +24,64 @@ internal class FilterComparisonScene : PcraftSceneBase
     private const int Left0X = MarginX;
     private const int Right0X = MarginX + MapPx + GapX;
 
+    private readonly FilterSet _filters = new([
+        new TileCountFilter(TileId: (int)TileId.Rock, MinimumCount: 80),
+        new TileCountFilter(TileId: (int)TileId.Sand, MinimumCount: 80),
+    ]);
+    private long _seed;
+    private SampleResult? _baseline;
+    private SampleResult? _filtered;
+    private bool _dirty = true;
+    private bool _previewDirty = true;
+
     public override void Init(ISceneSetup setup)
     {
         // Don't call base.Init() — no game session, music, or player needed.
         setup.Resolution = ((MapPx * 2) + 12, FooterY + 10);
+        _seed = 0L;
+        _dirty = true;
+        _previewDirty = true;
+    }
 
-        FilterSet filters = new([
-            new TileCountFilter(TileId: (int)TileId.Rock, MinimumCount: 80),
-            new TileCountFilter(TileId: (int)TileId.Sand, MinimumCount: 80),
-        ]);
+    public override void Update()
+    {
+        if (_dirty) Regenerate();
 
-        long seed = 0L;
-        SampleResult? baseline = null;
-        SampleResult? filtered = null;
-        bool dirty = true;
-        bool previewDirty = true;
-
-        void Regenerate()
+        if (Pico8.Btnp(PicoButton.Primary) || Pico8.Btnp(PicoButton.Secondary))
         {
-            baseline = PcraftWorldSampler.Sample(seed, radius: 32,
-                forceCenterX: 32, forceCenterY: 32);
-            filtered = FilteredWorldSampler.Sample(seed, radius: 32, filters,
-                forceCenterX: 32, forceCenterY: 32);
-            dirty = false;
-            previewDirty = true;
+            _seed = Random.Shared.NextInt64();
+            _dirty = true;
         }
+    }
 
-        _ = setup.RegisterUpdate(() =>
-        {
-            if (dirty) Regenerate();
+    public override void Draw()
+    {
+        if (_baseline is null || _filtered is null) return;
+        if (!_previewDirty) return;
 
-            if (Pico8.Btnp(PicoButton.Primary) || Pico8.Btnp(PicoButton.Secondary))
-            {
-                seed = Random.Shared.NextInt64();
-                dirty = true;
-            }
-        }, fps: 30);
+        Pico8.Cls(PicoColor._13Lavender);
 
-        _ = setup.RegisterDraw(() =>
-        {
-            if (baseline is null || filtered is null) return;
-            if (!previewDirty) return;
+        // Panel labels
+        Pico8.Print("baseline", Left0X, 2, PicoColor._07White);
+        Pico8.Print("filtered", Right0X, 2, PicoColor._07White);
 
-            Pico8.Cls(PicoColor._13Lavender);
+        // Maps
+        FilterPreviewDrawer.Draw(_baseline, Left0X, HeaderY);
+        FilterPreviewDrawer.Draw(_filtered, Right0X, HeaderY);
 
-            // Panel labels
-            Pico8.Print("baseline", Left0X, 2, PicoColor._07White);
-            Pico8.Print("filtered", Right0X, 2, PicoColor._07White);
+        // Footer: seed value + hint
+        Pico8.Print($"seed:{_seed.ToString("X16").ToLower()}  x:new", Left0X, FooterY, PicoColor._06LightGrey);
 
-            // Maps
-            FilterPreviewDrawer.Draw(baseline, Left0X, HeaderY);
-            FilterPreviewDrawer.Draw(filtered, Right0X, HeaderY);
+        _previewDirty = false;
+    }
 
-            // Footer: seed value + hint
-            Pico8.Print($"seed:{seed.ToString("X16").ToLower()}  x:new", Left0X, FooterY, PicoColor._06LightGrey);
-
-            previewDirty = false;
-        }, fps: 30);
+    private void Regenerate()
+    {
+        _baseline = PcraftWorldSampler.Sample(_seed, radius: 32,
+            forceCenterX: 32, forceCenterY: 32);
+        _filtered = FilteredWorldSampler.Sample(_seed, radius: 32, _filters,
+            forceCenterX: 32, forceCenterY: 32);
+        _dirty = false;
+        _previewDirty = true;
     }
 }

@@ -64,6 +64,10 @@ public sealed class FakeInputManager : IInputManager
 
     public void ConsumePressedFlags()
     {
-        Array.Clear(_btnp, 0, ButtonCount);
+        // No-op by design: Btnp already auto-consumes on first read, so each
+        // queued press fires exactly once. SceneManager calls this after a
+        // scene's Update(), and tests drive menu/update methods directly rather
+        // than through a scene, so discarding queued presses here would swallow
+        // presses queued before the code under test reads them.
     }
 }

@@ -9,30 +9,37 @@ internal abstract class PcraftSceneBase : IScene
 {
     public virtual string Name => "Pcraft Base";
 
+    private PlayerEntity? _player;
+    private bool _initialized;
+
     public virtual void Init(ISceneSetup setup)
     {
         setup.Resolution = (128, 128);
 
         PcraftSession session = CreateSession();
         PcraftSession.SetCurrent(session);
-        PlayerEntity player = session.Player;
+        _player = session.Player;
+        _initialized = false;
+    }
 
-        bool initialized = false;
-
-        _ = setup.RegisterUpdate(() =>
+    public virtual void Update()
+    {
+        PlayerEntity player = _player!;
+        if (!_initialized)
         {
-            if (!initialized)
-            {
-                Pico8.Music(4, 10000);
-                PcraftServices.ResetLevel(player);
-                Pico8.Music(1);
-                initialized = true;
-            }
+            Pico8.Music(4, 10000);
+            PcraftServices.ResetLevel(player);
+            Pico8.Music(1);
+            _initialized = true;
+        }
 
-            PcraftServices.UpdateMain(player);
-        }, fps: 30);
+        PcraftServices.UpdateMain(player);
+    }
 
-        _ = setup.RegisterDraw(() => PcraftDraw.Draw(player, player.CurrentLevel!), fps: 30);
+    public virtual void Draw()
+    {
+        PlayerEntity player = _player!;
+        PcraftDraw.Draw(player, player.CurrentLevel!);
     }
 
     protected virtual PcraftSession CreateSession()

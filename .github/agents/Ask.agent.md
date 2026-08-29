@@ -1,5 +1,5 @@
 ---
-name: Aske
+name: Ask
 description: Answers questions without making changes
 argument-hint: Ask a question about your code or project
 target: vscode
